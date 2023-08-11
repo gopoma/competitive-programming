@@ -15,16 +15,35 @@ using namespace std;
 #define DBG4(x,y,z,w) MACRO(DBGY(x); DBGY(y); DBGY(z); DBG(w);)
 #define RAYA MACRO(cerr << " ================ " << endl;)
 
-#define F first
-#define S second
-#define SIZE(c) int((c).size())
-#define ALL(c) begin(c), end(c)
+using ll = long long;
+using ld = long long;       // or double if tight TL
+using u128 = __uint128_t;
+using str = string;         // yay python!
 
-typedef long long   ll;
-typedef long double ld;
-typedef __uint128_t u128;
+#define mp  make_pair
+#define f   first
+#define s   second
 
-const char nl = '\n';
+#define sz(x)   int((x).size())
+#define bg(x)   begin(x)
+#define all(x)  bg(x), end(x)
+#define rall(x) x.rbegin(), x.rend()
+#define sor(x)  sort(all(x))
+#define rsz     resize
+#define ins     insert
+#define pb      push_back
+#define eb      emplace_back
+#define ft      front()
+#define bk      back()
+
+#define lb lower_bound
+#define ub upper_bound
+
+const int MOD = (int)1e9 + 7;   // 998244353;
+const ld PI = acos((ld)-1);
+mt19937 rng(0); // or mt19937_64
+const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  // for every grid problem!!
+const char n_l = '\n';
 
 void solve() {}
 
