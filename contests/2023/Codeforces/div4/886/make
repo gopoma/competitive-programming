@@ -1,0 +1,4 @@
+make all && ./bin/Fxd.out
+make[1]: se ingresa al directorio `C:/Users/USER/dev/ccc/2023/div4/886'
+g++ -std=c++11 -O2 -Wall Fxd.cpp -o ./bin/Fxd.out
+make[1]: se sale del directorio `C:/Users/USER/dev/ccc/2023/div4/886'
