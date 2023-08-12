@@ -15,14 +15,10 @@ using namespace std;
 #define DBG4(x,y,z,w) MACRO(DBGY(x); DBGY(y); DBGY(z); DBG(w);)
 #define RAYA MACRO(cerr << " ================ " << endl;)
 
-#define tcT template<class T
-
 using ll = long long;
-using ld = long double;       // or double if tight TL
+using ld = long long;       // or double if tight TL
 using u128 = __uint128_t;
 using str = string;         // yay python!
-tcT> using V = vector<T>;
-tcT, size_t SZ> using AR = array<T, SZ>;
 
 #define mp  make_pair
 #define f   first
@@ -49,14 +45,38 @@ mt19937 rng(0); // or mt19937_64
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  // for every grid problem!!
 const char n_l = '\n';
 
-void solve() {}
+void solve() {
+    int n;
+    cin >> n;
+
+    int A[n]; for(auto& a: A) cin >> a;
+    int B[n]; for(auto& b: B) cin >> b;
+    bool mtx[n][n];
+    for(int u = 0; u < n; u++)
+    for(int v = 0; v < n; v++)
+        mtx[u][v] = false;
+
+    for(int u = 0; u < n; u++)
+        for(int v = 0; v < n; v++) {
+            if(u == v) continue;
+            mtx[u][v] = (A[u]-A[v])>=(B[u]-B[v]);
+        }
+
+    cout << "Graph:\n";
+    for(int u = 0; u < n; u++) {
+        for(int v = 0; v < n; v++) {
+            cout << mtx[u][v] << " ";
+        }
+        cout << n_l;
+    }
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    ll t;
-    cin >> t;
+    ll t = 1;
+    // cin >> t;
 
     while(t--)
         solve();

@@ -15,14 +15,10 @@ using namespace std;
 #define DBG4(x,y,z,w) MACRO(DBGY(x); DBGY(y); DBGY(z); DBG(w);)
 #define RAYA MACRO(cerr << " ================ " << endl;)
 
-#define tcT template<class T
-
 using ll = long long;
-using ld = long double;       // or double if tight TL
+using ld = long long;       // or double if tight TL
 using u128 = __uint128_t;
 using str = string;         // yay python!
-tcT> using V = vector<T>;
-tcT, size_t SZ> using AR = array<T, SZ>;
 
 #define mp  make_pair
 #define f   first
@@ -49,7 +45,46 @@ mt19937 rng(0); // or mt19937_64
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  // for every grid problem!!
 const char n_l = '\n';
 
-void solve() {}
+void solve() {
+    string s;
+    cin >> s;
+
+    bool apply = false;
+    for(auto& c: s)
+        apply |= ((c - '0') >= 5);
+
+    if(!apply) {
+        cout << s << n_l;
+        return;
+    }
+
+    int fp = -1;
+    for(int i = 0; i < sz(s); i++) {
+        if(s[i] - '0' >= 5) {
+            fp = i;
+            break;
+        }
+    }
+
+    while(fp > 0 && ((s[fp-1]-'0'+1)>=5)) {
+        fp--;
+    }
+
+    if(fp == 0) {
+        cout << "1";
+        for(int i = 0; i < sz(s); i++)
+            cout << "0";
+    } else {
+        // fp >= 1
+        for(int i = 0; i < fp-1; i++) {
+            cout << s[i];
+        }
+        cout << (s[fp-1]-'0'+1);
+        for(int i = fp; i < sz(s); i++)
+            cout << "0";
+    }
+    cout << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);
