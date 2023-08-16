@@ -60,14 +60,42 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    ll n, m, k;
+    cin >> n >> m >> k;
+
+    vector<ll> A(n), B(m);
+    for(auto& a: A) cin >> a;
+    for(auto& b: B) cin >> b;
+
+    sor(A);
+    sor(B);
+
+    ll aleft = 0LL, bleft = 0LL, ans = 0LL;
+    while(aleft < n && bleft < m) {
+        if(abs(A[aleft] - B[bleft]) <= k) {
+            aleft++;
+            bleft++;
+            ans++;
+        } else {
+            if(A[aleft] > B[bleft]) {
+                bleft++;
+            }
+            else {
+                aleft++;
+            }
+        }
+    }
+
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    ll t;
-    cin >> t;
+    ll t = 1LL;
+    // cin >> t;
 
     while(t--)
         solve();

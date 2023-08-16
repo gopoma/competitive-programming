@@ -49,17 +49,6 @@ mt19937 rng(0); // or mt19937_64
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  // for every grid problem!!
 const char n_l = '\n';
 
-template <typename T>
-ostream& operator <<(ostream &os, const vector<T>& v) {
-    os << "[";
-
-    for(int i = 0; i < sz(v); i++) {
-        if (i > 0) os << " ";
-        os << v[i];
-    }
-    return os << "]";
-}
-
 void solve() {}
 
 int main() {
