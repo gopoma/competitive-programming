@@ -60,14 +60,61 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n; cin >> n;
+
+    vector<pair<string, ll>> rounds(n);
+    for(auto& r: rounds)
+        cin >> r.f >> r.s;
+
+    map<string, ll> leaderboard;
+    for(auto& r: rounds) {
+        string name = r.f;
+        ll score = r.s;
+
+        leaderboard[name] += score;
+    }
+
+    ll maxScore = LLONG_MIN;
+    for(auto& it: leaderboard) {
+        maxScore = max(maxScore, it.s);
+    }
+
+    vector<string> winners;
+    for(auto& it: leaderboard)
+        if(it.s == maxScore)
+            winners.eb(it.f);
+
+    map<string, ll> tmp;
+    string ans = "";
+    for(auto& r: rounds) {
+        string name = r.f;
+        ll score = r.s;
+
+        tmp[name] += score;
+
+        if(tmp[name] >= maxScore) {
+            bool found = false;
+            for(auto& w: winners) {
+                found |= (name == w);
+            }
+
+            if(found) {
+                ans = name;
+                break;
+            }
+        }
+    }
+
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    ll t;
-    cin >> t;
+    ll t = 1LL;
+    // cin >> t;
 
     while(t--)
         solve();

@@ -60,7 +60,21 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n;
+    cin >> n;
+
+    string S;
+    cin >> S;
+
+    int count = 0;
+    for(int i = n - 1; i >= 0 && S[i] == ')'; i--)
+        count++;
+    int rem = n - count;
+
+    if(count > rem) cout << "YES\n";
+    else cout << "NO\n";
+}
 
 int main() {
     ios::sync_with_stdio(false);

@@ -60,7 +60,46 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n;
+    cin >> n;
+    assert(n >= 3);
+
+    int A[n];
+    for(auto& a: A)
+        cin >> a;
+
+    int odds = 0, odd_pos = -1;
+    for(int i = 0; i < n; i++)
+        if(A[i] & 1) {
+            odds++;
+            odd_pos = i;
+        }
+
+    if(odds == 0 || (n == 3 && odds == 2)) {
+        cout << "NO\n";
+        return;
+    }
+
+    assert(odd_pos != -1);
+    vector<int> ans(3);
+    ans[2] = odd_pos;
+    if(odds >= 3) {
+        int count = 0;
+        for(int i = 0; i < odd_pos && count < 2; i++)
+            if(A[i] & 1)
+                ans[count++] = i;
+    } else {
+        int count = 0;
+        for(int i = 0; i < n && count < 2; i++)
+            if(A[i] % 2 == 0)
+                ans[count++] = i;
+    }
+
+    for(auto& e: ans) e++;
+    cout << "YES\n";
+    cout << ans[0] << " " << ans[1] << " " << ans[2] << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);

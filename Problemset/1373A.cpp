@@ -60,7 +60,31 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    string S;
+    cin >> S;
+
+    int count = 0;
+    while(true) {
+        bool hasAdjDiff = false;
+        int posToDelete = -1;
+        for(int i = 0; i < sz(S) - 1; i++)
+            if(S[i] != S[i + 1]) {
+                hasAdjDiff = true;
+                posToDelete = i;
+                break;
+            }
+
+        if(!hasAdjDiff) break;
+        else {
+            S.erase(posToDelete, 2);
+            count++;
+        }
+    }
+
+    if(count & 1) cout << "DA\n";
+    else cout << "NET\n";
+}
 
 int main() {
     ios::sync_with_stdio(false);

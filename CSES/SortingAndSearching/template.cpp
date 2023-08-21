@@ -66,8 +66,8 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    ll t;
-    cin >> t;
+    ll t = 1LL;
+    // cin >> t;
 
     while(t--)
         solve();

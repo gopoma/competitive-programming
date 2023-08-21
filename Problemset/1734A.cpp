@@ -60,7 +60,22 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n;
+    cin >> n;
+    assert(n >= 3);
+
+    vector<ll> A(n);
+    for(auto& a: A) cin >> a;
+
+    sor(A);
+
+    ll ans = LLONG_MAX;
+    for(int i = 0; i < n - 2; i++)
+        ans = min(ans, abs(A[i+1]-A[i]) + abs(A[i+1]-A[i+2]));
+
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);

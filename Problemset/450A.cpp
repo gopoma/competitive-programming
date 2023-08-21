@@ -60,14 +60,34 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n, m;
+    cin >> n >> m;
+
+    int A[n];
+    for(auto& a: A)
+        cin >> a;
+
+    for(auto& a: A)
+        a = ceil((ld)a/m);
+
+    int max_round = INT_MIN, ans = -1;
+    for(int i = 0; i < n; i++)
+        if(A[i] >= max_round) {
+            max_round = A[i];
+            ans = i;
+        }
+
+    ans++;
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    ll t;
-    cin >> t;
+    ll t = 1LL;
+    // cin >> t;
 
     while(t--)
         solve();

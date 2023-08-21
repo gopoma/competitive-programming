@@ -60,14 +60,33 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    string S;
+    cin >> S;
+
+    bool ok = true;
+    for(int i = 0; i < sz(S);) {
+        if(i < sz(S) - 2 && S.substr(i, 3) == "144") {
+            i += 3;
+        } else if(i < sz(S) - 1 && S.substr(i, 2) == "14") {
+            i += 2;
+        } else if(S[i] == '1') {
+            i++;
+        } else {
+            ok = false;
+            break;
+        }
+    }
+
+    cout << (ok?"YES":"NO") << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    ll t;
-    cin >> t;
+    ll t = 1LL;
+    // cin >> t;
 
     while(t--)
         solve();

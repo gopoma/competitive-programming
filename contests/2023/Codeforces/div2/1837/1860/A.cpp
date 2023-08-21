@@ -60,7 +60,34 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    string s;
+    cin >> s;
+
+    if(s == "()") {
+        cout << "NO\n";
+        return;
+    }
+
+    bool hasEqu = false;
+    for(int i = 0; i < sz(s)-1; i++) {
+        hasEqu |= (s[i] == s[i+1]);
+    }
+
+    string ans = "";
+    if(hasEqu) {
+        for(int i = 0; i < sz(s); i++)
+            ans += "()";
+    } else {
+        for(int i = 0; i < sz(s); i++)
+            ans += '(';
+
+        for(int i = 0; i < sz(s); i++)
+            ans += ')';
+    }
+    cout << "YES\n";
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);

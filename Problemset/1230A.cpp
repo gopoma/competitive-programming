@@ -60,14 +60,43 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    vector<int> A(4);
+    for(auto& a: A) cin >> a;
+
+    int sum = 0;
+    for(auto& a: A)
+        sum += a;
+
+    if(sum & 1) {
+        cout << "NO\n";
+        return;
+    }
+
+    int target = sum / 2;
+    for(auto& a: A)
+        if(a == target) {
+            cout << "YES\n";
+            return;
+        }
+
+    set<int> ss;
+    for(auto& a: A) {
+        if(ss.count(target - a)) {
+            cout << "YES\n";
+            return;
+        } else ss.ins(a);
+    }
+
+    cout << "NO\n";
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    ll t;
-    cin >> t;
+    ll t = 1LL;
+    // cin >> t;
 
     while(t--)
         solve();

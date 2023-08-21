@@ -60,7 +60,25 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int x; cin >> x;
+    assert(1 <= x && x <= 50);
+
+    int ans = 0, pos = 0;
+    bool ok = false;
+    for(int count = 9; count >= 1; count--) {
+        if(x - count >= 0) {
+            x -= count;
+            ans += count * pow(10, pos++);
+        }
+
+        if(x == 0)
+            ok = true;
+    }
+
+    if(ok) cout << ans << n_l;
+    else cout << "-1\n";
+}
 
 int main() {
     ios::sync_with_stdio(false);

@@ -49,25 +49,43 @@ mt19937 rng(0); // or mt19937_64
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  // for every grid problem!!
 const char n_l = '\n';
 
-template <typename T>
-ostream& operator <<(ostream &os, const vector<T>& v) {
-    os << "[";
+void solve() {
+    int n;
+    cin >> n;
 
-    for(int i = 0; i < sz(v); i++) {
-        if (i > 0) os << " ";
-        os << v[i];
+    ll x;
+    cin >> x;
+
+    vector<ll> A(n);
+    for(auto& a: A) cin >> a;
+
+    set<ll> aux;
+    map<ll, int> positions;
+
+    vector<int> ans(2);
+    bool ok = false;
+    for(int i = 0; i < n; i++) {
+        if(aux.count(x-A[i])) {
+            ans[0] = positions[x-A[i]];
+            ans[1] = i;
+            ok = true;
+            break;
+        } else {
+            aux.ins(A[i]);
+            positions[A[i]] = i;
+        }
     }
-    return os << "]";
-}
 
-void solve() {}
+    if(ok) cout << (ans[0]+1) << " " << (ans[1]+1) << n_l;
+    else cout << "IMPOSSIBLE\n";
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    ll t;
-    cin >> t;
+    ll t = 1LL;
+    // cin >> t;
 
     while(t--)
         solve();

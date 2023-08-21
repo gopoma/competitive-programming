@@ -60,7 +60,63 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+ll calc(vector<int>& v) {
+    ll result = 0LL, partial = LLONG_MIN;
+    for(int i = 0; i < sz(v); i++) {
+        result += (i+1)*v[i];
+        partial = max(partial, (ll)(i+1)*v[i]);
+    }
+
+    return (result - partial);
+}
+
+void brute(int n) {
+    vector<int> perm(n);
+    for(int i = 0; i < n; i++)
+        perm[i] = i + 1;
+
+    ll maxScore = LLONG_MIN;
+    do {
+        ll score = calc(perm);
+        maxScore = max(maxScore, score);
+    } while(next_permutation(all(perm)));
+
+    for(int i = 0; i < n; i++)
+        perm[i] = i + 1;
+    do {
+        ll score = calc(perm);
+        if(score == maxScore) {
+            DBG(perm);
+        }
+    } while(next_permutation(all(perm)));
+}
+
+void solve() {
+    int n;
+    cin >> n;
+    assert(2 <= n && n <= 250);
+
+    // brute(n);
+    if(n == 2) {
+        cout << "2\n";
+        return;
+    }
+
+    ll ans = LLONG_MIN;
+    for(int cp = 1; cp <= n; cp++) {
+        vector<int> tmp(n);
+        int current = 1;
+        for(; current <= n && current <= cp; current++)
+            tmp[current-1] = current;
+
+        for(int aux = 0; current <= n; aux++, current++) {
+            tmp[current-1] = n-aux;
+        }
+
+        ans = max(ans, calc(tmp));
+    }
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);

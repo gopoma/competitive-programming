@@ -60,14 +60,30 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n;
+    cin >> n;
+
+    ll P[n];
+    for(auto& p: P)
+        cin >> p;
+
+    sort(P, P+n);
+    ll median = P[n/2];
+
+    ll ans = 0LL;
+    for(auto& p: P)
+        ans += abs(p-median);
+
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    ll t;
-    cin >> t;
+    ll t = 1LL;
+    // cin >> t;
 
     while(t--)
         solve();

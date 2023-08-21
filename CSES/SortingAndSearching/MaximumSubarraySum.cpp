@@ -60,14 +60,29 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n;
+    cin >> n;
+
+    ll X[n];
+    for(auto& x: X) cin >> x;
+
+    vector<ll> dp(n, 0LL);
+    dp[0] = X[0];
+    for(int i = 1; i < n; i++) {
+        dp[i] = max(X[i], X[i]+dp[i-1]);
+    }
+
+    ll ans = *max_element(all(dp));
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    ll t;
-    cin >> t;
+    ll t = 1LL;
+    // cin >> t;
 
     while(t--)
         solve();

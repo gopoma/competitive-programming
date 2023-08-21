@@ -49,25 +49,57 @@ mt19937 rng(0); // or mt19937_64
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  // for every grid problem!!
 const char n_l = '\n';
 
-template <typename T>
-ostream& operator <<(ostream &os, const vector<T>& v) {
-    os << "[";
+struct Event {
+    ll start, end;
 
-    for(int i = 0; i < sz(v); i++) {
-        if (i > 0) os << " ";
-        os << v[i];
+    Event(): start(-1LL), end(-1LL) {}
+    Event(ll s, ll e): start(s), end(e) {}
+
+    bool operator < (const Event &e) const {
+        if(end != e.end) return end < e.end;
+        return start < e.start;
     }
-    return os << "]";
-}
+};
 
-void solve() {}
+void solve() {
+    int n;
+    cin >> n;
+
+    vector<Event> events(n);
+    for(int i = 0; i < n; i++) {
+        ll start, end;
+        cin >> start >> end;
+        events[i] = Event(start, end);
+    }
+
+    sor(events);
+
+    int ans = 1;
+    ll current = events[0].end;
+
+    for(int i = 1; i < n;) {
+        if(events[i].start >= current) {
+            current = events[i].end;
+            i++;
+        } else {
+            while(i < n && events[i].start < current) {
+                i++;
+            }
+            if(i == n) break;
+            current = events[i].end;
+        }
+        ans++;
+    }
+
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    ll t;
-    cin >> t;
+    ll t = 1LL;
+    // cin >> t;
 
     while(t--)
         solve();

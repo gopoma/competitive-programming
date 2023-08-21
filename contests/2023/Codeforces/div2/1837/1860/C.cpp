@@ -60,7 +60,27 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n;
+    cin >> n;
+    assert(n >= 1);
+
+    vector<int> P(n);
+    for(auto& p: P) cin >> p;
+
+    int loseMin = P[0], winMin = INT_MAX, ans = 0;
+    for(int i = 1; i < n; i++) {
+        int current = P[i];
+        if(current < loseMin) {
+            loseMin = current;
+        } else if(current > loseMin && current < winMin) {
+            winMin = current;
+            ans++;
+        }
+    }
+
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);

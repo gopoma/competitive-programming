@@ -60,7 +60,30 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n;
+    cin >> n;
+
+    ll globalMin = LLONG_MAX, minSeconds = LLONG_MAX, sumSeconds = 0LL;
+    vector<ll> seconds(n);
+    for(int i = 0; i < n; i++) {
+        int m;
+        cin >> m;
+
+        assert(m >= 2);
+        vector<ll> A(m);
+
+        for(auto& a: A) cin >> a;
+
+        sor(A);
+        globalMin = min(globalMin, A[0]);
+        sumSeconds += A[1];
+        minSeconds = min(minSeconds, A[1]);
+    }
+
+    ll ans = globalMin + sumSeconds - minSeconds;
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);

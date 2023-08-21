@@ -49,25 +49,39 @@ mt19937 rng(0); // or mt19937_64
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  // for every grid problem!!
 const char n_l = '\n';
 
-template <typename T>
-ostream& operator <<(ostream &os, const vector<T>& v) {
-    os << "[";
+void solve() {
+    int n, m;
+    cin >> n >> m;
 
-    for(int i = 0; i < sz(v); i++) {
-        if (i > 0) os << " ";
-        os << v[i];
+    multiset<ll> ms;
+    for(int i = 0; i < n; i++) {
+        ll h;
+        cin >> h;
+
+        ms.ins(h);
     }
-    return os << "]";
-}
 
-void solve() {}
+    for(int i = 0; i < m; i++) {
+        ll t;
+        cin >> t;
+
+        auto it = ms.lower_bound(t+1);
+        if(it == bg(ms)) {
+            cout << "-1\n";
+        } else {
+            it--;
+            cout << *it << n_l;
+            ms.erase(ms.find(*it));
+        }
+    }
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    ll t;
-    cin >> t;
+    ll t = 1LL;
+    // cin >> t;
 
     while(t--)
         solve();

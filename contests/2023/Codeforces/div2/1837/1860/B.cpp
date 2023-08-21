@@ -60,7 +60,31 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+ll positive(ll num) { return (num < 0LL)? 0LL : num; }
+
+void solve() {
+    ll m, k, a1, ak;
+    cin >> m >> k >> a1 >> ak;
+
+    if(k * ak < m) m -= k * ak;
+    else m %= k;
+
+    // ak is not ok
+    ll ans = 0LL;
+    if(m > a1) {
+        // m > a1 && m >= k
+        // 8 6 3
+        // apply: m -= k; ans++;
+        ll reduction = positive(m - max(a1, m%k));
+        ans += ceil((ld)reduction / k);
+        m -= ans * k;
+        m -= a1;
+
+        ans += positive(m);
+    }
+
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);
