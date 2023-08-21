@@ -60,7 +60,24 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n;
+    cin >> n;
+
+    str s;
+    cin >> s;
+
+    int firstValidPosition = -1;
+    for(int i = 0; i < n; i++)
+        if(s[i] == '8') {
+            firstValidPosition = i;
+            break;
+        }
+
+    if(firstValidPosition == -1 || (n - firstValidPosition < 11))
+        cout << "NO\n";
+    else cout << "YES\n";
+}
 
 int main() {
     ios::sync_with_stdio(false);

@@ -25,8 +25,8 @@ tcT> using V = vector<T>;
 tcT, size_t SZ> using AR = array<T, SZ>;
 
 #define mp  make_pair
-#define F   first
-#define S   second
+#define f   first
+#define s   second
 
 #define sz(x)   int((x).size())
 #define bg(x)   begin(x)
@@ -60,14 +60,31 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n;
+    cin >> n;
+
+    set<string> S;
+
+    for(int i = 0; i < n; i++) {
+        string name;
+        cin >> name;
+
+        if(S.count(name)) {
+            cout << "YES\n";
+        } else {
+            cout << "NO\n";
+            S.ins(name);
+        }
+    }
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    ll t;
-    cin >> t;
+    ll t = 1LL;
+    // cin >> t;
 
     while(t--)
         solve();

@@ -60,7 +60,28 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n;
+    cin >> n;
+
+    cout << "2\n";
+    vector<int> ans;
+    set<int> aux;
+    for(int i = 1; i <= n; i++) {
+        if(aux.count(i)) continue;
+        int tmp = i;
+        while(tmp <= n) {
+            ans.eb(tmp);
+            aux.ins(tmp);
+            tmp *= 2;
+        }
+    }
+
+    assert(sz(ans) == n);
+    for(auto& e: ans)
+        cout << e << " ";
+    cout << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);

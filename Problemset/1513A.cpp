@@ -60,7 +60,35 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n, k;
+    cin >> n >> k;
+
+    int max_peaks = (n-1)/2;
+
+    if(k > max_peaks) {
+        cout << "-1\n";
+    } else if(n == 1) {
+        cout << "1\n";
+    } else {
+        vector<int> ans;
+        int beforeLast = 0, last = n + 1;
+        for(int i = 1; i <= k; i++) {
+            beforeLast = i;
+            last = n - i + 1;
+            ans.eb(beforeLast);
+            ans.eb(last);
+        }
+
+        for(int i = last - 1; i > beforeLast; i--) {
+            ans.eb(i);
+        }
+
+        assert(sz(ans) == n);
+        for(int i = 0; i < n; i++)
+            cout << ans[i] << " \n"[i == (n-1)];
+    }
+}
 
 int main() {
     ios::sync_with_stdio(false);

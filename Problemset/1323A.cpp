@@ -60,7 +60,33 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n;
+    cin >> n;
+
+    int A[n];
+    for(auto& a: A)
+        cin >> a;
+
+
+    vector<int> even_indexes, odd_indexes;
+    for(int i = 0; i < n; i++) {
+        if(A[i] & 1)
+            odd_indexes.eb(i+1);
+        else
+            even_indexes.eb(i+1);
+    }
+
+    if(sz(even_indexes) > 0) {
+        cout << "1\n";
+        cout << even_indexes[0] << n_l;
+    } else if(sz(odd_indexes) >= 2) {
+        cout << "2\n";
+        cout << odd_indexes[0] << " " << odd_indexes[1] << "\n";
+    } else {
+        cout << "-1\n";
+    }
+}
 
 int main() {
     ios::sync_with_stdio(false);

@@ -60,7 +60,28 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    string s;
+    cin >> s;
+
+    map<char, int> count;
+    int ans = 0;
+    for(char& c: s) {
+        if(c == '(' || c == '[') {
+            count[c]++;
+        } else {
+            if(c == ')' && count['('] > 0) {
+                count['(']--;
+                ans++;
+            } else if(c == ']' && count['['] > 0) {
+                count['[']--;
+                ans++;
+            }
+        }
+    }
+
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);

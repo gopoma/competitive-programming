@@ -60,7 +60,26 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n;
+    cin >> n;
+    assert(1 <= n && n <= 100);
+
+    int A[n];
+    for(auto& a: A)
+        cin >> a;
+
+    int ans = 0;
+    for(int i = 1; i < n;) {
+        while(i < n && A[i] % 2 == A[i - 1] % 2) {
+            ans++;
+            i++;
+        }
+        i++;
+    }
+
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);

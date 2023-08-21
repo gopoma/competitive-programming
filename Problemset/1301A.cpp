@@ -60,7 +60,18 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    string a, b, c;
+    cin >> a >> b >> c;
+
+    for(int i = 0; i < sz(c); i++)
+        if((a[i] == b[i] && b[i] != c[i]) || (a[i] != b[i] && c[i] != a[i] && c[i] != b[i])) {
+            cout << "NO\n";
+            return;
+        }
+
+    cout << "YES\n";
+}
 
 int main() {
     ios::sync_with_stdio(false);

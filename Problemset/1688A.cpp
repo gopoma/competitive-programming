@@ -60,7 +60,23 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    ll x; cin >> x;
+
+    ll firstOK = __builtin_ctzll(x);
+    ll ans = pow(2LL, firstOK);
+
+    if(__builtin_popcountll(x) == 1) {
+        for(ll i = 0LL; i < 63LL; i++) {
+            ll current = pow(2LL, i);
+            if((current & ans) == 0LL) {
+                ans |= current;
+                break;
+            }
+        }
+    }
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);
