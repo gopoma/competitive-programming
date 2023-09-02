@@ -60,14 +60,47 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+ll positive(ll num) {
+    return (num < 0LL)? 0LL : num;
+}
+
+ll sumNatural(ll n) {
+    ll sum = (n * (n + 1));
+    return sum;
+}
+
+ll sumEven(ll l, ll r) {
+    return sumNatural(r/2LL) - sumNatural((l-1LL) / 2LL);
+}
+
+ll sumOdd(ll n) {
+    ll terms = (n + 1LL) / 2LL;
+    ll sum = terms * terms;
+    return sum;
+}
+
+ll suminRange(ll l, ll r) {
+    return sumOdd(r) - sumOdd(l - 1LL);
+}
+
+void solve() {
+    ll A, B;
+    cin >> A >> B;
+    assert(A <= B);
+
+    ll SA = sumEven(A, B);
+    ll SB = suminRange(A, B);
+
+    ll ans = SA - SB;
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     ll t = 1LL;
-    // cin >> t;
+    cin >> t;
 
     while(t--)
         solve();

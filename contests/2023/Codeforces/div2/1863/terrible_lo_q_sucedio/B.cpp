@@ -60,7 +60,32 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n;
+    cin >> n;
+
+    str s;
+    cin >> s;
+
+    int backwardsMax = s[n - 1] - '0', left = -1;
+    for(int i = n - 1; i >= 0; i--) {
+        int current = s[i] - '0';
+        backwardsMax = max(backwardsMax, current);
+
+        if(backwardsMax % 2 == 0) {
+            left = i;
+            break;
+        }
+    }
+
+    if(left == -1) cout << "NO\n";
+    else {
+        cout << "YES\n";
+        cout << (left + 1) << " " << n << n_l;
+        partial_sort(s.begin() + left, s.end(), s.end());
+        cout << s << n_l;
+    }
+}
 
 int main() {
     ios::sync_with_stdio(false);

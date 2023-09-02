@@ -60,7 +60,32 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int N;
+    cin >> N;
+
+    map<string, int> count;
+    for(int i = 1; i <= N; i++) {
+        int X;
+        cin >> X;
+
+        str partial = "";
+        for(int j = 1; j <= X; j++) {
+            str name;
+            cin >> name;
+            assert(sz(name) >= 1);
+
+            partial += name[0];
+        }
+        count[partial]++;
+    }
+
+    int ans = 0;
+    for(auto& it: count)
+        ans += (it.S == 1);
+
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);

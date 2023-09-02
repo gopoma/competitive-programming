@@ -60,14 +60,28 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    ll a, b;
+    cin >> a >> b;
+
+    if(a == b) cout << "0\n";
+    else if(abs(a - b) == 1LL) cout << "1\n";
+    else {
+        ll a_normal = ll(ceil(ld(a) / 2.0));
+        ll b_normal = ll(ceil(ld(b) / 2.0));
+        ll ans = abs(a_normal - b_normal);
+
+        cout << ans << n_l;
+    }
+
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     ll t = 1LL;
-    // cin >> t;
+    cin >> t;
 
     while(t--)
         solve();

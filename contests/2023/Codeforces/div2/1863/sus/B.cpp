@@ -60,7 +60,13 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int N, K, L;
+    cin >> N >> K >> L;
+
+    int ans = int(ceil(ld(N*K)/L));
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);

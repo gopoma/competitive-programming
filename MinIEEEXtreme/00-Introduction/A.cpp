@@ -60,7 +60,12 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    str username;
+    cin >> username;
+
+    cout << "Hello, " << username;
+}
 
 int main() {
     ios::sync_with_stdio(false);

@@ -60,7 +60,40 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n;
+    cin >> n;
+
+    ll k;
+    cin >> k;
+
+    vector<int> A(n);
+    for(auto& a: A)
+        cin >> a;
+
+    int winner = A[0];
+    if(winner == n) {
+        cout << n << "\n";
+    } else {
+        int current = 0;
+        for(int i = 1; i < n && A[i] != n; i++) {
+            if(winner > A[i]) {
+                current++;
+            } else {
+                // winner < A[i]
+                winner = A[i];
+                current = 1;
+            }
+
+            if(ll(current) == k) {
+                cout << winner << n_l;
+                return;
+            }
+        }
+
+        cout << n << n_l;
+    }
+}
 
 int main() {
     ios::sync_with_stdio(false);

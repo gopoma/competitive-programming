@@ -60,7 +60,15 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n;
+    cin >> n;
+
+    n /= 10;
+    str tmp = to_string(n);
+    int ans = tmp[sz(tmp) - 1] - '0';
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);

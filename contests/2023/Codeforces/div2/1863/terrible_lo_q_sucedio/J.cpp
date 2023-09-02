@@ -60,7 +60,38 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+template <typename T>
+inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
+
+void solve() {
+    int n;
+    cin >> n;
+
+    vector<ll> A(n);
+    for(auto& a: A)
+        cin >> a;
+
+    set<ll> SS;
+    vector<ll> sus;
+    for(auto& a: A) {
+        if(SS.count(a) || a > n) sus.eb(a);
+        else SS.ins(a);
+    }
+
+    vector<ll> missing;
+    for(ll i = 1LL; i <= ll(n); i++)
+        if(!SS.count(i))
+            missing.eb(i);
+
+    sor(sus);
+
+    assert(sz(missing) == sz(sus));
+    DBG2(missing, sus);
+
+    ll x = sus[0] / missing[0];
+    ll l = missing[0], r = missing[sz(missing) - 1];
+    cout << l << " " << r << " " << x << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);

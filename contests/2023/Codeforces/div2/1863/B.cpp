@@ -60,14 +60,29 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    str a, b;
+    cin >> a >> b;
+    int n = sz(a);
+    assert(n == sz(b));
+    assert(a[0] == b[0] && b[0] == '0' && a[sz(a) - 1] == b[sz(b) - 1] && b[sz(b) - 1] == '1');
+
+    bool ok = a == b;
+    for(int i = 1; i < n; i++) {
+        if(a[i] == b[i] && b[i] == '1' && a[i - 1] == b[i - 1] && b[i - 1] == '0') {
+            ok = true;
+        }
+    }
+
+    cout << (ok?"YES":"NO") << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    ll t = 1LL;
-    // cin >> t;
+    ll t;
+    cin >> t;
 
     while(t--)
         solve();

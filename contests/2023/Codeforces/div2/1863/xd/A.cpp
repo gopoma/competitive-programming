@@ -60,14 +60,49 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n, a, q;
+    cin >> n >> a >> q;
+
+    str notifications;
+    cin >> notifications;
+    assert(sz(notifications) == q);
+
+    int current = a, best = a;
+    for(auto& e: notifications) {
+        current += (e == '+')? +1 : -1;
+        best = max(best, current);
+    }
+
+    if(best == n) cout << "YES\n";
+    else {
+        int availableDecrease = a, current2 = a, best2 = a;
+        for(auto& e: notifications) {
+            if(e == '+') {
+                availableDecrease++;
+                current2++;
+            } else {
+                assert(e == '-');
+                if(availableDecrease > 0) {
+                    availableDecrease--;
+                } else if(availableDecrease == 0) {
+                    current2--;
+                }
+            }
+            best2 = max(best2, current2);
+        }
+
+        if(best2 >= n) cout << "MAYBE\n";
+        else cout << "NO\n";
+    }
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    ll t = 1LL;
-    // cin >> t;
+    ll t;
+    cin >> t;
 
     while(t--)
         solve();

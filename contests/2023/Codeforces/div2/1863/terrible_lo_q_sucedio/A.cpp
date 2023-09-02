@@ -60,7 +60,13 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int H, W;
+    cin >> H >> W;
+
+    int ans = int(ceil((ld)max(H, W)/min(H, W)));
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);

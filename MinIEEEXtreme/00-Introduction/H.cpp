@@ -18,7 +18,7 @@ using namespace std;
 #define tcT template<class T
 
 using ll = long long;
-using ld = long double;       // or double if tight TL
+using ld = double;       // or double if tight TL
 using u128 = __uint128_t;
 using str = string;         // yay python!
 tcT> using V = vector<T>;
@@ -60,14 +60,20 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    ld k, p, s;
+    cin >> k >> p >> s;
+
+    ll ans = ll(floor(s / (((100.0 + p)*k) / 100.0)));
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     ll t = 1LL;
-    // cin >> t;
+    cin >> t;
 
     while(t--)
         solve();

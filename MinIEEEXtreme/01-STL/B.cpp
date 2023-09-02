@@ -60,7 +60,37 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n;
+    cin >> n;
+
+    stack<str> tokens;
+    for(int i = 0; i < n; i++) {
+        str token;
+        cin >> token;
+
+        str options = "+-*/";
+        if(options.find(token) != string::npos) {
+            assert(tokens.size() >= 2);
+            ll B = stoll(tokens.top()); tokens.pop();
+            ll A = stoll(tokens.top()); tokens.pop();
+
+            ll partial;
+            if(token == "+") partial = A + B;
+            else if(token == "-") partial = A - B;
+            else if(token == "*") partial = A * B;
+            else partial = A / B;
+
+            tokens.push(to_string(partial));
+        } else {
+            tokens.push(token);
+        }
+    }
+
+    assert(tokens.size() == 1);
+    ll ans = stoll(tokens.top());
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);

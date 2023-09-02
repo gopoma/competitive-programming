@@ -60,14 +60,54 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+
+bool isPrime(int x) {
+    for(int d = 2; d * d <= x; d++) {
+        if(x % d == 0)
+            return false;
+    }
+    return x >= 2;
+}
+
+vector<str> reduced;
+void precompute() {
+    for(int x = 10; x <= 99; x++)
+        if(isPrime(x))
+            reduced.eb(to_string(x));
+}
+
+bool issubsequence(string& s1, string& s2) {
+    int n = int(s1.length()), m = int(s2.length());
+    int i = 0, j = 0;
+    while(i < n && j < m) {
+        if(s1[i] == s2[j])
+            i++;
+        j++;
+    }
+    return i == n;
+}
+
+void solve() {
+    str s;
+    cin >> s;
+
+    for(auto& r: reduced) {
+        if(issubsequence(r, s)) {
+            cout << r << n_l;
+            return;
+        }
+    }
+    cout << "-1\n";
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    ll t = 1LL;
-    // cin >> t;
+    precompute();
+
+    ll t;
+    cin >> t;
 
     while(t--)
         solve();

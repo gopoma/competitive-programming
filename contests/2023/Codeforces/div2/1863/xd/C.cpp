@@ -60,14 +60,63 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void reverseArray(vector<int>& arr, int start, int end) {
+    while (start < end) {
+        std::swap(arr[start], arr[end]);
+        start++;
+        end--;
+    }
+}
+
+void rightRotate(vector<int>& arr, int d, int n) {
+    d = d%n;
+    reverseArray(arr, 0, n-1);
+    reverseArray(arr, 0, d-1);
+    reverseArray(arr, d, n-1);
+}
+
+void solve() {
+    int n, k;
+    cin >> n >> k;
+
+    vector<int> A(n);
+    for(auto& a: A)
+        cin >> a;
+
+
+
+    vector<int> B = A;
+    sor(B);
+
+    int MEX = n;
+    for(int i = 0; i < n; i++) {
+        if(i != B[i]) {
+            MEX = i;
+            break;
+        }
+    }
+
+
+
+    vector<int> C;
+    for(auto& a: A)
+        C.eb(a);
+    C.eb(MEX);
+
+
+    rightRotate(C, k, sz(C));
+    for(int i = 0; i < n; i++) {
+        cout << C[i];
+        cout << " \n"[i == n-1];
+    }
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    ll t = 1LL;
-    // cin >> t;
+    ll t;
+    cin >> t;
 
     while(t--)
         solve();

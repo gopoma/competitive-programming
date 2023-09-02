@@ -60,14 +60,41 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    str s;
+    cin >> s;
+
+    stack<char> SS;
+    bool ok = true;
+
+    str openings = "([{";
+    for(char& c: s) {
+        if(openings.find(c) != string::npos) {
+            SS.push(c);
+        } else {
+            if(
+                !SS.empty() && ((c == ')' && SS.top() == '(')
+                || (c == ']' && SS.top() == '[')
+                || (c == '}' && SS.top() == '{'))
+            ) {
+                SS.pop();
+            } else {
+                ok = false;
+                break;
+            }
+        }
+    }
+    ok &= (SS.empty());
+
+    cout << (ok?"YES":"NO") << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     ll t = 1LL;
-    // cin >> t;
+    cin >> t;
 
     while(t--)
         solve();

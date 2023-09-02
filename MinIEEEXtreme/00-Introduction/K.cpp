@@ -60,7 +60,13 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    ld R;
+    cin >> R;
+
+    ld ans = PI * R * R;
+    cout << fixed << setprecision(9) << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);

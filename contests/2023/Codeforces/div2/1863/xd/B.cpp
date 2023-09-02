@@ -60,14 +60,33 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n;
+    cin >> n;
+
+    vector<pair<int, int>> P(n);
+    for(int i = 0; i < n; i++) {
+        int p;
+        cin >> p;
+
+        P[i] = mp(p, i);
+    }
+
+    sort(rall(P));
+
+    int ans = 0;
+    for(int i = 1; i < n; i++)
+        if(P[i].S > P[i-1].S)
+            ans++;
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    ll t = 1LL;
-    // cin >> t;
+    ll t;
+    cin >> t;
 
     while(t--)
         solve();

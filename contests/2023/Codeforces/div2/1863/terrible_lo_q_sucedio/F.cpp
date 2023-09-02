@@ -60,7 +60,27 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    string target = "Izhevsk";
+    vector<str> posters(3);
+    for(auto& p: posters)
+        cin >> p;
+
+    sor(posters);
+
+    do {
+        str combined = "";
+        for(auto& p: posters)
+            combined += p;
+
+        if(combined == target)
+            break;
+    } while(next_permutation(all(posters)));
+
+    for(int i = 0; i < 3; i++) {
+        cout << posters[i] << " \n"[i == 2];
+    }
+}
 
 int main() {
     ios::sync_with_stdio(false);

@@ -60,7 +60,38 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    set<char> options;
+    options.ins('+');
+    options.ins('-');
+    options.ins('*');
+    options.ins('/');
+
+    str s;
+    cin >> s;
+
+    int optionIndex = -1;
+    for(int i = 0; i < sz(s); i++) {
+        if(options.count(s[i])) {
+            optionIndex = i;
+            break;
+        }
+    }
+
+    ll A = stoll(s.substr(0, optionIndex));
+    ll B = stoll(s.substr(optionIndex + 1, sz(s) - optionIndex));
+
+    char option = s[optionIndex];
+    assert(options.count(option));
+
+    ll ans = -1LL;
+    if(option == '+') ans = A + B;
+    else if(option == '-') ans = A - B;
+    else if(option == '*') ans = A * B;
+    else ans = A / B;
+
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);

@@ -60,14 +60,23 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    ll n;
+    cin >> n;
+
+    if(n == 0LL) cout << "0\n";
+    else {
+        n =  n / abs(n);
+        cout << n << n_l;
+    }
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     ll t = 1LL;
-    // cin >> t;
+    cin >> t;
 
     while(t--)
         solve();

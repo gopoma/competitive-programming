@@ -18,6 +18,7 @@ using namespace std;
 #define tcT template<class T
 
 using ll = long long;
+using ull = unsigned long long;
 using ld = long double;       // or double if tight TL
 using u128 = __uint128_t;
 using str = string;         // yay python!
@@ -60,7 +61,30 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n;
+    cin >> n;
+    assert(n >= 1);
+
+    ll A[n];
+    for(auto& a: A)
+        cin >> a;
+
+    ll min_programmers = LLONG_MAX;
+    ll max_programmers = 0ULL;
+    bool allZeros = true;
+
+    for(auto& a: A) {
+        if(a == 0ULL)
+            continue;
+        min_programmers = min(min_programmers, a);
+        max_programmers += a;
+        allZeros = false;
+    }
+    assert(!allZeros);
+
+    cout << min_programmers << " " << max_programmers << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);

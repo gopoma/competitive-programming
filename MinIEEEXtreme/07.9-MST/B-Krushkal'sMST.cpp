@@ -60,7 +60,61 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+
+struct dsu {
+    vector<int> par, rnk, size; int c;
+    dsu(int n) : par(n+1), rnk(n+1,0), size(n+1,1), c(n) {
+        for (int i = 1; i <= n; ++i) par[i] = i;
+    }
+    int find(int i) { return (par[i] == i ? i : (par[i] = find(par[i]))); }
+    bool same(int i, int j) { return find(i) == find(j); }
+    int get_size(int i) { return size[find(i)]; }
+    int count() { return c; } //connected components
+    int merge(int i, int j) {
+        if ((i = find(i)) == (j = find(j))) return -1; else --c;
+        if (rnk[i] > rnk[j]) swap(i, j);
+        par[i] = j; size[j] += size[i];
+        if (rnk[i] == rnk[j]) rnk[j]++;
+        return j;
+    }
+};
+
+//* Verification: https://www.spoj.com/problems/BLINNET/
+void solve() {
+    int N, M;
+    cin >> N >> M;
+
+    vector<array<int, 3>> ed;
+    for(int i = 0; i < M; i++) {
+        int u, v, cost;
+        cin >> u >> v >> cost;
+
+        ed.pb({cost, u, v});
+        ed.pb({cost, v, u});
+    }
+
+    vector<pair<int, int>> tree(N-1);
+    int count = 0;
+    //* Kruskal's MST Algorithm
+    sort(ed.begin(), ed.end());
+    int ans = 0;
+    dsu d(N);
+    for (auto e: ed){
+        int u = e[1], v = e[2], w = e[0];
+        if (d.same(u, v)) continue;
+
+        ans += w;
+        tree[count++] = mp(u, v);
+        d.merge(u, v);
+    }
+    //* Kruskal's MST Algorithm
+
+    cout << ans << n_l;
+    cout << (N - 1) << n_l;
+
+    for(auto& it: tree)
+        cout << it.F << " " << it.S << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);
