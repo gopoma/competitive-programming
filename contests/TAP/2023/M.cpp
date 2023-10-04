@@ -61,70 +61,81 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
 }
 
 void solve() {
-    // <>
-    int A, B;
-    cin >> A >> B;
+    int N;
+    cin >> N;
 
-    vector<int> A_encendidos(32), B_encendidos(32);
-    for(int i = 0; i < 32; i++) {
-        if(A & (1 << i)) {
-            A_encendidos[31 - i] = true;
-        }
-        if(B & (1 << i)) {
-            B_encendidos[31 - i] = true;
-        }
+    vector<int> c(N);
+    for(auto& e: c) {
+        cin >> e;
     }
 
-    // int suma = 0, resta = 0;
-    bool esA = false, esB = false;
-    for(int i = 0; i < 32; i++) {
-        if(A_encendidos[i] == B_encendidos[i]) continue;
-        assert(A_encendidos[i] != B_encendidos[i]);
-        if(A_encendidos[i]) {
-            esA = true;
-        } else {
-            assert(B_encendidos[i]);
-            esB = true;
-        }
-        break;
+    map<int, int> count;
+    for(auto& e: c) {
+        e = e % 5;
+        count[e]++;
     }
 
-    int ans = 0;
-    if(esA) {
-        bool found = false;
-        for(int i = 0; i < 32; i++) {
-            if(A_encendidos[i] == B_encendidos[i]) continue;
+    // 1 + 1 + 1 + 1 + 1    = 5
+    // 2 + 1 + 1 + 1        = 5
+    // 2 + 2 + 1            = 5
+    // 3 + 1 + 1            = 5
+    // 3 + 2                = 5
+    // 4 + 1                = 5
+    vector<vector<int>> possibles = {
+        // 5
+        {3, 2},
+        {4, 1},
+        {2, 1, 1, 1},
+        {2, 2, 1},
+        {3, 1, 1},
 
-            if(!found) { found = true; continue; }
+        // 10
+        {2, 4, 4, 4},
+        {1, 3, 3, 3},
+        {2, 2, 2, 4},
 
-            if(A_encendidos[i]) {
-                ans += int(pow(2, 31 - i));
+        // 15
+        {3, 4, 4, 4},
+
+        // 20
+    };
+
+    int global_ans = 0;
+    do {
+        int partial = count[0];
+
+        for(vector<int>& v: possibles) {
+            map<int, int> hist;
+            for(auto& e: v) {
+                hist[e]++;
+            }
+
+            int min_case = INT_MAX;
+            for(auto& it: hist) {
+                min_case = min(min_case, count[it.first] / it.second);
+            }
+            assert(min_case != INT_MAX);
+
+            partial += min_case;
+            for(auto& it: hist) {
+                count[it.first] -= min_case * it.second;
             }
         }
-    } else {
-        bool found = false;
-        for(int i = 0; i < 32; i++) {
-            if(A_encendidos[i] == B_encendidos[i]) continue;
 
-            if(!found) { found = true; continue; }
-
-            if(B_encendidos[i]) {
-                ans += int(pow(2, 31 - i));
-            }
-        }
-    }
-
-    cout << ans << "\n";
+        global_ans = max(global_ans, partial);
+    } while(next_permutation(possibles.begin(), possibles.end()));
+    global_ans += count[1]/5 + count[2]/5 + count[3]/5 + count[4]/5;
+    cout << global_ans << n_l;
 }
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    ll T = 1LL;
-    cin >> T;
+    ll t = 1LL;
+    // cin >> t;
 
-    while(T--)
+    while(t--)
         solve();
 
     return 0;

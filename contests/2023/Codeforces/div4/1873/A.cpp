@@ -61,37 +61,29 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
 }
 
 void solve() {
-    // <>
-    int N, M;
-    cin >> N >> M;
+    string S;
+    cin >> S;
 
-    string S, K;
-    cin >> S >> K;
+    int oks = 0;
+    oks += (S[0] == 'a');
+    oks += (S[1] == 'b');
+    oks += (S[2] == 'c');
 
-    int ans = INT_MAX;
-    for(int i = 0; i < N - M + 1; i++) {
-        int partial = 0;
-        for(int j = 0; j < M; j++) {
-            int dN = S[i + j] - '0', dK = K[j] - '0';
-            int diff = abs(dN - dK);
-
-            partial += min(diff, 10 - diff);
-        }
-        ans = min(ans, partial);
+    if(oks == 1 || oks == 3) {
+        cout << "YES\n";
+    } else {
+        cout << "NO\n";
     }
-
-    assert(ans != INT_MAX);
-    cout << ans << "\n";
 }
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    ll T = 1LL;
-    cin >> T;
+    ll t = 1LL;
+    cin >> t;
 
-    while(T--)
+    while(t--)
         solve();
 
     return 0;

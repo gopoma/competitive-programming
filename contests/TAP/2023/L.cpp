@@ -61,16 +61,21 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
 }
 
 void solve() {
-    int A, B;
-    scanf("%d %d", &A, &B);
+    int A1, P1, A2, P2;
+    cin >> A1 >> P1 >> A2 >> P2;
 
-    int ans = (A + B) * 10 + 1;
-    printf("%d", ans);
+    if(A1 + A2 > P1 + P2) {
+        cout << "A\n";
+    } else if(A1 + A2 < P1 + P2) {
+        cout << "P\n";
+    } else {
+        cout << "D";
+    }
 }
 
 int main() {
-    // ios::sync_with_stdio(false);
-    // cin.tie(nullptr);
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
     ll t = 1LL;
     // cin >> t;
