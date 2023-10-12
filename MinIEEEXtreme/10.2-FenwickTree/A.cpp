@@ -33,6 +33,10 @@ tcT, size_t SZ> using AR = array<T, SZ>;
 #define pb      push_back
 #define eb      emplace_back
 
+#define lb lower_bound
+#define ub upper_bound
+
+const int MOD = (int)1e9 + 7;   // 998244353;
 const ld PI = acos((ld)-1);
 mt19937 rng(0); // or mt19937_64
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  // for every grid problem!!
@@ -49,9 +53,78 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+struct FenwickTree {
+	int n;
+	vector<long long> ft;
+
+	FenwickTree(vector<long long> &a) {
+		n = int(a.size());
+
+		ft = vector<long long>(n + 1, 0LL);
+		for(int i = 0; i < int(a.size()); i++) {
+            update(i + 1, a[i]); // i + 1 -> 1-indexed
+        }
+	}
+
+	void update(int pos, long long val) { // 1-indexed, O(logn)
+		while(pos <= n) {
+			ft[pos] += val;
+			pos += (-pos) & pos;
+		}
+	}
+
+	long long query(int pos) { // 1-indexed, O(logn)
+		long long res = 0LL;
+		while(pos > 0) {
+			res += ft[pos];
+			pos &= pos - 1; // ~ pos -= LSO(pos)
+		}
+		return res;
+	}
+
+	long long range_query(int l, int r) {
+		return query(r) - query(l - 1);
+	}
+};
+
+void solve() {
+    int n, m;
+    cin >> n >> m;
+
+    vector<ll> a(n);
+    for(auto& e: a) {
+        cin >> e;
+    }
+
+    FenwickTree tree(a);
+
+    for(int _ = 0; _ < m; _++) {
+        int t;
+        cin >> t;
+
+        if(t == 0) {
+            int left, right;
+            cin >> left >> right;
+
+            ll ans = tree.range_query(left, right);
+            cout << ans << n_l;
+        } else if(t == 1) {
+            int pos;
+            ll val;
+            cin >> pos >> val;
+
+            ll prev_val = tree.range_query(pos, pos);
+            tree.update(pos, val - prev_val);
+        } else {
+            assert(false);
+        }
+    }
+}
 
 int main() {
+    freopen("rsq.in", "r", stdin);
+    freopen("rsq.out", "w", stdout);
+
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
