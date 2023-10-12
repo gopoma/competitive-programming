@@ -26,7 +26,7 @@ tcT> using V = vector<T>;
 tcT, size_t SZ> using AR = array<T, SZ>;
 
 #define sz(x)   int((x).size())
-#define all(x)  x.begin(), x.end()
+#define all(x)  bg(x), end(x)
 #define rall(x) x.rbegin(), x.rend()
 #define sor(x)  sort(all(x))
 #define ins     insert
@@ -49,7 +49,41 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+vector<long long> factorize(long long n) {
+    vector<long long> factorization;
+    for (long long d = 2; d * d <= n; d++) {
+        while (n % d == 0) {
+            factorization.push_back(d);
+            n /= d;
+        }
+    }
+    if (n > 1)
+        factorization.push_back(n);
+    return factorization;
+}
+
+void solve() {
+    int n;
+    cin >> n;
+
+    map<long long, long long> freq;
+    for(int i = 0; i < n; i++) {
+        long long a;
+        cin >> a;
+
+        vector<long long> factors = factorize(a);
+        for(auto& e: factors) {
+            freq[e]++;
+        }
+    }
+
+    bool ok = true;
+    for(auto& it: freq) {
+        ok &= (it.second % n == 0);
+    }
+
+    cout << (ok?"YES":"NO") << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);

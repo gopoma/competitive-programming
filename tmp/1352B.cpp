@@ -49,7 +49,50 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    ll n, k;
+    cin >> n >> k;
+
+    // all evens
+    int val1 = n - 2LL * (k - 1);
+    if(val1 >= 2 && (val1 % 2 == 0)) {
+        cout << "YES\n";
+        vector<ll> a;
+        for(int i = 0; i < k - 1; i++) {
+            a.eb(2);
+        }
+        a.eb(val1);
+
+        ll sum1 = accumulate(all(a), 0LL);
+        assert(sum1 == n);
+
+        for(int i = 0; i < k; i++) {
+            cout << a[i] << " \n"[i == k - 1];
+        }
+
+        return;
+    }
+
+    // all odds
+    int val2 = n - (k - 1);
+    if(val2 >= 1 && (val2 % 2 == 1)) {
+        cout << "YES\n";
+        vector<ll> a;
+        for(int i = 0; i < k - 1; i++) {
+            a.eb(1);
+        }
+        a.eb(val2);
+
+        ll sum2 = accumulate(all(a), 0LL);
+        assert(sum2 == n);
+
+        for(int i = 0; i < k; i++) {
+            cout << a[i] << " \n"[i == k - 1];
+        }
+    } else {
+        cout << "NO\n";
+    }
+}
 
 int main() {
     ios::sync_with_stdio(false);

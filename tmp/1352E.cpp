@@ -49,7 +49,37 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n;
+    cin >> n;
+
+    vector<int> a(n);
+    for(auto& e: a) {
+        cin >> e;
+    }
+
+    int max_ele = *max_element(all(a));
+
+    set<int> sums;
+    for(int left = 0; left < n; left++) {
+        int tmpsum = a[left];
+        for(int right = left + 1; right < n; right++) {
+            assert(right - left + 1 >= 2);
+            tmpsum += a[right];
+            if(tmpsum > max_ele) continue;
+            sums.ins(tmpsum);
+        }
+    }
+
+    int ans = 0;
+    for(auto& e: a) {
+        if(sums.find(e) != sums.end()) {
+            ans++;
+        }
+    }
+
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);

@@ -26,7 +26,7 @@ tcT> using V = vector<T>;
 tcT, size_t SZ> using AR = array<T, SZ>;
 
 #define sz(x)   int((x).size())
-#define all(x)  x.begin(), x.end()
+#define all(x)  bg(x), end(x)
 #define rall(x) x.rbegin(), x.rend()
 #define sor(x)  sort(all(x))
 #define ins     insert
@@ -49,7 +49,46 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+bool all_eq(vector<int>& a) {
+    for(int i = 0; i < sz(a) - 1; i++) {
+        if(a[i] != a[i + 1]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void solve() {
+    int a, b, c;
+    cin >> a >> b >> c;
+
+    vector<int> E;
+    E.eb(a);
+    E.eb(b);
+    E.eb(c);
+
+    if(all_eq(E)) {
+        cout << "YES\n";
+        return;
+    }
+
+    for(int i = 0; i < 3; i++) {
+        sort(E.begin(), E.end());
+        int max_ele = E.back();
+        E.pop_back();
+
+        E.eb(E.front());
+        E.eb(max_ele - E.front());
+
+        if(all_eq(E)) {
+            cout << "YES\n";
+            return;
+        }
+    }
+
+    cout << "NO\n";
+
+}
 
 int main() {
     ios::sync_with_stdio(false);

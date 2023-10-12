@@ -26,7 +26,7 @@ tcT> using V = vector<T>;
 tcT, size_t SZ> using AR = array<T, SZ>;
 
 #define sz(x)   int((x).size())
-#define all(x)  x.begin(), x.end()
+#define all(x)  bg(x), end(x)
 #define rall(x) x.rbegin(), x.rend()
 #define sor(x)  sort(all(x))
 #define ins     insert
@@ -49,7 +49,30 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    ll n, k;
+    cin >> n >> k;
+
+    auto good = [&](ll x) {
+        return (x - x/n >= k);
+    };
+
+    // left is always bad
+    // right is always good
+    ll left = 0, right = 1e18;
+    while(left + 1 < right) {
+        ll middle = (left + right) / 2;
+
+        if(good(middle)) {
+            right = middle;
+        } else {
+            left = middle;
+        }
+    }
+
+    ll ans = right;
+    cout << ans << n_l;
+}
 
 int main() {
     ios::sync_with_stdio(false);

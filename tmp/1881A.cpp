@@ -26,7 +26,7 @@ tcT> using V = vector<T>;
 tcT, size_t SZ> using AR = array<T, SZ>;
 
 #define sz(x)   int((x).size())
-#define all(x)  x.begin(), x.end()
+#define all(x)  bg(x), end(x)
 #define rall(x) x.rbegin(), x.rend()
 #define sor(x)  sort(all(x))
 #define ins     insert
@@ -49,7 +49,32 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n, m;
+    cin >> n >> m;
+
+    string x, s;
+    cin >> x >> s;
+
+    int ans = 0;
+    bool ok = true;
+    while(x.find(s) == string::npos) {
+        x += x;
+        ans++;
+
+        if(ll(sz(x)) > (128LL * sz(s))) {
+            ok = false;
+            break;
+        }
+    }
+
+    if(!ok) {
+        cout << "-1\n";
+    } else {
+        cout << ans << n_l;
+    }
+
+}
 
 int main() {
     ios::sync_with_stdio(false);
