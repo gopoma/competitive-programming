@@ -1,3 +1,4 @@
+// sometimes pragmas don't work
 #pragma GCC optimize(3,"Ofast","inline")
 #pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,avx2")
 
@@ -24,26 +25,14 @@ using str = string;         // yay python!
 tcT> using V = vector<T>;
 tcT, size_t SZ> using AR = array<T, SZ>;
 
-#define mp  make_pair
-#define F   first
-#define S   second
-
 #define sz(x)   int((x).size())
-#define bg(x)   begin(x)
-#define all(x)  bg(x), end(x)
+#define all(x)  x.begin(), x.end()
 #define rall(x) x.rbegin(), x.rend()
 #define sor(x)  sort(all(x))
-#define rsz     resize
 #define ins     insert
 #define pb      push_back
 #define eb      emplace_back
-#define ft      front()
-#define bk      back()
 
-#define lb lower_bound
-#define ub upper_bound
-
-const int MOD = (int)1e9 + 7;   // 998244353;
 const ld PI = acos((ld)-1);
 mt19937 rng(0); // or mt19937_64
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  // for every grid problem!!
@@ -60,7 +49,30 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
     return os << "]";
 }
 
-void solve() {}
+void solve() {
+    int n, q;
+    cin >> n >> q;
+
+    vector<long long> a(n);
+    for(auto& e: a) {
+        cin >> e;
+    }
+
+    vector<long long> dp(n + 1, 0);
+    for(int i = 1; i <= n; i++) {
+        dp[i] = dp[i - 1] + a[i - 1];
+    }
+
+    for(int _ = 0; _ < q; _++) {
+        int l, r;
+        cin >> l >> r;
+        assert(0 <= l && l < r && r <= n);
+        l++;
+
+        long long ans = dp[r] - dp[l - 1];
+        cout << ans << n_l;
+    }
+}
 
 int main() {
     ios::sync_with_stdio(false);

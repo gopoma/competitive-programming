@@ -42,7 +42,7 @@ template <typename T>
 ostream& operator <<(ostream &os, const vector<T>& v) {
     os << "[";
 
-    for(int i = 0; i < sz(v); i++) {
+    for(int i = 0; i < int(v.size()); i++) {
         if (i > 0) os << " ";
         os << v[i];
     }
