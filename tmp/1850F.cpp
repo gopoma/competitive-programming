@@ -52,21 +52,31 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
 void solve() {
     int n;
     cin >> n;
-    assert(n >= 3);
 
     vector<int> a(n);
-    for(int i = 0; i < n; i++) {
-        //? XDDD
-        a[i] = 100 + i;
+    for(auto& e: a) {
+        cin >> e;
     }
 
-    for(int i = 2; i < n; i++) {
-        assert(((3 * a[i]) % (a[i - 1] + a[i - 2])) != 0);
+    vector<int> freq(n + 1, 0);
+    for(auto& e: a) {
+        if(e <= n) {
+            freq[e]++;
+        }
     }
 
-    for(int i = 0; i < n; i++) {
-        cout << a[i] << " \n"[i == n - 1];
+    vector<int> trap(n + 1, 0);
+    for(int i = 1; i <= n; i++) {
+        for(int j = i; j <= n; j += i) {
+            trap[j] += freq[i];
+        }
     }
+
+    int ans = 0;
+    for(auto& e: trap) {
+        ans = max(ans, e);
+    }
+    cout << ans << n_l;
 }
 
 int main() {

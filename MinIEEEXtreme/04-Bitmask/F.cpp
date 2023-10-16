@@ -52,20 +52,46 @@ ostream& operator <<(ostream &os, const vector<T>& v) {
 void solve() {
     int n;
     cin >> n;
-    assert(n >= 3);
 
-    vector<int> a(n);
-    for(int i = 0; i < n; i++) {
-        //? XDDD
-        a[i] = 100 + i;
+    int k;
+    cin >> k;
+
+    vector<int> b(k);
+    for(auto& e: b) {
+        cin >> e;
     }
 
-    for(int i = 2; i < n; i++) {
-        assert(((3 * a[i]) % (a[i - 1] + a[i - 2])) != 0);
+    map<int, int> b_freq;
+    for(auto& e: b) {
+        b_freq[e]++;
     }
 
-    for(int i = 0; i < n; i++) {
-        cout << a[i] << " \n"[i == n - 1];
+    for(int x = 0, count = 0; x < (1<<n); x++, count++) {
+        vector<int> subset;
+        for(int i = 0; i < n; i++) {
+            if(x&(1<<i)) subset.push_back(i);
+        }
+
+        map<int, int> subset_freq;
+        for(auto& e: subset) {
+            subset_freq[e]++;
+        }
+
+        // must compare subset_freq with b_freq
+        bool ok = true;
+        for(auto& it: b_freq) {
+            ok &= (it.second <= subset_freq[it.first]);
+        }
+
+        ok |= (k == 0);
+
+        if(!ok) continue;
+
+        cout << count <<  ": ";
+        for(int i = 0; i < sz(subset); i++) {
+            cout << subset[i] << " ";
+        }
+        cout << "\n";
     }
 }
 
@@ -74,7 +100,7 @@ int main() {
     cin.tie(nullptr);
 
     ll t = 1LL;
-    cin >> t;
+    // cin >> t;
 
     while(t--)
         solve();
