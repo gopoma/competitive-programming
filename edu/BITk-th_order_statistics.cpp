@@ -147,6 +147,36 @@ ostream& operator <<(ostream &os, const pair<T, T>& v) {
 
 
 // here goes the template!
+
+/**
+ * Author: Lukas Polacek
+ * Date: 2009-10-30
+ * License: CC0
+ * Source: folklore/TopCoder
+ * Description: Computes partial sums a[0] + a[1] + ... + a[pos - 1], and updates single elements a[i],
+ * taking the difference between the old and new value.
+ * Time: Both operations are $O(\log N)$.
+ * Status: Stress-tested
+ */
+
+tcT> struct BIT {
+	int N; V<T> data;
+	void init(int _N) { N = _N; data.rsz(N); }
+	void add(int p, T x) { for (++p;p<=N;p+=p&-p) data[p-1] += x; }
+	T sum(int l, int r) { return sum(r+1)-sum(l); }
+	T sum(int r) { T s = 0; for(;r;r-=r&-r)s+=data[r-1]; return s; }
+	int lower_bound(T sum) {
+		if (sum <= 0) return -1;
+		int pos = 0;
+		for (int pw = 1<<25; pw; pw >>= 1) {
+			int npos = pos+pw;
+			if (npos <= N && data[npos-1] < sum)
+				pos = npos, sum -= data[pos-1];
+		}
+		return pos;
+	}
+};
+
 // /here goes the template!
 
 
@@ -158,7 +188,7 @@ ll dRow[] = { -1LL, 0LL, 1LL,  0LL };
 ll dCol[] = {  0LL, 1LL, 0LL, -1LL };
 
 const int MOD = (int)1e9+7; // 998244353;
-const int MX = (int)2e5+5;
+const int MX = (int)1e6+10;
 const ll BIG = 1e18; // not too close to LLONG_MAX
 const db PI = acos((db)-1);
 const char n_l = '\n';
@@ -166,8 +196,37 @@ const char n_l = '\n';
 
 
 // here goes the work!
+BIT<int> tree;
 void solve() {
+    int n, q;
+    cin >> n >> q;
 
+    tree.init(n + 1);
+
+    for(int i = 0; i < n; i++) {
+        int a;
+        cin >> a;
+
+        tree.add(a, 1);
+    }
+
+    for(int _ = 0; _ < q; _++) {
+        int k;
+        cin >> k;
+
+        if(1 <= k && k <= n) {
+            // "insert ki into the multiset";
+            tree.add(k, 1);
+        } else {
+            // remove the |ki|-th order statistics from the multiset
+            k = -k;
+
+            tree.add(tree.lower_bound(k), -1);
+        }
+    }
+
+    int ans = tree.lower_bound(1);
+    cout << ((ans == n + 1)? 0 : ans) << n_l;
 }
 
 signed main() {
