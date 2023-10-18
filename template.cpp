@@ -146,11 +146,6 @@ ostream& operator <<(ostream &os, const pair<T, T>& v) {
 
 
 
-// here goes the template!
-// /here goes the template!
-
-
-
 mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
 
 // Direction vectors
@@ -164,6 +159,9 @@ const db PI = acos((db)-1);
 const char n_l = '\n';
 
 
+
+// here goes the template!
+// /here goes the template!
 
 // here goes the work!
 void solve() {
