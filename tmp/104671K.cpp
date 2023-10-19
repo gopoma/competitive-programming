@@ -158,15 +158,17 @@ const ll BIG = 1e18; // not too close to LLONG_MAX
 const db PI = acos((db)-1);
 const char n_l = '\n';
 
-template <typename T>
-inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
+
 
 // here goes the template!
 // /here goes the template!
 
 // here goes the work!
 void solve() {
+    char c;
+    cin >> c;
 
+    cout << "askd is the coolest! his osu! play on Necro Fantasia by MISATO [Lasse's Lunatic] with the double time modification with 4 misses and 94.29% accuracy worth 420 performance points is one of the greatest feats ever accomplished by humankind. additionally, I legally owe him my life savings now.";
 }
 
 signed main() {

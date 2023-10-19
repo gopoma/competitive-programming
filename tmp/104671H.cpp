@@ -166,7 +166,24 @@ inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
 // here goes the work!
 void solve() {
+    int n;
+    cin >> n;
 
+    vector<ll> a(n);
+    for(int i = 0; i < n; i++) {
+        a[i] = ll(i + 1);
+    }
+
+    bool ok = true;
+    for(int i = 0; i < n - 1; i++) {
+        ok &= (gcd(a[i], a[i + 1]) == 1LL);
+    }
+
+    assert(ok);
+
+    for(int i = 0; i < n; i++) {
+        cout << a[i] << " \n"[i == n - 1];
+    }
 }
 
 signed main() {

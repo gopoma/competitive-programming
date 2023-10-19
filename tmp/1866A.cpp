@@ -158,15 +158,23 @@ const ll BIG = 1e18; // not too close to LLONG_MAX
 const db PI = acos((db)-1);
 const char n_l = '\n';
 
-template <typename T>
-inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
+
 
 // here goes the template!
 // /here goes the template!
 
 // here goes the work!
 void solve() {
+    int N;
+    cin >> N;
 
+    vector<ll> a(N);
+    for(auto& e: a) cin >> e;
+
+    ll ans = BIG;
+    for(auto& e: a) ans = min(ans, abs(e));
+
+    cout << ans << n_l;
 }
 
 signed main() {
@@ -190,5 +198,3 @@ signed main() {
 	* WRITE STUFF DOWN
 	* DON'T GET STUCK ON ONE APPROACH
 */
-
-//! ERASE DBGs xd or TLE

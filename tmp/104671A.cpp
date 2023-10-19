@@ -158,15 +158,27 @@ const ll BIG = 1e18; // not too close to LLONG_MAX
 const db PI = acos((db)-1);
 const char n_l = '\n';
 
-template <typename T>
-inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
+
 
 // here goes the template!
 // /here goes the template!
 
 // here goes the work!
 void solve() {
+    int n; ll k;
+    cin >> n >> k;
 
+    V<ll> a(n);
+    for(auto& e: a) cin >> e;
+
+    sort(rall(a));
+
+    ll ans = accumulate(all(a), 0LL);
+    for(int i = 0; i < k; i++) {
+        ans += a[i];
+    }
+
+    cout << ans << n_l;
 }
 
 signed main() {
