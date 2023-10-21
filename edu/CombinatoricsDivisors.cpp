@@ -299,6 +299,9 @@ void solve() {
 }
 
 int main() {
+    // https://codeforces.com/contest/1877/problem/D
+    // D. Effects of Anti Pimples
+
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 

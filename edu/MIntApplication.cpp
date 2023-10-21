@@ -398,6 +398,9 @@ void solve() {
 }
 
 signed main() {
+    // https://codeforces.com/contest/1866/problem/B
+    // B. Battling with Numbers
+
     // read read read
 	setIO();
 
