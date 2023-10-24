@@ -12,7 +12,7 @@ using namespace std;
 using ll = long long;
 using db = long double; // or double, if TL is tight
 using str = string; // yay python!
-// using u128 = __uint128_t; // for Number Theory related
+using u128 = __uint128_t; // for Number Theory related
 template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>; // minima
 
 
@@ -169,13 +169,13 @@ void solve() {
     unsigned long long n, k;
     cin >> n >> k;
 
-    if(n == 1 || (k >= 20)) {
+    if(n == 1 || (k >= 43)) {
         cout << "1\n";
     } else {
         n--;
         unsigned long long ff = 1ULL;
-        for(unsigned long long i = 1ULL; i <= k; i++) {
-            ff *= i;
+        for(unsigned long long i = 1; i <= k; i++) {
+            ff = (u128(ff) * u128(i)) / u128(gcd(ff, i));
         }
 
         unsigned long long ans = (n / ff) * ff;

@@ -6,6 +6,8 @@
 
 using namespace std;
 
+
+
 // building blocks
 using ll = long long;
 using db = long double; // or double, if TL is tight
@@ -164,44 +166,27 @@ inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
 // here goes the work!
 void solve() {
-    int q;
-    cin >> q;
+    int N, K;
+    cin >> N >> K;
 
-    multiset<int> L;
-    multiset<int> R;
-    for(int _ = 0; _ < q; _++) {
-        string type; int l, r;
-        cin >> type >> l >> r;
-        assert(l <= r);
-
-        if(type == "+") {
-            L.ins(l);
-            R.ins(r);
-        } else if(type == "-") {
-            L.erase(L.find(l));
-            R.erase(R.find(r));
-        } else {
-            assert(false);
-        }
-
-        assert(sz(L) == sz(R));
-
-        if(L.empty()) {
-            cout << "NO\n";
-            continue;
-        }
-
-        int mini_r = *R.begin();
-        int maxi_l = *L.rbegin();
-
-        if(mini_r < maxi_l) {
-            cout << "YES";
-        } else {
-            cout << "NO";
-        }
-
-        cout << n_l;
+    vector<int> tks(N);
+    for(auto& e: tks) {
+        cin >> e;
     }
+
+    int ans = 0;
+    int current = 0;
+    for(int i = 0; i < N; i++) {
+        if(current + tks[i] <= K) {
+            current += tks[i];
+        } else {
+            current = tks[i];
+            ans++;
+        }
+    }
+    if(current != 0) ans++;
+
+    cout << ans << n_l;
 }
 
 signed main() {
