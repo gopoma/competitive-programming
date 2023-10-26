@@ -168,7 +168,27 @@ inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
 // here goes the work!
 void solve() {
+    int n;
+    cin >> n;
 
+    vector<pair<ll, ll>> A(n);
+    for(int i = 0; i < n; i++) {
+        ll a, b, c, d;
+        cin >> a >> b >> c >> d;
+
+        A[i] = make_pair(a + b + c + d, -(i + 1));
+    }
+
+    sort(rall(A));
+
+    int ans = -1;
+    for(int i = 0; i < n; i++) {
+        if(-A[i].second == 1) {
+            ans = i + 1;
+        }
+    }
+    assert(ans != -1);
+    cout << ans << n_l;
 }
 
 signed main() {

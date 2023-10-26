@@ -168,7 +168,60 @@ inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
 // here goes the work!
 void solve() {
+    int n;
+    cin >> n;
 
+    string S;
+    cin >> S;
+
+    if(n % 4 == 0) {
+        map<char, int> cnt;
+        cnt['A'] = 0;
+        cnt['C'] = 0;
+        cnt['G'] = 0;
+        cnt['T'] = 0;
+        for(auto& c: S) {
+            cnt[c]++;
+        }
+
+        bool ok = true;
+        int count = 0;
+        V<int> need(4, 0);
+        for(auto& it: cnt) {
+            if(it.first == '?') continue;
+            ok &= (4 * it.second <= n);
+            need[count++] = (n / 4) - it.second;
+        }
+
+        // DBG(need);
+
+        int current = 0;
+        if(!ok) {
+            cout << "===\n";
+        } else {
+            for(char& c: S) {
+                if(c != '?') {
+                    cout << c;
+                } else {
+                    while(need[current] <= 0) {
+                        current++;
+                    }
+                    if(current == 0) {
+                        cout << 'A';
+                    } else if(current == 1) {
+                        cout << 'C';
+                    } else if(current == 2) {
+                        cout << 'G';
+                    } else if(current == 3) {
+                        cout << 'T';
+                    }
+                    need[current]--;
+                }
+            }
+        }
+    } else {
+        cout << "===\n";
+    }
 }
 
 signed main() {

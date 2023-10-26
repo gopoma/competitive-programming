@@ -168,7 +168,37 @@ inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
 // here goes the work!
 void solve() {
+    int n;
+    cin >> n;
 
+    str S;
+    cin >> S;
+
+    set<int> aux;
+    for(int i = 0; i < 10; i++) {
+        aux.ins(i);
+    }
+    for(auto& c: S) {
+        if(c == 'L') {
+            assert(!aux.empty());
+            aux.erase(*aux.begin());
+        } else if(c == 'R') {
+            assert(!aux.empty());
+            aux.erase(*aux.rbegin());
+        } else {
+            // c is 0...9
+            aux.ins(c-'0');
+        }
+    }
+
+    for(int i = 0; i < 10; i++) {
+        if(aux.find(i) == aux.end()) {
+            cout << "1";
+        } else {
+            cout << "0";
+        }
+    }
+    cout << n_l;
 }
 
 signed main() {

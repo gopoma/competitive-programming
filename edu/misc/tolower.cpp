@@ -168,7 +168,16 @@ inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
 // here goes the work!
 void solve() {
+    string S;
+    cin >> S;
 
+    transform(S.begin(), S.end(), S.begin(), ::tolower);
+
+    if(S == "yes") {
+        cout << "YES\n";
+    } else {
+        cout << "NO\n";
+    }
 }
 
 signed main() {
@@ -176,7 +185,7 @@ signed main() {
 	setIO();
 
     long long t = 1LL;
-    // cin >> t;
+    cin >> t;
 
     while(t--) {
         solve();

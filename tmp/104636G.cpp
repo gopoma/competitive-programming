@@ -168,7 +168,23 @@ inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
 // here goes the work!
 void solve() {
+    int n;
+    cin >> n;
 
+    string S;
+    cin >> S;
+
+    V<int> aux(26, 0);
+    for(auto& c: S) {
+        aux[tolower(c) - 'a']++;
+    }
+
+    bool ok = true;
+    for(auto& e: aux) {
+        ok &= (e >= 1);
+    }
+
+    cout << (ok?"YES":"NO") << n_l;
 }
 
 signed main() {

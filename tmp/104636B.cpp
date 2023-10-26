@@ -168,7 +168,25 @@ inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
 // here goes the work!
 void solve() {
+    int n;
+    cin >> n;
 
+    V<int> a(n);
+    for(auto& e: a) cin >> e;
+
+    reverse(all(a));
+
+    V<int> v;
+    set<int> aux;
+    for(auto& e: a) {
+        if(aux.find(e) == aux.end()) {
+            v.eb(e);
+            aux.ins(e);
+        }
+    }
+
+    int ans = v.back();
+    cout << ans << n_l;
 }
 
 signed main() {

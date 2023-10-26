@@ -168,7 +168,27 @@ inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
 // here goes the work!
 void solve() {
+    int n; ll A, B;
+    cin >> n >> A >> B;
 
+    vector<ll> S(n);
+    for(auto& e: S) cin >> e;
+
+    ll ff = S[0];
+    vector<ll> rem;
+    for(int i = 1; i < n; i++) {
+        rem.eb(S[i]);
+    }
+    sor(rem);
+    ll sum = accumulate(all(S), 0LL);
+
+    int ans = 0;
+    while(ff * A < B * sum) {
+        ans++;
+        sum -= rem.back();
+        rem.pop_back();
+    }
+    cout << ans << n_l;
 }
 
 signed main() {

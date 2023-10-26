@@ -14,6 +14,7 @@ using ull = unsigned long long;
 using db = long double; // or double, if TL is tight
 using str = string; // yay python!
 // using u128 = __uint128_t; // for Number Theory related
+using u128 = __int128;
 // using i128 = __int128;
 template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>; // minima
 
@@ -168,7 +169,61 @@ inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
 // here goes the work!
 void solve() {
+    ull n; int k;
+    cin >> n >> k;
 
+    auto check = [&](u128 x) { assert(x >= u128(0)); };
+
+    // x is in base k
+    auto from_base_k_to_base_10 = [&](u128 x, u128 base = 8ULL) {
+        string tmp = to_string(ull(x));
+        reverse(all(tmp));
+
+        u128 res = u128(0); check(res);
+        u128 ff = u128(1); check(ff);
+        for(int i = 0; i < sz(tmp); i++) {
+            res = u128(res) + u128(ff) * (tmp[i] - '0');
+            ff = u128(ff) * base;
+
+            check(res);
+            check(ff);
+        }
+
+        return ull(res);
+    };
+
+    // x is in base 10
+    auto from_base_10_to_base_k = [&](u128 x, u128 base = u128(9)) {
+        V<u128> rs;
+        while(x > 0ULL) {
+            rs.eb(x % base);
+            x /= base;
+        }
+
+        u128 res = u128(0); check(res);
+        u128 ff = u128(1); check(ff);
+        for(int i = 0; i < sz(rs); i++) {
+            assert(base < 10 && rs[i] < 10);
+            res = u128(res) + u128(ff) * rs[i];
+            ff = u128(ff) * 10ULL;
+
+            check(res);
+            check(ff);
+        }
+
+        return ull(res);
+    };
+
+    for(int _ = 0; _ < k; _++) {
+        ull a = from_base_k_to_base_10(n, u128(8)); check(a);
+        DBG(a);
+        // now a is in base 10
+        ull b = from_base_10_to_base_k(a, u128(9)); check(b);
+        DBG(b);
+        // now b is in base 9
+    }
+
+    cout << n << n_l;
 }
 
 signed main() {

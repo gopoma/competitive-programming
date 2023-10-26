@@ -168,7 +168,26 @@ inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
 // here goes the work!
 void solve() {
+    int n;
+    cin >> n;
 
+    V<int> a(n);
+    for(auto &e: a) cin >> e;
+
+    map<int, int> cnt;
+    for(auto& e: a) cnt[e]++;
+
+    set<int> aux;
+    for(auto& e: a) aux.ins(e);
+
+    V<int> tmp;
+    for(auto& e: aux) tmp.eb(e);
+
+    int ans = 0;
+    for(int i = 1; i < sz(tmp) - 1; i++) {
+        ans += cnt[tmp[i]];
+    }
+    cout << ans << n_l;
 }
 
 signed main() {
