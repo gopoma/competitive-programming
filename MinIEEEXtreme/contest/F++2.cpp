@@ -10,12 +10,9 @@ using namespace std;
 
 // building blocks
 using ll = long long;
-using ull = unsigned long long;
 using db = long double; // or double, if TL is tight
 using str = string; // yay python!
-// using u128 = __uint128_t; // for Number Theory related
-using u128 = __int128;
-// using i128 = __int128;
+using u128 = __int128; // for Number Theory related
 template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>; // minima
 
 
@@ -165,65 +162,94 @@ template <typename T>
 inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
 // here goes the template!
+
+u128 val(char c) {
+    if (c >= '0' && c <= '9')
+        return u128((int)c - '0');
+    else
+        return u128((int)c - 'A' + 10);
+}
+
+u128 toDeci(string str, int base) {
+    int len = str.size();
+
+    u128 power = u128(1);
+
+    u128 num = u128(0);
+
+    for (int i = len - 1; i >= 0; i--) {
+        if (val(str[i]) >= base) {
+            assert(false);
+            return -1;
+        }
+
+        num += power * val(str[i]);
+
+        power = power * base;
+    }
+
+    return num;
+}
+
+char reVal(int num) {
+    if (num >= 0 && num <= 9)
+        return (char)(num + '0');
+    else
+        return (char)(num - 10 + 'A');
+}
+
+string fromDeci(u128 base, u128 inputNum) {
+    string res = "";
+
+    while (inputNum > 0) {
+        res += reVal(inputNum % base);
+
+        inputNum /= base;
+    }
+
+    reverse(res.begin(), res.end());
+
+    return res;
+}
+
+string convertBase(string s, u128 a, u128 b) {
+    u128 num = toDeci(s, a);
+
+    string ans = fromDeci(b, num);
+
+    return ans;
+}
+
 // /here goes the template!
 
 // here goes the work!
 void solve() {
-    ull n; int k;
+    // RAYA;
+    string n; int k;
     cin >> n >> k;
 
-    auto check = [&](u128 x) { assert(x >= u128(0)); };
+    if(sz(n) == 1 && (n[0]-'0') < 8) {
+        cout << n << n_l;
+    } else {
+        string ans = n;
+        // DBG(ans);
+        for(int i = 0; i < k; i++) {
+            // one operation
+            // convert n from base 8 to base 9
+            ans = convertBase(ans, 8, 9);
 
-    // x is in base k
-    auto from_base_k_to_base_10 = [&](u128 x, u128 base = 8ULL) {
-        string tmp = to_string(ull(x));
-        reverse(all(tmp));
+            // DBG(ans);
 
-        u128 res = u128(0); check(res);
-        u128 ff = u128(1); check(ff);
-        for(int i = 0; i < sz(tmp); i++) {
-            res = u128(res) + u128(ff) * (tmp[i] - '0');
-            ff = u128(ff) * base;
+            // apply changes '8' -> '5'
+            for(auto& e: ans) {
+                if(e == '8') e = '5';
+            }
 
-            check(res);
-            check(ff);
+            // DBG(ans);
         }
 
-        return ull(res);
-    };
-
-    // x is in base 10
-    auto from_base_10_to_base_k = [&](u128 x, u128 base = u128(9)) {
-        V<u128> rs;
-        while(x > 0ULL) {
-            rs.eb(x % base);
-            x /= base;
-        }
-
-        u128 res = u128(0); check(res);
-        u128 ff = u128(1); check(ff);
-        for(int i = 0; i < sz(rs); i++) {
-            assert(base < 10 && rs[i] < 10);
-            res = u128(res) + u128(ff) * rs[i];
-            ff = u128(ff) * 10ULL;
-
-            check(res);
-            check(ff);
-        }
-
-        return ull(res);
-    };
-
-    for(int _ = 0; _ < k; _++) {
-        ull a = from_base_k_to_base_10(n, u128(8)); check(a);
-        DBG(a);
-        // now a is in base 10
-        ull b = from_base_10_to_base_k(a, u128(9)); check(b);
-        DBG(b);
-        // now b is in base 9
+        cout << ans << n_l;
     }
-
-    cout << n << n_l;
 }
 
 signed main() {
