@@ -217,7 +217,7 @@ void solve() {
     }
     assert(count_positives() <= 1);
 
-    ans += min(calc(acc) + calc(target), calc(acc + target));
+    ans += calc(acc + target);
 
     cout << ans << n_l;
 }
