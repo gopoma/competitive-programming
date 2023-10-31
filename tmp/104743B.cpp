@@ -151,8 +151,8 @@ ostream& operator <<(ostream &os, const pair<T, T>& v) {
 mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
 
 // Direction vectors
-int dRow[] = { -1, 0, 1,  0 };
-int dCol[] = {  0, 1, 0, -1 };
+ll dRow[] = { -1LL, 0LL, 1LL,  0LL };
+ll dCol[] = {  0LL, 1LL, 0LL, -1LL };
 
 const int MOD = (int)1e9+7; // 998244353;
 const int MX = (int)2e5+5;
@@ -168,7 +168,33 @@ inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
 // here goes the work!
 void solve() {
+    int n, x, y;
+    cin >> n >> x >> y;
 
+    if(n == 1) {
+        cout << ((x == y)? "YES" : "NO") << n_l;
+    } else {
+        bool ok = true;
+        int cnt = 0;
+        for (int i = 0; i <= 31; i++) {
+            bool activeX = (x & (1 << i));
+            bool activeY = (y & (1 << i));
+
+            if(!activeX && activeY) {
+                ok = false;
+                break;
+            }
+
+            cnt += (activeX && !activeY);
+        }
+
+        if(!ok) {
+            cout << "NO\n";
+            return;
+        }
+
+        cout << ((n <= (1 << cnt))? "YES" : "NO") << n_l;
+    }
 }
 
 signed main() {
@@ -176,7 +202,7 @@ signed main() {
 	setIO();
 
     long long t = 1LL;
-    // cin >> t;
+    cin >> t;
 
     while(t--) {
         solve();

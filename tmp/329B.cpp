@@ -168,7 +168,69 @@ inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
 // here goes the work!
 void solve() {
+    int r, c;
+    cin >> r >> c;
 
+    vector<string> a(r);
+    for(int i = 0; i < r; i++) {
+        cin >> a[i];
+    }
+    // for(auto& e: a) DBG(e);
+
+    pair<int, int> starting = make_pair(-1, -1);
+    pair<int, int> ending = make_pair(-1, -1);
+    for(int i = 0; i < r; i++) {
+        for(int j = 0; j < c; j++) {
+            if(a[i][j] == 'S') starting = make_pair(i, j);
+            if(a[i][j] == 'E') ending = make_pair(i, j);
+        }
+    }
+    assert(starting != make_pair(-1, -1));
+    assert(ending != make_pair(-1, -1));
+
+
+
+    auto ok = [&](int row, int col) {
+        return (0 <= row && row < r) && (0 <= col && col < c);
+    };
+
+
+
+    vector<vector<bool>> vis(r, vector<bool>(c, false));
+    vector<vector<int>> level(r, vector<int>(c, -1));
+
+    queue<pair<int, int>> q;
+    q.push(ending);
+    vis[ending.first][ending.second] = true;
+    level[ending.first][ending.second] = 0;
+
+    while(!q.empty()) {
+        auto cell = q.front(); q.pop();
+        int x = cell.first;
+        int y = cell.second;
+
+        for(int i = 0; i < 4; i++) {
+            int newx = x + dRow[i];
+            int newy = y + dCol[i];
+
+            if(ok(newx, newy) && !vis[newx][newy] && a[newx][newy] != 'T') {
+                vis[newx][newy] = true;
+                q.push(make_pair(newx, newy));
+                level[newx][newy] = level[x][y] + 1;
+            }
+        }
+    }
+
+    int ans = 0;
+    for(int i = 0; i < r; i++) {
+        for(int j = 0; j < c; j++) {
+            if(vis[i][j] && isdigit(a[i][j]) &&  level[i][j] <= level[starting.first][starting.second]) {
+                assert(level[i][j] != -1);
+                ans += a[i][j] - '0';
+            }
+        }
+    }
+    cout << ans << n_l;
 }
 
 signed main() {

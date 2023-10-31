@@ -151,8 +151,8 @@ ostream& operator <<(ostream &os, const pair<T, T>& v) {
 mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
 
 // Direction vectors
-int dRow[] = { -1, 0, 1,  0 };
-int dCol[] = {  0, 1, 0, -1 };
+ll dRow[] = { -1LL, 0LL, 1LL,  0LL };
+ll dCol[] = {  0LL, 1LL, 0LL, -1LL };
 
 const int MOD = (int)1e9+7; // 998244353;
 const int MX = (int)2e5+5;
@@ -168,7 +168,60 @@ inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
 // here goes the work!
 void solve() {
+    int n, k;
+    cin >> n >> k;
 
+    vector<int> a(n);
+    for(auto& e: a) cin >> e;
+
+    auto all_zeros = [&]() {
+        bool res = true;
+        for(auto& e: a) res &= (e == 0);
+        return res;
+    };
+
+    if(all_zeros()) {
+        cout << "0\n";
+        return;
+    }
+
+
+    auto all_evens = [&]() {
+        bool res = true;
+        for(auto& e: a) res &= (e % 2 == 0);
+        return res;
+    };
+
+    if(k == 1) {
+        if(all_evens()) {
+            cout << "1\n";
+        } else {
+            cout << "-1\n";
+        }
+    } else {
+        assert(k >= 2);
+        if(all_evens()) {
+            cout << "1\n";
+            return;
+        }
+
+        auto get = [&]() {
+            vector<int> b = a;
+            for(int i = 1; i <= k; i++) {
+                for(auto& e: a) e &= i;
+                if(all_zeros()) return true;
+                a = b;
+            }
+
+            return false;
+        };
+
+        if(get()) {
+            cout << "1\n";
+        } else {
+            cout << "2\n";
+        }
+    }
 }
 
 signed main() {
@@ -176,7 +229,7 @@ signed main() {
 	setIO();
 
     long long t = 1LL;
-    // cin >> t;
+    cin >> t;
 
     while(t--) {
         solve();
