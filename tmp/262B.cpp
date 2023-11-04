@@ -168,13 +168,29 @@ inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
 // here goes the work!
 void solve() {
+    int n, k;
+    cin >> n >> k;
 
+    vector<ll> a(n);
+    for(auto& e: a) cin >> e;
+
+    pqg<ll> pq;
+    for(auto& e: a) pq.push(e);
+
+    for(int _ = 0; _ < k; _++) {
+        assert(!pq.empty());
+        ll mini = pq.top(); pq.pop();
+        pq.push(-mini);
+    }
+
+    ll ans = 0LL;
+    while(!pq.empty()) { ans += pq.top(); pq.pop(); }
+    cout << ans << n_l;
 }
 
 signed main() {
     // read read read
 	setIO();
-    // cout << fixed << setprecision(12);
 
     long long t = 1LL;
     // cin >> t;

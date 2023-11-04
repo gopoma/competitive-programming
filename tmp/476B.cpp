@@ -167,14 +167,53 @@ inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 // /here goes the template!
 
 // here goes the work!
-void solve() {
+db fact(db x) {
+    return (x <= 1.0)? 1.0 : (x * fact(x - 1.0));
+}
 
+void solve() {
+    str s1, s2;
+    cin >> s1 >> s2;
+
+    int fpos1 = 0;
+    for(auto& c: s1) {
+        if(c == '+') fpos1++;
+        else fpos1--;
+    }
+
+    int fpos2 = 0;
+    int use = 0;
+    for(auto& c: s2) {
+        if(c == '+') fpos2++;
+        else if(c == '-') fpos2--;
+        else use++;
+    }
+
+    // DBG3(fpos1, fpos2, use);
+    db ans = 0.0;
+    for(int pp = 0; pp <= use; pp++) {
+        int mm = use - pp;
+        if(fpos2 + pp - mm == fpos1) {
+            // need pp +'s
+            // DBG3(pp, use, use - pp);
+
+            db a = fact(use) / (fact(pp) * fact(use - pp));
+            db b = pow(0.5, pp);
+            db c = pow(0.5, use - pp);
+            // DBG3(a, b, c);
+
+            ans += a * b * c;
+
+            // RAYA;
+        }
+    }
+    cout << ans << n_l;
 }
 
 signed main() {
     // read read read
 	setIO();
-    // cout << fixed << setprecision(12);
+    cout << fixed << setprecision(12);
 
     long long t = 1LL;
     // cin >> t;

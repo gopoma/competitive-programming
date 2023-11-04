@@ -168,13 +168,42 @@ inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
 // here goes the work!
 void solve() {
+    int n, s, t;
+    cin >> n >> s >> t;
 
+    vector<int> adj[n + 1];
+
+    for(int u = 1; u <= n; u++) {
+        int v;
+        cin >> v;
+
+        adj[u].eb(v);
+    }
+
+    int ans = 0;
+    bool found = false;
+    vector<bool> vis(n + 1, false);
+    function<void(int)> dfs = [&](int src) {
+        if(vis[src]) return;
+        vis[src] = true;
+
+        if(src == t) {
+            found = true;
+            return;
+        } else {
+            ans++;
+        }
+
+        for(auto& to: adj[src]) dfs(to);
+    }; dfs(s);
+
+    if(found) cout << ans << n_l;
+    else cout << "-1\n";
 }
 
 signed main() {
     // read read read
 	setIO();
-    // cout << fixed << setprecision(12);
 
     long long t = 1LL;
     // cin >> t;

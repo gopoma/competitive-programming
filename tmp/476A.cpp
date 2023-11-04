@@ -168,7 +168,23 @@ inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
 // here goes the work!
 void solve() {
+    int n, m;
+    cin >> n >> m;
 
+    int ans = -1;
+    bool found = false;
+    for(int w = 1; w <= n; w++) {
+        int y = n - w;
+        int x = 2 * w - n;
+        if(x >= 0 && y >= 0 && (w % m == 0)) {
+            found = true;
+            ans = w;
+            break;
+        }
+    }
+
+    if(found) cout << ans << n_l;
+    else cout << "-1\n";
 }
 
 signed main() {
