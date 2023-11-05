@@ -163,6 +163,16 @@ const char n_l = '\n';
 template <typename T>
 inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
+// here goes the template!
+// /here goes the template!
+
+// here goes the work!
+ll sum(ll x) {
+    ll res = 0;
+    for(auto& c: to_string(x)) res += ll(c - '0');
+    return res;
+}
+
 template<typename T>
 T pot(T a, T b) { // a^b
     assert(b >= 0);
@@ -172,12 +182,31 @@ T pot(T a, T b) { // a^b
     return res;
 }
 
-// here goes the template!
-// /here goes the template!
-
-// here goes the work!
 void solve() {
+    assert(pot(12LL, 0LL) == 1LL);
+    assert(pot(-12LL, 3LL) == -12LL * 12LL * 12LL);
+    assert(pot(12LL, 2LL) == 12LL * 12LL);
+    assert(pot(-12LL, 2LL) == 12LL * 12LL);
+    assert(pot(-12LL, 0LL) == 1LL);
+    ll a, b, c;
+    cin >> a >> b >> c;
 
+    int ans = 0;
+    vector<ll> res;
+    for(ll S = 1; S <= 81; S++) {
+        ll Sa = pot(S, a);
+
+        ll x = b * Sa + c;
+        if(x >= ll(1e9)) continue;
+        if(x <= 0) continue;
+
+        if(sum(x) == S) {
+            res.eb(x);
+            ans++;
+        }
+    }
+    cout << ans << n_l;
+    for(auto& e: res) cout << e << " ";
 }
 
 signed main() {

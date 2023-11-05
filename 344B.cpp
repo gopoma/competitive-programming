@@ -163,21 +163,48 @@ const char n_l = '\n';
 template <typename T>
 inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
-template<typename T>
-T pot(T a, T b) { // a^b
-    assert(b >= 0);
-
-    T res = 1;
-    for(int _ = 1; _ <= b; _++) res *= a;
-    return res;
-}
-
 // here goes the template!
 // /here goes the template!
 
 // here goes the work!
 void solve() {
+    int a, b, c;
+    cin >> a >> b >> c;
 
+    vector<int> aux = {a, b, c};
+    sor(aux);
+
+    bool found = false;
+    int k = 0;
+    for(; k <= min(aux[0], aux[1]);) {
+        if(aux[0] + aux[1] - 2 * k == aux[2]) {
+            found = true;
+            break;
+        } else {
+            k++;
+        }
+    }
+
+    if(!found) cout << "Impossible\n";
+    else {
+        // DBG3(a, b, c);
+        // DBG3(aux[0], aux[1], k);
+        vector<int> v = {aux[0] - k, aux[1] - k, k};
+        sor(v);
+
+        // RAYA;
+        do {
+            int x1 = v[0];
+            int x2 = v[1];
+            int x3 = v[2];
+            // DBG3(x1, x2, x3);
+
+            if(x1 + x3 == a && x1 + x2 == b && x2 + x3 == c) {
+                cout << x1 << " " << x2 << " " << x3 << n_l;
+                return;
+            }
+        } while(next_permutation(all(v)));
+    }
 }
 
 signed main() {

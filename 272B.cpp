@@ -163,21 +163,35 @@ const char n_l = '\n';
 template <typename T>
 inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
-template<typename T>
-T pot(T a, T b) { // a^b
-    assert(b >= 0);
-
-    T res = 1;
-    for(int _ = 1; _ <= b; _++) res *= a;
-    return res;
-}
-
 // here goes the template!
 // /here goes the template!
 
 // here goes the work!
-void solve() {
+ll ff(ll x) {
+    if(x == 0) return 0;
+    if(x % 2 == 0) return ff(x / 2);
+    if(x % 2 == 1) return ff(x / 2) + 1;
+    assert(false);
+}
 
+void solve() {
+    int n;
+    cin >> n;
+
+
+    vector<ll> a(n);
+    for(auto& e: a) cin >> e;
+
+    for(auto& e: a) e = ff(e);
+
+    map<ll, ll> cnt;
+    for(auto& e: a) cnt[e]++;
+
+    ll ans = 0LL;
+    for(auto& e: a) ans += cnt[e] - 1;
+    assert(ans % 2 == 0);
+    ans /= 2LL;
+    cout << ans << n_l;
 }
 
 signed main() {

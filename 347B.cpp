@@ -163,21 +163,43 @@ const char n_l = '\n';
 template <typename T>
 inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
-template<typename T>
-T pot(T a, T b) { // a^b
-    assert(b >= 0);
-
-    T res = 1;
-    for(int _ = 1; _ <= b; _++) res *= a;
-    return res;
-}
-
 // here goes the template!
 // /here goes the template!
 
 // here goes the work!
 void solve() {
+    int n;
+    cin >> n;
 
+    vector<int> a(n);
+    for(auto& e: a) cin >> e;
+
+    int bad = 0;
+    for(int i = 0; i < n; i++)
+        bad += (a[i] != i);
+
+    if(bad == 0) cout << n << n_l;
+    else {
+        assert(bad >= 2);
+        int good = n - bad;
+
+        bool found = false;
+        set<pair<int, int>> aux;
+        for(int i = 0; i < n; i++) {
+            if(a[i] == i) continue;
+
+            if(aux.count(make_pair(a[i], i))) {
+                found = true;
+            } else {
+                aux.ins(make_pair(i, a[i]));
+            }
+        }
+
+        if(found) good += 2;
+        else good++;
+
+        cout << good << n_l;
+    }
 }
 
 signed main() {
