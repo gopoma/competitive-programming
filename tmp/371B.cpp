@@ -178,7 +178,25 @@ T pot(T a, T b) { // a^b
 
 // here goes the work!
 void solve() {
+    ll aa, bb;
+    cin >> aa >> bb;
 
+    ll a = aa / gcd(aa, bb);
+    ll b = bb / gcd(aa, bb);
+
+    ll n = a * b;
+
+    int cnt = 0;
+    while(n % 2 == 0 || n % 3 == 0 || n % 5 == 0) {
+        if(n % 2 == 0) n /= 2;
+        else if(n % 3 == 0) n /= 3;
+        else if(n % 5 == 0) n /= 5;
+
+        cnt++;
+    }
+
+    if(n == 1) cout << cnt << n_l;
+    else cout << "-1\n";
 }
 
 signed main() {

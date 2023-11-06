@@ -178,7 +178,32 @@ T pot(T a, T b) { // a^b
 
 // here goes the work!
 void solve() {
+    int n, m;
+    cin >> n >> m;
 
+    map<int, int> mps;
+    for(int _ = 0; _ < m; _++) {
+        int a, b, c;
+        cin >> a >> b >> c;
+
+        set<int> rem({1, 2, 3});
+
+        int cnt = 3;
+        if(mps.count(a)) { rem.erase(mps[a]); cnt--; }
+        if(mps.count(b)) { rem.erase(mps[b]); cnt--; }
+        if(mps.count(c)) { rem.erase(mps[c]); cnt--; }
+        assert(cnt == sz(rem));
+
+        if(!mps.count(a)) { mps[a] = *rem.begin(); rem.erase(mps[a]); cnt--; }
+        if(!mps.count(b)) { mps[b] = *rem.begin(); rem.erase(mps[b]); cnt--; }
+        if(!mps.count(c)) { mps[c] = *rem.begin(); rem.erase(mps[c]); cnt--; }
+        assert(cnt == sz(rem) && cnt == 0);
+    }
+
+    for(int i = 1; i <= n; i++) {
+        if(mps.count(i)) cout << mps[i] << " ";
+        else cout << "1 ";
+    }
 }
 
 signed main() {

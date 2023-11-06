@@ -178,7 +178,35 @@ T pot(T a, T b) { // a^b
 
 // here goes the work!
 void solve() {
+    int n, v;
+    cin >> n >> v;
 
+    map<int, int> mps;
+    int mx = 1;
+    for(int i = 0; i < n; i++) {
+        int a, b;
+        cin >> a >> b;
+        mps[a] += b;
+        mx = max(mx, a);
+    }
+
+    // for(auto& it: mps) DBG2(it.first, it.second);
+
+    int ans = 0;
+    map<int, int> rem;
+    for(int i = 1; i <= mx + 5; i++) {
+        // check mps[i - 1] and mps[i] and do mps[i + 1] += mps[i]
+        int local_v = v;
+
+        int inc1 = min(local_v, rem[i]);
+        local_v -= inc1;
+        int inc2 = min(local_v, mps[i]);
+        mps[i] -= inc2;
+
+        ans += inc1 + inc2;
+        rem[i + 1] = mps[i];
+    }
+    cout << ans << n_l;
 }
 
 signed main() {

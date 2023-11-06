@@ -66,7 +66,6 @@ tcT, size_t SZ> using AR = array<T, SZ>;
 #define eb emplace_back
 #define ft front()
 #define bk back()
-#define ts to_string
 
 #define lb lower_bound
 #define ub upper_bound
@@ -174,11 +173,53 @@ T pot(T a, T b) { // a^b
 }
 
 // here goes the template!
+vector<long long> get_prefix_sums(vector<long long>& a) {
+    const int n = int(a.size());
+
+    vector<long long> pref(n);
+    pref[0] = a[0];
+
+    for(int i = 1; i < n; i++) {
+        pref[i] = pref[i - 1] + a[i];
+    }
+    return pref;
+}
+
+long long query(vector<long long>& pref, int l, int r) {
+    long long res = pref[r];
+    if(l - 1 >= 0) res -= pref[l - 1];
+    return res;
+}
 // /here goes the template!
 
 // here goes the work!
+const ll INF = 1e12;
 void solve() {
+    int n, m, k;
+    cin >> n >> m >> k;
 
+    // select k disjoint ranges with length m
+    V<ll> a(n);
+    for(auto& e: a) cin >> e;
+
+    V<ll> pref = get_prefix_sums(a);
+
+    const int OFFSET = 12;
+    vector<vector<ll>> memo(n + OFFSET, vector<ll>(k + OFFSET));
+    vector<vector<bool>> vis(n + OFFSET, vector<bool>(k + OFFSET, false));
+    function<ll(int, int)> solve = [&](int pos, int rs) {
+        if(rs > k) return -INF;
+        if(pos >= n) return 0LL;
+
+        if(vis[pos][rs]) return memo[pos][rs];
+        vis[pos][rs] = true;
+
+        ll res = max(solve(pos + m, rs + 1) + ((pos + m <= n)? query(pref, pos, pos + m - 1) : 0LL), solve(pos + 1, rs));
+        return memo[pos][rs] = res;
+    };
+
+    ll ans = solve(0, 0);
+    cout << ans << n_l;
 }
 
 signed main() {
