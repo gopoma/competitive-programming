@@ -34,7 +34,9 @@ using pd = pair<db,db>;
 #define tcTU tcT, class U
 // ^ lol this makes everything look weird but I'll try it
 
-tcT> using V = vector<T>;
+
+
+tcT> using V = vector<T>; //?
 tcT, size_t SZ> using AR = array<T,SZ>;
 using vi = V<int>;
 using vb = V<bool>;
@@ -44,14 +46,6 @@ using vs = V<str>;
 using vpi = V<pi>;
 using vpl = V<pl>;
 using vpd = V<pd>;
-
-
-
-// using u128 = __uint128_t;
-tcT> using V = vector<T>;
-tcT, size_t SZ> using AR = array<T, SZ>;
-
-
 
 // vectors
 // oops size(x), rbegin(x), rend(x) need C++17
@@ -73,6 +67,8 @@ tcT, size_t SZ> using AR = array<T, SZ>;
 tcT> int lwb(V<T>& a, const T& b) { return int(lb(all(a),b)-bg(a)); }
 tcT> int upb(V<T>& a, const T& b) { return int(ub(all(a),b)-bg(a)); }
 
+
+
 // loops
 #define FOR(i,a,b) for (int i = (a); i < (b); ++i)
 #define F0R(i,a) FOR(i,0,a)
@@ -90,6 +86,8 @@ constexpr int bits(int x) { // assert(x >= 0); // make C++11 compatible until US
 	return x == 0 ? 0 : 31-__builtin_clz(x); } // floor(log2(x))
 constexpr int p2(int x) { return 1<<x; }
 constexpr int msk2(int x) { return p2(x)-1; }
+
+
 
 ll cdiv(ll a, ll b) { return a/b+((a^b)>0&&a%b); } // divide a by b rounded up
 ll fdiv(ll a, ll b) { return a/b-((a^b)<0&&a%b); } // divide a by b rounded down
