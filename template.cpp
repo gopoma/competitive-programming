@@ -163,7 +163,7 @@ template <typename T>
 inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
 template<typename T>
-T pot(T a, T b) { // a^b
+T pot(T a, T b) { // a ** b
     assert(b >= 0);
 
     T res = 1;

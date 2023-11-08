@@ -174,64 +174,78 @@ T pot(T a, T b) { // a^b
 // here goes the template!
 // /here goes the template!
 
+bool in_range(int x) {
+    return (1 <= x && x <= 8);
+}
+bool in_range(int x, int y) {
+    return in_range(x) && in_range(y);
+}
+bool in_range(pi x) {
+    return in_range(x.first) && in_range(x.second);
+}
+int decode(char x) {
+    return int(x - 96);
+};
+char encode(int x) {
+    return char(x + 96);
+}
+void print(char type, pi x) {
+    cout << type << encode(x.second) << x.first << n_l;
+}
+
 // here goes the work!
 void solve() {
-    str Kpos;
-    cin >> Kpos;
-
-    auto eval = [&](char x) {
-        return int(x - 96);
-    };
-
-    auto translate = [&](int x) {
-        return char(96 + x);
-    };
-
-    int row = Kpos[2] - '0';
-    int col = eval(Kpos[1]);
-
-    auto ok = [&](int r, int c) {
-        return (1 <= r && r <= 8 && 1 <= c && c <= 8);
-    };
+    assert(decode('a') == 1);
+    assert(decode('b') == 2);
+    assert(decode('g') == 7);
+    assert(decode('h') == 8);
 
 
-    cout << 2 << n_l;
-    if(ok(row + 1, col) && ok(row - 1, col)) {
-        // DBG("go1");
-        int QRow = row + 1; // QCol -> col
-        int RRow = row - 1; // RCol -> col
 
-        cout << "Q" << translate(col) << QRow << n_l;
-        cout << "R" << translate(col) << RRow << n_l;
+    str S;
+    cin >> S;
+
+
+    // row - col
+    pi KPos = mp(S[2] - '0', decode(S[1]));
+
+    cout << "2\n";
+    if(in_range(KPos.first + 1) && in_range(KPos.first - 1)) {
+        pi QPos = mp(KPos.first + 1, KPos.second);
+        pi RPos = mp(KPos.first - 1, KPos.second);
+
+        print('Q', QPos);
+        print('R', RPos);
+    } else if(in_range(KPos.second + 1) && in_range(KPos.second - 1)) {
+        pi QPos = mp(KPos.first, KPos.second + 1);
+        pi RPos = mp(KPos.first, KPos.second - 1);
+
+        print('Q', QPos);
+        print('R', RPos);
     } else {
-        // DBG("go2");
-        // the king is at the border
-        pair<int, int> QPos;
-        if(!ok(row + 1, col)) {
-            QPos = mp(row - 1, col);
-        } else if(!ok(row - 1, col)) {
-            QPos = mp(row + 1, col);
-        } else if(!ok(row, col + 1)) {
-            QPos = mp(row, col - 1);
-        } else if(!ok(row, col - 1)) {
-            QPos = mp(row, col + 1);
-        } else assert(false);
+        // the king is at the corners
+        int x = KPos.first;
+        int y = KPos.second;
+        vpi adj = {
+            mp(x + 1, y),
+            mp(x - 1, y),
+            mp(x, y + 1),
+            mp(x, y - 1)
+        };
 
-        pair<int, int> RPos;
-        V<int> dr = {0, 1, 1,  1,  0, -1, -1, -1};
-        V<int> dc = {1, 1, 0, -1, -1, -1,  0,  1};
-        int x = QPos.first;
-        int y = QPos.second;
-        for(int i = 0; i < 8; i++) {
-            assert(mp(x, y) != mp(x + dr[i], y + dc[i]));
-            if(mp(x + dr[i], y + dc[i]) != mp(row, col)) {
-                RPos = mp(x + dr[i], y + dc[i]);
-                break;
+        vpi possible;
+        for(auto& e: adj) {
+            if(in_range(e)) {
+                possible.eb(e);
             }
         }
+        assert(sz(possible) == 2);
 
-        cout << "Q" << translate(QPos.second) << QPos.first << n_l;
-        cout << "R" << translate(RPos.second) << RPos.first << n_l;
+        pi QPos = possible[0];
+        pi BPos = possible[1];
+
+        print('Q', QPos);
+        print('B', BPos);
     }
 }
 
