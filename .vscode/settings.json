@@ -58,6 +58,8 @@
         "xtr1common": "cpp",
         "random": "cpp",
         "*.tpp": "cpp",
-        "iomanip": "cpp"
+        "iomanip": "cpp",
+        "xlocmon": "cpp",
+        "xloctime": "cpp"
     }
 }
