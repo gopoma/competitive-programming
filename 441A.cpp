@@ -8,15 +8,6 @@ using namespace std;
 
 
 
-#ifdef LOCAL
-    #include "helpers/debug.h"
-#else
-    #define dbg(...) 0
-    #define chk(...) 0
-#endif
-
-
-
 // building blocks
 using ll = long long;
 using ull = unsigned long long;
@@ -41,7 +32,9 @@ using pd = pair<db,db>;
 
 #define tcT template<class T
 #define tcTU tcT, class U
-//! ^ lol this makes everything look weird but I'll try it
+// ^ lol this makes everything look weird but I'll try it
+
+
 
 tcT> using V = vector<T>; //?
 tcT, size_t SZ> using AR = array<T,SZ>;
@@ -86,15 +79,6 @@ tcT> int upb(V<T>& a, const T& b) { return int(ub(all(a),b)-bg(a)); }
 
 
 
-const int MOD = (int)1e9+7; // 998244353;
-const int MX = (int)2e5+5;
-const ll BIG = 1e18; // not too close to LLONG_MAX
-const db PI = acos((db)-1);
-const int dx[4]{1,0,-1,0}, dy[4]{0,1,0,-1}; // for every grid problem!!
-mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
-
-
-
 // bitwise ops
 // also see https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html
 constexpr int pct(int x) { return __builtin_popcount(x); } // # of bits set
@@ -103,35 +87,10 @@ constexpr int bits(int x) { // assert(x >= 0); // make C++11 compatible until US
 constexpr int p2(int x) { return 1<<x; }
 constexpr int msk2(int x) { return p2(x)-1; }
 
+
+
 ll cdiv(ll a, ll b) { return a/b+((a^b)>0&&a%b); } // divide a by b rounded up
 ll fdiv(ll a, ll b) { return a/b-((a^b)<0&&a%b); } // divide a by b rounded down
-
-tcT> bool ckmin(T& a, const T& b) {
-	return b < a ? a = b, 1 : 0; } // set a = min(a,b)
-tcT> bool ckmax(T& a, const T& b) {
-	return a < b ? a = b, 1 : 0; } // set a = max(a,b)
-
-tcTU> T fstTrue(T lo, T hi, U f) {
-	++hi; assert(lo <= hi); // assuming f is increasing
-	while (lo < hi) { // find first index such that f is true
-		T mid = lo+(hi-lo)/2;
-		f(mid) ? hi = mid : lo = mid+1;
-	}
-	return lo;
-}
-tcTU> T lstTrue(T lo, T hi, U f) {
-	--lo; assert(lo <= hi); // assuming f is decreasing
-	while (lo < hi) { // find first index such that f is true
-		T mid = lo+(hi-lo+1)/2;
-		f(mid) ? lo = mid : hi = mid-1;
-	}
-	return lo;
-}
-tcT> void remDup(vector<T>& v) { //! sort and remove duplicates
-	sort(all(v)); v.erase(unique(all(v)),end(v)); }
-tcTU> void erase(T& t, const U& u) { // don't erase
-	auto it = t.find(u); assert(it != end(t));
-	t.erase(it); } //! element that doesn't exist from (multi)set
 
 
 
@@ -151,36 +110,102 @@ inline namespace FileIO {
 
 
 
-template <typename T>
-inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
+// for debugging!
+#define MACRO(code) do {code} while (false)
+#define DBG(x) MACRO(cerr << #x << " = " << (x) << endl;)
+#define DBGY(x) MACRO(cerr << #x << " = " << (x) << " , ";)
+#define DBG2(x,y) MACRO(DBGY(x); DBG(y);)
+#define DBG3(x,y,z) MACRO(DBGY(x); DBGY(y); DBG(z);)
+#define DBG4(x,y,z,w) MACRO(DBGY(x); DBGY(y); DBGY(z); DBG(w);)
+#define RAYA MACRO(cerr << " ================ " << endl;)
 
-long long binpow(long long a, long long b) {
-    long long res = 1;
-    while (b > 0) {
-        if (b & 1)
-            res = res * a;
-        a = a * a;
-        b >>= 1;
+template <typename T>
+ostream& operator <<(ostream &os, const vector<T>& v) {
+    os << "[";
+
+    for(int i = 0; i < int(v.size()); i++) {
+        if (i > 0) os << " ";
+        os << v[i];
     }
-    return res;
+    return os << "]";
+}
+
+template <typename T>
+ostream& operator <<(ostream &os, const set<T>& v) {
+    vector<T> tmp;
+    for(auto& e: v) {
+        tmp.emplace_back(e);
+    }
+
+    return os << tmp;
+}
+
+template <typename T>
+ostream& operator <<(ostream &os, const pair<T, T>& v) {
+    return os << "{" << v.first << ", " << v.second << "}";
 }
 
 
 
-//* here goes the template!
-//* /here goes the template!
+mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
 
+// Direction vectors
+int dRow[] = { -1, 0, 1,  0 };
+int dCol[] = {  0, 1, 0, -1 };
+
+const int MOD = (int)1e9+7; // 998244353;
+const int MX = (int)2e5+5;
+const ll BIG = 1e18; // not too close to LLONG_MAX
+const db PI = acos((db)-1);
 const char n_l = '\n';
+
+template <typename T>
+inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
+
+template<typename T>
+T pot(T a, T b) { // a ** b
+    assert(b >= 0);
+
+    T res = 1;
+    for(int _ = 1; _ <= b; _++) res *= a;
+    return res;
+}
+
+// here goes the template!
+// /here goes the template!
+
+// here goes the work!
 void solve() {
+    int n, v;
+    cin >> n >> v;
+
+    V<int> res;
+    for(int i = 1; i <= n; i++) {
+        int k;
+        cin >> k;
+
+        bool ok = false;
+        for(int j = 0; j < k; j++) {
+            int S;
+            cin >> S;
+
+            ok |= (S + 1 <= v);
+        }
+
+        if(ok) res.eb(i);
+    }
+
+    cout << sz(res) << n_l;
+    for(auto& e: res) cout << e << " ";
 }
 
 signed main() {
     // read read read
-    setIO();
-    //? cout << fixed << setprecision(12);
+	setIO();
+    // cout << fixed << setprecision(12);
 
     long long t = 1LL;
-    //? cin >> t;
+    // cin >> t;
 
     while(t--) {
         solve();
@@ -192,7 +217,9 @@ signed main() {
 /* stuff you should look for
 	* int overflow, array bounds
 	* special cases (n=1?)
-	! do smth instead of nothing and stay organized
+	* do smth instead of nothing and stay organized
 	* WRITE STUFF DOWN
-	! DON'T GET STUCK ON ONE APPROACH
+	* DON'T GET STUCK ON ONE APPROACH
 */
+
+//! ERASE DBGs xd or TLE

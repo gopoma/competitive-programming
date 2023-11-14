@@ -1,7 +1,6 @@
-// template: https://github.com/bqi343/cp-notebook/blob/master/Implementations/content/contest/TemplateLong.cpp
-
 // sometimes pragmas don't work, if so, just comment it!
 #pragma GCC optimize(3,"Ofast","inline")
+#pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,avx2")
 
 #include <bits/stdc++.h>
 
@@ -14,8 +13,8 @@ using ll = long long;
 using ull = unsigned long long;
 using db = long double; // or double, if TL is tight
 using str = string; // yay python!
-using u128 = __uint128_t; // for Number Theory related
-using i128 = __int128;
+// using u128 = __uint128_t; // for Number Theory related
+// using i128 = __int128;
 template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>; // minima
 
 
@@ -35,7 +34,9 @@ using pd = pair<db,db>;
 #define tcTU tcT, class U
 // ^ lol this makes everything look weird but I'll try it
 
-tcT> using V = vector<T>;
+
+
+tcT> using V = vector<T>; //?
 tcT, size_t SZ> using AR = array<T,SZ>;
 using vi = V<int>;
 using vb = V<bool>;
@@ -45,14 +46,6 @@ using vs = V<str>;
 using vpi = V<pi>;
 using vpl = V<pl>;
 using vpd = V<pd>;
-
-
-
-// using u128 = __uint128_t;
-tcT> using V = vector<T>;
-tcT, size_t SZ> using AR = array<T, SZ>;
-
-
 
 // vectors
 // oops size(x), rbegin(x), rend(x) need C++17
@@ -67,11 +60,14 @@ tcT, size_t SZ> using AR = array<T, SZ>;
 #define eb emplace_back
 #define ft front()
 #define bk back()
+#define ts to_string
 
 #define lb lower_bound
 #define ub upper_bound
 tcT> int lwb(V<T>& a, const T& b) { return int(lb(all(a),b)-bg(a)); }
 tcT> int upb(V<T>& a, const T& b) { return int(ub(all(a),b)-bg(a)); }
+
+
 
 // loops
 #define FOR(i,a,b) for (int i = (a); i < (b); ++i)
@@ -90,6 +86,8 @@ constexpr int bits(int x) { // assert(x >= 0); // make C++11 compatible until US
 	return x == 0 ? 0 : 31-__builtin_clz(x); } // floor(log2(x))
 constexpr int p2(int x) { return 1<<x; }
 constexpr int msk2(int x) { return p2(x)-1; }
+
+
 
 ll cdiv(ll a, ll b) { return a/b+((a^b)>0&&a%b); } // divide a by b rounded up
 ll fdiv(ll a, ll b) { return a/b-((a^b)<0&&a%b); } // divide a by b rounded down
@@ -152,8 +150,8 @@ ostream& operator <<(ostream &os, const pair<T, T>& v) {
 mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
 
 // Direction vectors
-ll dRow[] = { -1LL, 0LL, 1LL,  0LL };
-ll dCol[] = {  0LL, 1LL, 0LL, -1LL };
+int dRow[] = { -1, 0, 1,  0 };
+int dCol[] = {  0, 1, 0, -1 };
 
 const int MOD = (int)1e9+7; // 998244353;
 const int MX = (int)2e5+5;
@@ -164,16 +162,49 @@ const char n_l = '\n';
 template <typename T>
 inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
+template<typename T>
+T pot(T a, T b) { // a ** b
+    assert(b >= 0);
+
+    T res = 1;
+    for(int _ = 1; _ <= b; _++) res *= a;
+    return res;
+}
+
 // here goes the template!
 // /here goes the template!
 
 // here goes the work!
 void solve() {
+    int n;
+    cin >> n;
+
+    V<str> board(n);
+    for(auto& e: board) cin >> e;
+
+    auto check = [&](int x, int y) {
+        return (0 <= x && x < n && 0 <= y && y < n);
+    };
+
+    bool ok = true;
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < n; j++) {
+            int ocnt = 0;
+            if(check(i - 1, j)) ocnt += (board[i - 1][j] == 'o');
+            if(check(i + 1, j)) ocnt += (board[i + 1][j] == 'o');
+            if(check(i, j - 1)) ocnt += (board[i][j - 1] == 'o');
+            if(check(i, j + 1)) ocnt += (board[i][j + 1] == 'o');
+
+            ok &= (ocnt % 2 == 0);
+        }
+    }
+    cout << (ok?"YES":"NO") << n_l;
 }
 
 signed main() {
     // read read read
 	setIO();
+    // cout << fixed << setprecision(12);
 
     long long t = 1LL;
     // cin >> t;
