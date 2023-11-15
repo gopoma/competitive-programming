@@ -173,6 +173,46 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
+    int N;
+    cin >> N;
+
+    V<int> A(N + 1);
+    for(int i = 1; i <= N; i++) {
+        cin >> A[i];
+        chk(1 <= A[i] && A[i] <= N);
+    }
+
+    V<ll> distances(N + 1, -1);
+    V<ll> last(N + 1, -1);
+    for(ll i = 1; i <= N; i++) {
+        if(distances[A[i]] == -1) {
+            distances[A[i]] = i - 1;
+        } else {
+            ckmax(distances[A[i]], cdiv(i - last[A[i]] - 1, 2LL));
+        }
+        last[A[i]] = i;
+    }
+    for(ll i = 1; i <= N; i++) {
+        ckmax(distances[A[i]], N - last[A[i]]);
+    }
+
+    bool ok = false;
+    for(auto& x: distances) ok |= (x > -1);
+    chk(ok);
+
+    dbg(distances);
+
+    ll u = -1;
+    ll min_distance = LLONG_MAX;
+    for(ll i = 1; i <= N; i++) {
+        if(distances[i] == -1) continue;
+        if(distances[i] < min_distance) {
+            u = i;
+            min_distance = distances[i];
+        }
+    }
+    cout << u << " " << min_distance << n_l;
+    RAYA;
 }
 
 signed main() {
@@ -181,7 +221,7 @@ signed main() {
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
-    //? cin >> t;
+    cin >> t;
 
     while(t--) {
         solve();

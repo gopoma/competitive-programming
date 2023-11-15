@@ -13,7 +13,6 @@ using namespace std;
 #else
     #define dbg(...) 0
     #define chk(...) 0
-    #define RAYA     0
 #endif
 
 
@@ -168,11 +167,47 @@ long long binpow(long long a, long long b) {
 
 
 
-//* here goes the template!
-//* /here goes the template!
+// /here goes the template!
+//! works also with MInt
+template<typename T>
+vector<T> get_prefix_sums(vector<T>& a) {
+    const int n = int(a.size());
+
+    vector<T> pref(n);
+    pref[0] = a[0];
+
+    for(int i = 1; i < n; i++) {
+        pref[i] = pref[i - 1] + a[i];
+    }
+    return pref;
+}
+
+template<typename T>
+T query(vector<T>& pref, int l, int r) {
+    T res = pref[r];
+    if(l - 1 >= 0) res -= pref[l - 1];
+    return res;
+}
+// here goes the template!
 
 const char n_l = '\n';
 void solve() {
+    int N; str S;
+    cin >> N >> S;
+
+    reverse(all(S));
+    V<int> hasZero(N);
+    for(int i = 0; i < N; i++) hasZero[i] = (S[i] == '0');
+
+    V<int> pref = get_prefix_sums(hasZero);
+    bool ok = true;
+    for(int i = 0; i < N; i++) {
+        int zeros = query(pref, 0, i);
+        int ones = i + 1 - zeros;
+
+        ok &= (abs(zeros - ones) <= 1);
+    }
+    cout << (ok?"YES":"NO") << n_l;
 }
 
 signed main() {
@@ -181,7 +216,7 @@ signed main() {
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
-    //? cin >> t;
+    cin >> t;
 
     while(t--) {
         solve();

@@ -13,7 +13,6 @@ using namespace std;
 #else
     #define dbg(...) 0
     #define chk(...) 0
-    #define RAYA     0
 #endif
 
 
@@ -173,6 +172,16 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
+    ll N, X;
+    cin >> N >> X;
+
+    ll rated = X;
+    ll unrated = 2 * N - X;
+    if(unrated >= rated) cout << "0\n";
+    else {
+        ll res = rated - unrated;
+        cout << res << n_l;
+    }
 }
 
 signed main() {
@@ -181,7 +190,7 @@ signed main() {
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
-    //? cin >> t;
+    cin >> t;
 
     while(t--) {
         solve();

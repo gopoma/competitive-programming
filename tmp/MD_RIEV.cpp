@@ -1,6 +1,6 @@
 // sometimes pragmas don't work, if so, just comment it!
-// #pragma GCC optimize(3,"Ofast","inline")
-// #pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,avx2")
+#pragma GCC optimize(3,"Ofast","inline")
+#pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,avx2")
 
 #include <bits/stdc++.h>
 
@@ -13,7 +13,6 @@ using namespace std;
 #else
     #define dbg(...) 0
     #define chk(...) 0
-    #define RAYA     0
 #endif
 
 
@@ -170,9 +169,18 @@ long long binpow(long long a, long long b) {
 
 //* here goes the template!
 //* /here goes the template!
-
 const char n_l = '\n';
 void solve() {
+    ll N;
+    cin >> N;
+
+    ll evens = 0, odds = N;
+    if(N >= 5) {
+        evens++;
+        odds--;
+    }
+
+    cout << evens << " " << odds << n_l;
 }
 
 signed main() {
@@ -181,7 +189,7 @@ signed main() {
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
-    //? cin >> t;
+    cin >> t;
 
     while(t--) {
         solve();
