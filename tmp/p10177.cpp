@@ -172,6 +172,39 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
+    ll N;
+
+    auto fff = [&](ll dimension) {
+        ll res = 1;
+        ll x = (N * (N + 1)) / 2LL;
+        for(int i = 0; i < dimension; i++)
+            res *= x;
+        return res;
+    };
+
+    auto count_squares = [&](ll dimension) {
+        // 2 | 3 | 4
+        ll res = 0;
+        for(ll x = 1; x <= N; x++) {
+            res += binpow(x, dimension);
+        }
+        return res;
+    };
+
+    while(cin >> N) {
+        ll S2 = count_squares(2);
+        ll R2 = fff(2) - S2;
+
+        ll S3 = count_squares(3);
+        ll R3 = fff(3) - S3;
+
+        ll S4 = count_squares(4);
+        ll R4 = fff(4) - S4;
+
+        cout << S2 << " " << R2 << " ";
+        cout << S3 << " " << R3 << " ";
+        cout << S4 << " " << R4 << n_l;
+    }
 }
 
 signed main() {

@@ -172,6 +172,31 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
+    int N, M;
+    cin >> N >> M;
+
+    V<V<bool>> temp(N, V<bool>(M + 1, false));
+    for(int i = 0; i < N; i++) {
+        int K;
+        cin >> K;
+
+        for(int j = 0; j < K; j++) {
+            int A;
+            cin >> A;
+
+            temp[i][A] = true;
+        }
+    }
+
+    int cnt = 0;
+    for(int i = 1; i <= M; i++) {
+        bool ok = true;
+        for(int j = 0; j < N; j++) {
+            ok &= (temp[j][i]);
+        }
+        cnt += ok;
+    }
+    cout << cnt;
 }
 
 signed main() {

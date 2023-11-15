@@ -172,6 +172,42 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
+    const int n = 9;
+    V<V<int>> grid(n, V<int>(n));
+    for(int i = 0; i < n; i++) for(int j = 0; j < n; j++) cin >> grid[i][j];
+
+    bool gok = true;
+    for(int i = 0; i < n; i++) for(int j = 0; j < n; j++) gok &= (1 <= grid[i][j] && grid[i][j] <= 9);
+
+    for(int i = 0; i < n; i++) {
+        set<int> tmp;
+        for(int j = 0; j < n; j++) {
+            tmp.ins(grid[i][j]);
+        }
+        gok &= (sz(tmp) == 9);
+    }
+
+    for(int i = 0; i < n; i++) {
+        set<int> tmp;
+        for(int j = 0; j < n; j++) {
+            tmp.ins(grid[j][i]);
+        }
+        gok &= (sz(tmp) == 9);
+    }
+
+    for(int i = 0; i < 3; i++) {
+        for(int j = 0; j < 3; j++) {
+            set<int> tmp;
+            for(int x = 0; x < 3; x++) {
+                for(int y = 0; y < 3; y++) {
+                    tmp.ins(grid[3 * i + x][3 * j + y]);
+                }
+            }
+            gok &= (sz(tmp) == 9);
+        }
+    }
+
+    cout << (gok?"VALID":"INVALID");
 }
 
 signed main() {

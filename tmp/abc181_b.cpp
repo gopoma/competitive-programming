@@ -171,7 +171,23 @@ long long binpow(long long a, long long b) {
 //* /here goes the template!
 
 const char n_l = '\n';
+ll fff(ll x) {
+    return (x * (x + 1LL)) / 2LL;
+}
+
 void solve() {
+    int N;
+    cin >> N;
+
+    ll ans = 0;
+    while(N--) {
+        ll A, B;
+        cin >> A >> B;
+        chk(A <= B);
+
+        ans += fff(B) - fff(A - 1);
+    }
+    cout << ans;
 }
 
 signed main() {

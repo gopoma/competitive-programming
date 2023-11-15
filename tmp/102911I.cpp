@@ -172,6 +172,97 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
+    int N, M;
+    cin >> N >> M;
+
+    V<str> tb(N);
+    for(auto& e: tb) cin >> e;
+
+    str directions;
+    cin >> directions;
+
+    dbg(N, M, tb, directions);
+
+
+    const int trows = N, tcols = M;
+    auto check = [&](int x, int y) {
+        return (
+            (0 <= x && x < trows)
+            && (0 <= y && y < tcols)
+        );
+    };
+
+    V<V<bool>> tapado(trows, V<bool>(tcols, false));
+    for(int i = 0; i < trows; i++) {
+        for(int j = 0; j < tcols; j++) {
+            if(tb[i][j] == '0') {
+                tapado[i][j] = true;
+                tb[i][j] = '.';
+            }
+        }
+    }
+
+    auto move = [&](int x, int y, int dddx, int dddy) {
+        // dir -> -1 | 1
+        if(!(65 <= tb[x][y] && tb[x][y] <= 90)) return;
+        while(check(x + dddx, y + dddy)) {
+            if(tb[x + dddx][y + dddy] == '#') break;
+            else if(65 <= tb[x + dddx][y + dddy] && tb[x + dddx][y + dddy] <= 90) break;
+            else if(isdigit(tb[x + dddx][y + dddy])) {
+                chk(tb[x + dddx][y + dddy] != '0');
+                tb[x][y] = '.';
+                tb[x + dddx][y + dddy] = char(int(tb[x + dddx][y + dddy]) - 1);
+                if(tb[x + dddx][y + dddy] == '0') {
+                    tapado[x + dddx][y + dddy] = true;
+                    tb[x + dddx][y + dddy] = '.';
+                }
+                break;
+            } else if(tb[x + dddx][y + dddy] == '.') {
+                tb[x + dddx][y + dddy] = tb[x][y];
+                tb[x][y] = '.';
+            } else chk(false);
+
+            x += dddx;
+            y += dddy;
+        }
+    };
+
+    dbg(trows, tcols);
+    for(auto& d: directions) {
+        if(d == 'N') {
+            for(int col = 0; col < tcols; col++) {
+                for(int row = 0; row < trows; row++) {
+                    move(row, col, -1, 0);
+                }
+            }
+        } else if(d == 'S') {
+            for(int col = 0; col < tcols; col++) {
+                for(int row = trows - 1; row >= 0; row--) {
+                    move(row, col, 1, 0);
+                }
+            }
+        } else if(d == 'E') {
+            for(int row = 0; row < trows; row++) {
+                for(int col = tcols - 1; col >= 0; col--) {
+                    move(row, col, 0, 1);
+                }
+            }
+        } else if(d == 'W') {
+            for(int row = 0; row < trows; row++) {
+                for(int col = 0; col < tcols; col++) {
+                    move(row, col, 0, -1);
+                }
+            }
+        } else chk(false);
+    }
+
+    for(int i = 0; i < trows; i++) {
+        for(int j = 0; j < tcols; j++) {
+            if(tapado[i][j] && tb[i][j] == '.') cout << "0";
+            else cout << tb[i][j];
+        }
+        cout << n_l;
+    }
 }
 
 signed main() {

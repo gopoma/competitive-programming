@@ -171,7 +171,23 @@ long long binpow(long long a, long long b) {
 //* /here goes the template!
 
 const char n_l = '\n';
+ll fff(ll x) {
+    return (x * (x + 1)) / 2LL;
+}
 void solve() {
+    ll N;
+    cin >> N;
+
+    ll left = 0; // left is always bad (<)
+    ll right = 1e5; // right is always good (>=)
+    // we need the first good
+    while(left + 1 < right) {
+        ll middle = (left + right) / 2LL;
+        if(fff(middle) >= N) right = middle;
+        else left = middle;
+    }
+
+    cout << right;
 }
 
 signed main() {

@@ -172,6 +172,18 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
+    int n, k;
+    cin >> n >> k;
+
+    int cnt = 0;
+    while(n--) {
+        int t;
+        cin >> t;
+
+        cnt += (t % k == 0);
+    }
+
+    cout << cnt << n_l;
 }
 
 signed main() {

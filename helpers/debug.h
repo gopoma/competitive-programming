@@ -104,3 +104,5 @@ void debug_out(Head H, Tail... T)
 #define dbg(...) cerr << "\e[91m[" << #__VA_ARGS__ << "]:", debug_out(__VA_ARGS__), cerr << "\e[39m"
 #define chk(...) if (!(__VA_ARGS__)) cerr << "\e[91mLine(" << __LINE__ << ") -> function(" \
 		 << __FUNCTION__  << ") -> CHK FAILED: (" << #__VA_ARGS__ << ")" << "\e[39m\n", exit(0);
+#define MACRO(code) do {code} while (false)
+#define RAYA MACRO(cerr << "\e[91m ================ \e[91m" << endl;)

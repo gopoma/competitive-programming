@@ -172,6 +172,11 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
+    int R, G;
+    cin >> R >> G;
+
+    int ans = 2 * G - R;
+    cout << ans << n_l;
 }
 
 signed main() {

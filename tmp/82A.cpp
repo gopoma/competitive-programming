@@ -172,6 +172,36 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
+    ll n;
+    cin >> n;
+
+
+    ll take = 1;
+    ll ff = 1;
+    while(true) {
+        dbg(ff, n, ff + take * 5 - 1);
+        if(ff <= n && n <= ff + take * 5 - 1) break;
+        ff += 5 * take;
+        take *= 2;
+    }
+
+    ll res = -1;
+    ll x = ff;
+    ll y = ff + take - 1;
+    dbg(x, y, ff, take);
+    for(ll i = 0; i < 5; i++) {
+        dbg(x, y);
+        if(x <= n && n <= y) {
+            res = i;
+            break;
+        }
+        x += take;
+        y += take;
+    }
+    chk(res != -1);
+
+    V<str> pp = {"Sheldon", "Leonard", "Penny", "Rajesh", "Howard"};
+    cout << pp[res] << n_l;
 }
 
 signed main() {
