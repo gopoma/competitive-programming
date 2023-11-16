@@ -1,6 +1,6 @@
 // sometimes pragmas don't work, if so, just comment it!
-// #pragma GCC optimize(3,"Ofast","inline")
-// #pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,avx2")
+#pragma GCC optimize(3,"Ofast","inline")
+#pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,avx2")
 
 #include <bits/stdc++.h>
 
@@ -23,10 +23,8 @@ using ll = long long;
 using ull = unsigned long long;
 using db = long double; // or double, if TL is tight
 using str = string; // yay python!
-// using i64 = long long; //? for Number Theory related
-// using u64 = uint64_t; //? for Number Theory related
-// using i128 = __int128; //? for Number Theory related
-// using u128 = __uint128_t; //? for Number Theory related
+// using u128 = __uint128_t; // for Number Theory related
+// using i128 = __int128;
 template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>; // minima
 
 
@@ -168,18 +166,147 @@ long long binpow(long long a, long long b) {
     return res;
 }
 
-
+using u64 = uint64_t;
+using u128 = __uint128_t;
 
 //* here goes the template!
+u64 binpower(u64 base, u64 e, u64 mod) {
+    u64 result = 1;
+    base %= mod;
+    while (e) {
+        if (e & 1)
+            result = (u128)result * base % mod;
+        base = (u128)base * base % mod;
+        e >>= 1;
+    }
+    return result;
+}
+
+bool check_composite(u64 n, u64 a, u64 d, int s) {
+    u64 x = binpower(a, d, n);
+    if (x == 1 || x == n - 1)
+        return false;
+    for (int r = 1; r < s; r++) {
+        x = (u128)x * x % n;
+        if (x == n - 1)
+            return false;
+    }
+    return true;
+};
+
+bool MillerRabin(u64 n) { // returns true if n is prime, else returns false.
+    if (n < 2)
+        return false;
+
+    int r = 0;
+    u64 d = n - 1;
+    while ((d & 1) == 0) {
+        d >>= 1;
+        r++;
+    }
+
+    for (int a : {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37}) {
+        if (n == a)
+            return true;
+        if (check_composite(n, a, d, r))
+            return false;
+    }
+    return true;
+}
 //* /here goes the template!
 
 const char n_l = '\n';
-void solve() {
+
+const int MAXN = int(1e3);
+vector<bool> is_prime(MAXN + 1, true);
+set<int> primes;
+vector<int> pprimes;
+void solve(int n) {
+    // set<int> gaps;
+    // for(int i = 0; i < sz(pprimes) - 1; i++) {
+    //     int diff = pprimes[i + 1] - pprimes[i];
+    //     gaps.emplace(diff);
+    // }
+    // for(int gap = 4; gap <= 300; gap++) {
+    //     if(MillerRabin(gap)) continue;
+    //     if(gap % 2 == 1) continue;
+    //     bool found = false;
+    //     for(auto& x: primes) {
+    //         if(primes.count(gap - x)) {
+    //             found = true;
+    //         }
+    //     }
+    //     if(!found) dbg(gap);
+    //     chk(found);
+    // }
+    chk(n & 1);
+
+    int k;
+    V<int> res;
+    if(MillerRabin(n)) {
+        k = 1;
+        res.eb(n);
+    } else {
+        for(int gap = 2; gap <= 300; gap++) {
+            if(!MillerRabin(n - gap)) continue;
+            if(MillerRabin(gap) && MillerRabin(n - gap)) {
+                k = 2;
+                res.eb(gap);
+                res.eb(n - gap);
+                break;
+            }
+            if(gap & 1) continue;
+
+            bool found = false;
+            for(auto& x: primes) {
+                if(primes.count(gap - x)) {
+                    k = 3;
+                    res.eb(n - gap);
+                    res.eb(x);
+                    res.eb(gap - x);
+                    found = true;
+                    break;
+                }
+            }
+            if(found) break;
+        }
+    }
+
+    // dbg(n, k, res);
+    bool ok = true;
+    for(auto& p: res) ok &= MillerRabin(p);
+    chk(ok && (accumulate(all(res), 0) == n));
+
+    cout << k << n_l;
+    for(auto& p: res) cout << p << " ";
+    cout << n_l;
 }
 
+void precompute() {
+    is_prime[0] = is_prime[1] = false;
+    for (int i = 2; i * i <= MAXN; i++) {
+        if (is_prime[i]) {
+            for (int j = i * i; j <= MAXN; j += i)
+                is_prime[j] = false;
+        }
+    }
+
+    for(int i = 1; i <= MAXN; i++) {
+        if(is_prime[i]) {
+            primes.ins(i);
+            pprimes.eb(i);
+        }
+    }
+}
 
 clock_t startTime;
 double getCurrentTime() { return (double)(clock() - startTime) / CLOCKS_PER_SEC; }
+// https://codeforces.com/contest/584/problem/D
+// D. Dima and Lisa
+/**
+ * There is a fact that the distance between adjacent prime numbers
+ *! isn't big. For n = 10^9 maximal distanse is 282
+*/
 signed main() {
     startTime = clock();
 
@@ -187,12 +314,18 @@ signed main() {
     setIO();
     //? cout << fixed << setprecision(12);
 
+    precompute();
+
     long long t = 1LL;
     //? cin >> t;
 
-    while(t--) {
-        solve();
-    }
+    int n;
+    cin >> n;
+    solve(n);
+
+    // for(int x = 3; x <= int(1e6); x += 2) {
+    //     solve(x);
+    // }
 
     #ifdef LOCAL
         cerr << fixed << setprecision(5);

@@ -23,10 +23,8 @@ using ll = long long;
 using ull = unsigned long long;
 using db = long double; // or double, if TL is tight
 using str = string; // yay python!
-// using i64 = long long; //? for Number Theory related
-// using u64 = uint64_t; //? for Number Theory related
-// using i128 = __int128; //? for Number Theory related
-// using u128 = __uint128_t; //? for Number Theory related
+// using u128 = __uint128_t; // for Number Theory related
+// using i128 = __int128;
 template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>; // minima
 
 
@@ -174,9 +172,42 @@ long long binpow(long long a, long long b) {
 //* /here goes the template!
 
 const char n_l = '\n';
+
+const int MAXN = int(1000000 + 25);
+vector<bool> is_prime(MAXN + 1, true);
+set<int> primes;
 void solve() {
+    dbg(primes);
+    int n;
+    while(true) {
+        cin >> n;
+        if(n == 0) return;
+        chk(n >= 6 && n % 2 == 0);
+
+        bool found = false;
+        for(auto& x: primes) {
+            if(primes.count(n - x)) {
+                cout << n << " = " << x << " + " << (n - x) << n_l;
+                found = true;
+                break;
+            }
+        }
+        chk(found);
+    }
 }
 
+void precompute() {
+    is_prime[0] = is_prime[1] = false;
+    for (int i = 2; i * i <= MAXN; i++) {
+        if (is_prime[i]) {
+            for (int j = i * i; j <= MAXN; j += i)
+                is_prime[j] = false;
+        }
+    }
+
+    for(int i = 1; i <= MAXN; i++)
+        if(is_prime[i]) primes.ins(i);
+}
 
 clock_t startTime;
 double getCurrentTime() { return (double)(clock() - startTime) / CLOCKS_PER_SEC; }
@@ -186,6 +217,8 @@ signed main() {
     // read read read
     setIO();
     //? cout << fixed << setprecision(12);
+
+    precompute();
 
     long long t = 1LL;
     //? cin >> t;

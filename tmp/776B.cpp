@@ -23,10 +23,8 @@ using ll = long long;
 using ull = unsigned long long;
 using db = long double; // or double, if TL is tight
 using str = string; // yay python!
-// using i64 = long long; //? for Number Theory related
-// using u64 = uint64_t; //? for Number Theory related
-// using i128 = __int128; //? for Number Theory related
-// using u128 = __uint128_t; //? for Number Theory related
+// using u128 = __uint128_t; // for Number Theory related
+// using i128 = __int128;
 template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>; // minima
 
 
@@ -174,7 +172,33 @@ long long binpow(long long a, long long b) {
 //* /here goes the template!
 
 const char n_l = '\n';
+bool is_prime(ll n) {
+    for(ll x = 2; x * x <= n; x++) {
+        if(n % x == 0) {
+            return false;
+        }
+    }
+    return (n >= 2);
+}
+
 void solve() {
+    int n;
+    cin >> n;
+
+    V<int> colors(n + 2, 1); // 2, 3, ... n - 1, n, n + 1
+    for(int i = 2; i <= n + 1; i++) {
+        if(!is_prime(i)) continue;
+        for(int j = 2 * i; j <= n + 1; j += i) {
+            if(colors[i] == colors[j]) colors[j]++;
+        }
+    }
+
+    int k = *max_element(all(colors));
+    cout << k << n_l;
+    for(int i = 2; i <= n + 1; i++) {
+        cout << colors[i] << " ";
+    }
+    cout << n_l;
 }
 
 
