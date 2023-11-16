@@ -1,6 +1,6 @@
 // sometimes pragmas don't work, if so, just comment it!
-// #pragma GCC optimize(3,"Ofast","inline")
-// #pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,avx2")
+#pragma GCC optimize(3,"Ofast","inline")
+#pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,avx2")
 
 #include <bits/stdc++.h>
 
@@ -172,12 +172,156 @@ long long binpow(long long a, long long b) {
 //* /here goes the template!
 
 const char n_l = '\n';
+
+const int MAX = int(1e6) + 12; // TODO: SQRT3
+
+long long n;
+vector<int> primes;
+bool composite[MAX];
+vector<long long> divisors;
+vector<pair<long long, int>> factors;
+
+void init(){
+	for(int i = 2; i < MAX; i++){
+		if(not composite[i]) primes.emplace_back(i);
+		for(int p : primes){
+			if(i * p >= MAX) break;
+			composite[i * p] = true;
+			if(i % p == 0) break;
+		}
+	}
+}
+
+void backtracking(int pos, long long val){
+	if(pos == factors.size()){
+		divisors.emplace_back(val);
+		return;
+	}
+	long long p = 1;
+	for(int i = 0; i <= factors[pos].second; i++){
+		backtracking(pos + 1, val * p);
+		p *= factors[pos].first;
+	}
+}
+
+bool has_square_root(long long n){
+	int r = round(sqrt(n));
+	return 1ll * r * r == n;
+}
+
+typedef long long ll;
+typedef unsigned long long ull;
+typedef long double ld;
+
+ull mod_mul(ull a, ull b, ull M) {
+	ll ret = a * b - M * ull(ld(a) * ld(b) / ld(M));
+	return ret + M * (ret < 0) - M * (ret >= (ll)M);
+}
+ull mod_pow(ull b, ull e, ull mod) {
+	ull ans = 1;
+	for (; e; b = mod_mul(b, b, mod), e /= 2)
+		if (e & 1) ans = mod_mul(ans, b, mod);
+	return ans;
+}
+
+bool miller_rabin(ull n){
+	if (n < 2 || n % 6 % 4 != 1) return (n | 1) == 3;
+	ull A[] = {2, 325, 9375, 28178, 450775, 9780504, 1795265022},
+	    s = __builtin_ctzll(n-1), d = n >> s;
+	for(auto a : A) {   // ^ count trailing zeroes
+		ull p = mod_pow(a%n, d, n), i = s;
+		while (p != 1 && p != n - 1 && a % n && i--)
+			p = mod_mul(p, p, n);
+		if (p != n-1 && i != s) return 0;
+	}
+	return 1;
+}
+
+ull pollard_rho(ull n) {
+	auto f = [n](ull x) { return mod_mul(x, x, n) + 1; };
+	ull x = 0, y = 0, t = 0, prd = 2, i = 1, q;
+	while (t++ % 40 || __gcd(prd, n) == 1) {
+		if (x == y) x = ++i, y = f(x);
+		if ((q = mod_mul(prd, max(x,y) - min(x,y), n))) prd = q;
+		x = f(x), y = f(f(y));
+	}
+	return __gcd(prd, n);
+}
+
+void factorize(){
+	for(int p : primes){
+		if(p * p * p > n) break;
+		int e = 0;
+		while(n % p == 0){
+			n /= p;
+			e++;
+		}
+		if(e) factors.emplace_back(make_pair(p, e));
+	}
+	if(miller_rabin(n)){
+		factors.emplace_back(make_pair(n, 1));
+	}
+	else if(has_square_root(n)){
+		factors.emplace_back(make_pair((long long)round(sqrt(n)), 2));
+	}
+	else{
+		long long d = pollard_rho(n);
+		factors.emplace_back(make_pair(d, 1));
+		factors.emplace_back(make_pair(n / d, 1));
+	}
+	backtracking(0, 1);
+}
+
+ll nxt(ll left, ll need) {
+    //? https://math.stackexchange.com/questions/973057/find-smallest-number-bigger-than-y-that-is-multiple-of-x
+    ll next = (fdiv(left, need) + 1) * need;
+    return next;
+}
+
 void solve() {
+    divisors.clear();
+    factors.clear();
+
+    ll a, b, c, d;
+    cin >> a >> b >> c >> d;
+    chk(1LL <= a && a < c);
+    chk(1LL <= b && b < d);
+
+    // a < x <= c
+    // b < y <= d
+
+    n = a * b;
+    factorize();
+    remDup(divisors);
+
+    n = a * b; // TODO: this is so important since n is being /=
+    dbg(a, b, c ,d);
+    dbg(n, divisors);
+    for(auto& e: divisors) {
+        ll x = e;
+        ll y = n / e;
+        x = nxt(a, x);
+        y = nxt(b, y);
+        if((a < x && x <= c) && (b < y && y <= d)) {
+            dbg("restrict :c", a, c, b, d);
+            dbg("solu >:v", x, y);
+            chk(a < x && x <= c);
+            chk(b < y && y <= d);
+            chk(((x * y) % (a * b)) == 0LL);
+            cout << x << " " << y << n_l;
+            return;
+        }
+    }
+    cout << "-1 -1\n";
+    RAYA;
 }
 
 
 clock_t startTime;
 double getCurrentTime() { return (double)(clock() - startTime) / CLOCKS_PER_SEC; }
+
+//! https://codeforces.com/contest/1744/problem/E2
+//! E2. Divisible Numbers (hard version)
 signed main() {
     startTime = clock();
 
@@ -185,8 +329,10 @@ signed main() {
     setIO();
     //? cout << fixed << setprecision(12);
 
+    init(); // TODO: do not forget the init >:v
+
     long long t = 1LL;
-    //? cin >> t;
+    cin >> t;
 
     while(t--) {
         solve();

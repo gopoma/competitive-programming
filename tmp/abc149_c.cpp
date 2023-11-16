@@ -11,9 +11,9 @@ using namespace std;
 #ifdef LOCAL
     #include "helpers/debug.h"
 #else
-    #define dbg(...)     0
-    #define chk(...)     0
-    #define RAYA         0
+    #define dbg(...) 0
+    #define chk(...) 0
+    #define RAYA     0
 #endif
 
 
@@ -172,18 +172,37 @@ long long binpow(long long a, long long b) {
 //* /here goes the template!
 
 const char n_l = '\n';
+
+const int MAXN = int(2e5);
+vector<bool> is_prime(MAXN + 1, true);
+set<int> primes;
 void solve() {
+    int X;
+    cin >> X;
+
+    int ans = *primes.lower_bound(X);
+    cout << ans << n_l;
 }
 
+void precompute() {
+    is_prime[0] = is_prime[1] = false;
+    for (int i = 2; i * i <= MAXN; i++) {
+        if (is_prime[i]) {
+            for (int j = i * i; j <= MAXN; j += i)
+                is_prime[j] = false;
+        }
+    }
 
-clock_t startTime;
-double getCurrentTime() { return (double)(clock() - startTime) / CLOCKS_PER_SEC; }
+    for(int i = 1; i <= MAXN; i++)
+        if(is_prime[i]) primes.ins(i);
+}
+
 signed main() {
-    startTime = clock();
-
     // read read read
     setIO();
     //? cout << fixed << setprecision(12);
+
+    precompute();
 
     long long t = 1LL;
     //? cin >> t;
@@ -191,13 +210,6 @@ signed main() {
     while(t--) {
         solve();
     }
-
-    #ifdef LOCAL
-        cerr << fixed << setprecision(5);
-        cerr << "\033[32m++++++++++++++++++++\n";
-        cerr << "time = " << getCurrentTime() << "ms\n";
-        cerr << "++++++++++++++++++++\n";
-    #endif
 
     // should actually read the stuff at the bottom
 }

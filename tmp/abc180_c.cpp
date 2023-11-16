@@ -14,6 +14,7 @@ using namespace std;
     #define dbg(...)     0
     #define chk(...)     0
     #define RAYA         0
+    #define eprintf(...) 0
 #endif
 
 
@@ -173,6 +174,23 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
+    ll N;
+    cin >> N;
+
+    V<ll> res;
+    for(ll x = 1; x * x <= N; x++) {
+        if(N % x == 0) {
+            if(x == N / x) {
+                res.eb(x);
+            } else {
+                res.eb(x);
+                res.eb(N / x);
+            }
+        }
+    }
+
+    sor(res);
+    for(auto& e: res) cout << e << n_l;
 }
 
 
@@ -192,12 +210,9 @@ signed main() {
         solve();
     }
 
-    #ifdef LOCAL
-        cerr << fixed << setprecision(5);
-        cerr << "\033[32m++++++++++++++++++++\n";
-        cerr << "time = " << getCurrentTime() << "ms\n";
-        cerr << "++++++++++++++++++++\n";
-    #endif
+    eprintf("++++++++++++++++++++\n");
+    eprintf("time = %.5lf\n", getCurrentTime());
+    eprintf("++++++++++++++++++++\n");
 
     // should actually read the stuff at the bottom
 }
