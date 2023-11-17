@@ -171,46 +171,39 @@ long long binpow(long long a, long long b) {
 
 
 //* here goes the template!
-// Function to rightRotate array
-void RightRotate(vector<int>& arr, int k) {
-    const int n = int(arr.size());
-    k = k % n;
-    int i, j;
-    // Reverse last k numbers
-    for (i = n - k, j = n - 1; i < j; i++, j--) {
-        int temp = arr[i];
-        arr[i] = arr[j];
-        arr[j] = temp;
-    }
-    // Reverse the first n-k terms
-    for (i = 0, j = n - k - 1; i < j; i++, j--) {
-        int temp = arr[i];
-        arr[i] = arr[j];
-        arr[j] = temp;
-    }
-    // Reverse the entire array
-    for (i = 0, j = n - 1; i < j; i++, j--) {
-        int temp = arr[i];
-        arr[i] = arr[j];
-        arr[j] = temp;
-    }
-}
-
-int mex(vector<int> const& A) {
-    set<int> b(A.begin(), A.end());
-
-    int result = 0;
-    while (b.count(result))
-        ++result;
-    return result;
-}
 //* /here goes the template!
 
 const char n_l = '\n';
 void solve() {
-    RAYA;
-    RAYA;
-    RAYA;
+    int n;
+    cin >> n;
+
+    V<ll> a(n);
+    for(auto& x: a) cin >> x;
+
+    V<int> divisors;
+    for(int x = 1; x * x <= n; x++) {
+        if(n % x == 0) {
+            divisors.eb(x);
+            if(x != n / x) divisors.eb(n / x);
+        }
+    }
+
+    ll res = -BIG;
+    for(auto& d: divisors) {
+        // take groups of d boxes
+        V<ll> sums;
+        for(int i = 0; i < n / d; i++) {
+            ll sum = 0;
+            for(int j = 0; j < d; j++) {
+                sum += a[d * i + j];
+            }
+            sums.eb(sum);
+        }
+        sor(sums);
+        ckmax(res, sums.back() - sums.front());
+    }
+    cout << res << n_l;
 }
 
 
@@ -220,7 +213,7 @@ signed main() {
     startTime = clock();
 
     // read read read
-    setIO();
+    setIO("B");
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
