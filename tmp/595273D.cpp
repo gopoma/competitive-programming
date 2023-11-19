@@ -174,58 +174,28 @@ long long binpow(long long a, long long b) {
 //* /here goes the template!
 
 const char n_l = '\n';
-ll maxSubArraySum(vector<ll>& a) {
-    const int size = int(a.size());
-    ll max_so_far = -BIG, max_ending_here = 0;
-
-    for(int i = 0; i < size; i++) {
-        max_ending_here = max_ending_here + a[i];
-        if (max_so_far < max_ending_here)
-            max_so_far = max_ending_here;
-
-        if (max_ending_here < 0)
-            max_ending_here = 0;
-    }
-    return max_so_far;
-}
-
 void solve() {
-    int n;
-    cin >> n;
+    int N, M;
+    cin >> N >> M;
 
-    V<ll> a(n);
-    for(auto& x: a) cin >> x;
+    map<int, int> cnt;
 
-    V<V<ll>> candidates;
-    int current = 0;
-    candidates.eb(V<ll>());
+    int gozu = -1;
+    cnt[gozu] = INT_MIN;
 
-    ll current_ele = a[0];
-    candidates[current].eb(current_ele);
-    for(int i = 1; i < n; i++) {
-        if(abs(current_ele % 2LL) == abs(a[i] % 2LL)) {
-            // no add a[i]
-            candidates.eb(V<ll>());
-            current++;
-            current_ele = a[i];
-            candidates[current].eb(current_ele);
-        } else {
-            current_ele = a[i];
-            candidates[current].eb(current_ele);
+    for(int i = 0; i < M; i++) {
+        int A;
+        cin >> A;
+
+        cnt[A]++;
+        if(cnt[A] > cnt[gozu] || (cnt[A] == cnt[gozu] && A < gozu)) {
+            gozu = A;
         }
-    }
 
-    ll ans = -BIG;
-    for(auto& candidate: candidates) {
-        ckmax(ans, maxSubArraySum(candidate));
+        cout << gozu << n_l;
     }
-    dbg(ans);
-    cout << ans << n_l;
-
-    RAYA;
-    RAYA;
-    RAYA;
 }
+
 
 
 clock_t startTime;
@@ -238,7 +208,7 @@ signed main() {
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
-    cin >> t;
+    //? cin >> t;
 
     while(t--) {
         solve();

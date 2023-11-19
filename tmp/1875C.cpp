@@ -13,13 +13,7 @@ using namespace std;
 #else
     #define dbg(...)     0
     #define chk(...)     0
-
-    #define DBG(x)        0
-    #define DBGY(x)       0
-    #define DBG2(x,y)     0
-    #define DBG3(x,y,z)   0
-    #define DBG4(x,y,z,w) 0
-    #define RAYA          0
+    #define RAYA         0
 #endif
 
 
@@ -180,7 +174,51 @@ long long binpow(long long a, long long b) {
 //* /here goes the template!
 
 const char n_l = '\n';
+
 void solve() {
+    ll n, m;
+    cin >> n >> m;
+
+    //? https://math.stackexchange.com/questions/197478/detecting-that-a-fraction-is-a-repeating-decimal
+    ll m_tmp = m / gcd(n, m);
+    while(m_tmp % 2LL == 0LL) { m_tmp /= 2LL; }
+
+
+    bool ok = m_tmp == 1LL;
+    if(!ok) cout << "-1\n";
+    else {
+        dbg("POSSIBLE");
+        // we need n / m
+        ll simply = gcd(n, m);
+        n /= simply;
+        m /= simply;
+
+        V<ll> targets;
+        for (ll i = 0LL; i < 32LL; i++) {
+            if (n & (1LL << i)) {
+                targets.eb(1LL << i);
+            }
+        }
+        dbg(n, m, simply, targets);
+
+        ll res = 0;
+        for(auto& x: targets) {
+            // x and m is power of two
+            if(x >= m) continue;
+            chk(x < m);
+            while(x < m) {
+                res += x;
+                x *= 2LL;
+            }
+        }
+
+        res *= simply;
+        cout << res << n_l;
+    }
+
+    RAYA;
+    RAYA;
+    RAYA;
 }
 
 
@@ -195,7 +233,7 @@ signed main() {
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
-    //? cin >> t;
+    cin >> t;
 
     while(t--) {
         solve();

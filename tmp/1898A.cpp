@@ -181,6 +181,31 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
+    int n, k; str S;
+    cin >> n >> k >> S;
+
+    V<int> a;
+    V<int> b;
+    for(int i = 0; i < n; i++) {
+        if(S[i] == 'A')
+            a.eb(i);
+        if(S[i] == 'B')
+            b.eb(i);
+    }
+
+    int Bcount = sz(b);
+    if(Bcount == k) cout << "0\n";
+    else if(Bcount < k) {
+        // need k - Bcount Bs
+        cout << 1 << n_l;
+        cout << (a[k - Bcount - 1] + 1) << " B" << n_l;
+    } else {
+        // Bcount > k
+        // need to erase Bcount - k Bs
+        cout << 1 << n_l;
+        cout << (b[Bcount - k - 1] + 1) << " A" << n_l;
+    }
+    RAYA;
 }
 
 
@@ -195,7 +220,7 @@ signed main() {
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
-    //? cin >> t;
+    cin >> t;
 
     while(t--) {
         solve();

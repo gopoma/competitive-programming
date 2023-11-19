@@ -11,8 +11,8 @@ using namespace std;
 #ifdef LOCAL
     #include "helpers/debug.h"
 #else
-    #define dbg(...)     0
-    #define chk(...)     0
+    #define dbg(...)      0
+    #define chk(...)      0
 
     #define DBG(x)        0
     #define DBGY(x)       0
@@ -181,6 +181,61 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
+    int n; str S;
+    cin >> n >> S;
+
+    deque<char> ddd;
+    for(auto& c: S) ddd.push_back(c);
+
+    int left = 0, right = n;
+    int ops = 0;
+    bool ok = true;
+    V<int> res;
+    while(true) {
+        if(ddd.front() != ddd.back()) {
+            ddd.pop_front();
+            ddd.pop_back();
+
+            left++;
+            right--;
+        } else {
+            chk(ddd.front() == ddd.back());
+
+            if(ddd.front() == '0') {
+                res.eb(right);
+                ddd.push_back('0');
+                ddd.push_back('1');
+
+                right += 2;
+            } else {
+                chk(ddd.front() == '1');
+
+                res.eb(left);
+
+                ddd.push_front('1');
+                ddd.push_front('0');
+
+                right += 2;
+            }
+
+            ops++;
+        }
+
+        if(ops > 300) { ok = false; break; }
+        if(ddd.empty()) break;
+    }
+
+    DBG("ans");
+    if(!ok) cout << "-1\n";
+    else {
+        cout << ops << n_l;
+        for(auto& x: res) cout << x << " ";
+        cout << n_l;
+    }
+
+    RAYA;
+    RAYA;
+    RAYA;
 }
 
 
@@ -195,7 +250,7 @@ signed main() {
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
-    //? cin >> t;
+    cin >> t;
 
     while(t--) {
         solve();

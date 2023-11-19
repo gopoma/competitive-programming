@@ -180,7 +180,31 @@ long long binpow(long long a, long long b) {
 //* /here goes the template!
 
 const char n_l = '\n';
+ll fff(ll x) {
+    return ((x * (x - 1LL)) / 2LL);
+}
+
 void solve() {
+    ll n, m;
+    cin >> n >> m;
+
+    if(m == 1) cout << fff(n) << " " << fff(n);
+    else {
+        ll go = cdiv(n, m);
+        // go * x + (go - 1) * y = n
+        // x should be maximal
+        ll mn = -1;
+        if(n % m) {
+            ll x = n % m;
+            ll y = m - x;
+
+            mn = x * fff(go) + y * fff(go - 1LL);
+        } else mn = m * fff(go);
+        assert(mn >= 0);
+        ll mx = fff(n - m + 1);
+        cout << mn << " " << mx;
+    }
+    cout << n_l;
 }
 
 

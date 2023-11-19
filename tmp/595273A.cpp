@@ -13,13 +13,7 @@ using namespace std;
 #else
     #define dbg(...)     0
     #define chk(...)     0
-
-    #define DBG(x)        0
-    #define DBGY(x)       0
-    #define DBG2(x,y)     0
-    #define DBG3(x,y,z)   0
-    #define DBG4(x,y,z,w) 0
-    #define RAYA          0
+    #define RAYA         0
 #endif
 
 
@@ -181,6 +175,11 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
+    str S;
+    cin >> S;
+
+    for(auto& x: S) cout << x << " ";
+    cout << n_l;
 }
 
 

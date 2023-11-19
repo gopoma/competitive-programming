@@ -13,13 +13,7 @@ using namespace std;
 #else
     #define dbg(...)     0
     #define chk(...)     0
-
-    #define DBG(x)        0
-    #define DBGY(x)       0
-    #define DBG2(x,y)     0
-    #define DBG3(x,y,z)   0
-    #define DBG4(x,y,z,w) 0
-    #define RAYA          0
+    #define RAYA         0
 #endif
 
 
@@ -180,7 +174,44 @@ long long binpow(long long a, long long b) {
 //* /here goes the template!
 
 const char n_l = '\n';
+
 void solve() {
+    int n, k, a, b;
+    cin >> n >> k >> a >> b;
+    a--; b--;
+
+    V<pair<ll, ll>> cities(n);
+    for(auto& it: cities) cin >> it.first >> it.second;
+
+    auto distance = [&](int i, int j) {
+        if((0 <= i && i < k) && (0 <= j && j < k)) return 0LL;
+        return (abs(cities[i].first - cities[j].first) + abs(cities[i].second - cities[j].second));
+    };
+
+    if(k == 0) cout << distance(a, b) << n_l;
+    else {
+        int nearest_a = 0;
+        int nearest_b = 0;
+        for(int i = 0; i < k; i++) {
+            if(distance(a, i) < distance(a, nearest_a)) {
+                nearest_a = i;
+            }
+
+            if(distance(b, i) < distance(b, nearest_b)) {
+                nearest_b = i;
+            }
+        }
+
+        ll res = min(
+            distance(a, b),
+            distance(a, nearest_a) + distance(nearest_b, b)
+        );
+        cout << res << n_l;
+    }
+
+    RAYA;
+    RAYA;
+    RAYA;
 }
 
 
@@ -195,7 +226,7 @@ signed main() {
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
-    //? cin >> t;
+    cin >> t;
 
     while(t--) {
         solve();

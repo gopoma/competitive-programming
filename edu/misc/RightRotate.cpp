@@ -13,13 +13,7 @@ using namespace std;
 #else
     #define dbg(...)     0
     #define chk(...)     0
-
-    #define DBG(x)        0
-    #define DBGY(x)       0
-    #define DBG2(x,y)     0
-    #define DBG3(x,y,z)   0
-    #define DBG4(x,y,z,w) 0
-    #define RAYA          0
+    #define RAYA         0
 #endif
 
 
@@ -177,16 +171,90 @@ long long binpow(long long a, long long b) {
 
 
 //* here goes the template!
+int mex(vector<int> const& A) {
+    set<int> b(A.begin(), A.end());
+
+    int result = 0;
+    while (b.count(result))
+        ++result;
+    return result;
+}
 //* /here goes the template!
+
+void RightRotate(vector<int>& arr, int k) {
+    const int n = int(arr.size());
+
+    // Reduce the number of rotations
+    k %= n;
+
+    // Reverse the first part of the array
+    reverse(arr.begin(), arr.begin() + n - k);
+
+    // Reverse the second part of the array
+    reverse(arr.begin() + n - k, arr.begin() + n);
+
+    // Reverse the entire array
+    reverse(arr.begin(), arr.begin() + n);
+}
 
 const char n_l = '\n';
 void solve() {
+    int n, m;
+    cin >> n >> m;
+
+    V<V<int>> mtx(n, V<int>(m, INT_MIN));
+
+    V<int> base;
+    for(int x = 0; x < m; x++) base.eb(x);
+
+    int idx = 0;
+    for(; idx < n; idx++) {
+        for(int j = 0; j < m; j++) {
+            mtx[idx][j] = base[j];
+        }
+
+        int where = idx;
+        if(where == m - 1) break;
+
+        RightRotate(base, 1);
+    }
+
+    for(; idx < n; idx++) {
+        for(int j = 0; j < m; j++) {
+            mtx[idx][j] = j;
+        }
+    }
+
+    V<int> b;
+    for(int col = 0; col < m; col++) {
+        V<int> aux;
+        for(int row = 0; row < n; row++) {
+            aux.eb(mtx[row][col]);
+        }
+
+        b.eb(mex(aux));
+    }
+    dbg(b);
+    int res = mex(b);
+    cout << res << n_l;
+
+    for(int row = 0; row < n; row++) {
+        for(int col = 0; col < m; col++) {
+            cout << mtx[row][col] << " ";
+        }
+        cout << n_l;
+    }
+    RAYA;
+    RAYA;
+    RAYA;
 }
 
 
 
 clock_t startTime;
 double getCurrentTime() { return (double)(clock() - startTime) / CLOCKS_PER_SEC; }
+// https://codeforces.com/contest/1875/problem/C
+// C. Jellyfish and Green Apple
 signed main() {
     startTime = clock();
 
@@ -195,7 +263,7 @@ signed main() {
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
-    //? cin >> t;
+    cin >> t;
 
     while(t--) {
         solve();

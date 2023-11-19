@@ -181,6 +181,27 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
+    int n;
+    cin >> n;
+
+    V<ll> a(n);
+    for(auto& x: a) cin >> x;
+
+    ll cnt = 0;
+    ll komp = a.back();
+    for(int i = n - 2; i >= 0; i--) {
+        if(a[i] > komp) {
+            ll times = cdiv(a[i], komp);
+            komp = fdiv(a[i], times);
+
+            cnt += times - 1LL;
+        } else komp = a[i];
+    }
+
+    cout << cnt << n_l;
+    RAYA;
+    RAYA;
+    RAYA;
 }
 
 
@@ -195,7 +216,7 @@ signed main() {
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
-    //? cin >> t;
+    cin >> t;
 
     while(t--) {
         solve();

@@ -181,6 +181,24 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
+    int n, m, k;
+    cin >> n >> m >> k;
+
+    V<int> soldiers(m);
+    for(auto& x: soldiers) cin >> x;
+
+    int Fedor;
+    cin >> Fedor;
+
+    int cnt = 0;
+    for(auto& x: soldiers) {
+        int diffs = 0;
+        for (int i = 28; i >= 0; i--) {
+            if((x & (1 << i)) != (Fedor & (1 << i))) diffs++;
+        }
+        cnt += (diffs <= k);
+    }
+    cout << cnt << n_l;
 }
 
 

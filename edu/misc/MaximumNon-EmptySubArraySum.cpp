@@ -13,13 +13,7 @@ using namespace std;
 #else
     #define dbg(...)     0
     #define chk(...)     0
-
-    #define DBG(x)        0
-    #define DBGY(x)       0
-    #define DBG2(x,y)     0
-    #define DBG3(x,y,z)   0
-    #define DBG4(x,y,z,w) 0
-    #define RAYA          0
+    #define RAYA         0
 #endif
 
 
@@ -180,13 +174,64 @@ long long binpow(long long a, long long b) {
 //* /here goes the template!
 
 const char n_l = '\n';
-void solve() {
+ll maxSubArraySum(vector<ll>& a) {
+    const int size = int(a.size());
+    ll max_so_far = -BIG, max_ending_here = 0;
+
+    for(int i = 0; i < size; i++) {
+        max_ending_here = max_ending_here + a[i];
+        if (max_so_far < max_ending_here)
+            max_so_far = max_ending_here;
+
+        if (max_ending_here < 0)
+            max_ending_here = 0;
+    }
+    return max_so_far;
 }
 
+void solve() {
+    int n;
+    cin >> n;
+
+    V<ll> a(n);
+    for(auto& x: a) cin >> x;
+
+    V<V<ll>> candidates;
+    int current = 0;
+    candidates.eb(V<ll>());
+
+    ll current_ele = a[0];
+    candidates[current].eb(current_ele);
+    for(int i = 1; i < n; i++) {
+        if(abs(current_ele % 2LL) == abs(a[i] % 2LL)) {
+            // no add a[i]
+            candidates.eb(V<ll>());
+            current++;
+            current_ele = a[i];
+            candidates[current].eb(current_ele);
+        } else {
+            current_ele = a[i];
+            candidates[current].eb(current_ele);
+        }
+    }
+
+    ll ans = -BIG;
+    for(auto& candidate: candidates) {
+        ckmax(ans, maxSubArraySum(candidate));
+    }
+    dbg(ans);
+    cout << ans << n_l;
+
+    RAYA;
+    RAYA;
+    RAYA;
+}
 
 
 clock_t startTime;
 double getCurrentTime() { return (double)(clock() - startTime) / CLOCKS_PER_SEC; }
+// https://codeforces.com/contest/1899/problem/C
+// C. Yarik and Array
 signed main() {
     startTime = clock();
 
@@ -195,7 +240,7 @@ signed main() {
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
-    //? cin >> t;
+    cin >> t;
 
     while(t--) {
         solve();
