@@ -1,12 +1,10 @@
 // sometimes pragmas don't work, if so, just comment it!
-// #pragma GCC optimize(3,"Ofast","inline")
-// #pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,avx2")
+// #pragma GCC optimize ("Ofast")
+// #pragma GCC target ("avx2")
 
 #include <bits/stdc++.h>
 
 using namespace std;
-
-
 
 #ifdef LOCAL
     #include "helpers/debug.h"
@@ -181,6 +179,7 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
+
 }
 
 
@@ -203,9 +202,9 @@ signed main() {
 
     #ifdef LOCAL
         cerr << fixed << setprecision(5);
-        cerr << "\033[32m++++++++++++++++++++\n";
-        cerr << "time = " << getCurrentTime() << "ms\n";
-        cerr << "++++++++++++++++++++\n";
+        cerr << "\033[42m++++++++++++++++++++\033[0m\n";
+        cerr << "\033[42mtime = " << getCurrentTime() << "ms\033[0m\n";
+        cerr << "\033[42m++++++++++++++++++++\033[0m";
     #endif
 
     // should actually read the stuff at the bottom
