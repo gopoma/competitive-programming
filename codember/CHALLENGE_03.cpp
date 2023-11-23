@@ -17,5 +17,5 @@ signed main() {
         if(!(mn <= cnt[c] && cnt[c] <= mx)) bads.emplace_back(password);
     }
 
-    cout << bads[41] << "\n";
+    cout << bads[12] << "\n";
 }
