@@ -179,6 +179,22 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
+    int n;
+    cin >> n;
+
+    vi X(n);
+    for(auto& x: X) cin >> x;
+
+    stack<pair<int, int>> S;
+    for(int i = 0; i < n; i++) {
+        while(!S.empty() && S.top().first >= X[i]) S.pop();
+
+        if(S.empty()) cout << "0 ";
+        else cout << (S.top().second + 1) << " ";
+
+        S.push(mp(X[i], i));
+    }
+    cout << n_l;
     RAYA;
 }
 

@@ -179,6 +179,23 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
+    int n;
+    cin >> n;
+
+    vi X(n);
+    for(auto& x: X) cin >> x;
+
+    map<int, bool> there;
+    int cnt = 0;
+    for(auto& x: X) {
+        if(!there[x - 1]) {
+            cnt++;
+        }
+        there[x] = true;
+    }
+
+    cout << cnt << n_l;
+
     RAYA;
 }
 

@@ -179,6 +179,24 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
+    int n;
+    cin >> n;
+
+    vi K(n);
+    for(auto& x: K) cin >> x;
+
+    multiset<int> mm;
+    int cnt = 0;
+    for(auto& x: K) {
+        auto pp = mm.upper_bound(x);
+        if(pp != mm.end()) erase(mm, *pp);
+        else cnt++;
+
+        mm.emplace(x);
+    }
+
+    cout << cnt << n_l;
+
     RAYA;
 }
 

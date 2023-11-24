@@ -178,8 +178,78 @@ long long binpow(long long a, long long b) {
 //* /here goes the template!
 
 const char n_l = '\n';
+
 void solve() {
-    RAYA;
+    int n; ll x;
+    cin >> n >> x;
+
+    V<pair<ll, int>> A;
+    for(int i = 0; i < n; i++) {
+        ll a;
+        cin >> a;
+
+        A.eb(mp(a, i));
+    }
+    sor(A);
+
+    bool ok = false;
+    vi res;
+    for(int i = 0; i < n; i++) {
+        RAYA;
+        RAYA;
+        RAYA;
+        V<pair<ll, int>> X;
+        for(int j = 0; j < n; j++) {
+            if(j == i) continue;
+            X.eb(mp(A[j].first, A[j].second));
+        }
+
+        for(auto& e: X) dbg(e.first, e.second);
+        RAYA;
+
+
+        //? 2SUM on X and need
+        ll need = x - A[i].first;
+
+        int left = 0;
+        int right = sz(X) - 1;
+
+        if(min(left, right) < 0) break;
+
+        ll current = X[left].first + X[right].first;
+        bool local_ok = false;
+
+        while(left < right) {
+            dbg(left, right, current, need);
+            if(current == need) {
+                res.eb(A[i].second);
+                res.eb(X[left].second);
+                res.eb(X[right].second);
+
+                local_ok = true;
+
+                break;
+            }
+
+            if(current < need) {
+                current -= X[left++].first;
+                current += X[left].first;
+            } else {
+                current -= X[right--].first;
+                current += X[right].first;
+            }
+        }
+
+        ok |= local_ok;
+        if(ok) break;
+    }
+
+    if(!ok) cout << "IMPOSSIBLE";
+    else {
+        sor(res);
+        for(auto& e: res) cout << (e + 1) << " ";
+    }
+    cout << n_l;
 }
 
 

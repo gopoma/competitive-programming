@@ -179,6 +179,30 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
+    int n;
+    cin >> n;
+
+    vi K(n);
+    for(auto& x: K) cin >> x;
+
+    map<int, bool> already;
+    int ans = 0;
+    for(int left = 0, right = 0; right < n; right++) {
+        if(already[K[right]]) {
+            while(K[left] != K[right]) {
+                already[K[left]] = false;
+                left++;
+            }
+            left++;
+
+            chk(left <= right);
+        }
+
+        already[K[right]] = true;
+        ckmax(ans, right - left + 1);
+    }
+    cout << ans << n_l;
+
     RAYA;
 }
 

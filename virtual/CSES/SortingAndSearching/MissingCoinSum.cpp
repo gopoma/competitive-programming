@@ -179,7 +179,24 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
-    RAYA;
+    int n;
+    cin >> n;
+
+    V<ll> X(n);
+    for(auto& x: X) cin >> x;
+    sor(X);
+
+    ll k = 0;
+    int i = 0;
+    for(; i < n; i++) {
+        k++;
+        if(k - X[i] >= 0) {
+            k += X[i] - 1;
+        } else break;
+    }
+    if(i == n) k++;
+
+    cout << k << n_l;
 }
 
 

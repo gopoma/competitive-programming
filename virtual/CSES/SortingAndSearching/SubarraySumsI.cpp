@@ -179,6 +179,25 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
+    int n, x;
+    cin >> n >> x;
+
+    vi A(n);
+    for(auto& e: A) cin >> e;
+
+    int cnt = 0;
+    int sum = 0;
+    for(int left = 0, right = 0; right < n; right++) {
+        dbg(left, right);
+        if(sum == x) cnt++;
+
+        sum += A[right];
+
+        while(sum > x) sum -= A[left++];
+    }
+    if(sum == x) cnt++;
+
+    cout << cnt << n_l;
     RAYA;
 }
 
