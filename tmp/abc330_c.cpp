@@ -175,10 +175,39 @@ long long binpow(long long a, long long b) {
 
 
 //* here goes the template!
+bool isPerfectSquare(long double x) {
+    if (x >= 0) {
+        long long sr = sqrt(x);
+
+        return (sr * sr == x);
+    }
+    return false;
+}
 //* /here goes the template!
 
 const char n_l = '\n';
 void solve() {
+    ll D;
+    cin >> D;
+
+    set<ll> S;
+    for(ll x = 1; x * x <= 2LL * D; x++) {
+        S.emplace(x * x);
+    }
+
+    ll ans = BIG;
+    for(ll x = 1; x * x <= D; x++) {
+        ll yy = D - x * x;
+        if(isPerfectSquare(yy)) {
+            ckmin(ans, 0LL);
+        } else {
+            auto k = S.lower_bound(yy);
+            ckmin(ans, abs(D - x * x - (*k)));
+            k--;
+            ckmin(ans, abs(D - x * x - (*k)));
+        }
+    }
+    cout << ans << n_l;
     RAYA;
     RAYA;
     RAYA;
