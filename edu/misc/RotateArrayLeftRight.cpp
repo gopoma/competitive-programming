@@ -298,6 +298,7 @@ void solve() {
         sor(aaa);
         sor(b);
 
+        //! https://www.geeksforgeeks.org/rotate-in-cpp-stl/
         rotate(b.begin(), b.begin() + target, b.end());
 
         vl ans(n);
@@ -323,6 +324,8 @@ void solve() {
 
 clock_t startTime;
 double getCurrentTime() { return (double)(clock() - startTime) / CLOCKS_PER_SEC; }
+//? https://codeforces.com/contest/1896/problem/C
+//? C. Matching Arrays
 signed main() {
     startTime = clock();
 
