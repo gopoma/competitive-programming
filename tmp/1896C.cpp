@@ -290,14 +290,27 @@ void solve() {
     if(!(mn <= target && target <= mx)) cout << "NO\n";
     else {
         cout << "YES\n";
-        for(int i = 0; i < target; i++) {
-            int idx = n - i - 1;
-            if(a[i] > b[i]) continue;
-            else if(a[i] == b[i]) {
-                i--;
-                continue;
-            }
+        vpl aaa;
+        for(int i = 0; i < n; i++) {
+            aaa.eb(mp(a[i], i));
         }
+
+        sor(aaa);
+        sor(b);
+
+        rotate(b.begin(), b.begin() + target, b.end());
+
+        vl ans(n);
+        for(int i = 0; i < n; i++) {
+            ans[aaa[i].second] = b[i];
+        }
+
+        int cnt = 0;
+        for(int i = 0; i < n; i++) cnt += (a[i] > ans[i]);
+        dbg(cnt, target);
+        chk(cnt == target);
+
+        for(int i = 0; i < n; i++) cout << ans[i] << " \n"[i == n - 1];
     }
 
     sor(a);
