@@ -178,23 +178,36 @@ long long binpow(long long a, long long b) {
 //* /here goes the template!
 
 const char n_l = '\n';
-void solve() {
-    int n, m, k;
-    cin >> n >> m >> k;
-
-    vector<vector<bool>> asientos(n, vector<bool>(m, false));
-    for(int _ = 0; _ < k; _++) {
-        int x, y;
-        cin >> x >> y;
-        x--; y--;
-
-        bool ocupado = asientos[x][y];
-        if(!ocupado) {
-            cout << (x + 1) << " " << (y + 1) << n_l;
-            asientos[x][y] = true;
-        } else {
-
+bool isPalindrome(vl& a) {
+    const int n = sz(a);
+    for(int i = 0; i < n; i++) {
+        if(a[i] != a[n - i - 1]) {
+            return false;
         }
+    }
+    return true;
+}
+
+void solve() {
+    int n;
+    cin >> n;
+
+    vl a(n);
+    for(auto& x: a) cin >> x;
+    dbg("go");
+
+    if(isPalindrome(a)) cout << "0\n";
+    else {
+        set<ll> diffs;
+        for(int i = 0; i < n/2; i++) {
+            diffs.emplace(abs(a[i] - a[n - i - 1]));
+        }
+
+        ll ans = 0;
+        for(auto& x: diffs) {
+            ans = gcd(ans, x);
+        }
+        cout << ans << n_l;
     }
 
     RAYA;
@@ -214,7 +227,7 @@ signed main() {
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
-    //? cin >> t;
+    cin >> t;
 
     while(t--) {
         solve();
