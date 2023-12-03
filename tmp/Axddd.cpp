@@ -175,21 +175,57 @@ long long binpow(long long a, long long b) {
 
 
 //* here goes the template!
-int rng_int(int L, int R) { assert(L <= R);
-	return uniform_int_distribution<int>(L,R)(rng);  }
-ll rng_ll(ll L, ll R) { assert(L <= R);
-	return uniform_int_distribution<ll>(L,R)(rng);  }
 //* /here goes the template!
+const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
+const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 const char n_l = '\n';
 void solve() {
-    const int N = rng_int(3, 100);
-    cout << N << n_l;
-    for(int i = 0; i < N; i++) {
-        cout << rng_int(1, int(2e9)) << " ";
+    const int n = 3;
+    vs M(n);
+    for(auto& x: M) cin >> x;
+
+    auto ok = [&](int x, int y) {
+        return (0 <= x && x < n) && (0 <= y && y < n);
+    };
+
+    vs aux;
+    for(int x = 0; x < n; x++) {
+        for(int y = 0; y < n; y++) {
+            set<pi> used;
+            used.emplace(mp(x, y));
+
+            for(int k = 0; k < 8; k++) {
+                str current = "";
+                current += M[x][y];
+                int second_x = x + dddx[k];
+                int second_y = y + dddy[k];
+
+                if(!(ok(second_x, second_y) && !used.count(mp(second_x, second_y)))) continue;
+                else {
+                    used.emplace(mp(second_x, second_y));
+                    current.push_back(M[second_x][second_y]);
+                    for(int l = 0; l < 8; l++) {
+                        int third_x = second_x + dddx[l];
+                        int third_y = second_y + dddy[l];
+
+                        if(!(ok(third_x, third_y) && !used.count(mp(third_x, third_y)))) continue;
+                        else {
+                            current.push_back(M[third_x][third_y]);
+                            aux.emplace_back(current);
+                            current.pop_back();
+                        }
+                    }
+                    used.erase(mp(second_x, second_y));
+                    current.pop_back();
+                }
+            }
+
+            used.erase(mp(x, y));
+        }
     }
-    cout << n_l;
-    RAYA;
+    sor(aux);
+    cout << aux.front() << n_l;
 }
 
 
@@ -207,8 +243,14 @@ signed main() {
     //? cin >> t;
 
     while(t--) {
+        RAYA;
+        RAYA;
+        RAYA;
         solve();
     }
+    RAYA;
+    RAYA;
+    RAYA;
 
     #ifdef LOCAL
         cerr << fixed << setprecision(5);

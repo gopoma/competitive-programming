@@ -179,9 +179,6 @@ long long binpow(long long a, long long b) {
 
 const char n_l = '\n';
 void solve() {
-    RAYA;
-    RAYA;
-    RAYA;
 }
 
 
@@ -199,8 +196,14 @@ signed main() {
     //? cin >> t;
 
     while(t--) {
+        RAYA;
+        RAYA;
+        RAYA;
         solve();
     }
+    RAYA;
+    RAYA;
+    RAYA;
 
     #ifdef LOCAL
         cerr << fixed << setprecision(5);
