@@ -178,10 +178,94 @@ long long binpow(long long a, long long b) {
 //* /here goes the template!
 
 const char n_l = '\n';
-const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
-const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
-
 void solve() {
+    vs M;
+    str line;
+    while(cin >> line) {
+        M.eb(line);
+    }
+
+    const int n = sz(M);
+    const int m = sz(M[0]);
+    auto in_range = [&](int x, int y) {
+        return ((0 <= x && x < n) && (0 <= y && y < m));
+    };
+
+    V<vb> vis(n, vb(m, false));
+
+    const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
+    const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
+
+    const int ddddx[2]{0,  0};
+    const int ddddy[2]{1, -1};
+
+    V<V<vpi>> components;
+    int current_idx = 0;
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < m; j++) {
+            if(M[i][j] == '*' && !vis[i][j]) {
+                components.eb(V<vpi>());
+                int current_iteration_idx = 0;
+
+                vis[i][j] = true;
+                for(int k = 0; k < 8; k++) {
+                    int new_x = i + dddx[k];
+                    int new_y = j + dddy[k];
+
+                    if(
+                        in_range(new_x, new_y)
+                        && isdigit(M[new_x][new_y])
+                        && !vis[new_x][new_y]
+                    ) {
+                        components[current_idx].eb(vpi());
+                        components[current_idx][current_iteration_idx].eb(mp(new_x, new_y));
+
+                        vis[new_x][new_y] = true;
+
+                        queue<pi> q;
+                        q.push(mp(new_x, new_y));
+
+                        while(!q.empty()) {
+                            auto cell = q.front(); q.pop();
+
+                            for(int l = 0; l < 2; l++) {
+                                int new_new_x = cell.f + ddddx[l];
+                                int new_new_y = cell.s + ddddy[l];
+
+                                if(in_range(new_new_x, new_new_y) && isdigit(M[new_new_x][new_new_y]) && !vis[new_new_x][new_new_y]) {
+                                    vis[new_new_x][new_new_y] = true;
+                                    q.push(mp(new_new_x, new_new_y));
+                                    components[current_idx][current_iteration_idx].eb(mp(new_new_x, new_new_y));
+                                }
+                            }
+                        }
+
+                        current_iteration_idx++;
+                    }
+                }
+                current_idx++;
+            }
+        }
+    }
+
+    ll ans = 0;
+    for(auto& komp: components) {
+        if(sz(komp) != 2) continue;
+
+        ll mul = 1LL;
+        for(auto& locations: komp) {
+            sor(locations);
+
+            str num = "";
+            for(auto& location: locations) {
+                num += M[location.f][location.s];
+            }
+            mul *= stoll(num);
+        }
+
+        ans += mul;
+    }
+    cout << ans << n_l;
 }
 
 
@@ -192,7 +276,7 @@ signed main() {
     startTime = clock();
 
     // read read read
-    setIO();
+    setIO("3B");
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;

@@ -182,6 +182,62 @@ const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
 const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 void solve() {
+    vs M;
+    str line;
+    while(cin >> line) {
+        M.eb(line);
+    }
+
+    const int n = sz(M);
+    const int m = sz(M[0]);
+    auto in_range = [&](int x, int y) {
+        return ((0 <= x && x < n) && (0 <= y && y < m));
+    };
+
+    V<vpi> components; components.eb(vpi());
+    int current_idx = 0;
+
+    V<vb> vis(n, vb(m, false));
+    set<pi> symbols;
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < m; j++) {
+            if(isdigit(M[i][j]) && !vis[i][j]) {
+                int k = j;
+                while(isdigit(M[i][k]) && k < m) {
+                    components[current_idx].eb(mp(i, k));
+                    vis[i][k] = true;
+
+                    k++;
+                }
+                components.eb(vpi());
+                current_idx++;
+            } else if(!isdigit(M[i][j]) && M[i][j] != '.') {
+                for(int k = 0; k < 8; k++) {
+                    int new_x = i + dddx[k];
+                    int new_y = j + dddy[k];
+
+                    if(in_range(new_x, new_y)) {
+                        symbols.emplace(mp(new_x, new_y));
+                    }
+                }
+            }
+        }
+    }
+
+    ll ans = 0;
+    for(auto& komp: components) {
+        bool ok = false;
+        str num = "";
+        for(auto& [i, j]: komp) {
+            ok |= symbols.count(mp(i, j));
+            num += M[i][j];
+        }
+        if(ok) {
+            dbg(num);
+            ans += stoll(num);
+        }
+    }
+    cout << ans << n_l;
 }
 
 
@@ -192,7 +248,7 @@ signed main() {
     startTime = clock();
 
     // read read read
-    setIO();
+    setIO("3A");
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
