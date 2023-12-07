@@ -175,6 +175,19 @@ long long binpow(long long a, long long b) {
 
 
 //* here goes the template!
+vector<string> tokenize(string line, string separator) {
+    vector<string> tokens;
+    while(true) {
+        string token = line.substr(0, line.find(separator));
+        tokens.emplace_back(token);
+
+        if(line.find(separator) == string::npos) {
+            break;
+        }
+        line = line.substr(line.find(separator) + 1, int(line.size()) - line.find(separator) + 1);
+    }
+    return tokens;
+};
 //* /here goes the template!
 
 const char n_l = '\n';
@@ -182,6 +195,47 @@ const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
 const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 void solve() {
+    ll ans = 0;
+
+    // >> <<
+    map<string, ll> available_take;
+    available_take["red"] = 12;
+    available_take["green"] = 13;
+    available_take["blue"] = 14;
+
+    str line;
+    vi goods;
+    vi bads;
+    while(getline(cin, line)) {
+        vs line_halfs = tokenize(line, ":");
+        vs game_halfs = tokenize(line_halfs[0], " ");
+        int id = stoi(game_halfs[1]);
+
+        vs games = tokenize(line_halfs[1], ";");
+        bool ok = true;
+        for(string& game: games) {
+            map<string, ll> cnt;
+
+            vs revelations = tokenize(game, ",");
+            for(string& reveal: revelations) {
+                vs take = tokenize(reveal.substr(1, sz(reveal) - 1), " ");
+                cnt[take[1]] = stoi(take[0]);
+            }
+
+            for(auto& [color, count]: cnt) {
+                ok &= (count <= available_take[color]);
+            }
+        }
+
+        if(ok) {
+            ans += id;
+            goods.eb(id);
+        } else {
+            bads.eb(id);
+        }
+    }
+    dbg(goods, bads);
+    cout << ans << "\n";
 }
 
 
@@ -192,16 +246,13 @@ signed main() {
     startTime = clock();
 
     // read read read
-    setIO();
+    setIO("2A");
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
     //? cin >> t;
 
     for(int i = 0; i < t; i++) {
-        RAYA;
-        RAYA;
-        RAYA;
         solve();
     }
     RAYA;

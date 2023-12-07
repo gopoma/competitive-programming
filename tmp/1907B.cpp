@@ -175,21 +175,55 @@ long long binpow(long long a, long long b) {
 
 
 //* here goes the template!
-int rng_int(int L, int R) { assert(L <= R);
-	return uniform_int_distribution<int>(L,R)(rng);  }
-ll rng_ll(ll L, ll R) { assert(L <= R);
-	return uniform_int_distribution<ll>(L,R)(rng);  }
 //* /here goes the template!
 
 const char n_l = '\n';
+const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
+const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
+
 void solve() {
-    const int N = rng_int(3, 100);
-    cout << N << n_l;
-    for(int i = 0; i < N; i++) {
-        cout << rng_int(1, int(2e9)) << " ";
+    // << >> <>
+    str S;
+    cin >> S;
+    const int n = sz(S);
+
+    stack<pair<int, char>> lowercase;
+    stack<pair<int, char>> uppercase;
+    for(int i = 0; i < n; i++) {
+        if('a' <= S[i] && S[i] <= 'z') {
+            if(S[i] == 'b') {
+                if(lowercase.empty()) continue;
+                lowercase.pop();
+            } else {
+                lowercase.push(mp(i, S[i]));
+            }
+        } else {
+            assert('A' <= S[i] && S[i] <= 'Z');
+            if(S[i] == 'B') {
+                if(uppercase.empty()) continue;
+                uppercase.pop();
+            } else {
+                uppercase.push(mp(i, S[i]));
+            }
+        }
     }
-    cout << n_l;
-    RAYA;
+
+    V<pair<int, char>> aux;
+    while(!lowercase.empty()) {
+        aux.eb(lowercase.top());
+        lowercase.pop();
+    }
+    while(!uppercase.empty()) {
+        aux.eb(uppercase.top());
+        uppercase.pop();
+    }
+    sor(aux);
+
+    str ans = "";
+    for(auto& x: aux) {
+        ans += x.s;
+    }
+    cout << ans << "\n";
 }
 
 
@@ -204,11 +238,17 @@ signed main() {
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
-    //? cin >> t;
+    cin >> t;
 
-    while(t--) {
+    for(int i = 0; i < t; i++) {
+        RAYA;
+        RAYA;
+        RAYA;
         solve();
     }
+    RAYA;
+    RAYA;
+    RAYA;
 
     #ifdef LOCAL
         cerr << fixed << setprecision(5);

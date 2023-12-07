@@ -175,13 +175,19 @@ long long binpow(long long a, long long b) {
 
 
 //* here goes the template!
+int rng_int(int L, int R) { assert(L <= R);
+	return uniform_int_distribution<int>(L,R)(rng);  }
+ll rng_ll(ll L, ll R) { assert(L <= R);
+	return uniform_int_distribution<ll>(L,R)(rng);  }
 //* /here goes the template!
 
 const char n_l = '\n';
-const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
-const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
-
 void solve() {
+    const int t = 1;
+
+    cout << t << "\n";
+
+    RAYA;
 }
 
 
@@ -192,21 +198,15 @@ signed main() {
     startTime = clock();
 
     // read read read
-    setIO();
+    setOut("orz.out");
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
     //? cin >> t;
 
-    for(int i = 0; i < t; i++) {
-        RAYA;
-        RAYA;
-        RAYA;
+    while(t--) {
         solve();
     }
-    RAYA;
-    RAYA;
-    RAYA;
 
     #ifdef LOCAL
         cerr << fixed << setprecision(5);

@@ -182,6 +182,35 @@ const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
 const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 void solve() {
+    // << >>
+    char fil; int col;
+    cin >> fil >> col;
+
+    RAYA;
+
+    char fil_tmp = fil - 1;
+    while(fil_tmp >= 'a') {
+        cout << fil_tmp << col << "\n";
+        fil_tmp--;
+    }
+
+    fil_tmp = fil + 1;
+    while(fil_tmp <= 'h') {
+        cout << fil_tmp << col << "\n";
+        fil_tmp++;
+    }
+
+    int col_tmp = col - 1;
+    while(col_tmp > 0) {
+        cout << fil << col_tmp << "\n";
+        col_tmp--;
+    }
+
+    col_tmp = col + 1;
+    while(col_tmp <= 8) {
+        cout << fil << col_tmp << "\n";
+        col_tmp++;
+    }
 }
 
 
@@ -196,7 +225,7 @@ signed main() {
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
-    //? cin >> t;
+    cin >> t;
 
     for(int i = 0; i < t; i++) {
         RAYA;

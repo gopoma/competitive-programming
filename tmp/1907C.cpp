@@ -182,6 +182,37 @@ const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
 const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 void solve() {
+    // << >> <>
+    int n; cin >> n;
+    str S; cin >> S;
+
+    map<char, int> cnt;
+    for(auto& x: S) cnt[x]++;
+
+    bool all_lower_than_half = true;
+    for(auto& [_, count]: cnt) all_lower_than_half &= (count <= n/2);
+
+    if(all_lower_than_half) {
+        cout << (n % 2) << "\n";
+    } else {
+        int target = -1;
+        for(auto& [_, count]: cnt) {
+            if(count > n/2) {
+                target = count;
+                break;
+            }
+        }
+        assert(target != -1);
+
+        int a = target;
+        int b = n - target;
+        int mn = min(a, b);
+
+        a -= mn;
+        b -= mn;
+
+        cout << max(a, b) << "\n";
+    }
 }
 
 
@@ -196,12 +227,9 @@ signed main() {
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
-    //? cin >> t;
+    cin >> t;
 
     for(int i = 0; i < t; i++) {
-        RAYA;
-        RAYA;
-        RAYA;
         solve();
     }
     RAYA;
