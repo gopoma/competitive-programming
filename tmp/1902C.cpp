@@ -1,3 +1,4 @@
+//? template: https://github.com/bqi343/cp-notebook/blob/master/Implementations/content/contest/TemplateLong.cpp
 // sometimes pragmas don't work, if so, just comment it!
 // #pragma GCC optimize ("Ofast")
 // #pragma GCC target ("avx2")
@@ -178,38 +179,37 @@ long long binpow(long long a, long long b) {
 //* /here goes the template!
 
 const char n_l = '\n';
-void solve() {
-    int n;
-    cin >> n;
+const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
+const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
-    vl a(n);
-    for(auto& x: a) cin >> x;
-    sor(a);
+void solve() {
+    int n; cin >> n;
+    vl a(n); for(auto& x: a) cin >> x;
 
     if(n == 1) cout << "1\n";
     else {
         ll x = 0;
-        for(int i = 0; i < n - 1; i++) {
-            x = gcd(x, abs(a[i] - a[i + 1]));
+        for(int i = 1; i < n; i++) {
+            x = gcd(x, abs(a[i] - a[i - 1]));
         }
+
         ll mx = *max_element(all(a));
-
         ll ans = 0;
-        for(auto& e: a) ans += abs(mx - e) / x;
-
-        set<ll> aux;
-        for(auto& e: a) aux.emplace(e);
-
-        ll target = mx;
-        while(aux.count(target)) {
-            target -= x;
+        for(auto& e: a) {
+            ans += (mx - e) / x;
         }
 
-        ll inc = min(ll(abs(mx - target) / x), ll(n));
-        ans += inc;
+        set<ll> S;
+        for(auto& e: a) S.emplace(e);
+        ll tar = mx;
+        while(S.count(tar)) {
+            tar -= x;
+        }
+
+        ll increment = min((mx - tar) / x, ll(n));
+        ans += increment;
         cout << ans << n_l;
     }
-
 }
 
 
@@ -226,7 +226,7 @@ signed main() {
     long long t = 1LL;
     cin >> t;
 
-    while(t--) {
+    for(int i = 0; i < t; i++) {
         RAYA;
         RAYA;
         RAYA;

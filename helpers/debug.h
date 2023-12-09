@@ -77,14 +77,14 @@ template<typename T> void debug(string s, T x) {cerr << "\033[1;34m" << s << "\0
 template<typename T, typename... Args> void debug(string s, T x, Args... args) {for (int i=0, b=0; i<(int)s.size(); i++) if (s[i] == '(' || s[i] == '{') b++; else
         if (s[i] == ')' || s[i] == '}') b--; else if (s[i] == ',' && b == 0) {cerr << "\033[1;34m" << s.substr(0, i) << "\033[0;32m = \033[35m" << x << "\033[31m | "; debug(s.substr(s.find_first_not_of(' ', i + 1)), args...); break;}}
 
-#define dbg(...) debug(#__VA_ARGS__, __VA_ARGS__)
+#define MACRO(code) do {code} while (false)
+#define dbg(...) MACRO(cerr << "Line(" << __LINE__ << "): "; debug(#__VA_ARGS__, __VA_ARGS__);)
 #define chk(...) if (!(__VA_ARGS__)) cerr << "\033[41m" << "Line(" << __LINE__ << ") -> function(" \
 	 << __FUNCTION__  << ") -> CHK FAILED: (" << #__VA_ARGS__ << ")" << "\033[0m" << "\n", exit(0);
 
 
 
 // for debugging!
-#define MACRO(code) do {code} while (false)
 #define DBG(x) MACRO(cerr << "\033[31m" << #x << " = " << (x) << "\033[0m" << endl;)
 #define DBGY(x) MACRO(cerr << "\033[31m" << #x << " = " << (x) << " , " << "\033[0m";)
 #define DBG2(x,y) MACRO(DBGY(x); DBG(y);)

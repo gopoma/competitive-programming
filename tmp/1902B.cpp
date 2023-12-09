@@ -1,3 +1,4 @@
+//? template: https://github.com/bqi343/cp-notebook/blob/master/Implementations/content/contest/TemplateLong.cpp
 // sometimes pragmas don't work, if so, just comment it!
 // #pragma GCC optimize ("Ofast")
 // #pragma GCC target ("avx2")
@@ -178,28 +179,31 @@ long long binpow(long long a, long long b) {
 //* /here goes the template!
 
 const char n_l = '\n';
+const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
+const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
+
 void solve() {
     ll n, P, l, t;
     cin >> n >> P >> l >> t;
-    ll amount_tasks = cdiv(n, 7LL);
 
-    ll left = 0;
-    ll right = n;
+    auto ok = [&](ll x) {
+        ll lesson_points = x * l;
+        ll tasks = min(2LL * x, cdiv(n, 7LL));
+        ll tot = lesson_points + tasks * t;
 
+        return tot >= P;
+    };
+
+    ll left = 0; // always good
+    ll right = n; // always bad since P >= 1
     while(left + 1 < right) {
         ll middle = (left + right) / 2LL;
-
         ll use = n - middle;
-        ll can = min(2LL * use, amount_tasks);
-        ll have = l * use + can * t;
-        if(have >= P) {
-            left = middle;
-        } else {
-            right = middle;
-        }
+
+        if(ok(use)) left = middle;
+        else right = middle;
     }
-    assert(left != right);
-    cout << left << n_l;
+    cout << left << "\n";
 }
 
 
@@ -216,7 +220,7 @@ signed main() {
     long long t = 1LL;
     cin >> t;
 
-    while(t--) {
+    for(int i = 0; i < t; i++) {
         RAYA;
         RAYA;
         RAYA;

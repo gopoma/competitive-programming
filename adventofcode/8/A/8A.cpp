@@ -1,4 +1,3 @@
-//? template: https://github.com/bqi343/cp-notebook/blob/master/Implementations/content/contest/TemplateLong.cpp
 // sometimes pragmas don't work, if so, just comment it!
 // #pragma GCC optimize ("Ofast")
 // #pragma GCC target ("avx2")
@@ -183,6 +182,42 @@ const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
 const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 void solve() {
+    str instructions;
+    cin >> instructions;
+
+    str u; char pad; str destinations;
+    map<str, pair<str, str>> G;
+
+    //? https://stackoverflow.com/questions/29321249/regex-grouping-matches-with-c-11-regex-library    std::regex rgx("");
+    regex rgx("^\\((.*), (.*)\\)$");
+    smatch matches;
+    while(cin >> u >> pad) {
+        cin.ignore();
+        getline(cin, destinations);
+
+        regex_search(destinations, matches, rgx);
+        dbg(u, destinations);
+        dbg(sz(matches), matches);
+
+        G[u].f = matches[1];
+        G[u].s = matches[2];
+    }
+
+    str current = "AAA", goal = "ZZZ";
+    bool found = false;
+    ll cnt = 0;
+    RAYA;
+    while(!found) {
+        dbg(current);
+        current = (instructions[cnt % sz(instructions)] == 'L') ? G[current].f : G[current].s;
+        cnt++;
+
+        if(current == goal) {
+            found = true;
+            break;
+        }
+    }
+    cout << cnt << "\n";
 }
 
 
@@ -193,7 +228,7 @@ signed main() {
     startTime = clock();
 
     // read read read
-    setIO();
+    setIO("8A");
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;

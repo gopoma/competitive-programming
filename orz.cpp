@@ -184,8 +184,14 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 const char n_l = '\n';
 void solve() {
     const int t = 1;
+    const int n = rng_int(1, 12);
+    const int mx = rng_int(1, 20);
 
-    cout << t << "\n";
+    vi a(n);
+    for(int i = 0; i < n; i++) a[i] = rng_int(0, mx);
+
+    for(auto& x: a) cout << x << " "; cout << "\n";
+    cout << mx << "\n";
 
     RAYA;
 }
@@ -198,7 +204,7 @@ signed main() {
     startTime = clock();
 
     // read read read
-    setOut("orz.out");
+    // setOut("orz.out");
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
