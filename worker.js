@@ -34,10 +34,13 @@ fs.readFile(filename, 'utf8', async function(err, data){
             for(let j = i + 1; j < n; j++) {
                 const u = users[i];
                 const v = users[j];
-                //? Calculate Manhattan distance between u and v
+                //? Calculate Manhattan and Euclidean distance between u and v
                 let mhdist = 0;
                 let edist = 0;
+                const vis = new Set();
                 for(const [idMovie] of bd.get(u)) {
+                    vis.add(idMovie);
+
                     const xx = bd.get(u).get(idMovie);
                     const yy = bd.get(v).get(idMovie) ?? 0;
 
@@ -48,6 +51,8 @@ fs.readFile(filename, 'utf8', async function(err, data){
                 }
 
                 for(const [idMovie] of bd.get(v)) {
+                    if(vis.has(idMovie)) continue;
+
                     const xx = bd.get(u).get(idMovie) ?? 0;
                     const yy = bd.get(v).get(idMovie);
 
@@ -58,7 +63,7 @@ fs.readFile(filename, 'utf8', async function(err, data){
                 }
 
                 mhdists.push(mhdist);
-                edists.push(edist);
+                edists.push(Math.sqrt(edist));
             }
 
             return resolve();
