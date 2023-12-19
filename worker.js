@@ -76,8 +76,8 @@ fs.readFile(filename, 'utf8', async function(err, data){
     }
 
     await Promise.allSettled(promises);
-    mhdists.sort(function(a, b){return b - a});
-    edists.sort(function(a, b){return b - a});
+    mhdists.sort(function(a, b){return a - b});
+    edists.sort(function(a, b){return a - b});
 
     const k = 5;
     const best5mhdists = [];
