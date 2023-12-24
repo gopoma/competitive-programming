@@ -1,3 +1,4 @@
+//? template: https://github.com/bqi343/cp-notebook/blob/master/Implementations/content/contest/TemplateLong.cpp
 // sometimes pragmas don't work, if so, just comment it!
 // #pragma GCC optimize ("Ofast")
 // #pragma GCC target ("avx2")
@@ -175,31 +176,43 @@ long long binpow(long long a, long long b) {
 
 
 //* here goes the template!
-int rng_int(int L, int R) { assert(L <= R);
-	return uniform_int_distribution<int>(L,R)(rng);  }
-ll rng_ll(ll L, ll R) { assert(L <= R);
-	return uniform_int_distribution<ll>(L,R)(rng);  }
 //* /here goes the template!
 
 const char n_l = '\n';
+const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
+const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
+
 void solve() {
-    const ll t = 4;
-    const ll mx = 100;
+    ll n, k, d; cin >> n >> k >> d;
+    vl a(n); for(auto& x: a) cin >> x;
+    vl v(k); for(auto& x: v) cin >> x;
 
-    cout << t << "\n";
-    for(ll _ = 0; _ < t; _++) {
-        const ll n = rng_int(1, 50);
-        cout << n << "\n";
+    dbg(n, k, d);
+    dbg(a, v);
 
-        vl a(n);
-        for(ll i = 0; i < n; i++) a[i] = rng_ll(0, mx);
+    ll res = 0LL;
+    for(ll dia = 1LL; dia <= 2LL * n; dia++) {
+        if(dia > d) break;
 
-        for(auto& x: a) cout << x << " ";
-        cout << "\n";
+        ll score = 0LL;
+
+        for(ll i = 0LL; i < n; i++) {
+            if(a[i] == (i + 1LL)) {
+                score++;
+            }
+        }
+
+        ll queda = d - dia;
+        if(queda < 0) break;
+        score += fdiv(queda, 2LL);
+        dbg(a, queda, score, v[dia % k]);
+        ckmax(res, score);
+
+        for(ll i = 0LL; i < v[(dia - 1LL) % k]; i++) {
+            a[i]++;
+        }
     }
-
-
-    RAYA;
+    cout << res << "\n";
 }
 
 
@@ -210,15 +223,21 @@ signed main() {
     startTime = clock();
 
     // read read read
-    // setOut("orz.out");
+    setIO();
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
-    //? cin >> t;
+    cin >> t;
 
-    while(t--) {
+    for(int i = 0; i < t; i++) {
+        RAYA;
+        RAYA;
+        RAYA;
         solve();
     }
+    RAYA;
+    RAYA;
+    RAYA;
 
     #ifdef LOCAL
         cerr << fixed << setprecision(5);

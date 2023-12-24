@@ -1,3 +1,4 @@
+//? template: https://github.com/bqi343/cp-notebook/blob/master/Implementations/content/contest/TemplateLong.cpp
 // sometimes pragmas don't work, if so, just comment it!
 // #pragma GCC optimize ("Ofast")
 // #pragma GCC target ("avx2")
@@ -175,31 +176,135 @@ long long binpow(long long a, long long b) {
 
 
 //* here goes the template!
+//* /here goes the template!
+
+const char n_l = '\n';
+const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
+const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
+
+ll calc(vl& l, vl& r, vl& c) {
+    const int n = sz(l);
+    vl d(n);
+
+    for(int i = 0; i < n; i++)
+        d[i] = r[i] - l[i];
+
+    sor(d);
+    sort(rall(c));
+
+    ll res = 0;
+    for(int i = 0; i < n; i++)
+        res += c[i] * d[i];
+
+    return res;
+}
+
+ll work2(vl& l, vl& r, vl& c) {
+    sor(l);
+    sort(rall(r));
+
+    return calc(l, r, c);
+}
+
+bool ok(vl& l, vl& r) {
+    const int n = sz(l);
+    for(int i = 0; i < n; i++) {
+        if(l[i] >= r[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+ll work(vl& l, vl& r, vl& c) {
+    const int n = sz(l);
+    set<ll> right;
+    for(auto& x: r) right.emplace(x);
+    sort(rall(l));
+
+    vl d;
+    for(int i = 0; i < n; i++) {
+        ll tar = *right.upper_bound(l[i]);
+        erase(right, tar);
+
+        d.eb(tar - l[i]);
+    }
+
+    sor(d);
+    sort(rall(c));
+    ll res = 0;
+    for(int i = 0; i < n; i++) {
+        res += d[i] * c[i];
+    }
+    return res;
+    // sor(l);
+    // sor(r);
+
+    // ll val = calc(l, r, c);
+    // dbg("go", l, r, c, val);
+    // ll val2 = work2(l, r, c);
+    // dbg("go", l, r, c, val2);
+    // if(ok(l, r)) {
+    //     ckmin(val, val2);
+    // }
+    // return val;
+}
+
 int rng_int(int L, int R) { assert(L <= R);
 	return uniform_int_distribution<int>(L,R)(rng);  }
 ll rng_ll(ll L, ll R) { assert(L <= R);
 	return uniform_int_distribution<ll>(L,R)(rng);  }
-//* /here goes the template!
 
-const char n_l = '\n';
 void solve() {
-    const ll t = 4;
-    const ll mx = 100;
+    int n; cin >> n;
+    vl l(n), r(n), c(n);
+    for(auto& x: l) cin >> x;
+    for(auto& x: r) cin >> x;
+    for(auto& x: c) cin >> x;
 
-    cout << t << "\n";
-    for(ll _ = 0; _ < t; _++) {
-        const ll n = rng_int(1, 50);
-        cout << n << "\n";
-
-        vl a(n);
-        for(ll i = 0; i < n; i++) a[i] = rng_ll(0, mx);
-
-        for(auto& x: a) cout << x << " ";
-        cout << "\n";
-    }
-
-
-    RAYA;
+    ll ans = work(l, r, c);
+    cout << ans << "\n";
+//    while(true) {
+//        const int n = rng_int(4, 4);
+//        vl l(n), r(n), c(n);
+//        for(int i = 0; i < n; i++) l[i] = rng_ll(1, 5);
+//        for(int i = 0; i < n; i++) r[i] = rng_ll(l[i] + 1, 10);
+//        for(int i = 0; i < n; i++) c[i] = rng_ll(1, 10);
+//
+//        set<ll> aux;
+//        for(auto& x: l) aux.emplace(x);
+//        for(auto& x: r) aux.emplace(x);
+//        if(sz(aux) != 2 * n) continue;
+//
+//        ll mn = BIG;
+//        vl p(n); for(int i = 0; i < n; i++) p[i] = i;
+//        do {
+//            vl left(n);
+//            for(int i = 0; i < n; i++) left[i] = l[p[i]];
+//
+//            if(!ok(left, r)) continue;
+//
+//            ll val = calc(left, r, c);
+//            ckmin(mn, val);
+//        } while(next_permutation(all(p)));
+//
+//        ll val = work(l, r, c);
+//        if(mn == val) RAYA;
+//        do {
+//            if(!ok(l, r)) continue;
+//
+//            ll val = calc(l, r, c);
+//            if(val == mn) {
+//                dbg("res", l, r, c);
+//            }
+//        } while(next_permutation(all(l)));
+//
+//        if(mn != val) {
+//            dbg("o.O", mn, val);
+//            return;
+//        }
+//        RAYA;
+//    }
 }
 
 
@@ -210,15 +315,21 @@ signed main() {
     startTime = clock();
 
     // read read read
-    // setOut("orz.out");
+    setIO();
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
-    //? cin >> t;
+    cin >> t;
 
-    while(t--) {
+    for(int i = 0; i < t; i++) {
+        RAYA;
+        RAYA;
+        RAYA;
         solve();
     }
+    RAYA;
+    RAYA;
+    RAYA;
 
     #ifdef LOCAL
         cerr << fixed << setprecision(5);
