@@ -280,12 +280,12 @@ void solve() {
     ll neg = count_if(all(a), [](const ll& x) { return x < 0; });
     ll zeros = count(all(a), 0LL);
 
-    if(zeros) cout << "0\n";
+    if(zeros) ps(0);
     else {
-        if(neg & 1) cout << "0\n";
+        if(neg & 1) ps(0);
         else {
-            cout << "1\n";
-            cout << "1 0\n";
+            ps(1);
+            ps(1, 0);
         }
     }
 }
