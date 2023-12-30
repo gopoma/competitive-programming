@@ -1,3 +1,4 @@
+//? template: https://github.com/bqi343/cp-notebook/blob/master/Implementations/content/contest/TemplateLong.cpp
 // sometimes pragmas don't work, if so, just comment it!
 // #pragma GCC optimize ("Ofast")
 // #pragma GCC target ("avx2")
@@ -175,32 +176,58 @@ long long binpow(long long a, long long b) {
 
 
 //* here goes the template!
-int rng_int(int L, int R) { assert(L <= R);
-	return uniform_int_distribution<int>(L,R)(rng);  }
-ll rng_ll(ll L, ll R) { assert(L <= R);
-	return uniform_int_distribution<ll>(L,R)(rng);  }
 //* /here goes the template!
 
 const char n_l = '\n';
+const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
+const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
+
 void solve() {
-    const ll t = 1;
-    const int n = 2e5;
+    const int n = 3;
+    V<V<char>> a(3, V<char>(3));
 
-    cout << t << "\n";
-    for(ll _ = 0; _ < t; _++) {
-        str x = "";
-        for(int i = 0; i < n / 3; i++) {
-            x.pb('c');
-            x.pb('e');
-            x.pb('d');
+    for(int i = 0; i < n; i++) for(int j = 0; j < n; j++) cin >> a[i][j];
+
+    auto ok = [&]() {
+        // each row
+        bool res = true;
+        for(int i = 0; i < n; i++) {
+            set<char> aux;
+            for(int j = 0; j < n; j++) {
+                aux.emplace(a[i][j]);
+            }
+            res &= (sz(aux) == 3);
         }
+        // each column
+        for(int j = 0; j < n; j++) {
+            set<char> aux;
+            for(int i = 0; i < n; i++) {
+                aux.emplace(a[i][j]);
+            }
+            res &= (sz(aux) == 3);
+        }
+        return res;
+    };
 
-        cout << sz(x) << "\n";
-        cout << x << "\n";
+    int trow = -1, tcol = -1;
+    for(int i = 0; i < n; i++)
+        for(int j = 0; j < n; j++)
+            if(a[i][j] == '?') {
+                trow = i;
+                tcol = j;
+                break;
+            }
+    assert(trow != -1 && tcol != -1);
+
+    V<char> komp = {'A', 'B', 'C'};
+    for(auto& x: komp) {
+        a[trow][tcol] = x;
+        if(ok()) {
+            cout << x << "\n";
+            return;
+        }
     }
-
-
-    RAYA;
+    assert(false);
 }
 
 
@@ -211,14 +238,21 @@ signed main() {
     startTime = clock();
 
     // read read read
+    setIO();
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
-    //? cin >> t;
+    cin >> t;
 
-    while(t--) {
+    for(int i = 0; i < t; i++) {
+        RAYA;
+        RAYA;
+        RAYA;
         solve();
     }
+    RAYA;
+    RAYA;
+    RAYA;
 
     #ifdef LOCAL
         cerr << fixed << setprecision(5);

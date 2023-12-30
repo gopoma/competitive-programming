@@ -1,3 +1,4 @@
+//? template: https://github.com/bqi343/cp-notebook/blob/master/Implementations/content/contest/TemplateLong.cpp
 // sometimes pragmas don't work, if so, just comment it!
 // #pragma GCC optimize ("Ofast")
 // #pragma GCC target ("avx2")
@@ -175,32 +176,35 @@ long long binpow(long long a, long long b) {
 
 
 //* here goes the template!
-int rng_int(int L, int R) { assert(L <= R);
-	return uniform_int_distribution<int>(L,R)(rng);  }
-ll rng_ll(ll L, ll R) { assert(L <= R);
-	return uniform_int_distribution<ll>(L,R)(rng);  }
 //* /here goes the template!
 
 const char n_l = '\n';
+const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
+const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
+
+bool vowel(char c) {
+    return (c == 'a' || c == 'e');
+}
+
 void solve() {
-    const ll t = 1;
-    const int n = 2e5;
+    int n; cin >> n;
+    str S; cin >> S;
 
-    cout << t << "\n";
-    for(ll _ = 0; _ < t; _++) {
-        str x = "";
-        for(int i = 0; i < n / 3; i++) {
-            x.pb('c');
-            x.pb('e');
-            x.pb('d');
+//    str go = "";
+//    for(int i = 0; i < n; i++) {
+//        if(vowel(S[i])) go.pb('V');
+//        else go.pb('C');
+//    }
+//    dbg(go);
+
+    str ans = "";
+    for(int i = 0; i < n; i++) {
+        if((i != n - 1) && !vowel(S[i]) && vowel(S[i + 1])) {
+            if(i != 0) ans.pb('.');
         }
-
-        cout << sz(x) << "\n";
-        cout << x << "\n";
+        ans.pb(S[i]);
     }
-
-
-    RAYA;
+    cout << ans << "\n";
 }
 
 
@@ -211,14 +215,21 @@ signed main() {
     startTime = clock();
 
     // read read read
+    setIO();
     //? cout << fixed << setprecision(12);
 
     long long t = 1LL;
-    //? cin >> t;
+    cin >> t;
 
-    while(t--) {
+    for(int i = 0; i < t; i++) {
+        RAYA;
+        RAYA;
+        RAYA;
         solve();
     }
+    RAYA;
+    RAYA;
+    RAYA;
 
     #ifdef LOCAL
         cerr << fixed << setprecision(5);
