@@ -182,23 +182,61 @@ const char n_l = '\n';
 const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
 const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
-bool isPerfectSquare(long double x) {
-    if (x >= 0) {
-        long long sr = sqrt(x);
+string work(string& S) {
+    const int n = sz(S);
+    assert(n >= 1);
 
-        return (sr * sr == x);
-    }
-    return false;
+    V<char> suff(n);
+    suff[n - 1] = S[n - 1];
+    for(int i = n - 2; i >= 0; i--)
+        suff[i] = max(suff[i + 1], S[i]);
+
+    dbg(S, n, suff);
+
+    str res = "";
+    for(int i = 0; i < n; i++)
+        if(S[i] == suff[i])
+            res.pb(S[i]);
+    return res;
 }
 
 void solve() {
     int n; cin >> n;
-    vl a(n); for(auto& x: a) cin >> x;
+    str S; cin >> S;
 
-    ll sum = accumulate(all(a), 0LL);
+    if(is_sorted(all(S))) cout << "0\n";
+    else {
+        dbg("go");
+        str good = work(S);
+        dbg("go", good);
+        int idx = 0;
+        while(true) {
+            if(idx == sz(good) - 1) break;
 
-    bool ok = isPerfectSquare(sum);
-    cout << (ok?"YES":"NO") << "\n";
+            if(good[idx] == good[idx + 1]) idx++;
+            else break;
+        }
+
+        vi locations(sz(good), -1);
+        int current = 0;
+        for(int i = 0; i < n; i++) {
+            if(good[current] == S[i]) {
+                locations[current++] = i;
+            }
+        }
+        assert(all_of(all(locations), [](const int& e) { return e != -1; }));
+
+        for(int i = 0; i < sz(locations) / 2; i++) {
+            swap(S[locations[i]], S[locations[sz(locations) - i - 1]]);
+        }
+
+        if(!is_sorted(all(S))) cout << "-1\n";
+        else {
+            int cost = sz(good) - idx - 1;
+            cout << cost << "\n";
+        }
+
+    }
 }
 
 
