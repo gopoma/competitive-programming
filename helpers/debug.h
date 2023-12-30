@@ -85,9 +85,4 @@ template<typename T, typename... Args> void debug(string s, T x, Args... args) {
 
 
 // for debugging!
-#define DBG(x) MACRO(cerr << "\033[31m" << #x << " = " << (x) << "\033[0m" << endl;)
-#define DBGY(x) MACRO(cerr << "\033[31m" << #x << " = " << (x) << " , " << "\033[0m";)
-#define DBG2(x,y) MACRO(DBGY(x); DBG(y);)
-#define DBG3(x,y,z) MACRO(DBGY(x); DBGY(y); DBG(z);)
-#define DBG4(x,y,z,w) MACRO(DBGY(x); DBGY(y); DBGY(z); DBG(w);)
 #define RAYA MACRO(cerr << "\033[101m" << "================================" << "\033[0m" << endl;)
