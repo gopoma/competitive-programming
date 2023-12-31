@@ -1,8 +1,8 @@
 //? template: https://github.com/bqi343/cp-notebook/blob/master/Implementations/content/contest/TemplateLong.cpp
 // sometimes pragmas don't work, if so, just comment it!
-//? #pragma GCC optimize ("Ofast")
-//? #pragma GCC target ("avx2")
-//! #pragma GCC optimize ("trapv")
+#pragma GCC optimize ("Ofast")
+// #pragma GCC target ("avx2")
+// #pragma GCC optimize ("trapv")
 
 #include <bits/stdc++.h>
 
@@ -274,6 +274,31 @@ const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
 const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 void solve() {
+    def(ll, n, t);
+
+    vl k(n); re(k);
+
+    auto check = [&](ll x) {
+        ll machines = 0;
+        for(auto& e: k) {
+            machines += fdiv(x, e);
+            if(machines >= BIG) return true;
+        }
+
+        return machines >= t;
+    };
+
+    ll left = 0;     // always bad
+    ll right = BIG; // always good
+    while(left + 1 < right) {
+        ll middle = fdiv(left + right, 2LL);
+
+        if(check(middle)) right = middle;
+        else left = middle;
+    }
+
+    ll ans = right;
+    ps(ans);
 }
 
 
