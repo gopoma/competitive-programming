@@ -47,8 +47,8 @@ using pd = pair<db, db>;
 #define tcTU tcT, class U
 //! ^ lol this makes everything look weird but I'll try it
 
-tcT> using V = vector<T>; //?
-tcT, size_t SZ> using AR = array<T,SZ>;
+tcT > using V = vector<T>;
+tcT, size_t SZ > using AR = array<T, SZ>;
 using vi = V<int>;
 using vb = V<bool>;
 using vl = V<ll>;
