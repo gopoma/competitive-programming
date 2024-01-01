@@ -22,4 +22,9 @@
 ## Mathematics
 
 * __Exponentiation:__ `Modular Binary Exponentiation`.
-* __Counting Divisors:__ `Pollard’s Rho Algorithm for Prime Factorization` and explicit formula (refer to page 198 of Competitive Programming Handbook).
+
+* __Counting Divisors:__ `Pollard’s Rho Algorithm for Prime Factorization` and explicit formula (refer to page 208 of Competitive Programming Handbook) for **number of divisors**:
+
+$$\tau(n) = \prod_{i = 1}^{k} (a_{i} + 1)$$
+
+* __Divisor Analysis:__ too hard
