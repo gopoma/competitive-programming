@@ -68,6 +68,16 @@
         "mutex": "cpp",
         "array": "cpp",
         "format": "cpp",
-        "xlocmes": "cpp"
+        "xlocmes": "cpp",
+        "bitset": "cpp",
+        "charconv": "cpp",
+        "chrono": "cpp",
+        "complex": "cpp",
+        "forward_list": "cpp",
+        "functional": "cpp",
+        "locale": "cpp",
+        "numeric": "cpp",
+        "sstream": "cpp",
+        "xlocbuf": "cpp"
     }
 }

@@ -270,9 +270,63 @@ const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
 const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 //* here goes the template!
+/**
+ * Author: Unknown
+ * Date: 2002-09-15
+ * Source: predates tinyKACTL
+ * Description: Finds two integers $x$ and $y$, such that $ax+by=\gcd(a,b)$. If
+ * you just need gcd, use the built in \texttt{\_\_gcd} instead.
+ * If $a$ and $b$ are coprime, then $x$ is the inverse of $a \pmod{b}$.
+ */
+
+ll euclid(ll a, ll b, ll &x, ll &y) {
+	if (!b) return x = 1, y = 0, a;
+	ll d = euclid(b, a % b, y, x);
+	return y -= a/b * x, d;
+}
+
+/**
+ * Author: Lukas Polacek
+ * Date: 2009-09-28
+ * License: CC0
+ * Source: folklore
+ * Description: Operators for modular arithmetic. You need to set {\tt mod} to
+ * some number first and then you can use the structure.
+ */
+
+const ll mod = 1e9 + 7; // change to something else
+struct Mod {
+	ll x;
+	Mod(ll xx) : x(xx) {}
+	Mod operator+(Mod b) { return Mod((x + b.x) % mod); }
+	Mod operator-(Mod b) { return Mod((x - b.x + mod) % mod); }
+	Mod operator*(Mod b) { return Mod((x * b.x) % mod); }
+	Mod operator/(Mod b) { return *this * invert(b); }
+	Mod invert(Mod a) {
+		ll x, y, g = euclid(a.x, mod, x, y);
+		assert(g == 1); return Mod((x + mod) % mod);
+	}
+	Mod operator^(ll e) {
+		if (!e) return Mod(1);
+		Mod r = *this ^ (e / 2); r = r * r;
+		return e&1 ? *this * r : r;
+	}
+};
+
 //* /here goes the template!
 
 void solve() {
+    def(int, n);
+
+    for(int _ = 0; _ < n; _++) {
+        def(ll, a, b);
+
+        Mod A(a);
+
+        Mod res = A ^ b;
+
+        ps(res.x);
+    }
 }
 
 
