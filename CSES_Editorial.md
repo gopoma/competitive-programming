@@ -54,6 +54,30 @@ Store frequencies of each array elements and then sweep over the **possible** gr
 
 The time complexity is $O(\max(x_{i}) \log(\max(x_{i})))$ (like `Sieve of Eratosthenes`) if frequence access is $O(1)$ with `Hashing` or a vector.
 
+### Sum of Divisors
+
+**Start from** the **divisors** instead of the numbers.
+
+So now, to get our answer all we have to do is calculate the below expression:
+$$\sum_{d=1}^{n} d\left\lfloor \frac{n}{d}\right\rfloor$$
+
+However, if you list out the values of $\left\lfloor \frac{n}{d}\right\rfloor$ (henceforth referred to as $q$)
+for large enough values of $n$, notice that the values start to form long "chains" of the same
+value. For example, here's the list of values for $n=20$:
+$$[20, 10, 6, 5, 4, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]$$
+Taking this pattern further, it's possible to show that there's at most
+$2\sqrt{n}$ distinct values of $q$
+(proof `https://math.stackexchange.com/questions/1069460/how-many-distinct-values-of-floorn-i-exists-for-i-1-to-n`).
+
+Knowing this, we can quickly process all terms in the summation with the same value of
+$q$.
+We start with $d=1$ and `jump` to the next value that yields a different value of $q$ instead of naively increasing it by
+$1$.
+
+**References:**
+
+* `https://usaco.guide/problems/cses-1082-sum-of-divisors/solution`
+
 ### Divisor Analysis
 
 Let $w = x_{1}^{k_{1}} x_{2}^{k_{2}} ... x_{n}^{k_{n}}$
