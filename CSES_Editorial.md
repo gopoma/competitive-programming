@@ -83,6 +83,20 @@ $$P_{i} = P_{i-1}^{k_{i} + 1} (x_{i}^{k_{i} (k_{i} + 1)/2})^{C_{i - 1}}$$
 **References:**
 * `https://usaco.guide/problems/cses-2182-divisor-analysis/solution`
 
+### Prime Multiples
+
+#### The Inclusion-Exclusion Principle
+
+The `inclusion-exclusion principle` is an important combinatorial way to compute the size of a set or the probability of complex events. It relates the sizes of individual sets with their union.
+
+##### The formulation in terms of sets
+
+The above definition can be expressed mathematically as follows:
+
+$$\left\lvert \bigcup_{i = 1}^{n} A_{i} \right\rvert = \sum_{i = 1}^{n} \left\lvert A_{i} \right\rvert - \sum_{1 \le i < j \le n}^{} \left\lvert A_{i} \cap A_{j} \right\rvert + \sum_{1 \le i < j < k \le n}^{} \left\lvert A_{i} \cap A_{j} \cap A_{k} \right\rvert - ... + (-1)^{n - 1} \left\lvert A_{1} \cap ... \cap A_{n}\right\rvert$$
+
+**Tip:** Traverse **subsets** and check **bit count parity**, be careful with **overflows**.
+
 ### Binomial Coefficients
 
 `ModFact` benchmarking.
