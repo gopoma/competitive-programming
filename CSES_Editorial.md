@@ -17,8 +17,8 @@
 
 * __Sum of Three Values:__ `Hashing` or `Two Pointers Technique`, for Hashing, combine the **type definitions** of the cp-book and **chash** from cp-notebook/kactl, for Two Pointers Technique, follow the steps that the Competitive Programming Handbook describes in Amortized analysis chapter for 2SUM problem (page 88).
     * `https://github.dev/ecnerwala/cp-book`
-    * `https://github.dev/kth-competitive-programming/kactl`
     * `https://github.dev/bqi343/cp-notebook`
+    * `https://github.dev/kth-competitive-programming/kactl`
 
 ## Mathematics
 
@@ -52,4 +52,30 @@ The time complexity is $O(\max(x_{i}) \log(\max(x_{i})))$ (like `Sieve of Eratos
 
 ### Divisor Analysis
 
+Let $w = x_{1}^{k_{1}} x_{2}^{k_{2}} ... x_{n}^{k_{n}}$
+
+The **number** of divisors of a number $n$ is
+
+$$\tau(w) = \prod_{i = 1}^{n} (k_{i} + 1)$$
+
+The **sum** of divisors of $n$ is
+
+$$\sigma(w) = \prod_{i = 1}^{n} \frac{x_{i}^{k_{i} + 1} - 1}{x_{i} - 1}$$
+
+The **product** of factors of n is
+
+* $\mu(w) = w^{\lfloor \frac{\tau(w)}{2} \rfloor} \sqrt w$ if $w$ is a **Perfect Square**.
+* $\mu(w) = w^{\frac{\tau(w)}{2}}$ otherwise.
+
+That evaluation **could** be **hard**, since `Fermat's little theorem` should be used in the exponent, take advantage of you can skip the `Modular Multiplicative Inverse` restriction ($2$ and $10^{9}+6$ should be coprime), don't know **why**.
+
+**Alternative Approach for product:** Let the product and number of divisors when only considering the first $i$ prime factors be
+$P_{i}$ and $C_{i}$ respectively. The answer will be $P_{N}$.
+
+$$P_{i} = P_{i-1}^{k_{i} + 1} (x_{i}^{k_{i} (k_{i} + 1)/2})^{C_{i - 1}}$$
+
+**Note:** $C_{i}$ **should** be calculated over modulo $10^{9} + 6$ as a consequence of the `Fermat's little theorem`.
+
 ### Binomial Coefficients
+
+`ModFact` benchmarking.
