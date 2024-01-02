@@ -121,6 +121,31 @@ $$\left\lvert \bigcup_{i = 1}^{n} A_{i} \right\rvert = \sum_{i = 1}^{n} \left\lv
 
 **Tip:** Traverse **subsets** and check **bit count parity**, be careful with **overflows**.
 
+### Counting Coprime Pairs
+
+Let's define the `Möbius function` $\mu(x)$ for the integer $X$ as:
+
+* $\mu(X)$ is $0$ if $X$ is not a square-free integer.
+* $\mu(X)$ is $1$ if $X$ is a square-free integer and the number of $X$'s prime divisors is **even**.
+* $\mu(X)$ is $-1$ if $X$ is a square-free integer and the number of X’s prime divisors is **odd**.
+
+Then, let's define the function $D(X)$ for the integer X as:
+
+* $D(X)$ is the number of integers in the given sequence that are divisible by $X$.
+
+**Answer:**
+
+$$\sum_{X = 1}^{\max(x_{i})} \mu(x) \binom{D(X)}{2} = \sum_{X = 1}^{\max(x_{i})} \mu(x) \frac{D(X)(D(X) - 1)}{2}$$
+
+**Notes:**
+
+* Note that if $X$ is greater than the maximal number that occurs in the sequence, then the correspondent term in the sum will be equal to **zero**, so you can safely consider only the first $10^{6}$ terms because this is the **upper bound** on the sequence's numbers.
+
+* This could be `extended` to `triplets`.
+
+**References:**
+* `https://discuss.codechef.com/t/coprime3-editorial/6051`
+
 ### Binomial Coefficients
 
 `ModFact` benchmarking.
