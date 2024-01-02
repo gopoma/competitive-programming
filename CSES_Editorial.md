@@ -89,6 +89,8 @@ $$P_{i} = P_{i-1}^{k_{i} + 1} (x_{i}^{k_{i} (k_{i} + 1)/2})^{C_{i - 1}}$$
 
 ### Creating Strings II
 
+Store frequency of each letter and note that order **matters**.
+
 #### Permutations with Repetition
 
 The number of permutations of $n$ objects with $n_{1}$ identical objects of type $1$, $n_{2}$ identical objects of type $2$, $...$, and $n_{k}$ identical objects of type $k$ is
