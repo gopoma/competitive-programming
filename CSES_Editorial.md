@@ -143,6 +143,8 @@ $$\sum_{X = 1}^{\max(x_{i})} \mu(x) \binom{D(X)}{2} = \sum_{X = 1}^{\max(x_{i})}
 
 * This could be `extended` to `triplets`.
 
+* The definition of `Möbius function` $\mu(x)$ matches `https://codeforces.com/group/OyefIGO3t4/contest/447287/problem/H`, should reuse.
+
 **References:**
 * `https://discuss.codechef.com/t/coprime3-editorial/6051`
 
