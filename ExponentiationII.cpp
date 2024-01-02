@@ -1,11 +1,8 @@
 //? template: https://github.com/bqi343/cp-notebook/blob/master/Implementations/content/contest/TemplateLong.cpp
 // sometimes pragmas don't work, if so, just comment it!
-// #pragma GCC optimize ("Ofast")
-// #pragma GCC target ("avx2")
+//? #pragma GCC optimize ("Ofast")
+//? #pragma GCC target ("avx2")
 //! #pragma GCC optimize ("trapv")
-
-// #pragma GCC optimize("O3,unroll-loops")
-// #pragma GCC target("avx2,bmi,bmi2,lzcnt,popcnt")
 
 #include <bits/stdc++.h>
 
@@ -93,7 +90,7 @@ tcT > int upb(V<T> &a, const T &b) { return int(ub(all(a), b) - bg(a)); }
 
 
 
-const int MOD = 998244353;   //? 1e9+7;
+const int MOD = 1e9+7;   //? 1e9+7;
 const int MX = (int)2e5 + 5;
 const ll BIG = 1e18;         //? not too close to LLONG_MAX
 const db PI = acos((db)-1);
@@ -274,45 +271,41 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 //* here goes the template!
 
-#include <ext/pb_ds/assoc_container.hpp>
+/**
+ * Description: Multiply two 64-bit integers mod another if 128-bit is not available.
+	* modMul is equivalent to \texttt{(ul)(\_\_int128(a)*b\%mod)}.
+	* Works for $0\le a,b<mod<2^{63}.$
+ * Source: KACTL
+ * Verification: see "Faster Factoring"
+ */
 
-struct chash { /// use most bits rather than just the lowest ones
-	const uint64_t C = ll(4e18*acos(0))+71; // large odd number
-	const int RANDOM = rng();
-	ll operator()(ll x) const { return __builtin_bswap64((x^RANDOM)*C); }
-}; /// https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html
-
-template <typename K, typename V, typename Hash = chash>
-using hash_map = __gnu_pbds::gp_hash_table<K, V, Hash>;
-
-template <typename K, typename Hash = chash>
-using hash_set = hash_map<K, __gnu_pbds::null_type, Hash>;
+/// using db = long double;
+using ul = uint64_t;
+ul modMul(ul a, ul b, const ul mod) {
+	ll ret = a*b-mod*(ul)((db)a*b/mod);
+	return ret+((ret<0)-(ret>=(ll)mod))*mod; }
+ul modPow(ul a, ul b, const ul mod) {
+	if (b == 0) return 1;
+	ul res = modPow(a,b/2,mod); res = modMul(res,res,mod);
+	return b&1 ? modMul(res,a,mod) : res;
+}
 
 //* /here goes the template!
 
 void solve() {
     def(int, n);
-    vl x(n); re(x);
 
-    // hash_map<ll, ll> cnt; // gozu
-    //? map<ll, ll> cnt; // TLE
-    //? unordered_map<ll, ll, chash> cnt; // TLE
-    const ll OFFSET = 12;
-    const ll N = 1e6 + OFFSET;
-    vl cnt(N, 0); // gozu
-    for(auto& e: x) cnt[e]++;
+    for(int _ = 0; _ < n; _++) {
+        def(ul, a, b, c);
 
-    ll res = 1;
-    for(ll i = 2; i < N; i++) {
-        ll count = 0;
-        for(ll j = i; j < N; j += i) {
-            count += cnt[j];
-        }
-        if(count > 1) ckmax(res, i);
+        ul exponent = modPow(b, c, MOD - 1);
+        ul res = modPow(a, exponent, MOD);
+
+        ps(res);
     }
-
-    ps(res);
 }
+
+
 
 clock_t startTime;
 double getCurrentTime() { return (double)(clock() - startTime) / CLOCKS_PER_SEC; }
@@ -333,12 +326,12 @@ signed main() {
     RAYA;
     RAYA;
 
-    // #ifdef LOCAL
+    #ifdef LOCAL
         cerr << fixed << setprecision(5);
         cerr << "\033[42m++++++++++++++++++++\033[0m\n";
         cerr << "\033[42mtime = " << getCurrentTime() << "ms\033[0m\n";
         cerr << "\033[42m++++++++++++++++++++\033[0m";
-    // #endif
+    #endif
 
     // should actually read the stuff at the bottom
 }

@@ -1,11 +1,8 @@
 //? template: https://github.com/bqi343/cp-notebook/blob/master/Implementations/content/contest/TemplateLong.cpp
 // sometimes pragmas don't work, if so, just comment it!
-// #pragma GCC optimize ("Ofast")
-// #pragma GCC target ("avx2")
+//? #pragma GCC optimize ("Ofast")
+//? #pragma GCC target ("avx2")
 //! #pragma GCC optimize ("trapv")
-
-// #pragma GCC optimize("O3,unroll-loops")
-// #pragma GCC target("avx2,bmi,bmi2,lzcnt,popcnt")
 
 #include <bits/stdc++.h>
 
@@ -93,7 +90,7 @@ tcT > int upb(V<T> &a, const T &b) { return int(ub(all(a), b) - bg(a)); }
 
 
 
-const int MOD = 998244353;   //? 1e9+7;
+const int MOD = 1e9+7;   //? 1e9+7;
 const int MX = (int)2e5 + 5;
 const ll BIG = 1e18;         //? not too close to LLONG_MAX
 const db PI = acos((db)-1);
@@ -274,45 +271,118 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 //* here goes the template!
 
-#include <ext/pb_ds/assoc_container.hpp>
+/**
+ * Description: modular arithmetic operations
+ * Source:
+ * KACTL
+ * https://codeforces.com/blog/entry/63903
+ * https://codeforces.com/contest/1261/submission/65632855 (tourist)
+ * https://codeforces.com/contest/1264/submission/66344993 (ksun)
+ * also see https://github.com/ecnerwala/cp-book/blob/master/src/modnum.hpp
+ * (ecnerwal) Verification: https://open.kattis.com/problems/modulararithmetic
+ */
 
-struct chash { /// use most bits rather than just the lowest ones
-	const uint64_t C = ll(4e18*acos(0))+71; // large odd number
-	const int RANDOM = rng();
-	ll operator()(ll x) const { return __builtin_bswap64((x^RANDOM)*C); }
-}; /// https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html
+template <int MOD, int RT> struct mint {
+	static const int mod = MOD;
+	static constexpr mint rt() { return RT; }  // primitive root for FFT
+	int v;
+	explicit operator int() const {
+		return v;
+	}  // explicit -> don't silently convert to int
+	mint() : v(0) {}
+	mint(ll _v) {
+		v = int((-MOD < _v && _v < MOD) ? _v : _v % MOD);
+		if (v < 0) v += MOD;
+	}
+	bool operator==(const mint &o) const { return v == o.v; }
+	friend bool operator!=(const mint &a, const mint &b) { return !(a == b); }
+	friend bool operator<(const mint &a, const mint &b) { return a.v < b.v; }
+	friend istream &operator>>(istream &is, mint &a) {
+		ll x;
+		is >> x;
+		a = mint(x);
+		return is;
+	}
+	friend ostream &operator<<(ostream &os, mint a) {
+		os << int(a);
+		return os;
+	}
 
-template <typename K, typename V, typename Hash = chash>
-using hash_map = __gnu_pbds::gp_hash_table<K, V, Hash>;
+	mint &operator+=(const mint &o) {
+		if ((v += o.v) >= MOD) v -= MOD;
+		return *this;
+	}
+	mint &operator-=(const mint &o) {
+		if ((v -= o.v) < 0) v += MOD;
+		return *this;
+	}
+	mint &operator*=(const mint &o) {
+		v = int((ll)v * o.v % MOD);
+		return *this;
+	}
+	mint &operator/=(const mint &o) { return (*this) *= inv(o); }
+	friend mint pow(mint a, ll p) {
+		mint ans = 1;
+		assert(p >= 0);
+		for (; p; p /= 2, a *= a)
+			if (p & 1) ans *= a;
+		return ans;
+	}
+	friend mint inv(const mint &a) {
+		assert(a.v != 0);
+		return pow(a, MOD - 2);
+	}
 
-template <typename K, typename Hash = chash>
-using hash_set = hash_map<K, __gnu_pbds::null_type, Hash>;
+	mint operator-() const { return mint(-v); }
+	mint &operator++() { return *this += 1; }
+	mint &operator--() { return *this -= 1; }
+	friend mint operator+(mint a, const mint &b) { return a += b; }
+	friend mint operator-(mint a, const mint &b) { return a -= b; }
+	friend mint operator*(mint a, const mint &b) { return a *= b; }
+	friend mint operator/(mint a, const mint &b) { return a /= b; }
+};
+
+using mi = mint<MOD, 5>;  // 5 is primitive root for both common mods
+using vmi = V<mi>;
+using pmi = pair<mi, mi>;
+using vpmi = V<pmi>;
+
+V<vmi> scmb;  // small combinations
+void genComb(int SZ) {
+	scmb.assign(SZ, vmi(SZ));
+	scmb[0][0] = 1;
+	FOR(i, 1, SZ)
+	F0R(j, i + 1) scmb[i][j] = scmb[i - 1][j] + (j ? scmb[i - 1][j - 1] : 0);
+}
+
+struct {
+	vmi invs, fac, ifac;
+	void init(int N) { // idempotent
+		invs.rsz(N), fac.rsz(N), ifac.rsz(N);
+		invs[1] = fac[0] = ifac[0] = 1;
+		FOR(i,2,N) invs[i] = mi(-(ll)MOD/i*(int)invs[MOD%i]);
+		FOR(i,1,N) fac[i] = fac[i-1]*i, ifac[i] = ifac[i-1]*invs[i];
+	}
+	mi C(int a, int b) {
+		if (a < b || b < 0) return 0;
+		return fac[a]*ifac[b]*ifac[a-b];
+	}
+} F;
 
 //* /here goes the template!
 
 void solve() {
     def(int, n);
-    vl x(n); re(x);
 
-    // hash_map<ll, ll> cnt; // gozu
-    //? map<ll, ll> cnt; // TLE
-    //? unordered_map<ll, ll, chash> cnt; // TLE
-    const ll OFFSET = 12;
-    const ll N = 1e6 + OFFSET;
-    vl cnt(N, 0); // gozu
-    for(auto& e: x) cnt[e]++;
+    for(int _ = 0; _ < n; _++) {
+        def(ll, a, b);
 
-    ll res = 1;
-    for(ll i = 2; i < N; i++) {
-        ll count = 0;
-        for(ll j = i; j < N; j += i) {
-            count += cnt[j];
-        }
-        if(count > 1) ckmax(res, i);
+        mi res = F.C(a, b);
+        ps(res);
     }
-
-    ps(res);
 }
+
+
 
 clock_t startTime;
 double getCurrentTime() { return (double)(clock() - startTime) / CLOCKS_PER_SEC; }
@@ -325,6 +395,10 @@ signed main() {
     ll t = 1LL;
     //? cin >> t;
 
+    const int OFFSET = 25;
+    const int N = 1e6 + OFFSET;
+    F.init(N);
+
     for(ll i = 0; i < t; i++) {
         RAYA;
         RAYA;
@@ -333,12 +407,12 @@ signed main() {
     RAYA;
     RAYA;
 
-    // #ifdef LOCAL
+    #ifdef LOCAL
         cerr << fixed << setprecision(5);
         cerr << "\033[42m++++++++++++++++++++\033[0m\n";
         cerr << "\033[42mtime = " << getCurrentTime() << "ms\033[0m\n";
         cerr << "\033[42m++++++++++++++++++++\033[0m";
-    // #endif
+    #endif
 
     // should actually read the stuff at the bottom
 }

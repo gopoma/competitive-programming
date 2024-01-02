@@ -356,39 +356,6 @@ void genComb(int SZ) {
 	F0R(j, i + 1) scmb[i][j] = scmb[i - 1][j] + (j ? scmb[i - 1][j - 1] : 0);
 }
 
-/**
- * Description: Multiply two 64-bit integers mod another if 128-bit is not available.
-	* modMul is equivalent to \texttt{(ul)(\_\_int128(a)*b\%mod)}.
-	* Works for $0\le a,b<mod<2^{63}.$
- * Source: KACTL
- * Verification: see "Faster Factoring"
- */
-
-/// using db = long double;
-using ul = uint64_t;
-ul modMul(ul a, ul b, const ul mod) {
-	ll ret = a*b-mod*(ul)((db)a*b/mod);
-	return ret+((ret<0)-(ret>=(ll)mod))*mod; }
-ul modPow(ul a, ul b, const ul mod) {
-	if (b == 0) return 1;
-	ul res = modPow(a,b/2,mod); res = modMul(res,res,mod);
-	return b&1 ? modMul(res,a,mod) : res;
-}
-
-int phi(int n) {
-    int result = n;
-    for (int i = 2; i * i <= n; i++) {
-        if (n % i == 0) {
-            while (n % i == 0)
-                n /= i;
-            result -= result / i;
-        }
-    }
-    if (n > 1)
-        result -= result / n;
-    return result;
-}
-
 //* /here goes the template!
 
 void solve() {
@@ -400,35 +367,16 @@ void solve() {
         factors[x] = k;
     }
 
-    bool isPerfectSquare = true;
     mi number = 1, sum = 1, product = 1;
-    worker exponent = 1;
+	worker number_until = 1;
     for(auto& [val, count]: factors) {
-        isPerfectSquare &= (count % 2 == 0);
-
         number *= count + 1LL;
 
         sum *= mi(pow(mi(val), count + 1LL) - 1) / mi(val - 1);
 
-        product *= pow(mi(val), count);
+		product = pow(product, count + 1LL) * pow(pow(mi(val), fdiv(count * (count + 1LL), 2LL)), number_until.v);
 
-        exponent *= count + 1LL;
-    }
-
-    if(isPerfectSquare)
-        --exponent;
-
-    //! For an arbitrary (but coprime) modulus mod: a^(phi(m)-1) ≡ a^(-1) mod m holds
-    //! For a prime modulus phi(m) = m-1 holds
-    ll go = modPow(2LL, phi(exponent.mod) - 1LL, exponent.mod);
-    exponent *= go;
-
-    product = pow(product, exponent.v);
-
-    if(isPerfectSquare) {
-        for(auto& [val, count]: factors) {
-            product *= pow(mi(val), fdiv(count, 2LL));
-        }
+		number_until *= count + 1LL;
     }
 
     ps(number, sum, product);
