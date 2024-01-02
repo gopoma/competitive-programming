@@ -38,6 +38,10 @@ If $m$ is a prime number, this simplifies to `Fermat's little theorem`:
 
 $$a^{m-1} \equiv 1 \mod m$$
 
+**References:**
+
+* `https://cp-algorithms.com/algebra/module-inverse.html`
+
 ### Counting Divisors
 
 `Pollard’s Rho Algorithm for Prime Factorization` and explicit formula (refer to page 208 of Competitive Programming Handbook) for **number of divisors**:
@@ -76,6 +80,27 @@ $$P_{i} = P_{i-1}^{k_{i} + 1} (x_{i}^{k_{i} (k_{i} + 1)/2})^{C_{i - 1}}$$
 
 **Note:** $C_{i}$ **should** be calculated over modulo $10^{9} + 6$ as a consequence of the `Fermat's little theorem`.
 
+**References:**
+* `https://usaco.guide/problems/cses-2182-divisor-analysis/solution`
+
 ### Binomial Coefficients
 
 `ModFact` benchmarking.
+
+### Creating Strings II
+
+#### Permutations with Repetition
+
+The number of permutations of $n$ objects with $n_{1}$ identical objects of type $1$, $n_{2}$ identical objects of type $2$, $...$, and $n_{k}$ identical objects of type $k$ is
+
+$$\frac{n!}{n_{1}! n_{2}! ... n_{k}!}$$
+
+In the case all objects are distinct, we have $n_{1} = n_{2} = ... = n_{d} = 1$, and the above theorem shows that the number of permutations is
+
+$$\frac{n!}{n_{1}! n_{2}! ... n_{d}!} = \frac{n!}{1! 1! ... 1!} = n!$$
+
+which we have seen in **Permutations without Repetition**. Note that we have **assumed** that the permutation contains **all** of the objects in the ordering. In the case that we would only like to include **some** of the objects in the ordering, see **Permutations with Restriction**.
+
+**References:**
+
+* `https://brilliant.org/wiki/permutations-with-repetition/`
