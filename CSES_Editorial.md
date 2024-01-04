@@ -20,6 +20,60 @@
     * `https://github.dev/bqi343/cp-notebook`
     * `https://github.dev/kth-competitive-programming/kactl`
 
+## Graph Algorithms
+
+### Counting Rooms
+
+Count the `Connected Components`, implementation could be using `BFS` or `DFS` on `grid`.
+
+### Labyrinth
+
+Since we need the `shortest` path and we don't have a `weighted graph`, we could assume that all edges have the same cost, for `that` case, with `BFS`, we could start filling a `dists` array and updating an unvisited cell with one plus the value of dist of the previously visited cell. Finally, to recover the `shortest` path, start from the end and keep going one minus the current distance value.
+
+### Building Roads
+
+Note that we have an `undirected graph`, so it is feasible to check the `connected components`, let this amount as $x$.
+
+* `minimum number of roads required` $= x - 1$
+
+* `Which roads should be built?` Note that we just need one road to connect two components.
+
+### Message Route
+
+It's similar to `Labyrinth`, but we don't have a grid this time.
+
+### Building Teams
+
+`Bipartiteness check`. For each component, assign an arbitrary a 1 to any node and spread the oposite to the neighbors, if we have already visited a neighbor, check that the values are distinct, if not, it is `IMPOSSIBLE`.
+
+### Round Trip
+
+`DFS tree`. To check where an undirected graph has a `Cycle`, we must look for a `Back Edge`. For implementation, it is useful to have the `color` array. Finally, to recover the nodes that compound the cycle, we could use a `stack` and carefully remove nodes until one is repeated.
+
+### Shortest Routes I
+
+`Dijkstra on sparse graphs`
+
+Note that you could have `multiple equal edges` with different costs.
+
+The time complexity should be $O(n \log(n) + m)$.
+
+**References:**
+
+* `https://cp-algorithms.com/graph/dijkstra_sparse.html`
+
+### Shortest Routes II
+
+`Floyd-Warshall Algorithm`
+
+Note that you couldn't have multiple equal edges, but use `ckmin` instead.
+
+The time complexity should be $O(n^{3})$.
+
+**References:**
+
+* `https://cp-algorithms.com/graph/all-pair-shortest-path-floyd-warshall.html`
+
 ## Mathematics
 
 ### Exponentiation
