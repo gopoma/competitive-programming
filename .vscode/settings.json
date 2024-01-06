@@ -78,6 +78,12 @@
         "locale": "cpp",
         "numeric": "cpp",
         "sstream": "cpp",
-        "xlocbuf": "cpp"
+        "xlocbuf": "cpp",
+        "condition_variable": "cpp",
+        "coroutine": "cpp",
+        "resumable": "cpp",
+        "fstream": "cpp",
+        "future": "cpp",
+        "stack": "cpp"
     }
 }
