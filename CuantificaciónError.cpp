@@ -273,100 +273,56 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* here goes the template!
 //* /here goes the template!
 
+//* Chapra -> Página 362
+//* vd x = {  1,   2, 3, 4,   5, 6,   7};
+//* vd y = {0.5, 2.5, 2, 4, 3.5, 6, 5.5};
+//* const db n = sz(x);
+//* const db m = 1;
+//*
+//* auto fff = [](db val) {
+//*     return 0.07142857 + 0.8392857 * val;
+//* };
 
-//* Capítulo_4 Diapositiva 74
-//* const vd x = {0.3, 2.7, 4.5, 5.9, 7.8,};
-//* const vd y = {1.8, 1.9, 3.1, 3.9, 3.3,};
-//* const int grado = 1;
+vd x = {0, 1, 2, 3, 4, 5};
+vd y = {2.1, 7.7, 13.6, 27.2, 40.9, 61.1};
 
+const db n = sz(x);
+const db m = 2;
 
-//* Chapra Página 360
-//* const vd x = {  1,   2, 3, 4,   5, 6,   7};
-//* const vd y = {0.5, 2.5, 2, 4, 3.5, 6, 5.5};
-//* const int grado = 1;
-//* General  Formula: y = 0.0714 + 0.8393x
-//* Explicit Formula: y = 0.0714 + 0.8393x
-
-//* const int grado = 2;
-//* const vd x = {  0,   1,    2,    3,    4,    5};
-//* const vd y = {2.1, 7.7, 13.6, 27.2, 40.9, 61.1};
-//* y = 2.4786 + 2.3593x + 1.8607x^2
-
-// const int grado = 2;
-// const vd x = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
-// const vd y = {1.7, 0.3, 5.6, 7.8, 10.0, 11.0, 12.0, 14.0};
-//* y = 0.3167 + 2.6321*x - 0.0988*x*x
-
-//* const int grado = 3;
-//* const vd x = {};
-//* const vd y = {};
-
-//* Chapra Página 368
-//* const int grado = 1;
-//* vd x = {  1,   2,   3,   4,   5};
-//* vd y = {0.5, 1.7, 3.4, 5.7, 8.4};
-//! y = a * (x ^ b)
-//! ln(y) = ln(a * (x ^ b))
-//! ln(y) = ln(a) + ln(x ^ b)
-//! ln(y) = ln(a) + b * ln(x)
-//! make Y = ln(y) | A = a | X = ln(x)
-//* Y = A + b * X
-//* Y = -0.6913 + 1.7517*x
-//! ln(a) = A -> ln(a) = -0.6913 -> a = 0.500924
-//! b = 1.7517
-//? y = 0.500924 * (x ^ 1.7517)
-
-//* const int grado = 3;
-//* vd x = {0.01, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00};
-//* vd y = {0.1000, 0.3162, 0.4472, 0.5477, 0.6325, 0.7071, 0.7746, 0.8367, 0.8944, 0.9487, 1.0000};
-//* y = 0.1011 + 2.0685*x - 2.1782*x*x + 1.0186*x*x*x
-
-//! const int grado = 1;
-//! vd x;
-//! vd y;
-
-const int grado = 1;
-vd x = {};
-vd y = {};
+auto fff = [](db val) {
+    return 2.47857 + 2.35929*val + 1.86071*val*val;
+};
 
 void solve() {
-    //? dbg(log(2.0)); //! Natural Logarithm
-    //! transform
-    //! for(auto& e: x) e = log(e);
-    //! for(auto& e: y) e = log(e);
-    //!
+    assert(sz(x) == sz(y));
 
-    chk(sz(x) == sz(y));
-    const int n = sz(x);
-    const int need = 2 * grado + 1;
-
-    vd sum_x(need, 0.0); //? sum_x[i] = sum [x ** i]
-    for(int i = 1; i < need; i++) {
-        sum_x[i] = accumulate(all(x), 0.0,
-            [&](const db& acc, const db& current) {
-                return acc + pow(current, db(i));
-            }
-        );
-    }
-
-    vd sum_y(grado + 2, 0.0); //? sum_y[i] = sum [y * (x ** (i - 1))]
-    for(int i = 1; i < grado + 2; i++) {
-        for(int j = 0; j < n; j++) {
-            sum_y[i] += y[j] * pow(x[j], db(i - 1));
-        }
-    }
+    const db Y_AVG = accumulate(all(y), 0.0) / n;
 
     dbg(x);
     dbg(y);
-    dbg(grado);
-    RAYA;
     dbg(n);
+    RAYA;
 
-    const str _$1 = "sum_x[i] = sum [x ** i]";
-    dbg(_$1, sum_x);
+    db S_t = 0.0;
+    db S_r = 0.0;
+    for(int i = 0; i <  n; i++) {
+        dbg(x[i], y[i], pow(y[i] - Y_AVG, 2.0), pow(y[i] - fff(x[i]), 2.0));
 
-    const str _$2 = "sum_y[i] = sum [y * (x ** (i - 1))]";
-    dbg(_$2, sum_y);
+        S_t += pow(y[i] - Y_AVG, 2.0);
+        S_r += pow(y[i] - fff(x[i]), 2.0);
+    }
+
+    RAYA;
+    dbg(S_t, S_r);
+
+    db s_y  = sqrt(S_t / (n - 1));
+    db s_yx = sqrt(S_r / (n - (m + 1)));
+    db r2   = (S_t - S_r) / S_t;
+    db r = sqrt(r2);
+    dbg("Desviacion Estandar: ", s_y);
+    dbg("Error Estandar: ", s_yx);
+    dbg("Coeficiente de Determinacion: ", r2);
+    dbg("Coeficiente de Correlacion: ", r);
 }
 
 
