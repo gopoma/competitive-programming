@@ -273,31 +273,42 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /here goes the template!
 
 void solve() {
-    def(int, n);
-    assert(3 <= n);
+    def(int, N, M);
 
-    vi d(n); re(d);
+    V<vi> adj(N + 1);
 
-    int res = 0;
-    for(int i = 0; i <= 2; i++) {
-        for(int j = 0; j <= 2; j++) {
-            for(int k = 0; k <= 2; k++) {
-                if(i + j + k == 3) {
-                    dbg(i, j, k);
-                    bool ok = true;
-                    for(int l = 0; l < n; l++) {
-                        if(d[l] == -1) continue;
-                        if(l % 3 == 0)      ok &= (d[l] == i);
-                        else if(l % 3 == 1) ok &= (d[l] == j);
-                        else if(l % 3 == 2) ok &= (d[l] == k);
-                    }
-                    res += ok;
-                }
-            }
-        }
+    for(int _ = 0; _ < M; _++) {
+        def(int, u, v);
+
+        adj[u].eb(v);
+        adj[v].eb(u);
     }
 
-    ps(res);
+    vb vis(N + 1, false);
+    const int available_count = 1e6;
+    int cnt = 0;
+    #define check if(cnt >= available_count) { cnt = 1e6; return; }
+    function<void(int)> dfs = [&](int u) {
+        check
+
+        if(vis[u]) return;
+        vis[u] = true;
+
+        cnt++;
+
+        for(auto& v: adj[u]) {
+            check
+
+            dfs(v);
+        }
+
+        vis[u] = false;
+
+        check
+    };
+    dfs(1);
+
+    ps(cnt);
 }
 
 

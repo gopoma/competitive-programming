@@ -2,7 +2,7 @@
 // sometimes pragmas don't work, if so, just comment it!
 //? #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx2")
-//! #pragma GCC optimize ("trapv")
+//? #pragma GCC optimize ("trapv")
 
 #include <bits/stdc++.h>
 
@@ -273,30 +273,47 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /here goes the template!
 
 void solve() {
-    def(int, n);
-    assert(3 <= n);
+    def(ll, n, k);
+    vl t(n); re(t);
+    vl d(n); re(d);
 
-    vi d(n); re(d);
+    dbg(n, k);
 
-    int res = 0;
-    for(int i = 0; i <= 2; i++) {
-        for(int j = 0; j <= 2; j++) {
-            for(int k = 0; k <= 2; k++) {
-                if(i + j + k == 3) {
-                    dbg(i, j, k);
-                    bool ok = true;
-                    for(int l = 0; l < n; l++) {
-                        if(d[l] == -1) continue;
-                        if(l % 3 == 0)      ok &= (d[l] == i);
-                        else if(l % 3 == 1) ok &= (d[l] == j);
-                        else if(l % 3 == 2) ok &= (d[l] == k);
-                    }
-                    res += ok;
-                }
+    sor(t);
+    sort(rall(d));
+    dbg(t, d);
+
+    auto check = [&](ll x) {
+        ll need = 0;
+        for(int i = 0; i < n; i++) {
+            ll left = -1;    // always bad
+            ll right = t[i]; // always good
+
+            while(left + 1 < right) {
+                ll middle = fdiv(left + right, 2LL);
+
+                if((t[i] - middle) * d[i] <= x) right = middle;
+                else left = middle;
             }
+
+            ll partial = right;
+            need += partial;
         }
+
+        return need <= k;
+    };
+
+    // 0 0 0 1 1 1 1 1 1 1 1 1 1 1 ...
+    ll left = -1; // always bad
+    ll right = 1e13; // always good
+    while(left + 1 < right) {
+        ll middle = fdiv(left + right, 2LL);
+
+        if(check(middle)) right = middle;
+        else left = middle;
     }
 
+    ll res = right;
     ps(res);
 }
 

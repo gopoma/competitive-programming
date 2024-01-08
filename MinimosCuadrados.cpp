@@ -325,9 +325,9 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //! vd x;
 //! vd y;
 
-const int grado = 1;
-vd x = {};
-vd y = {};
+const int grado = 2;
+vd x = {4,   5,  2,  5,  6,  7,  1,  8,  3,  7};
+vd y = {15, 16, 14, 15, 17, 20, 13, 21, 14, 19};
 
 void solve() {
     //? dbg(log(2.0)); //! Natural Logarithm
