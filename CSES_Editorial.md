@@ -225,3 +225,15 @@ which we have seen in **Permutations without Repetition**. Note that we have **a
 **References:**
 
 * `https://brilliant.org/wiki/permutations-with-repetition/`
+
+## String Algorithms
+
+### Minimal Rotation
+
+`Minimum Cyclic Shift`
+
+The time complexity should be $O(N)$.
+
+**References:**
+
+* `https://github.com/bqi343/cp-notebook/blob/master/Implementations/content/strings%20(14)/Light/MinRotation.h`
