@@ -270,18 +270,119 @@ const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
 const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 //* here goes the template!
+
+/**
+ * Description: modular arithmetic operations
+ * Source:
+ * KACTL
+ * https://codeforces.com/blog/entry/63903
+ * https://codeforces.com/contest/1261/submission/65632855 (tourist)
+ * https://codeforces.com/contest/1264/submission/66344993 (ksun)
+ * also see https://github.com/ecnerwala/cp-book/blob/master/src/modnum.hpp
+ * (ecnerwal) Verification: https://open.kattis.com/problems/modulararithmetic
+ */
+
+template <int MOD, int RT> struct mint {
+	static const int mod = MOD;
+	static constexpr mint rt() { return RT; }  // primitive root for FFT
+	int v;
+	explicit operator int() const {
+		return v;
+	}  // explicit -> don't silently convert to int
+	mint() : v(0) {}
+	mint(ll _v) {
+		v = int((-MOD < _v && _v < MOD) ? _v : _v % MOD);
+		if (v < 0) v += MOD;
+	}
+	bool operator==(const mint &o) const { return v == o.v; }
+	friend bool operator!=(const mint &a, const mint &b) { return !(a == b); }
+	friend bool operator<(const mint &a, const mint &b) { return a.v < b.v; }
+	friend istream &operator>>(istream &is, mint &a) {
+		ll x;
+		is >> x;
+		a = mint(x);
+		return is;
+	}
+	friend ostream &operator<<(ostream &os, mint a) {
+		os << int(a);
+		return os;
+	}
+
+	mint &operator+=(const mint &o) {
+		if ((v += o.v) >= MOD) v -= MOD;
+		return *this;
+	}
+	mint &operator-=(const mint &o) {
+		if ((v -= o.v) < 0) v += MOD;
+		return *this;
+	}
+	mint &operator*=(const mint &o) {
+		v = int((ll)v * o.v % MOD);
+		return *this;
+	}
+	mint &operator/=(const mint &o) { return (*this) *= inv(o); }
+	friend mint pow(mint a, ll p) {
+		mint ans = 1;
+		assert(p >= 0);
+		for (; p; p /= 2, a *= a)
+			if (p & 1) ans *= a;
+		return ans;
+	}
+	friend mint inv(const mint &a) {
+		assert(a.v != 0);
+		return pow(a, MOD - 2);
+	}
+
+	mint operator-() const { return mint(-v); }
+	mint &operator++() { return *this += 1; }
+	mint &operator--() { return *this -= 1; }
+	friend mint operator+(mint a, const mint &b) { return a += b; }
+	friend mint operator-(mint a, const mint &b) { return a -= b; }
+	friend mint operator*(mint a, const mint &b) { return a *= b; }
+	friend mint operator/(mint a, const mint &b) { return a /= b; }
+};
+
+using mi = mint<MOD, 5>;  // 5 is primitive root for both common mods
+using vmi = V<mi>;
+using pmi = pair<mi, mi>;
+using vpmi = V<pmi>;
+
 //* /here goes the template!
 
 void solve() {
+    def(int, n, x);
+    vi c(n); re(c);
+
+    //? solve(...): # of ordered ways you can produce a money sum x having c[i] as the last considered | maximum
+    const int OFFSET = 1;
+    vector<vector<bool>> vis(x + OFFSET, vector<bool>(n + OFFSET, false));
+    vector<vector<mi>> dp(x + OFFSET, vector<mi>(n + OFFSET));
+    function<mi(int, int)> solve = [&](int val, int i) {
+        if(val < 0)  return mi(0);
+        if(val == 0) return mi(1);
+
+        if(vis[val][i]) return dp[val][i];
+        vis[val][i] = true;
+
+        mi res = 0;
+        for(int j = 0; j < n; j++) {
+            if(c[j] <= c[i]) {
+                res += solve(val - c[j], j);
+            }
+        }
+
+        return dp[val][i] = res;
+    };
+
+    int go = -1, valgo = INT_MIN;
+    for(int i = 0; i < n; i++) if(ckmax(valgo, c[i])) go = i;
+    assert(go != -1);
+
+    mi res = solve(x, go);
+    ps(res);
 }
 
 
-//* here goes the template!
-int rng_int(int L, int R) { assert(L <= R);
-	return uniform_int_distribution<int>(L,R)(rng);  }
-ll rng_ll(ll L, ll R) { assert(L <= R);
-	return uniform_int_distribution<ll>(L,R)(rng);  }
-//* /here goes the template!
 
 clock_t startTime;
 double getCurrentTime() { return (double)(clock() - startTime) / CLOCKS_PER_SEC; }
@@ -289,18 +390,22 @@ signed main() {
     startTime = clock();
 
     // read read read
-    ios_base::sync_with_stdio(false);
-    cin.tie(nullptr);
+    //?ios_base::sync_with_stdio(false);
+    //?cin.tie(nullptr);
+    //?setIn("gaaa.out");
 
-    setOut("gaaa.out");
+    setIO();
 
-    int n = 100, x = 1e6;
-    ps(n, x);
+    ll t = 1LL;
+    //? cin >> t;
 
-    vi c(n);
-    for(int i = 0; i < n; i++) c[i] = i + 1;
-
-    each(e, c) ps(e);
+    for(ll i = 0; i < t; i++) {
+        RAYA;
+        RAYA;
+        solve();
+    }
+    RAYA;
+    RAYA;
 
     #ifdef LOCAL
         cerr << fixed << setprecision(5);

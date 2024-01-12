@@ -273,15 +273,19 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /here goes the template!
 
 void solve() {
+    def(int, n, s);
+    vi a(n); re(a);
+
+    sor(a);
+
+    int tot = accumulate(all(a), 0);
+    int gozu = tot - *max_element(all(a));
+
+    if(gozu <= s) ps("YES");
+    else ps("NO");
 }
 
 
-//* here goes the template!
-int rng_int(int L, int R) { assert(L <= R);
-	return uniform_int_distribution<int>(L,R)(rng);  }
-ll rng_ll(ll L, ll R) { assert(L <= R);
-	return uniform_int_distribution<ll>(L,R)(rng);  }
-//* /here goes the template!
 
 clock_t startTime;
 double getCurrentTime() { return (double)(clock() - startTime) / CLOCKS_PER_SEC; }
@@ -289,18 +293,18 @@ signed main() {
     startTime = clock();
 
     // read read read
-    ios_base::sync_with_stdio(false);
-    cin.tie(nullptr);
+    setIO();
 
-    setOut("gaaa.out");
+    ll t = 1LL;
+    //? cin >> t;
 
-    int n = 100, x = 1e6;
-    ps(n, x);
-
-    vi c(n);
-    for(int i = 0; i < n; i++) c[i] = i + 1;
-
-    each(e, c) ps(e);
+    for(ll i = 0; i < t; i++) {
+        RAYA;
+        RAYA;
+        solve();
+    }
+    RAYA;
+    RAYA;
 
     #ifdef LOCAL
         cerr << fixed << setprecision(5);

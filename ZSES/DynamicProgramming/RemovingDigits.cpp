@@ -273,6 +273,31 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /here goes the template!
 
 void solve() {
+    def(int, n);
+
+    const int OFFSET = 1;
+    vb vis(n + OFFSET, false);
+    vi dp(n + OFFSET);
+    function<int(int)> solve = [&](int x) {
+        if(x < 0) assert(false);
+        if(x == 0) return 0;
+
+        if(vis[x]) return dp[x];
+        vis[x] = true;
+
+        int res = INT_MAX;
+        str xx = to_string(x);
+        each(c, xx) {
+            if(c != '0') {
+                ckmin(res, solve(x - (c - '0')) + 1);
+            }
+        }
+
+        return dp[x] = res;
+    };
+
+    int ans = solve(n);
+    ps(ans);
 }
 
 
@@ -289,18 +314,18 @@ signed main() {
     startTime = clock();
 
     // read read read
-    ios_base::sync_with_stdio(false);
-    cin.tie(nullptr);
+    setIO();
 
-    setOut("gaaa.out");
+    ll t = 1LL;
+    //? cin >> t;
 
-    int n = 100, x = 1e6;
-    ps(n, x);
-
-    vi c(n);
-    for(int i = 0; i < n; i++) c[i] = i + 1;
-
-    each(e, c) ps(e);
+    for(ll i = 0; i < t; i++) {
+        RAYA;
+        RAYA;
+        solve();
+    }
+    RAYA;
+    RAYA;
 
     #ifdef LOCAL
         cerr << fixed << setprecision(5);

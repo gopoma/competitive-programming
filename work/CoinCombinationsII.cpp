@@ -90,7 +90,7 @@ tcT > int upb(V<T> &a, const T &b) { return int(ub(all(a), b) - bg(a)); }
 
 
 
-const int MOD = 1e9+7;   //? 1e9+7;
+const int MOD = 998244353;   //? 1e9+7;
 const int MX = (int)2e5 + 5;
 const ll BIG = 1e18;         //? not too close to LLONG_MAX
 const db PI = acos((db)-1);
@@ -351,34 +351,25 @@ using vpmi = V<pmi>;
 void solve() {
     def(int, n, x);
     vi c(n); re(c);
-    c.eb(1e8); n++;
-    sort(rall(c));
 
-    const int OFFSET = 5;
-    V<vmi> dp(x + OFFSET, vmi(n + OFFSET));
-    V<vb> vis(x + OFFSET, vb(n + OFFSET, false));
-    function<mi(int, int)> solve = [&](int val, int idx_current) {
-        if(val < 0)  return mi(0);
-        if(val == 0) return mi(1);
+    dbg(n, x, c);
 
-        if(vis[val][idx_current]) return dp[val][idx_current];
-        vis[val][idx_current] = true;
+    vector<vector<mi>> dp(x, vector<mi>(n));
+    for(int j = 0; j < n; j++) dp[0][j] = 1;
 
-        mi res = 0;
-        for(int i = 0; i < n; i++) {
-            if(c[i] <= c[idx_current]) {
-                res += solve(val - c[i], i);
-            }
+    for(int i = 1; i <= x; i++) {
+        for(int j = 0; j < n; j++) {
         }
-
-        return dp[val][idx_current] = res;
-    };
-
-    mi res = solve(x, 0);
-    ps(res);
+    }
 }
 
 
+//* here goes the template!
+int rng_int(int L, int R) { assert(L <= R);
+	return uniform_int_distribution<int>(L,R)(rng);  }
+ll rng_ll(ll L, ll R) { assert(L <= R);
+	return uniform_int_distribution<ll>(L,R)(rng);  }
+//* /here goes the template!
 
 clock_t startTime;
 double getCurrentTime() { return (double)(clock() - startTime) / CLOCKS_PER_SEC; }
