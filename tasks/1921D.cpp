@@ -273,6 +273,37 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /here goes the template!
 
 void solve() {
+    def(int, n, m);
+    vl a(n); re(a);
+    vl b(m); re(b);
+
+    dbg(n, m);
+    dbg(a);
+    dbg(b);
+
+    multiset<ll> aa; each(x, a) { aa.emplace(x); }
+    multiset<ll> bb; each(x, b) { bb.emplace(x); }
+    dbg(aa);
+    dbg(bb);
+
+    ll ans = 0;
+    for(int i = 0; i < n; i++) {
+        ll mn_a = *aa.begin(), mx_a = *aa.rbegin();
+        ll mn_b = *bb.begin(), mx_b = *bb.rbegin();
+
+        ll val1 = abs(mn_a - mx_b);
+        ll val2 = abs(mx_a - mn_b);
+        if(val1 > val2) {
+            safeErase(aa, mn_a);
+            safeErase(bb, mx_b);
+            ans += val1;
+        } else {
+            safeErase(aa, mx_a);
+            safeErase(bb, mn_b);
+            ans += val2;
+        }
+    }
+    ps(ans);
 }
 
 

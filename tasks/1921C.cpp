@@ -273,6 +273,24 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /here goes the template!
 
 void solve() {
+    def(ll, n, f, a, b);
+    vl m(n); re(m); reverse(all(m)); m.eb(0); reverse(all(m));
+
+    dbg(n, f, a, b);
+    dbg(m);
+
+    n++;
+    ll go = f;
+    bool ok = true;
+    for(int i = 1; i < n; i++) {
+        go -= min(a * (m[i] - m[i - 1]), b);
+        if(go <= 0) {
+            ok = false;
+            break;
+        }
+    }
+    if(ok) ps("YES");
+    else ps("NO");
 }
 
 
@@ -293,6 +311,7 @@ signed main() {
 
     ll t = 1LL;
     cin >> t;
+    dbg(t);
 
     for(ll i = 0; i < t; i++) {
         RAYA;

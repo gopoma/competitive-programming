@@ -273,6 +273,19 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /here goes the template!
 
 void solve() {
+    const int n = 4;
+    vpl go(n); re(go);
+
+    pl a = go.ft;
+    pl b;
+    for(int i = 1; i < n; i++) {
+        if(a.f == go[i].f) {
+            b = go[i];
+            break;
+        }
+    }
+    ll c = abs(a.s - b.s);
+    ps(c * c);
 }
 
 

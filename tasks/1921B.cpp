@@ -273,6 +273,20 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /here goes the template!
 
 void solve() {
+    def(int, n);
+    def(str, S, F);
+
+    int zo = 0, oz = 0;
+    for(int i = 0; i < n; i++) {
+        zo += (S[i] == '0') && (F[i] == '1');
+        oz += (S[i] == '1') && (F[i] == '0');
+    }
+    int mn = min(zo, oz);
+    int ans = mn;
+    zo -= mn;
+    oz -= mn;
+    ans += zo + oz;
+    ps(ans);
 }
 
 
