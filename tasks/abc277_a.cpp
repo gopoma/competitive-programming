@@ -240,8 +240,7 @@ inline namespace FileIO {
     void setOut(str s) { freopen(s.c_str(), "w", stdout); }
     void setIO(str s = "") {
 	    cin.tie(0)->sync_with_stdio(0);  //! unsync C / C++ I/O streams
-	    cout << fixed << setprecision(6);
-        cerr << fixed << setprecision(6);
+	    //! cout << fixed << setprecision(12);
 	    cin.exceptions(cin.failbit);
 	    //? throws exception when do smth illegal
 	    //? ex. try to read letter into int
@@ -273,109 +272,21 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* here goes the template!
 //* /here goes the template!
 
-
-//* Capítulo_4 Diapositiva 74
-//* const vd x = {0.3, 2.7, 4.5, 5.9, 7.8,};
-//* const vd y = {1.8, 1.9, 3.1, 3.9, 3.3,};
-//* const int grado = 1;
-
-
-//* Chapra Página 360
-//* const vd x = {  1,   2, 3, 4,   5, 6,   7};
-//* const vd y = {0.5, 2.5, 2, 4, 3.5, 6, 5.5};
-//* const int grado = 1;
-//* General  Formula: y = 0.0714 + 0.8393x
-//* Explicit Formula: y = 0.0714 + 0.8393x
-
-//* const int grado = 2;
-//* const vd x = {  0,   1,    2,    3,    4,    5};
-//* const vd y = {2.1, 7.7, 13.6, 27.2, 40.9, 61.1};
-//* y = 2.4786 + 2.3593x + 1.8607x^2
-
-// const int grado = 2;
-// const vd x = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
-// const vd y = {1.7, 0.3, 5.6, 7.8, 10.0, 11.0, 12.0, 14.0};
-//* y = 0.3167 + 2.6321*x - 0.0988*x*x
-
-//* const int grado = 3;
-//* const vd x = {};
-//* const vd y = {};
-
-//* Chapra Página 368
-//* const int grado = 1;
-//* vd x = {  1,   2,   3,   4,   5};
-//* vd y = {0.5, 1.7, 3.4, 5.7, 8.4};
-//! y = a * (x ^ b)
-//! ln(y) = ln(a * (x ^ b))
-//! ln(y) = ln(a) + ln(x ^ b)
-//! ln(y) = ln(a) + b * ln(x)
-//! make Y = ln(y) | A = a | X = ln(x)
-//* Y = A + b * X
-//* Y = -0.6913 + 1.7517*x
-//! ln(a) = A -> ln(a) = -0.6913 -> a = 0.500924
-//! b = 1.7517
-//? y = 0.500924 * (x ^ 1.7517)
-
-//* const int grado = 3;
-//* vd x = {0.01, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00};
-//* vd y = {0.1000, 0.3162, 0.4472, 0.5477, 0.6325, 0.7071, 0.7746, 0.8367, 0.8944, 0.9487, 1.0000};
-//* y = 0.1011 + 2.0685*x - 2.1782*x*x + 1.0186*x*x*x
-
-//! const int grado = 1;
-//! vd x;
-//! vd y;
-
-//const int grado = 2;
-//vd x = {4,   5,  2,  5,  6,  7,  1,  8,  3,  7};
-//vd y = {15, 16, 14, 15, 17, 20, 13, 21, 14, 19};
-
-const int grado = 2;
-vd x = {1935, 1940, 1945, 1950, 1955, 1960, 1965, 1970, 1975, 1980};
-vd y = {12.7, 11.0, 10.0, 9.9, 8.4, 7.1, 5.6, 4.5, 4.3, 3.7};
-
-
-
 void solve() {
-    //? dbg(log(2.0)); //! Natural Logarithm
-    //! transform
-    //! for(auto& e: x) e = log(e);
-    //! for(auto& e: y) e = log(e);
-    //!
+    def(int, N, X);
+    vi P(N); re(P);
 
-    chk(sz(x) == sz(y));
-    const int n = sz(x);
-    const int need = 2 * grado + 1;
-
-    vd sum_x(need, 0.0); //? sum_x[i] = sum [x ** i]
-    for(int i = 1; i < need; i++) {
-        sum_x[i] = accumulate(all(x), 0.0,
-            [&](const db& acc, const db& current) {
-                return acc + pow(current, db(i));
-            }
-        );
-    }
-
-    vd sum_y(grado + 2, 0.0); //? sum_y[i] = sum [y * (x ** (i - 1))]
-    for(int i = 1; i < grado + 2; i++) {
-        for(int j = 0; j < n; j++) {
-            sum_y[i] += y[j] * pow(x[j], db(i - 1));
-        }
-    }
-
-    dbg(x);
-    dbg(y);
-    dbg(grado);
-    RAYA;
-    dbg(n);
-
-    const str _$1 = "sum_x[i] = sum [x ** i]";
-    dbg(_$1, sum_x);
-
-    const str _$2 = "sum_y[i] = sum [y * (x ** (i - 1))]";
-    dbg(_$2, sum_y);
+    int go = find(all(P), X) - bg(P);
+    ps(go + 1);
 }
 
 
+//* here goes the template!
+int rng_int(int L, int R) { assert(L <= R);
+	return uniform_int_distribution<int>(L,R)(rng);  }
+ll rng_ll(ll L, ll R) { assert(L <= R);
+	return uniform_int_distribution<ll>(L,R)(rng);  }
+//* /here goes the template!
 
 clock_t startTime;
 double getCurrentTime() { return (double)(clock() - startTime) / CLOCKS_PER_SEC; }
