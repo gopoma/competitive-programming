@@ -273,6 +273,27 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /here goes the template!
 
 void solve() {
+    def(int, N);
+    vi p(N); for(int i = 1; i <= N; i++) p[i - 1] = i;
+    vi a(N); re(a);
+    vi id(N); re(id);
+    map<int, int> mps; for(int i = 0; i < N; i++) mps[a[i] - 1] = p[i] - 1;
+
+    dbg(N);
+    dbg(p);
+    dbg(a);
+    dbg(id);
+
+    //? from a[i] -> p[i]
+    vi ans(N);
+    for(int i = 0; i < N; i++) {
+        int current = a[i] - 1;
+        for(int j = 0; j < 3; j++) {
+            current = mps[current];
+        }
+        ans[current] = id[a[i] - 1];
+    }
+    each(x, ans) ps(x);
 }
 
 
@@ -289,7 +310,7 @@ signed main() {
     startTime = clock();
 
     // read read read
-    setIO();
+    setIO("shuffle");
 
     ll t = 1LL;
     //? cin >> t;

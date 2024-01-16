@@ -273,6 +273,26 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /here goes the template!
 
 void solve() {
+    def(int, N);
+
+    V<tuple<int, int, int>> go(N); re(go); dbg(go);
+
+    auto calc = [&](int start) {
+        vi game(4, 0); game[start] = 1;
+
+        int score = 0;
+        for(auto& [a, b, g]: go) {
+            swap(game[a], game[b]);
+            score += (game[g] == 1);
+        }
+        return score;
+    };
+
+    int ans = 0;
+    for(int start = 1; start <= 3; start++) {
+        ckmax(ans, calc(start));
+    }
+    ps(ans);
 }
 
 
@@ -289,7 +309,7 @@ signed main() {
     startTime = clock();
 
     // read read read
-    setIO();
+    setIO("shell");
 
     ll t = 1LL;
     //? cin >> t;

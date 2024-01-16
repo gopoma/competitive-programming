@@ -273,6 +273,35 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /here goes the template!
 
 void solve() {
+    def(int, N, M);
+
+    const int n = 100;
+    vi road_speed_limit(n + 1);
+    int go = 1;
+    for(int _ = 0; _ < N; _++) {
+        def(int, length, speed_limit);
+        for(int i = 0; i < length; i++, go++) {
+            road_speed_limit[go] = speed_limit;
+        }
+    }
+
+    vi journey_speed(n + 1);
+    go = 1;
+    for(int _ = 0; _ < M; _++) {
+        def(int, length, speed);
+        for(int i = 0; i < length; i++, go++) {
+            journey_speed[go] = speed;
+        }
+    }
+
+    dbg(road_speed_limit);
+    dbg(journey_speed);
+
+    int ans = 0;
+    for(int i = 1; i <= n; i++) {
+        ckmax(ans, max(0, journey_speed[i] - road_speed_limit[i]));
+    }
+    ps(ans);
 }
 
 
@@ -289,7 +318,7 @@ signed main() {
     startTime = clock();
 
     // read read read
-    setIO();
+    setIO("speeding");
 
     ll t = 1LL;
     //? cin >> t;

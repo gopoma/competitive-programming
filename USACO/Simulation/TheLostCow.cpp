@@ -273,6 +273,33 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /here goes the template!
 
 void solve() {
+    def(ll, x, y);
+    ll x_init = x;
+
+    ll ans = 0;
+    #define go_out if(x == y) { break; }
+    for(ll go = 0; ; go++) {
+        ll step = binpow(-2LL, go);
+
+        ll tar = x_init + step;
+        dbg(x, tar);
+        while(x < tar) {
+            x++;
+            dbg(x);
+            ans++;
+            go_out;
+        }
+        go_out;
+        while(x > tar) {
+            x--;
+            dbg(x);
+            ans++;
+            go_out
+        }
+        go_out;
+        RAYA;
+    }
+    ps(ans);
 }
 
 
@@ -289,7 +316,7 @@ signed main() {
     startTime = clock();
 
     // read read read
-    setIO();
+    setIO("lostcow");
 
     ll t = 1LL;
     //? cin >> t;

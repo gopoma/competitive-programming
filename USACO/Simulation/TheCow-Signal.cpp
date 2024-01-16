@@ -273,6 +273,26 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /here goes the template!
 
 void solve() {
+    def(int, M, N, K);
+    vs go(M); re(go);
+
+    vector<vector<char>> res(M * K, vector<char>(N * K));
+
+    for(int i = 0; i < M; i++) {
+        for(int j = 0; j < N; j++) {
+            for(int w = 0; w < K; w++) {
+                for(int h = 0; h < K; h++) {
+                    res[K * i + w][K * j + h] = go[i][j];
+                }
+            }
+        }
+    }
+
+    for(int i = 0; i < sz(res); i++) {
+        for(int j = 0; j < sz(res[0]); j++)
+            pr(res[i][j]);
+        ps();
+    }
 }
 
 
@@ -289,7 +309,7 @@ signed main() {
     startTime = clock();
 
     // read read read
-    setIO();
+    setIO("cowsignal");
 
     ll t = 1LL;
     //? cin >> t;

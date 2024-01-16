@@ -273,6 +273,14 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /here goes the template!
 
 void solve() {
+    def(int, N);
+    vi go(1005, 0);
+    for(int i = 0; i < N; i++) {
+        def(int, s, t, b); if(s > t) swap(s, t);
+        for(int j = s; j <= t; j++) go[j] += b;
+    }
+    int ans = *max_element(all(go));
+    ps(ans);
 }
 
 
@@ -289,7 +297,7 @@ signed main() {
     startTime = clock();
 
     // read read read
-    setIO();
+    setIO("blist");
 
     ll t = 1LL;
     //? cin >> t;

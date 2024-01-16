@@ -273,6 +273,23 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /here goes the template!
 
 void solve() {
+    const int n = 3;
+    vpl go(n); re(go);
+
+    int at = 0;
+    for(int i = 0; i < 100; i++) {
+        // from [(at + i) % 3] to [(at + i + 1) % 3]
+        int from = (at + i) % n;
+        int to   = (at + i + 1) % n;
+
+        ll cuanto = min(go[from].s, go[to].f - go[to].s);
+        go[from].s -= cuanto;
+        go[to].s += cuanto;
+    }
+
+    each(x, go) {
+        ps(x.s);
+    }
 }
 
 
@@ -289,7 +306,7 @@ signed main() {
     startTime = clock();
 
     // read read read
-    setIO();
+    setIO("mixmilk");
 
     ll t = 1LL;
     //? cin >> t;
