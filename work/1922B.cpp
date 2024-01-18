@@ -2,7 +2,7 @@
 // sometimes pragmas don't work, if so, just comment it!
 //? #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx2")
-//! #pragma GCC optimize ("trapv")
+#pragma GCC optimize ("trapv")
 
 #include <bits/stdc++.h>
 
@@ -272,7 +272,35 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* here goes the template!
 //* /here goes the template!
 
+ll C(ll n, ll k) {
+    long double res = 1;
+    for (ll i = 1; i <= k; ++i)
+        res = res * (n - k + i) / i;
+    return (ll)(res + 0.01);
+}
+
 void solve() {
+    def(int, n);
+    vl a(n); re(a);
+
+    vl cnt(n + 1, 0);
+    each(x, a) cnt[x]++;
+    vl dp(n + 1);
+    dp[0] = cnt[0];
+    for(int i = 1; i < n; i++) dp[i] = dp[i - 1] + cnt[i];
+
+    ll ans = 0;
+    for(int i = 0; i <= n; i++) {
+        if(cnt[i] >= 3) {
+            ans += C(ll(cnt[i]), ll(3));
+        }
+    }
+    for(int i = 1; i <= n; i++) {
+        if(cnt[i] >= 2 && dp[i - 1] >= 1) {
+            ans += dp[i - 1] * C(ll(cnt[i]), ll(2));
+        }
+    }
+    ps(ans);
 }
 
 
@@ -289,7 +317,7 @@ signed main() {
     startTime = clock();
 
     // read read read
-    setIO();
+    setIO("go");
 
     ll t = 1LL;
     cin >> t;

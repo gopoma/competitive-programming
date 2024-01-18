@@ -2,7 +2,7 @@
 // sometimes pragmas don't work, if so, just comment it!
 //? #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx2")
-//! #pragma GCC optimize ("trapv")
+#pragma GCC optimize ("trapv")
 
 #include <bits/stdc++.h>
 
@@ -273,6 +273,17 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /here goes the template!
 
 void solve() {
+    def(int, n);
+    def(str, a, b, c);
+    bool ok = false;
+    for(int i = 0; i < n; i++) {
+        if(c[i] != a[i] && c[i] != b[i]) {
+            ok = true;
+            break;
+        }
+    }
+    if(ok) ps("YES");
+    else ps("NO");
 }
 
 

@@ -273,6 +273,69 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /here goes the template!
 
 void solve() {
+    def(ll, n);
+    vl a(n); re(a);
+
+    vl forwards(n);
+    for(int i = 0; i < n - 1; i++) {
+        if(i == 0) {
+            forwards[i] = 1;
+        } else {
+            ll left = abs(a[i] - a[i - 1]);
+            ll right = abs(a[i] - a[i + 1]);
+            assert(left != right);
+            if(left > right) {
+                forwards[i] = 1;
+            } else {
+                forwards[i] = right;
+            }
+        }
+    }
+    dbg(forwards);
+
+    vl backwards(n);
+    for(ll i = n - 1; i >= 1; i--) {
+        if(i == n - 1) {
+            backwards[i] = 1;
+        } else {
+            ll left = abs(a[i] - a[i - 1]);
+            ll right = abs(a[i] - a[i + 1]);
+            assert(left != right);
+
+            if(left < right) {
+                backwards[i] = 1;
+            } else {
+                backwards[i] = left;
+            }
+        }
+    }
+    dbg(backwards);
+
+    for(ll i = 1; i < n; i++) forwards[i] += forwards[i - 1];
+    for(ll i = n - 2; i >= 0; i--) backwards[i] += backwards[i + 1];
+
+    dbg(forwards);
+    dbg(backwards);
+
+    def(ll, m);
+    for(int _ = 0; _ < m; _++) {
+        def(ll, x, y);
+
+        assert(x != y);
+        if(x < y) {
+            x--; y -= 2;
+            ll ans = forwards[y];
+            if(x - 1 >= 0) ans -= forwards[x - 1];
+            ps(ans);
+        } else {
+            x--; y--;
+            y++;
+            ll ans = backwards[y];
+            if(x + 1 < n) ans -= backwards[x + 1];
+            ps(ans);
+        }
+        RAYA;
+    }
 }
 
 
