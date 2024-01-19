@@ -273,6 +273,30 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /here goes the template!
 
 void solve() {
+    def(int, N);
+    vl h(N); re(h);
+
+    dbg(N);
+    dbg(h);
+
+    vb vis(N, false);
+    vl dp(N);
+    function<ll(int)> solve = [&](int idx) {
+        if(idx == N - 1)  return 0LL;
+        if(idx >  N - 1)  return ll(1e10);
+
+        if(vis[idx]) return dp[idx];
+        vis[idx] = true;
+
+        ll res = BIG;
+        ckmin(res, solve(idx + 1) + ((idx + 1 < N)? abs(h[idx] - h[idx + 1]) : 0LL));
+        ckmin(res, solve(idx + 2) + ((idx + 2 < N)? abs(h[idx] - h[idx + 2]) : 0LL));
+
+        return dp[idx] = res;
+    };
+
+    ll ans = solve(0);
+    ps(ans);
 }
 
 

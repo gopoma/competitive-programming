@@ -273,6 +273,37 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /here goes the template!
 
 void solve() {
+    def(int, n);
+
+    vector<vi> adj(n + 1);
+    vi out(n + 1, 0);
+
+    for(int u = 2; u <= n; u++) {
+        def(int, v);
+
+        adj[v].eb(u);
+        out[v]++;
+    }
+    for(int u = 1; u <= n; u++) dbg(u, adj[u], out[u]);
+
+    vi dp(n + 1);
+    function<int(int)> work = [&](int u) {
+        if(out[u] == 0) {
+            return dp[u] = 1;
+        }
+
+        int res = 1;
+        for(auto& v: adj[u]) {
+            res += work(v);
+        }
+        return dp[u] = res;
+    };
+
+    const int root = 1;
+    work(root); for(int u = 1; u <= n; u++) dp[u]--;
+
+    for(int u = 1; u <= n; u++) { pr(dp[u], " "); }
+    ps();
 }
 
 

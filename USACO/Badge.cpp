@@ -273,6 +273,24 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /here goes the template!
 
 void solve() {
+    def(int, n);
+    map<int, int> mps;
+    for(int i = 0; i < n; i++) {
+        def(int, p);
+        mps[i] = --p;
+    }
+    dbg(n, mps);
+
+    for(int i = 0; i < n; i++) {
+        vb vis(n + 1, false);
+        int current = i;
+        while(!vis[current]) {
+            vis[current] = true;
+            current = mps[current];
+        }
+        pr(current + 1, " ");
+    }
+    ps();
 }
 
 

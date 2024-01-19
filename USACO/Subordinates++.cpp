@@ -273,6 +273,28 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /here goes the template!
 
 void solve() {
+    def(int, n);
+    vector<vi> adj(n);
+
+    for(int i = 1; i < n; i++) {
+        def(int, direct_boss); direct_boss--;
+
+        adj[direct_boss].eb(i);
+    }
+
+    vi go(n);
+    function<void(int)> work = [&](int u) {
+        go[u] = 1;
+        for(auto& v: adj[u]) {
+            work(v);
+            go[u] += go[v];
+        }
+    };
+    const int root = 0;
+    work(root);
+
+    each(x, go) x--;
+    ps(go);
 }
 
 
