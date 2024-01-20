@@ -288,8 +288,8 @@ void solve() {
         const db b = 0.8; //! finish [xf]
         assert(b > a);
 
-        const int n = 10;  //! ¿Cuántos intervalos?
-        assert(n % 1 == 0);
+        const int n = 3;  //! ¿Cuántos intervalos?
+        assert(n % 3 == 0);
 
         const db h = (b - a) / n;
         ps("Numero de Intervalos:", n);
@@ -316,11 +316,18 @@ void solve() {
         }
 
         db I = y.ft;
-        for(int i = 1; i < n; i++) {
+        for(int i = 1; i <= n - 2; i += 3) {
+            I += 3.0 * y[i];
+        }
+        for(int i = 2; i <= n - 1; i += 3) {
+            I += 3.0 * y[i];
+        }
+        for(int i = 3; i <= n - 3; i += 3) {
             I += 2.0 * y[i];
         }
+
         I += y.bk;
-        I *= h / 2.0;
+        I *= 3.0 * (h / 8.0);
 
         RAYA;
         dbg(I);
