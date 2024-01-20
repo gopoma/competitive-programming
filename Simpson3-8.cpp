@@ -281,14 +281,14 @@ void solve() {
     } else {
         auto f = [](db x) {
             // TODO: Whatever you like
-            return 0.2 + 25.0*x - 200.0*x*x + 675.0*x*x*x - 900.0*x*x*x*x + 400*x*x*x*x*x;
+            return (1.0 / sqrt(2.0 * PI)) * exp(-(x * x) / 2.0);
         };
 
-        const db a = 0;   //! init   [xo]
-        const db b = 0.8; //! finish [xf]
+        const db a = -1.0;   //! init   [xo]
+        const db b =  1.0; //! finish [xf]
         assert(b > a);
 
-        const int n = 3;  //! ¿Cuántos intervalos?
+        const int n = 6;  //! ¿Cuántos intervalos?
         assert(n % 3 == 0);
 
         const db h = (b - a) / n;
@@ -332,7 +332,7 @@ void solve() {
         RAYA;
         dbg(I);
 
-        const db valor_real = 1.640533; //! Valor Real
+        const db valor_real = 0.6826894921370859; //! Valor Real
         const db Error = abs(I - valor_real) / valor_real;
         RAYA;
         dbg(Error);

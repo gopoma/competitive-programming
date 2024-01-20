@@ -273,69 +273,30 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* here goes the template!
 //* /here goes the template!
 
-const bool isTabular = false; //? Datos Tabulados
-
 void solve() {
-    if(isTabular) {
-        // TODO: must complete
-    } else {
-        auto f = [](db x) {
-            // TODO: Whatever you like
-            return (1.0 / sqrt(2.0 * PI)) * exp(-(x * x) / 2.0);
-        };
+    //? E6: vd nivel1 = {1.143678, 0.879636, 0.804736, 0.785295};
+    vd nivel1 = {1.875000, 1.537500, 1.428091, 1.397126};
 
-        const db a = -1.0;   //! init   [xo]
-        const db b =  1.0; //! finish [xf]
-        assert(b > a);
-
-        const int n = 6;  //! ¿Cuántos intervalos?
-        assert(n % 2 == 0);
-
-        const db h = (b - a) / n;
-        ps("Numero de Intervalos:", n);
-        dbg(n);
-        RAYA;
-
-        cout << "h = " << "(b-a)/n =" << " ("<<b<<" - "<<a<<") / "<<n<<" = " << h << "\n";
-        dbg(h);
-        RAYA;
-
-        vd x;
-        vd y;
-        for(int i = 0; i < n + 1; i++) { //? Para generar n intervalos, necesitamos n + 1 puntos
-            const db current = a + h * i;
-            x.eb(current);
-            y.eb(f(current));
-        }
-        assert(sz(x) == sz(y));
-        assert(sz(x) == n + 1);
-
-        cout << "i\txi\t\t\t\t\tyi\n";
-        for(int i = 0; i < n + 1; i++) {
-            cout << i << "\t" << a<<" + "<<h<<" * "<<i<<" = "<<x[i] << "\t" << y[i] << "\n";
-        }
-
-        db I = y.ft;
-        for(int i = 1; i <= n - 1; i += 2) {
-            dbg("4", i, y[i]);
-            I += 4.0 * y[i];
-        }
-        for(int i = 2; i <= n - 2; i += 2) {
-            dbg("2", i, y[i]);
-            I += 2.0 * y[i];
-        }
-
-        I += y.bk;
-        I *= h / 3.0;
-
-        RAYA;
-        dbg(I);
-
-        const db valor_real = 0.6826894921370859; //! Valor Real
-        const db Error = abs(I - valor_real) / valor_real;
-        RAYA;
-        dbg(Error);
-    }
+    auto calc = [](db Im, db Il, db nivel) {
+        db base = pow(4.0, nivel - 1);
+        return (base / (base - 1.0)) * Im - (1.0 / (base - 1.0)) * Il;
+    };
+    vd nivel2 = {
+        calc(nivel1[1], nivel1[0], 2),
+        calc(nivel1[2], nivel1[1], 2),
+        calc(nivel1[3], nivel1[2], 2),
+    };
+    vd nivel3 = {
+        calc(nivel2[1], nivel2[0], 3),
+        calc(nivel2[2], nivel2[1], 3),
+    };
+    vd nivel4 = {
+        calc(nivel3[1], nivel3[0], 4),
+    };
+    dbg(nivel1);
+    dbg(nivel2);
+    dbg(nivel3);
+    dbg(nivel4);
 }
 
 
