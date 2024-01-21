@@ -279,17 +279,29 @@ void solve() {
     if(isTabular) {
         // TODO: must complete
     } else {
-        auto f = [](db x) {
-            // TODO: Whatever you like
-            return (1.0 / sqrt(2.0 * PI)) * exp(-(x * x) / 2.0);
+        auto eq = [](db x, db y) { return (x - y) < 1e-9; };
+
+        auto f = [&](db x) {
+            //?// TODO: Whatever you like
+            if(eq(x, 0.0)) return 0.0;
+            else if(eq(x, 0.1)) return 0.0137;
+            else if(eq(x, 0.2)) return 0.0626;
+            else if(eq(x, 0.4)) return 0.3012;
+            else if(eq(x, 0.6)) return 0.7811;
+            else if(eq(x, 0.7)) return 1.1312;
+            else if(eq(x, 0.8)) return 1.5654;
+            else if(eq(x, 0.85)) return 1.8165;
+            else if(eq(x, 0.9)) return 2.0917;
+            else if(eq(x, 0.95)) return 2.3919;
+            else if(eq(x, 1.0)) return 2.7183;
         };
 
-        const db a = -1.0;   //! init   [xo]
-        const db b =  1.0; //! finish [xf]
+        const db a = 0.8;   //! init   [xo]
+        const db b = 1; //! finish [xf]
         assert(b > a);
 
-        const int n = 6;  //! ¿Cuántos intervalos?
-        assert(n % 3 == 0);
+        const int n = 4;  //! ¿Cuántos intervalos?
+        assert(n % 2 == 0);
 
         const db h = (b - a) / n;
         ps("Numero de Intervalos:", n);
@@ -316,26 +328,25 @@ void solve() {
         }
 
         db I = y.ft;
-        for(int i = 1; i <= n - 2; i += 3) {
-            I += 3.0 * y[i];
+        for(int i = 1; i <= n - 1; i += 2) {
+            dbg("4", i, y[i]);
+            I += 4.0 * y[i];
         }
-        for(int i = 2; i <= n - 1; i += 3) {
-            I += 3.0 * y[i];
-        }
-        for(int i = 3; i <= n - 3; i += 3) {
+        for(int i = 2; i <= n - 2; i += 2) {
+            dbg("2", i, y[i]);
             I += 2.0 * y[i];
         }
 
         I += y.bk;
-        I *= 3.0 * (h / 8.0);
+        I *= h / 3.0;
 
         RAYA;
         dbg(I);
 
-        const db valor_real = 0.6826894921370859; //! Valor Real
-        const db Error = abs(I - valor_real) / valor_real;
-        RAYA;
-        dbg(Error);
+        //const db valor_real = 0.6826894921370859; //! Valor Real
+        //const db Error = abs(I - valor_real) / valor_real;
+        //RAYA;
+        //dbg(Error);
     }
 }
 

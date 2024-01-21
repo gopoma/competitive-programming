@@ -240,8 +240,7 @@ inline namespace FileIO {
     void setOut(str s) { freopen(s.c_str(), "w", stdout); }
     void setIO(str s = "") {
 	    cin.tie(0)->sync_with_stdio(0);  //! unsync C / C++ I/O streams
-	    cout << fixed << setprecision(6);
-        cerr << fixed << setprecision(6);
+	    //! cout << fixed << setprecision(12);
 	    cin.exceptions(cin.failbit);
 	    //? throws exception when do smth illegal
 	    //? ex. try to read letter into int
@@ -273,69 +272,14 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* here goes the template!
 //* /here goes the template!
 
-const bool isTabular = false; //? Datos Tabulados
-
 void solve() {
-    if(isTabular) {
-        // TODO: must complete
-    } else {
-        auto f = [](db x) {
-            // TODO: Whatever you like
-            return (1.0 / sqrt(2.0 * PI)) * exp(-(x * x) / 2.0);
-        };
+    def(str, S);
 
-        const db a = -1.0;   //! init   [xo]
-        const db b =  1.0; //! finish [xf]
-        assert(b > a);
-
-        const int n = 6;  //! ¿Cuántos intervalos?
-        assert(n % 2 == 0);
-
-        const db h = (b - a) / n;
-        ps("Numero de Intervalos:", n);
-        dbg(n);
-        RAYA;
-
-        cout << "h = " << "(b-a)/n =" << " ("<<b<<" - "<<a<<") / "<<n<<" = " << h << "\n";
-        dbg(h);
-        RAYA;
-
-        vd x;
-        vd y;
-        for(int i = 0; i < n + 1; i++) { //? Para generar n intervalos, necesitamos n + 1 puntos
-            const db current = a + h * i;
-            x.eb(current);
-            y.eb(f(current));
-        }
-        assert(sz(x) == sz(y));
-        assert(sz(x) == n + 1);
-
-        cout << "i\txi\t\t\t\t\tyi\n";
-        for(int i = 0; i < n + 1; i++) {
-            cout << i << "\t" << a<<" + "<<h<<" * "<<i<<" = "<<x[i] << "\t" << y[i] << "\n";
-        }
-
-        db I = y.ft;
-        for(int i = 1; i <= n - 1; i += 2) {
-            dbg("4", i, y[i]);
-            I += 4.0 * y[i];
-        }
-        for(int i = 2; i <= n - 2; i += 2) {
-            dbg("2", i, y[i]);
-            I += 2.0 * y[i];
-        }
-
-        I += y.bk;
-        I *= h / 3.0;
-
-        RAYA;
-        dbg(I);
-
-        const db valor_real = 0.6826894921370859; //! Valor Real
-        const db Error = abs(I - valor_real) / valor_real;
-        RAYA;
-        dbg(Error);
+    int ans = 0;
+    for(int i = 1; i <= sz(S); i++) {
+        ans += cdiv(i, 8);
     }
+    dbg(ans);
 }
 
 

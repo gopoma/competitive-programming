@@ -240,8 +240,7 @@ inline namespace FileIO {
     void setOut(str s) { freopen(s.c_str(), "w", stdout); }
     void setIO(str s = "") {
 	    cin.tie(0)->sync_with_stdio(0);  //! unsync C / C++ I/O streams
-	    cout << fixed << setprecision(6);
-        cerr << fixed << setprecision(6);
+	    //! cout << fixed << setprecision(12);
 	    cin.exceptions(cin.failbit);
 	    //? throws exception when do smth illegal
 	    //? ex. try to read letter into int
@@ -273,64 +272,45 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* here goes the template!
 //* /here goes the template!
 
-const bool isTabular = false; //? Datos Tabulados
-
 void solve() {
-    if(isTabular) {
-        // TODO: must complete
-    } else {
-        auto f = [](db x) {
-            // TODO: Whatever you like
-            return (1.0 / x);
-        };
+    def(int, n, x, y);
 
-        const db a = 1.0;   //! init   [xo]
-        const db b = 2.0; //! finish [xf]
-        assert(b > a);
+    x--; y--;
+    vector<vector<int>> adj(n);
 
-        const int n = 2;  //! ¿Cuántos intervalos?
-        assert(n % 1 == 0);
-
-        const db h = (b - a) / n;
-        ps("Numero de Intervalos:", n);
-        dbg(n);
-        RAYA;
-
-        cout << "h = " << "(b-a)/n =" << " ("<<b<<" - "<<a<<") / "<<n<<" = " << h << "\n";
-        dbg(h);
-        RAYA;
-
-        vd x;
-        vd y;
-        for(int i = 0; i < n + 1; i++) { //? Para generar n intervalos, necesitamos n + 1 puntos
-            const db current = a + h * i;
-            x.eb(current);
-            y.eb(f(current));
-        }
-        assert(sz(x) == sz(y));
-        assert(sz(x) == n + 1);
-
-        cout << "i\txi\t\t\t\t\tyi\n";
-        for(int i = 0; i < n + 1; i++) {
-            cout << i << "\t" << a<<" + "<<h<<" * "<<i<<" = "<<x[i] << "\t" << y[i] << "\n";
-        }
-
-        db I = y.ft;
-        for(int i = 1; i < n; i++) {
-            I += 2.0 * y[i];
-        }
-        I += y.bk;
-        I *= h / 2.0;
-
-        RAYA;
-        dbg(I);
-
-        const db valor_real = log(2.0); //! Valor Real
-        const db Error = abs(I - valor_real) / valor_real;
-        RAYA;
-        dbg(valor_real);
-        dbg(Error);
+    adj[x].eb(y);
+    adj[y].eb(x);
+    for(int i = 0; i < n - 1; i++) {
+        adj[i].eb(i + 1);
+        adj[i + 1].eb(i);
     }
+
+    vector<int> ans(n);
+    for(int i = 0; i < n; i++) {
+        vector<bool> vis(n, false); vis[i] = true;
+        vector<int> dist(n, -1); dist[i] = 0;
+
+        queue<int> q; q.push(i);
+        while(!q.empty()) {
+            int u = q.front(); q.pop();
+
+
+            for(auto& v: adj[u]) {
+                if(!vis[v]) {
+                    q.push(v);
+                    vis[v] = true;
+
+                    dist[v] = dist[u] + 1;
+                }
+            }
+        }
+
+        for(int j = 0; j < n; j++) {
+            if(i == j) continue;
+            ans[--dist[j]]++;
+        }
+    }
+    dbg(ans);
 }
 
 
