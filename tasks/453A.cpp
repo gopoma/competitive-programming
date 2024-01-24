@@ -276,20 +276,12 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 void solve() {
     def(ll, m, n);
 
-    if(n == 1) {
-        ll sum = 0;
-        for(int i = 1; i <= m; i++) {
-            sum += i;
-        }
-
-        db ans = db(sum) / db(m);
-        ps(ans);
-    } else {
-        db ans = 0;
-
-
-        ps(ans);
+    db ans = m;
+    for(int i = 1; i <= m - 1; i++) {
+        ans -= pow(db(i) / m, n);
     }
+
+    ps(ans);
 }
 
 

@@ -241,6 +241,7 @@ inline namespace FileIO {
     void setIO(str s = "") {
 	    cin.tie(0)->sync_with_stdio(0);  //! unsync C / C++ I/O streams
 	    //! cout << fixed << setprecision(12);
+        //! cerr << fixed << setprecision(12);
 	    cin.exceptions(cin.failbit);
 	    //? throws exception when do smth illegal
 	    //? ex. try to read letter into int
