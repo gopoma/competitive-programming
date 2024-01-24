@@ -317,7 +317,7 @@ signed main() {
     startTime = clock();
 
     // read read read
-    setIO("go");
+    setIO();
 
     ll t = 1LL;
     cin >> t;
