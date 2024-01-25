@@ -35,3 +35,10 @@ rotate(vec2.begin(), vec2.begin() + vec2.size() - rotR, vec2.end());
 * Think in `invariants`.
 
 * `Always analyze constraints`.
+
+* Check if some part of the Complexity can be reduced to $n \log(n)$ by doing.
+
+```C++
+for (i = 1; i <= n; i++)
+   for (int j = i; j <= n; j += i)
+```
