@@ -270,19 +270,45 @@ const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
 const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 //* here goes the template!
+// #include<bits/extc++.h>
+#include <ext/pb_ds/assoc_container.hpp>
+
+//? For CodeForces, or other places where hacking might be a problem:
+
+const int RANDOM = chrono::high_resolution_clock::now().time_since_epoch().count();
+struct chash { // To use most bits rather than just the lowest ones:
+	const uint64_t C = ll(4e18 * acos(0)) | 71; // large odd number
+	ll operator()(ll x) const { return __builtin_bswap64((x^RANDOM)*C); }
+};
+//?__gnu_pbds::gp_hash_table<ll, int, chash> h({},{},{},{}, {1 << 16});
+
+template <typename K, typename V, typename Hash = chash>
+using hash_map = __gnu_pbds::gp_hash_table<K, V, Hash>;
+
+template <typename K, typename Hash = chash>
+using hash_set = hash_map<K, __gnu_pbds::null_type, Hash>;
+
 //* /here goes the template!
 
 void solve() {
     def(int, Q);
-    map<ll, ll> go;
+
+    // TODO: Specify Capacity, if not, TLE!
+    //? Capacity must be a power of 2
+    hash_map<ll, ll> go({},{},{},{}, {1 << 20});
     for(int _ = 0; _ < Q; _++) {
         def(int, type);
         if(type == 0) {
             def(ll, k, v);
+
             go[k] = v;
         } else if(type == 1) {
             def(ll, k);
-            ps(go[k]);
+
+            if(go.find(k) == go.end())
+                ps(0);
+            else
+                ps(go[k]);
         } else assert(false);
     }
 }
