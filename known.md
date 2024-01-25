@@ -42,3 +42,7 @@ rotate(vec2.begin(), vec2.begin() + vec2.size() - rotR, vec2.end());
 for (i = 1; i <= n; i++)
    for (int j = i; j <= n; j += i)
 ```
+
+* If you've got WA, `debug, don't blame the lib` >:v!
+
+* Think hard in paper, also implement sth
