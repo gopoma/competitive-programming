@@ -46,3 +46,9 @@ for (i = 1; i <= n; i++)
 * If you've got WA, `debug, don't blame the lib` >:v!
 
 * Think hard in paper, also implement sth
+
+* `Try to code the brute force approach and use it as a comparator to a greedy that you've built, with the help of an infinite loop`.
+
+* Iterate small ranges.
+
+* Check memory consumption.
