@@ -52,3 +52,5 @@ for (i = 1; i <= n; i++)
 * Iterate small ranges.
 
 * Check memory consumption.
+
+* Remember that `multiset` exists.
