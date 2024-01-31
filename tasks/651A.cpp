@@ -3,7 +3,25 @@
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-#include <bits/stdc++.h> //? if you don't want IntelliSense
+//? #include <bits/stdc++.h> //! if you don't want IntelliSense
+#include <algorithm>
+#include <array>
+#include <bitset>
+#include <cassert>
+#include <chrono>
+#include <climits>
+#include <cmath>
+#include <complex>
+#include <cstring>
+#include <functional>
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <numeric>
+#include <queue>
+#include <random>
+#include <set>
+#include <vector>
 
 using namespace std;
 
@@ -316,6 +334,21 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
+    def(ll, a1, a2);
+
+    ll mn = min(a1, a2);
+    ll ans = 0;
+    while(mn > 0) {
+        if(a1 == 1 && a2 == 1) break;
+
+        ans++;
+
+        if(a1 == mn) { a1++; a2 -= 2; }
+        else { a1 -= 2; a2++; }
+
+        mn = min(a1, a2);
+    }
+    ps(ans);
 }
 
 

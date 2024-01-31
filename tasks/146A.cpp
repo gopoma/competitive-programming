@@ -3,7 +3,25 @@
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-#include <bits/stdc++.h> //? if you don't want IntelliSense
+//? #include <bits/stdc++.h> //! if you don't want IntelliSense
+#include <algorithm>
+#include <array>
+#include <bitset>
+#include <cassert>
+#include <chrono>
+#include <climits>
+#include <cmath>
+#include <complex>
+#include <cstring>
+#include <functional>
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <numeric>
+#include <queue>
+#include <random>
+#include <set>
+#include <vector>
 
 using namespace std;
 
@@ -316,6 +334,23 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
+    def(int, n); assert(n % 2 == 0);
+    def(str, S);
+
+    bool ok = true;
+    each(c, S) ok &= (c == '4' || c == '7');
+
+    if(!ok) ps("NO");
+    else {
+        int sumLeft = 0, sumRight = 0;
+        for(int i = 0; i < n / 2; i++) {
+            sumLeft += S[i] - '0';
+            sumRight += S[n / 2 + i] - '0';
+        }
+
+        if(sumLeft == sumRight) ps("YES");
+        else ps("NO");
+    }
 }
 
 

@@ -1,34 +1,44 @@
-//? template: https://github.com/bqi343/cp-notebook/blob/master/Implementations/content/contest/TemplateLong.cpp
-// sometimes pragmas don't work, if so, just comment it!
+//* sometimes pragmas don't work, if so, just comment it!
 //? #pragma GCC optimize ("Ofast")
-//? #pragma GCC target ("avx2")
+//? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-#include <bits/stdc++.h>
+//? #include <bits/stdc++.h> //! if you don't want IntelliSense
+#include <algorithm>
+#include <array>
+#include <bitset>
+#include <cassert>
+#include <chrono>
+#include <climits>
+#include <cmath>
+#include <complex>
+#include <cstring>
+#include <functional>
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <numeric>
+#include <queue>
+#include <random>
+#include <set>
+#include <vector>
 
 using namespace std;
 
-#ifdef LOCAL
-    #include "helpers/debug.h"
-#else
-    #define dbg(...)     0
-    #define chk(...)     0
-
-    #define RAYA         0
-#endif
-
-
-
 // building blocks
-using ll = long long;
-using ull = unsigned long long;
-using db = long double; // or double, if TL is tight
-using str = string;     // yay python!
-// using i64 = long long;    //? for Number Theory related
-// using u64 = uint64_t;     //? for Number Theory related
-// using i128 = __int128;    //? for Number Theory related
-// using u128 = __uint128_t; //? for Number Theory related
-template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>; //? minima
+using ll  = long long;
+using db  = long double; // or double, if TL is tight
+using str = string;      // yay python!
+
+//? priority_queue for minimum
+//? template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
+
+//? using ull  = unsigned long long;
+//? using i64  = long long;
+//? using u64  = uint64_t;
+//? using i128 = __int128;
+//? using u128 = __uint128_t;
+//? using f128 = __float128;
 
 
 
@@ -43,7 +53,7 @@ using pd = pair<db, db>;
 
 
 
-#define tcT template<class T
+#define tcT template <class T
 #define tcTU tcT, class U
 //! ^ lol this makes everything look weird but I'll try it
 
@@ -58,6 +68,10 @@ using vpi = V<pi>;
 using vpl = V<pl>;
 using vpd = V<pd>;
 
+// vectors
+// oops size(x), rbegin(x), rend(x) need C++17
+// vectors
+// oops size(x), rbegin(x), rend(x) need C++17
 // vectors
 // oops size(x), rbegin(x), rend(x) need C++17
 #define sz(x) int((x).size())
@@ -90,11 +104,11 @@ tcT > int upb(V<T> &a, const T &b) { return int(ub(all(a), b) - bg(a)); }
 
 
 
-const int MOD = 998244353;   //? 1e9+7;
+const int MOD = 1e9 + 7;
 const int MX = (int)2e5 + 5;
-const ll BIG = 1e18;         //? not too close to LLONG_MAX
+const ll BIG = 1e18;  //? not too close to LLONG_MAX
 const db PI = acos((db)-1);
-const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  // for every grid problem!!
+const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
 mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
 
 
@@ -111,22 +125,22 @@ constexpr int msk2(int x) { return p2(x) - 1; }
 
 ll cdiv(ll a, ll b) {
 	return a / b + ((a ^ b) > 0 && a % b);
-}  //? divide a by b rounded up
+}  // divide a by b rounded up
 ll fdiv(ll a, ll b) {
 	return a / b - ((a ^ b) < 0 && a % b);
-}  //? divide a by b rounded down
+}  // divide a by b rounded down
 
 tcT > bool ckmin(T &a, const T &b) {
 	return b < a ? a = b, 1 : 0;
-}  //? set a = min(a,b)
+}  // set a = min(a,b)
 tcT > bool ckmax(T &a, const T &b) {
 	return a < b ? a = b, 1 : 0;
-}  //? set a = max(a,b)
+}  // set a = max(a,b)
 
 tcTU > T fstTrue(T lo, T hi, U f) {
 	++hi;
-	assert(lo <= hi);  //? assuming f is increasing
-	while (lo < hi) {  //? find first index such that f is true
+	assert(lo <= hi);  // assuming f is increasing
+	while (lo < hi) {  // find first index such that f is true
 		T mid = lo + (hi - lo) / 2;
 		f(mid) ? hi = mid : lo = mid + 1;
 	}
@@ -134,15 +148,14 @@ tcTU > T fstTrue(T lo, T hi, U f) {
 }
 tcTU > T lstTrue(T lo, T hi, U f) {
 	--lo;
-	assert(lo <= hi);  //? assuming f is decreasing
-	while (lo < hi) {  //? find first index such that f is true
+	assert(lo <= hi);  // assuming f is decreasing
+	while (lo < hi) {  // find first index such that f is true
 		T mid = lo + (hi - lo + 1) / 2;
 		f(mid) ? lo = mid : hi = mid - 1;
 	}
 	return lo;
 }
-
-tcT > void remDup(vector<T> &v) {  //? sort and remove duplicates
+tcT > void remDup(vector<T> &v) {  // sort and remove duplicates
 	sort(all(v));
 	v.erase(unique(all(v)), end(v));
 }
@@ -152,9 +165,9 @@ tcTU > void safeErase(T &t, const U &u) {
 	t.erase(it);
 }
 
+
+
 #define tcTUU tcT, class ...U
-
-
 
 inline namespace IO {
 #define SFINAE(x, ...)                                                         \
@@ -233,23 +246,69 @@ template <class... Ts> void ps(Ts const &...ts) {
 }
 }  // namespace IO
 
+inline namespace Debug {
+template <typename... Args> void err(Args... args) {
+	Writer<cerr, true, false>{}.print_with_sep(" | ", args...);
+}
+template <typename... Args> void errn(Args... args) {
+	Writer<cerr, true, true>{}.print_with_sep(" | ", args...);
+}
+
+void err_prefix(str func, int line, string args) {
+	cerr << "\033[0;31m\u001b[1mDEBUG\033[0m"
+	     << " | "
+	     << "\u001b[34m" << func << "\033[0m"
+	     << ":"
+	     << "\u001b[34m" << line << "\033[0m"
+	     << " - "
+	     << "[" << args << "] = ";
+}
+
+#ifdef LOCAL
+#define dbg(args...) err_prefix(__FUNCTION__, __LINE__, #args), err(args)
+#define dbgn(args...) err_prefix(__FUNCTION__, __LINE__, #args), errn(args)
+
+#define chk(...) if (!(__VA_ARGS__)) cerr << "\033[41m" << "Line(" << __LINE__ << ") -> function(" \
+	 << __FUNCTION__  << ") -> CHK FAILED: (" << #__VA_ARGS__ << ")" << "\033[0m" << "\n", exit(0);
+
+#define MACRO(code) do {code} while (false)
+#define RAYA MACRO(cerr << "\033[101m" << "================================" << "\033[0m" << endl;)
+#else
+#define dbg(...)
+#define dbgn(args...)
+
+#define chk(...)
+#define RAYA
+#endif
+
+const auto beg_time = std::chrono::high_resolution_clock::now();
+// https://stackoverflow.com/questions/47980498/accurate-c-c-clock-on-a-multi-core-processor-with-auto-overclock?noredirect=1&lq=1
+double time_elapsed() {
+	return chrono::duration<double>(std::chrono::high_resolution_clock::now() -
+	                                beg_time)
+	    .count();
+}
+}  // namespace Debug
+
 
 
 inline namespace FileIO {
-    void setIn(str s) { freopen(s.c_str(), "r", stdin); }
-    void setOut(str s) { freopen(s.c_str(), "w", stdout); }
-    void setIO(str s = "") {
-	    cin.tie(0)->sync_with_stdio(0);  //! unsync C / C++ I/O streams
-	    //! cout << fixed << setprecision(12);
-	    cin.exceptions(cin.failbit);
-	    //? throws exception when do smth illegal
-	    //? ex. try to read letter into int
-	    if (sz(s)) setIn(s + ".in"), setOut(s + ".out");  // for old USACO
+void setIn(str s) { freopen(s.c_str(), "r", stdin); }
+void setOut(str s) { freopen(s.c_str(), "w", stdout); }
+void setIO(str s = "") {
+	cin.tie(0)->sync_with_stdio(0);  // unsync C / C++ I/O streams
+	//? cout << fixed << setprecision(12);
+    //? cerr << fixed << setprecision(12);
+	cin.exceptions(cin.failbit);
+	// throws exception when do smth illegal
+	// ex. try to read letter into int
+	if (sz(s)) setIn(s + ".in"), setOut(s + ".out");  // for old USACO
 }
 }  // namespace FileIO
 
 
 
+//? Custom Helpers
 template <typename T>
 inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
@@ -264,58 +323,69 @@ long long binpow(long long a, long long b) {
     return res;
 }
 
-
-
 const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
 const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
-//* here goes the template!
-//* /here goes the template!
+//? /Custom Helpers
+
+
+
+//* Template
+//* /Template
 
 void solve() {
+    def(ll, n, d);
+    vl a(n); re(a);
+
+	def(ll, m);
+
+    sor(a);
+
+    ll ans = 0;
+    for(int i = 0; i < m; i++) {
+        if(i < n) {
+            ans += a[i];
+        } else {
+            ans -= d;
+        }
+    }
+    ps(ans);
 }
 
 
-//* here goes the template!
+//? Generator
 int rng_int(int L, int R) { assert(L <= R);
 	return uniform_int_distribution<int>(L,R)(rng);  }
 ll rng_ll(ll L, ll R) { assert(L <= R);
 	return uniform_int_distribution<ll>(L,R)(rng);  }
-//* /here goes the template!
+//? /Generator
 
-clock_t startTime;
-double getCurrentTime() { return (double)(clock() - startTime) / CLOCKS_PER_SEC; }
+
 signed main() {
-    startTime = clock();
+    setIO();
 
-    // read read read
-    ios_base::sync_with_stdio(false);
-    cin.tie(nullptr);
+    ll t = 1; //?re(t);
 
-    setOut("gaaa.out");
-
-    int n = 100, x = 1e6;
-    ps(n, x);
-
-    vi c(n);
-    for(int i = 0; i < n; i++) c[i] = i + 1;
-
-    each(e, c) ps(e);
+    FOR(i, 1, t + 1) {
+        RAYA;
+        RAYA;
+        solve();
+    }
+    RAYA;
+    RAYA;
 
     #ifdef LOCAL
         cerr << fixed << setprecision(5);
         cerr << "\033[42m++++++++++++++++++++\033[0m\n";
-        cerr << "\033[42mtime = " << getCurrentTime() << "ms\033[0m\n";
+        cerr << "\033[42mtime = " << time_elapsed() << "ms\033[0m\n";
         cerr << "\033[42m++++++++++++++++++++\033[0m";
     #endif
-
-    // should actually read the stuff at the bottom
 }
 
 /* stuff you should look for
-	* int overflow, array bounds
-	* special cases (n=1?)
-	! do smth instead of nothing and stay organized
-	* WRITE STUFF DOWN
-	! DON'T GET STUCK ON ONE APPROACH
-*/
+ * int overflow, array bounds
+ * special cases (n=1?)
+ * do smth instead of nothing and stay organized
+ * WRITE STUFF DOWN
+ * DON'T GET STUCK ON ONE APPROACH
+ */

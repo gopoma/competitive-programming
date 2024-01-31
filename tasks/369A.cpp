@@ -3,7 +3,7 @@
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-#include <bits/stdc++.h> //? if you don't want IntelliSense
+#include <bits/stdc++.h> //! if you don't want IntelliSense
 
 using namespace std;
 
@@ -316,6 +316,22 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
+    def(int, n, m, k);
+    vi a(n); re(a);
+
+    int ans = 0;
+    for(int i = 0; i < n; i++) {
+        if(a[i] == 1) {
+            if(m == 0) ans++;
+            else m--;
+        } else {
+            if(k > 0) k--;
+            else if(m > 0) m--;
+            else ans++;
+            assert(a[i] == 2);
+        }
+    }
+    ps(ans);
 }
 
 
