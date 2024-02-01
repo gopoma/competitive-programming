@@ -57,4 +57,8 @@ for (i = 1; i <= n; i++)
 
 * Always use `long long` to avoid overflow.
 
-* in 0-1 dp, want to ignore the case where we don't pick anything, just put a carry and switch states
+* in 0-1 dp, want to ignore the case where we don't pick anything, just put a carry and switch states.
+
+* watch `carefully` the `constraints`, maybe it can be divided in two cases.
+
+* Exploit numeric constrains, ask yourself: ¿What is the maximum amount of different sums?
