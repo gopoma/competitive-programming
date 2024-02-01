@@ -311,7 +311,56 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* Template
 //* /Template
 
-void solve() {
+bool brute(int n, vi& a, int m) {
+    for(int i = 1; i < (1 << n); i++) {
+        int sum = 0;
+        for(int j = 0; j < n; j++) {
+            if(i & (1 << j)) {
+                sum += a[j];
+            }
+        }
+        if(sum % m == 0) {
+            dbg(bitset<30>(i));
+            return true;
+        }
+    }
+    return false;
+}
+
+bool solve(int n, vi& a, int m) {
+    if(n > m) {
+        return true;
+    } else {
+        each(x, a) {
+            if(x % m == 0) {
+                return true;
+            }
+        }
+
+        vector<vb> vis(n, vb(m, false));
+        vector<vb> dp(n, vb(m, false));
+
+        function<bool(int, int, bool)> solve = [&](int idx, int x, bool carry) -> bool {
+            if(idx == n) {
+                if(!carry) return false;
+                if(x == 0) return true;
+                else return false;
+            } else {
+                if(vis[idx][x % m]) return dp[idx][x % m];
+                vis[idx][x % m] = true;
+
+                bool go2 = solve(idx + 1, (x + a[idx]) % m, true);
+                bool go1 = solve(idx + 1, x % m, carry);
+                bool ans = go1 || go2;
+
+                return dp[idx][x % m] = ans;
+            }
+        };
+
+        bool ok = solve(0, 0, false);
+        if(ok) return true;
+        else   return false;
+    }
 }
 
 
@@ -328,10 +377,37 @@ signed main() {
 
     ll t = 1; //?re(t);
 
+//?    while(1) {
+//?        const int n = rng_int(1, 20);
+//?        const int m = rng_int(1, 45);
+//?        vi a(n); for(int i = 0; i < n; i++) a[i] = rng_int(0, 1e2);
+//?
+//?        dbg(n);
+//?        dbg(a);
+//?        dbg(m);
+//?
+//?        bool ans1 = brute(n, a, m);
+//?        bool ans2 = solve(n, a, m);
+//?
+//?
+//?        if(ans1 == ans2) {
+//?            dbg("go");
+//?        }
+//?        else {
+//?            dbg("jaaa", ans1, ans2);
+//?            exit(0);
+//?        }
+//?        RAYA;
+//?    }
+
     FOR(i, 1, t + 1) {
         RAYA;
         RAYA;
-        solve();
+        def(int, n, m);
+        vi a(n); re(a);
+        bool ok = solve(n, a, m);
+        if(ok) ps("YES");
+        else ps("NO");
     }
     RAYA;
     RAYA;

@@ -56,3 +56,5 @@ for (i = 1; i <= n; i++)
 * Remember that `multiset` exists.
 
 * Always use `long long` to avoid overflow.
+
+* in 0-1 dp, want to ignore the case where we don't pick anything, just put a carry and switch states
