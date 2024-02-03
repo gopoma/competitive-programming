@@ -347,29 +347,20 @@ tcT> struct SegTree { // cmb(ID,b) = b
 //* /Template
 
 void solve() {
-    def(int, n);
-    vi x(n); re(x);
+    def(int, N, D);
+    vi A(N); re(A);
 
-    dbg(n);
-    dbg(x);
+    dbg(N, D);
+    dbg(A);
 
-    int start = 1;
-    vi u = x; remDup(u);
-    map<int, int> mp; each(e, u) mp[e] = start++;
+    const int MAXN = *max_element(all(A)) + 5;
+    SegTree<int> dp; dp.init(MAXN);
+    each(x, A) {
+        int left = max(0, x - D);
+        int right = min(x + D, MAXN - 1);
 
-    each(e, x) e = mp[e];
-
-    dbg(u);
-    dbg(mp);
-    dbg(x);
-
-    const int MAXN = start + 5;
-    dbg(MAXN);
-    SegTree<int> dp;  dp.init(MAXN);
-
-    each(e, x) {
-        int val = dp.query(0, e - 1);
-        dp.upd(e, val + 1);
+        int val = dp.query(left, right);
+        dp.upd(x, val + 1);
     }
 
     int ans = dp.query(0, MAXN - 1);

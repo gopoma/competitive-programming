@@ -20,6 +20,12 @@
     * `https://github.dev/bqi343/cp-notebook`
     * `https://github.dev/kth-competitive-programming/kactl`
 
+## Dynamic Programming
+
+### Increasing Subsequence
+
+Try to implement the brute, note that the inner loop can be ripped through a `Segment Tree`, in addition to `Coordinate Compression` since the values are up to $10^9$.
+
 ## Graph Algorithms
 
 ### Counting Rooms

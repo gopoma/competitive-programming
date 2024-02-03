@@ -62,3 +62,7 @@ for (i = 1; i <= n; i++)
 * watch `carefully` the `constraints`, maybe it can be divided in two cases.
 
 * Exploit numeric constrains, ask yourself: ¿What is the maximum amount of different sums?
+
+* `Try to implement the brute`, then make observations of what can be optimized.
+
+* In case you think that are INF possibilities, remember the visisited array.

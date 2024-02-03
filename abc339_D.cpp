@@ -309,71 +309,72 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
-/**
- * Description: 1D point update and range query where \texttt{cmb} is
- 	* any associative operation. \texttt{seg[1]==query(0,N-1)}.
- * Time: O(\log N)
- * Source:
-	* http://codeforces.com/blog/entry/18051
-	* KACTL
- * Verification: SPOJ Fenwick
- */
-
-tcT> struct SegTree { // cmb(ID,b) = b
-	const T ID{0}; T cmb(T a, T b) { return max(a, b); }
-	int n; V<T> seg;
-	void init(int _n) { // upd, query also work if n = _n
-		for (n = 1; n < _n; ) n *= 2;
-		seg.assign(2*n,ID); }
-	void pull(int p) { seg[p] = cmb(seg[2*p],seg[2*p+1]); }
-	void upd(int p, T val) { // set val at position p
-		seg[p += n] = val; for (p /= 2; p; p /= 2) pull(p); }
-	T query(int l, int r) {	// zero-indexed, inclusive
-		T ra = ID, rb = ID;
-		for (l += n, r += n+1; l < r; l /= 2, r /= 2) {
-			if (l&1) ra = cmb(ra,seg[l++]);
-			if (r&1) rb = cmb(seg[--r],rb);
-		}
-		return cmb(ra,rb);
-	}
-	/// int first_at_least(int lo, int val, int ind, int l, int r) { // if seg stores max across range
-	/// 	if (r < lo || val > seg[ind]) return -1;
-	/// 	if (l == r) return l;
-	/// 	int m = (l+r)/2;
-	/// 	int res = first_at_least(lo,val,2*ind,l,m); if (res != -1) return res;
-	/// 	return first_at_least(lo,val,2*ind+1,m+1,r);
-	/// }
-};
 //* /Template
 
 void solve() {
-    def(int, n);
-    vi x(n); re(x);
+    def(int, N);
+    vs mat(N); re(mat); each(row, mat) dbg(row);
 
-    dbg(n);
-    dbg(x);
-
-    int start = 1;
-    vi u = x; remDup(u);
-    map<int, int> mp; each(e, u) mp[e] = start++;
-
-    each(e, x) e = mp[e];
-
-    dbg(u);
-    dbg(mp);
-    dbg(x);
-
-    const int MAXN = start + 5;
-    dbg(MAXN);
-    SegTree<int> dp;  dp.init(MAXN);
-
-    each(e, x) {
-        int val = dp.query(0, e - 1);
-        dp.upd(e, val + 1);
+    vpi players;
+    for(int i = 0; i < N; i++) for(int j = 0; j < N; j++) if(mat[i][j] == 'P') {
+        players.eb(mp(i, j));
     }
 
-    int ans = dp.query(0, MAXN - 1);
-    ps(ans);
+    assert(sz(players) == 2); dbg(players);
+
+
+
+    auto check = [&](int xx) {
+        return 0 <= xx && xx < N;
+    };
+
+    auto check2 = [&](int x1, int y1) {
+        bool ok = check(x1) && check(y1);
+        if(!ok) return false;
+
+        if(mat[x1][y1] == '#') return false;
+        return true;
+    };
+
+
+
+    auto start = make_tuple(players[0].f, players[0].s, players[1].f, players[1].s);
+
+    queue<tuple<int, int, int, int>> q;
+    q.push(start);
+
+    int dist[N][N][N][N]{-1};
+    dist[get<0>(start)][get<1>(start)][get<2>(start)][get<3>(start)] = 0;
+
+    bool vis[N][N][N][N]{false};
+    vis[get<0>(start)][get<1>(start)][get<2>(start)][get<3>(start)] = true;
+
+    while(!q.empty()) {
+        int x1, y1, x2, y2;
+        tie(x1, y1, x2, y2) = q.ft; q.pop();
+
+        for(int i = 0; i < 4; i++) {
+            int x1_new = x1 + dx[i]; int y1_new = y1 + dy[i];
+            int x2_new = x2 + dx[i]; int y2_new = y2 + dy[i];
+
+            if(!check2(x1_new, y1_new)) { x1_new -= dx[i]; y1_new -= dy[i]; }
+            if(!check2(x2_new, y2_new)) { x2_new -= dx[i]; y2_new -= dy[i]; }
+
+            auto new_current = make_tuple(x1_new, y1_new, x2_new, y2_new);
+
+            if(!vis[get<0>(new_current)][get<1>(new_current)][get<2>(new_current)][get<3>(new_current)]) {
+                vis[get<0>(new_current)][get<1>(new_current)][get<2>(new_current)][get<3>(new_current)] = true;
+                q.push(new_current);
+                dist[get<0>(new_current)][get<1>(new_current)][get<2>(new_current)][get<3>(new_current)] = dist[x1][y1][x2][y2] + 1;
+
+                if(mp(x1_new, y1_new) == mp(x2_new, y2_new)) {
+                    ps(dist[get<0>(new_current)][get<1>(new_current)][get<2>(new_current)][get<3>(new_current)]);
+                    return;
+                }
+            }
+        }
+    }
+    ps("-1");
 }
 
 
