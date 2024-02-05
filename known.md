@@ -68,3 +68,5 @@ for (i = 1; i <= n; i++)
 * In case you think that are INF possibilities, remember the visisited array.
 
 * Think hard in paper. Try to optimize the naive with Greedy.
+
+* Forgot a break that should end current loop and outer loop?
