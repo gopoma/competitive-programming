@@ -3,6 +3,8 @@
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
+//! #undef _GLIBCXX_DEBUG //? for Stress Testing
+
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
 using namespace std;
@@ -311,21 +313,58 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* Template
 //* /Template
 
-bool check(vi& go, int k) {
+bool check(vi perm, int k) {
+    assert(k % 2 == 0);
 
+    const int n = sz(perm);
+    for(int i = 1; i < n; i++) perm[i] += perm[i - 1];
+
+    auto query = [&](int left, int right) {
+        int sum = perm[right];
+        if(0 <= left - 1) sum -= perm[left - 1];
+        return sum;
+    };
+
+    vi xd;
+    for(int i = 0; i < n - k + 1; i++) {
+        xd.eb(query(i, i + k - 1));
+    }
+
+    int mx = *max_element(all(xd));
+    int mn = *min_element(all(xd));
+
+    return (mx - mn <= 1);
 }
 
 void brute(int n, int k) {
-    assert(k % 2 == 0);
-
     vi go(n); for(int i = 0; i < n; i++) go[i] = i + 1;
-    do {
 
+    do {
+        if(check(go, k)) {} //? dbg(go);
     } while(next_permutation(all(go)));
 }
 
-void solve(int n, int k) {
-    assert(k % 2 == 0);
+void solve() {
+    def(int, n, k);
+
+    int mn = 1;
+    int mx = n;
+
+    vi ans(n);
+    for(int i = 0; i < k; i++) {
+        if(i % 2 == 0) {
+            for(int j = i; j < n; j += k) {
+                ans[j] = mn++;
+            }
+        } else {
+            for(int j = i; j < n; j += k) {
+                ans[j] = mx--;
+            }
+        }
+    }
+    //?assert(check(ans, k));
+
+    ps(ans);
 }
 
 
@@ -343,9 +382,9 @@ signed main() {
     ll t = 1; re(t);
 
     FOR(i, 1, t + 1) {
-        RAYA;
-        RAYA;
         solve();
+        RAYA;
+        RAYA;
     }
     RAYA;
     RAYA;
