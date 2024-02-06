@@ -3,8 +3,6 @@
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-//! #undef _GLIBCXX_DEBUG //? for Stress Testing
-
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
 using namespace std;
@@ -314,7 +312,13 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
+    def(int, n);
+    def(str, S);
 
+    vi go; for(int i = 0; i < n; i++) if(S[i] == 'B') go.eb(i);
+
+    if(go.empty()) ps(0);
+    else ps(go.bk - go.ft + 1);
 }
 
 

@@ -3,8 +3,6 @@
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-//! #undef _GLIBCXX_DEBUG //? for Stress Testing
-
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
 using namespace std;
@@ -313,8 +311,21 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* Template
 //* /Template
 
-void solve() {
+bool check(vi& go, int k) {
 
+}
+
+void brute(int n, int k) {
+    assert(k % 2 == 0);
+
+    vi go(n); for(int i = 0; i < n; i++) go[i] = i + 1;
+    do {
+
+    } while(next_permutation(all(go)));
+}
+
+void solve(int n, int k) {
+    assert(k % 2 == 0);
 }
 
 

@@ -3,8 +3,6 @@
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-//! #undef _GLIBCXX_DEBUG //? for Stress Testing
-
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
 using namespace std;
@@ -311,10 +309,96 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
+/**
+ * Description: 1D point update and range query where \texttt{cmb} is
+ 	* any associative operation. \texttt{seg[1]==query(0,N-1)}.
+ * Time: O(\log N)
+ * Source:
+	* http://codeforces.com/blog/entry/18051
+	* KACTL
+ * Verification: SPOJ Fenwick
+ */
+
+tcT> struct SegTree { // cmb(ID,b) = b
+	// const T ID{}; T cmb(T a, T b) { return a+b; }
+    T ID{}; T cmb(T a, T b) { return a+b; }
+	int n; V<T> seg;
+	void init(int _n) { // upd, query also work if n = _n
+		for (n = 1; n < _n; ) n *= 2;
+		seg.assign(2*n,ID); }
+	void pull(int p) { seg[p] = cmb(seg[2*p],seg[2*p+1]); }
+	void upd(int p, T val) { // set val at position p
+		seg[p += n] = val; for (p /= 2; p; p /= 2) pull(p); }
+	T query(int l, int r) {	// zero-indexed, inclusive
+		T ra = ID, rb = ID;
+		for (l += n, r += n+1; l < r; l /= 2, r /= 2) {
+			if (l&1) ra = cmb(ra,seg[l++]);
+			if (r&1) rb = cmb(seg[--r],rb);
+		}
+		return cmb(ra,rb);
+	}
+	/// int first_at_least(int lo, int val, int ind, int l, int r) { // if seg stores max across range
+	/// 	if (r < lo || val > seg[ind]) return -1;
+	/// 	if (l == r) return l;
+	/// 	int m = (l+r)/2;
+	/// 	int res = first_at_least(lo,val,2*ind,l,m); if (res != -1) return res;
+	/// 	return first_at_least(lo,val,2*ind+1,m+1,r);
+	/// }
+};
 //* /Template
 
-void solve() {
+struct node_mn {
+    int mn;
+    int idx;
 
+    node_mn(): mn(INT_MAX), idx(-1) {}
+	node_mn(int a, int b): mn(a), idx(b)  {}
+
+	node_mn operator + (const node_mn &rhs) const {
+        if(mn > rhs.mn) return node_mn(rhs.mn, rhs.idx);
+        else return node_mn(mn, idx);
+	}
+};
+
+struct node_mx {
+    int mx;
+    int idx;
+
+    node_mx(): mx(0), idx(-1) {}
+	node_mx(int a, int b): mx(a), idx(b)  {}
+
+	node_mx operator + (const node_mx &rhs) const {
+        if(mx > rhs.mx) return node_mx(mx, idx);
+        else return node_mx(rhs.mx, rhs.idx);
+	}
+};
+
+void solve() {
+    def(int, n);
+    vi a(n); re(a);
+
+    SegTree<node_mn> st_mn; st_mn.init(n);
+    SegTree<node_mx> st_mx; st_mx.init(n);
+    for(int i = 0; i < n; i++) {
+        st_mn.upd(i, node_mn(a[i], i));
+        st_mx.upd(i, node_mx(a[i], i));
+    }
+
+    def(int, q);
+    for(int _ = 0; _ < q; _++) {
+        def(int, l, r); l--; r--; assert(l < r);
+
+        const node_mn ans_mn = st_mn.query(l, r);
+        const node_mx ans_mx = st_mx.query(l, r);
+
+        if(ans_mn.mn == ans_mx.mx) ps(-1, -1);
+        else {
+            int left = ans_mn.idx;
+            int right = ans_mx.idx;
+            assert(left != right && a[left] != a[right]);
+            ps(left + 1, right + 1);
+        }
+    }
 }
 
 
@@ -327,7 +411,7 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 
 signed main() {
-    setIO();
+    setIO("DStress");
 
     ll t = 1; re(t);
 

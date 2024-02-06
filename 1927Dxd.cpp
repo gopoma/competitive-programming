@@ -3,8 +3,6 @@
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-//! #undef _GLIBCXX_DEBUG //? for Stress Testing
-
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
 using namespace std;
@@ -314,7 +312,6 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-
 }
 
 
@@ -327,17 +324,39 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 
 signed main() {
-    setIO();
+    //?setOut("DStress.in");
+    //?setIO();
 
-    ll t = 1; re(t);
-
-    FOR(i, 1, t + 1) {
-        RAYA;
-        RAYA;
-        solve();
+    const int t = 1;
+    const int n = 2e5;
+    vi a(n);
+    bool xd = true;
+    for(int i = 0; i < n; i++) {
+        if(xd) a[i] = 2e5;
+        else a[i] = 2e5 - 1;
+        xd = !xd;
     }
-    RAYA;
-    RAYA;
+
+    const int q = 2e5;
+
+    vpi queries(q);
+    for(int i = 0; i < q; i++) {
+        int left = rng_int(1, n - 1);
+        int right = rng_int(left + 1, n);
+        assert(1 <= left);
+        assert(left < right);
+        assert(right <= n);
+
+        queries[i] = mp(1, 2e5);
+    }
+
+    cout << t << "\n";
+    cout << n << "\n";
+    for(int i = 0; i < n; i++) cout << a[i] << " \n"[i == n - 1];
+    cout << q << "\n";
+    for(int i = 0; i < q; i++) {
+        cout << queries[i].f << " " << queries[i].s << "\n";
+    }
 
     #ifdef LOCAL
         cerr << fixed << setprecision(5);

@@ -3,8 +3,6 @@
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-//! #undef _GLIBCXX_DEBUG //? for Stress Testing
-
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
 using namespace std;
@@ -314,7 +312,41 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
+    def(int, n, m, k);
+    vi a(n), b(m); re(a, b);
 
+    set<int> A; each(x, a) A.emplace(x);
+    set<int> B; each(x, b) B.emplace(x);
+
+    int both = 0;
+    int justA = 0;
+    int justB = 0;
+
+    for(int x = 1; x <= k; x++) {
+        bool hasA = (A.count(x) == 1);
+        bool hasB = (B.count(x) == 1);
+
+        if(hasA && hasB) both++;
+        else if(hasA) justA++;
+        else if(hasB) justB++;
+        else {
+            ps("NO");
+            return;
+        }
+    }
+
+    dbg(A);
+    dbg(B);
+    dbg(justA, justB, both);
+
+    for(int i = 0; i < both; i++) {
+        int mn = min(justA, justB);
+        if(justA == mn) justA++;
+        else justB++;
+    }
+
+    if(justA == justB) ps("YES");
+    else ps("NO");
 }
 
 
