@@ -70,3 +70,5 @@ for (i = 1; i <= n; i++)
 * Think hard in paper. Try to optimize the naive with Greedy.
 
 * Forgot a break that should end current loop and outer loop?
+
+* Read `Carefully` the `Constraints` >:v
