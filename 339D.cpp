@@ -314,7 +314,43 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
+    def(int, n, m);
+    vi a(1 << n); re(a);
 
+    dbg(n, m);
+    dbg(a);
+
+    const int identidad = 0;
+    vi tree(1 << (n + 1), identidad);
+
+    auto upd = [&](int p, int b) {
+        p += (1 << (n)) - 1; //? normalize
+
+        tree[p] = b;
+
+        bool apply_or = true;
+        while(p != 1) {
+            p /= 2;
+
+            if(apply_or) tree[p] = tree[2 * p] | tree[2 * p + 1];
+            else tree[p] = tree[2 * p] ^ tree[2 * p + 1];
+
+            apply_or = !apply_or;
+        }
+    };
+
+    for(int i = 0; i < (1 << n); i++) {
+        upd(i + 1, a[i]);
+    }
+
+    rep(m) {
+        def(int, p, b);
+
+        upd(p, b);
+
+        int ans = tree[1];
+        ps(ans);
+    }
 }
 
 
