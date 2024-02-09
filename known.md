@@ -72,3 +72,5 @@ for (i = 1; i <= n; i++)
 * Forgot a break that should end current loop and outer loop?
 
 * Read `Carefully` the `Constraints` >:v
+
+* `Simulate your algorithm in paper` >:v
