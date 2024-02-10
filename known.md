@@ -73,4 +73,6 @@ for (i = 1; i <= n; i++)
 
 * Read `Carefully` the `Constraints` >:v
 
+* Both `Lazy Segment Tree` templates require that size must be a power of $2$.
+
 * `Simulate your algorithm in paper` >:v
