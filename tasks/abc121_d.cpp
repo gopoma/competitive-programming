@@ -313,50 +313,40 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* Template
 //* /Template
 
-ll GetBit(ll mask, ll bit) { return (mask >> bit) & 1LL; }
-void TurnOn(ll& mask, ll bit) { mask = mask | (1LL << bit); }
-void TurnOff(ll& mask, ll bit) { mask = mask & (~(1LL << bit)); }
-
 void solve() {
-    def(int, n);
-    vb vis(1 << n, false);
+    def(ll, A, B);
+    dbg(A, B);
 
-    auto get = [&](int x) {
-        vi go;
-        for(int i = 0; i < n; i++) {
-            ll new_x = x;
+    auto query = [&](ll x) {
+        x++;
 
-            if(GetBit(x, i)) TurnOff(new_x, i);
-            else             TurnOn(new_x, i);
+        ll result = 0;
+        for(ll i = 1; i <= 40; i++) {
+            ll single_block = (1LL << i);
 
-            go.eb(new_x);
-        }
-        return go;
-    };
+            ll groups = fdiv(x, single_block);
 
-    vi ans;
-    function<void(int)> work = [&](int x) {
-        if(vis[x]) return;
-
-        vis[x] = true;
-        ans.eb(x);
-
-        vi adj = get(x);
-        each(v, adj) {
-            work(v);
-        }
-    }; work(0);
-
-    each(x, ans) {
-        for(int i = 0; i < n; i++) {
-            if(GetBit(x, i)) {
-                pr(1);
+            if(i == 1) {
+                if(groups % 2 == 0) result += 0;
+                else result += (1LL << (i - 1LL));
             } else {
-                pr(0);
+                ll rem = x % single_block;
+                if(rem <= fdiv(single_block, 2LL)) continue;
+                else {
+                    ll ones = rem - fdiv(single_block, 2LL);
+                    if(ones % 2 == 0) result += 0;
+                    else result += (1LL << (i - 1LL));
+                }
             }
         }
-        ps();
-    }
+
+        return result;
+    };
+
+    ll ans = query(B);
+    if(A - 1 >= 0) ans ^= query(A - 1);
+
+    ps(ans);
 }
 
 

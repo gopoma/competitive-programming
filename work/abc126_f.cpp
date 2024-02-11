@@ -1,9 +1,9 @@
 //* sometimes pragmas don't work, if so, just comment it!
-//? #pragma GCC optimize ("Ofast")
-//? #pragma GCC target ("avx,avx2")
+#pragma GCC optimize ("Ofast")
+#pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-//! #undef _GLIBCXX_DEBUG //? for Stress Testing
+#undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
@@ -313,50 +313,47 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* Template
 //* /Template
 
-ll GetBit(ll mask, ll bit) { return (mask >> bit) & 1LL; }
-void TurnOn(ll& mask, ll bit) { mask = mask | (1LL << bit); }
-void TurnOff(ll& mask, ll bit) { mask = mask & (~(1LL << bit)); }
-
 void solve() {
-    def(int, n);
-    vb vis(1 << n, false);
+    def(int, M, K);
 
-    auto get = [&](int x) {
-        vi go;
+    vi P;
+    for(int i = 0; i < (1 << M); i++) { P.eb(i); P.eb(i); }
+    const int n = sz(P);
+
+    unordered_set<int> u;
+    do {
+        map<int, vi> where;
         for(int i = 0; i < n; i++) {
-            ll new_x = x;
-
-            if(GetBit(x, i)) TurnOff(new_x, i);
-            else             TurnOn(new_x, i);
-
-            go.eb(new_x);
+            where[P[i]].eb(i);
         }
-        return go;
-    };
 
-    vi ans;
-    function<void(int)> work = [&](int x) {
-        if(vis[x]) return;
+        vi pref = P;
+        for(int i = 1; i < n; i++) pref[i] ^= pref[i - 1];
+        auto query = [&](int left, int right) {
+            int sum = pref[right];
+            if(0 <= left - 1) sum ^= pref[left - 1];
+            return sum;
+        };
 
-        vis[x] = true;
-        ans.eb(x);
+        unordered_set<int> go;
+        for(auto& [val, positions]: where) {
+            assert(sz(positions) == 2);
+            assert(positions.ft < positions.bk);
 
-        vi adj = get(x);
-        each(v, adj) {
-            work(v);
+            go.emplace(query(positions.ft, positions.bk));
         }
-    }; work(0);
 
-    each(x, ans) {
-        for(int i = 0; i < n; i++) {
-            if(GetBit(x, i)) {
-                pr(1);
-            } else {
-                pr(0);
-            }
+        if(sz(go) == 1) {
+            //?dbg("fino", P, go);
+            u.emplace(*go.begin());
+            continue;
         }
-        ps();
-    }
+    } while(next_permutation(all(P)));
+    RAYA;
+    dbg(u);
+    RAYA;
+    dbg(M, K);
+    dbg(P);
 }
 
 

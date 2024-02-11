@@ -311,52 +311,39 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
-//* /Template
-
 ll GetBit(ll mask, ll bit) { return (mask >> bit) & 1LL; }
 void TurnOn(ll& mask, ll bit) { mask = mask | (1LL << bit); }
 void TurnOff(ll& mask, ll bit) { mask = mask & (~(1LL << bit)); }
+//* /Template
 
 void solve() {
-    def(int, n);
-    vb vis(1 << n, false);
+    def(int, A, B);
 
-    auto get = [&](int x) {
-        vi go;
-        for(int i = 0; i < n; i++) {
-            ll new_x = x;
+    //?for(ll C = 0; C <= 1000; C++) {
+    //?    if((A ^ C) == B) {
+    //?        ps(C);
+    //?        return;
+    //?    }
+    //?}
+    //?assert(false);
 
-            if(GetBit(x, i)) TurnOff(new_x, i);
-            else             TurnOn(new_x, i);
+//?    int C = 0;
+//?    for(int i = 0; i < 8; i++) {
+//?        bool onA = GetBit(A, i);
+//?        bool onB = GetBit(B, i);
+//?
+//?        if(onA == onB) continue;
+//?        else {
+//?            C += (1 << i);
+//?        }
+//?    }
+//?    ps(C);
 
-            go.eb(new_x);
-        }
-        return go;
-    };
-
-    vi ans;
-    function<void(int)> work = [&](int x) {
-        if(vis[x]) return;
-
-        vis[x] = true;
-        ans.eb(x);
-
-        vi adj = get(x);
-        each(v, adj) {
-            work(v);
-        }
-    }; work(0);
-
-    each(x, ans) {
-        for(int i = 0; i < n; i++) {
-            if(GetBit(x, i)) {
-                pr(1);
-            } else {
-                pr(0);
-            }
-        }
-        ps();
-    }
+    // A ^ C = B
+    // A ^ (A ^ C) = A ^ B
+    // A ^ A ^ C = A ^ B
+    // C = A ^ B
+    ps(A ^ B);
 }
 
 

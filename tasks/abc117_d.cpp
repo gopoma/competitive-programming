@@ -311,52 +311,50 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
-//* /Template
-
 ll GetBit(ll mask, ll bit) { return (mask >> bit) & 1LL; }
 void TurnOn(ll& mask, ll bit) { mask = mask | (1LL << bit); }
 void TurnOff(ll& mask, ll bit) { mask = mask & (~(1LL << bit)); }
+//* /Template
 
 void solve() {
-    def(int, n);
-    vb vis(1 << n, false);
+    def(int, N);
+    def(ll, K);
+    vl A(N); re(A);
 
-    auto get = [&](int x) {
-        vi go;
-        for(int i = 0; i < n; i++) {
-            ll new_x = x;
+    dbg(N, K);
+    dbg(A);
 
-            if(GetBit(x, i)) TurnOff(new_x, i);
-            else             TurnOn(new_x, i);
+    for(ll i = 62; i >= 0; i--) {
+        if((1LL << i) <= K) {
+            ll encendidos = 0;
+            ll apagados = 0;
 
-            go.eb(new_x);
-        }
-        return go;
-    };
+            for(int j = 0; j < N; j++) {
+                if(GetBit(A[j], i)) {
+                    encendidos++;
+                } else {
+                    apagados++;
+                }
+            }
 
-    vi ans;
-    function<void(int)> work = [&](int x) {
-        if(vis[x]) return;
-
-        vis[x] = true;
-        ans.eb(x);
-
-        vi adj = get(x);
-        each(v, adj) {
-            work(v);
-        }
-    }; work(0);
-
-    each(x, ans) {
-        for(int i = 0; i < n; i++) {
-            if(GetBit(x, i)) {
-                pr(1);
-            } else {
-                pr(0);
+            if(apagados > encendidos) {
+                dbg(K, i, 1LL << i);
+                K -= (1LL << i);
+                for(int j = 0; j < N; j++) {
+                    if(GetBit(A[j], i)) {
+                        TurnOff(A[j], i);
+                    } else {
+                        TurnOn(A[j], i);
+                    }
+                }
             }
         }
-        ps();
     }
+
+    dbg(A);
+
+    ll ans = accumulate(all(A), 0LL);
+    ps(ans);
 }
 
 

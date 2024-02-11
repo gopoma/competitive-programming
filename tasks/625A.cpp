@@ -313,52 +313,40 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* Template
 //* /Template
 
-ll GetBit(ll mask, ll bit) { return (mask >> bit) & 1LL; }
-void TurnOn(ll& mask, ll bit) { mask = mask | (1LL << bit); }
-void TurnOff(ll& mask, ll bit) { mask = mask & (~(1LL << bit)); }
+ll brute(ll n, ll a, ll b, ll c) {
+    function<ll(ll)> solve = [&](ll x) {
+        ll sum = 0;
 
-void solve() {
-    def(int, n);
-    vb vis(1 << n, false);
+        if(x - a >= 0) ckmax(sum, solve(x - a) + 1LL);
+        if(x - b >= 0) ckmax(sum, solve(x - b + c) + 1LL);
 
-    auto get = [&](int x) {
-        vi go;
-        for(int i = 0; i < n; i++) {
-            ll new_x = x;
-
-            if(GetBit(x, i)) TurnOff(new_x, i);
-            else             TurnOn(new_x, i);
-
-            go.eb(new_x);
-        }
-        return go;
+        return sum;
     };
 
-    vi ans;
-    function<void(int)> work = [&](int x) {
-        if(vis[x]) return;
-
-        vis[x] = true;
-        ans.eb(x);
-
-        vi adj = get(x);
-        each(v, adj) {
-            work(v);
-        }
-    }; work(0);
-
-    each(x, ans) {
-        for(int i = 0; i < n; i++) {
-            if(GetBit(x, i)) {
-                pr(1);
-            } else {
-                pr(0);
-            }
-        }
-        ps();
-    }
+    ll ans = solve(n);
+    return ans;
 }
 
+ll solve(ll n, ll a, ll b, ll c) {
+    ll justA = fdiv(n, a);
+
+    ll justB = 0;
+    ll remJustOneB = max(0LL, n - b);
+    ll incJustOneB = remJustOneB >= 0? 1 : 0;
+    if(b <= n) {
+        dbg(remJustOneB);
+        ll use = fdiv(remJustOneB, b - c);
+        dbg(use);
+        ll xd = n - b;
+        dbg(xd);
+        justB = incJustOneB + use;
+        justB += fdiv((xd % (b - c)) + c, a);
+    }
+
+    ll ans = max(justA, justB);
+    RAYA;
+    return ans;
+}
 
 //? Generator
 int rng_int(int L, int R) { assert(L <= R);
@@ -371,12 +359,41 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
+    const bool go = true;
+//?    do {
+//?        ll n = rng_ll(1, 1e3);
+//?        ll a = rng_ll(1, 1e3);
+//?        ll b = rng_ll(2, 1e3);
+//?        ll c = rng_ll(1, b - 1);
+//?        if(!go) {
+//?            n = 11;
+//?            a = 2;
+//?            b = 9;
+//?            c = 7;
+//?        }
+//?
+//?        ll ans = brute(n, a, b, c);
+//?        ll greedy = solve(n, a, b, c);
+//?
+//?        dbg(n, a, b, c);
+//?        dbg(ans, greedy);
+//?        if(ans != greedy) {
+//?            dbg("jaaa");
+//?            exit(0);
+//?        } else {
+//?            dbg("go");
+//?        }
+//?        RAYA;
+//?    } while(false);
+
     ll t = 1; //? re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;
         RAYA;
-        solve();
+        def(ll, n, a, b, c);
+        ll ans = solve(n, a, b, c);
+        ps(ans);
     }
     RAYA;
     RAYA;

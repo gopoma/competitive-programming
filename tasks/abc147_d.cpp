@@ -1,7 +1,7 @@
 //* sometimes pragmas don't work, if so, just comment it!
 //? #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
-//! #pragma GCC optimize ("trapv")
+#pragma GCC optimize ("trapv")
 
 //! #undef _GLIBCXX_DEBUG //? for Stress Testing
 
@@ -311,52 +311,131 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
-//* /Template
+
+/**
+ * Description: modular arithmetic operations
+ * Source:
+ * KACTL
+ * https://codeforces.com/blog/entry/63903
+ * https://codeforces.com/contest/1261/submission/65632855 (tourist)
+ * https://codeforces.com/contest/1264/submission/66344993 (ksun)
+ * also see https://github.com/ecnerwala/cp-book/blob/master/src/modnum.hpp
+ * (ecnerwal) Verification: https://open.kattis.com/problems/modulararithmetic
+ */
+
+template <int MOD, int RT> struct mint {
+	static const int mod = MOD;
+	static constexpr mint rt() { return RT; }  // primitive root for FFT
+	int v;
+	explicit operator int() const {
+		return v;
+	}  // explicit -> don't silently convert to int
+	mint() : v(0) {}
+	mint(ll _v) {
+		v = int((-MOD < _v && _v < MOD) ? _v : _v % MOD);
+		if (v < 0) v += MOD;
+	}
+	bool operator==(const mint &o) const { return v == o.v; }
+	friend bool operator!=(const mint &a, const mint &b) { return !(a == b); }
+	friend bool operator<(const mint &a, const mint &b) { return a.v < b.v; }
+	friend istream &operator>>(istream &is, mint &a) {
+		ll x;
+		is >> x;
+		a = mint(x);
+		return is;
+	}
+	friend ostream &operator<<(ostream &os, mint a) {
+		os << int(a);
+		return os;
+	}
+
+	mint &operator+=(const mint &o) {
+		if ((v += o.v) >= MOD) v -= MOD;
+		return *this;
+	}
+	mint &operator-=(const mint &o) {
+		if ((v -= o.v) < 0) v += MOD;
+		return *this;
+	}
+	mint &operator*=(const mint &o) {
+		v = int((ll)v * o.v % MOD);
+		return *this;
+	}
+	mint &operator/=(const mint &o) { return (*this) *= inv(o); }
+	friend mint pow(mint a, ll p) {
+		mint ans = 1;
+		assert(p >= 0);
+		for (; p; p /= 2, a *= a)
+			if (p & 1) ans *= a;
+		return ans;
+	}
+	friend mint inv(const mint &a) {
+		assert(a.v != 0);
+		return pow(a, MOD - 2);
+	}
+
+	mint operator-() const { return mint(-v); }
+	mint &operator++() { return *this += 1; }
+	mint &operator--() { return *this -= 1; }
+	friend mint operator+(mint a, const mint &b) { return a += b; }
+	friend mint operator-(mint a, const mint &b) { return a -= b; }
+	friend mint operator*(mint a, const mint &b) { return a *= b; }
+	friend mint operator/(mint a, const mint &b) { return a /= b; }
+};
+
+using mi = mint<MOD, 5>;  // 5 is primitive root for both common mods
+using vmi = V<mi>;
+using pmi = pair<mi, mi>;
+using vpmi = V<pmi>;
 
 ll GetBit(ll mask, ll bit) { return (mask >> bit) & 1LL; }
 void TurnOn(ll& mask, ll bit) { mask = mask | (1LL << bit); }
 void TurnOff(ll& mask, ll bit) { mask = mask & (~(1LL << bit)); }
+//* /Template
 
 void solve() {
-    def(int, n);
-    vb vis(1 << n, false);
+    def(int, N);
+    vl A(N); re(A);
 
-    auto get = [&](int x) {
-        vi go;
-        for(int i = 0; i < n; i++) {
-            ll new_x = x;
-
-            if(GetBit(x, i)) TurnOff(new_x, i);
-            else             TurnOn(new_x, i);
-
-            go.eb(new_x);
-        }
-        return go;
-    };
-
-    vi ans;
-    function<void(int)> work = [&](int x) {
-        if(vis[x]) return;
-
-        vis[x] = true;
-        ans.eb(x);
-
-        vi adj = get(x);
-        each(v, adj) {
-            work(v);
-        }
-    }; work(0);
-
-    each(x, ans) {
-        for(int i = 0; i < n; i++) {
-            if(GetBit(x, i)) {
-                pr(1);
-            } else {
-                pr(0);
+    vector<vl> pref(62, vl(N, 0));
+    for(int i = 0; i < 62; i++) {
+        for(int j = 0; j < N; j++) {
+            if(GetBit(A[j], i)) {
+                pref[i][j] = 1;
             }
         }
-        ps();
+
+        for(int j = 1; j < N; j++) {
+            pref[i][j] += pref[i][j - 1];
+        }
     }
+
+    mi sum = 0;
+    for(int i = 0; i < N - 1; i++) {
+        //? from i+1 to N-1
+        for(int j = 0; j < 62; j++) {
+            ll partial = pref[j][N - 1] - pref[j][i];
+            mi xd = 0;
+            if(GetBit(A[i], j)) {
+                ll tot = (N - 1) - (i + 1) + 1;
+                xd = mi(tot - partial);
+            } else {
+                xd = partial;
+            }
+            sum += xd * pow(mi(2LL), ll(j));
+        }
+    }
+    dbg(sum);
+    ps(sum);
+
+    //?ll sum = 0;
+    //?for(int i = 0; i < N - 1; i++) {
+    //?    for(int j = i + 1; j < N; j++) {
+    //?        sum += (A[i] ^ A[j]);
+    //?        sum %= MOD;
+    //?    }
+    //?}
+    //?dbg(sum);
 }
 
 
