@@ -313,47 +313,26 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* Template
 //* /Template
 
-vl brute(int n, vl a) {
-    vl ans{-BIG};
-    function<void(vl, set<ll>)> backtrack = [&](vl go, set<ll> current) {
-        if(go.empty()) {
-            vl tmp; each(x, current) tmp.eb(x);
-            reverse(all(tmp));
+void solve() {
+    def(ll, k, x, a);
+    dbg(k, x, a);
 
-            ckmax(ans, tmp);
+    ll S = 0;
+    rep(x) {
+        ll y = cdiv(S, k - 1LL);
+        if(S % (k - 1LL) == 0LL) y++;
+
+        S += y;
+
+        if(S > a) {
+            ps("NO");
             return;
         }
-
-        const int m = sz(go);
-        for(int banned = 0; banned < m; banned++) {
-            vl new_go = go;
-            new_go.erase(new_go.begin() + banned);
-
-            set<ll> new_current = current;
-            new_current.emplace(go[banned] + banned + 1);
-
-            backtrack(new_go, new_current);
-        }
-    }; backtrack(a, set<ll>());
-
-    return ans;
-}
-
-vl solve(int n, vl a) {
-    for(int i = 0; i < n; i++) a[i] += i + 1;
-    if(n == 1) return a;
-
-    sort(rall(a));
-    vl ans(n);
-    for(int i = 1; i < n; i++) {
-        if(a[i - 1] <= a[i]) {
-            a[i] = a[i - 1] - 1;
-        }
-        ans[i - 1] = a[i - 1];
-        ans[i] = a[i];
     }
+    assert(a - S >= 0);
 
-    return ans;
+    if((a - S) * k > a) ps("YES");
+    else ps("NO");
 }
 
 
@@ -368,39 +347,12 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    while(false) {
-        RAYA;
-        int n = rng_int(1, 8);
-        vl a(n); for(int i = 0; i < n; i++) a[i] = rng_ll(1, 4);
-        vl xd(n); for(int i = 0; i < n; i++) xd[i] = a[i] + i + 1;
-        sort(rall(xd));
-
-        vl ans = brute(n, a);
-        vl greedy = solve(n, a);
-
-        dbg(n);
-        dbg(a);
-        dbg(xd);
-        dbg(ans);
-        dbg(greedy);
-        assert(sz(ans) == n);
-
-        if(ans != greedy) {
-            dbg("jaaa");
-            exit(0);
-        } else dbg("go");
-    }
-
     ll t = 1; re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;
         RAYA;
-        def(int, n);
-        vl a(n); re(a);
-        vl ans = solve(n, a);
-        dbg(ans);
-        ps(ans);
+        solve();
     }
     RAYA;
     RAYA;
