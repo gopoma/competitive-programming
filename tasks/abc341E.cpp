@@ -1,7 +1,7 @@
 //* sometimes pragmas don't work, if so, just comment it!
 //? #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
-//? #pragma GCC optimize ("trapv")
+//! #pragma GCC optimize ("trapv")
 
 //! #undef _GLIBCXX_DEBUG //? for Stress Testing
 
@@ -227,26 +227,9 @@ template <class... Ts> void ps(Ts const &...ts) {
 }  // namespace IO
 
 inline namespace Debug {
-template <typename... Args> void err(Args... args) {
-	Writer<cerr, true, false>{}.print_with_sep(" | ", args...);
-}
-template <typename... Args> void errn(Args... args) {
-	Writer<cerr, true, true>{}.print_with_sep(" | ", args...);
-}
-
-void err_prefix(str func, int line, string args) {
-	cerr << "\033[0;31m\u001b[1mDEBUG\033[0m"
-	     << " | "
-	     << "\u001b[34m" << func << "\033[0m"
-	     << ":"
-	     << "\u001b[34m" << line << "\033[0m"
-	     << " - "
-	     << "[" << args << "] = ";
-}
 
 #ifdef LOCAL
-#define dbg(args...) err_prefix(__FUNCTION__, __LINE__, #args), err(args)
-#define dbgn(args...) err_prefix(__FUNCTION__, __LINE__, #args), errn(args)
+#include "helpers/debug.h"
 
 #define chk(...) if (!(__VA_ARGS__)) cerr << "\033[41m" << "Line(" << __LINE__ << ") -> function(" \
 	 << __FUNCTION__  << ") -> CHK FAILED: (" << #__VA_ARGS__ << ")" << "\033[0m" << "\n", exit(0);
@@ -255,7 +238,6 @@ void err_prefix(str func, int line, string args) {
 #define RAYA MACRO(cerr << "\033[101m" << "================================" << "\033[0m" << endl;)
 #else
 #define dbg(...)
-#define dbgn(args...)
 
 #define chk(...)
 #define RAYA
@@ -312,112 +294,39 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 //* Template
 /**
- * Description: 1D range increment and sum query.
- * Source: USACO Counting Haybales
- 	* https://codeforces.com/blog/entry/82400
- * Verification: USACO Counting Haybales
+ * Description: 1D point update and range query where \texttt{cmb} is
+ 	* any associative operation. \texttt{seg[1]==query(0,N-1)}.
+ * Time: O(\log N)
+ * Source:
+	* http://codeforces.com/blog/entry/18051
+	* KACTL
+ * Verification: SPOJ Fenwick
  */
 
-struct LazySeg {
-	struct F { // lazy update
-		ll inc = 0;
-        ll mul = 1;
-		F() {}
-		F(int x, int y) {
-            inc = x; mul = y;
-        }
-		F& operator*=(const F& a) {
-            inc += a.inc;
-            mul *= a.mul;
-            return *this;
-        }
-	}; V<F> lazy;
-	struct T { // data you need to store for each interval
-		ll sz = 1, mn = BIG, sum = 0;
-
-        bool ok = true;
-        ll front = ll(1e12);
-        ll back  = ll(1e12);
-
-
-		T() {}
-		T(int x) {
-            mn = sum = x;
-
-            front = x;
-            back = x;
-        }
-		friend T operator+(const T& a, const T& b) {
-            //? YES
-			T res; res.sz = a.sz+b.sz;
-
-            //? NO
-            res.mn = min(a.mn,b.mn), res.sum = a.sum+b.sum;
-
-            bool global_ok = true;
-            if(!(a.ok && b.ok)) {
-                res.ok = false;
-                global_ok = false;
-            } else {
-                if(a.back != b.front) res.ok = true;
-                else res.ok = false;
-            }
-
-            if(global_ok && (a.back < ll(-1e9) || a.back > ll(1e9))) {
-                res.ok = true;
-            }
-            if(global_ok && (b.front < ll(-1e9) || b.front > ll(1e9))) {
-                res.ok = true;
-            }
-
-            res.front = a.front;
-            res.back =  b.back;
-
-			return res;
+tcT> struct SegTree { // cmb(ID,b) = b
+	const T ID{0LL}; T cmb(T a, T b) { return a+b; }
+	int n; V<T> seg;
+	void init(int _n) { // upd, query also work if n = _n
+		for (n = 1; n < _n; ) n *= 2;
+		seg.assign(2*n,ID); }
+	void pull(int p) { seg[p] = cmb(seg[2*p],seg[2*p+1]); }
+	void upd(int p, T val) { // set val at position p
+		seg[p += n] = val; for (p /= 2; p; p /= 2) pull(p); }
+	T query(int l, int r) {	// zero-indexed, inclusive
+		T ra = ID, rb = ID;
+		for (l += n, r += n+1; l < r; l /= 2, r /= 2) {
+			if (l&1) ra = cmb(ra,seg[l++]);
+			if (r&1) rb = cmb(seg[--r],rb);
 		}
-		T& operator*=(const F& a) {
-			mn += a.inc;
-            sum *= a.mul;
-            sum += (ll)sz*a.inc;
-
-
-            front *= a.mul;
-            front += (ll)sz*a.inc;
-
-            back *= a.mul;
-            back += (ll)sz*a.inc;
-
-            return *this;
-        }
-	}; V<T> seg;
-	int SZ = 1;
-	void init(const V<T>& _seg) {
-		while (SZ < sz(_seg)) SZ *= 2;
-		seg.rsz(2*SZ); lazy.rsz(2*SZ);
-		F0R(i,SZ) seg[SZ+i] = _seg[i];
-		ROF(i,1,SZ) pull(i);
+		return cmb(ra,rb);
 	}
-	void push(int ind) { /// modify values for current node
-		seg[ind] *= lazy[ind];
-		if (ind < SZ) F0R(i,2) lazy[2*ind+i] *= lazy[ind];
-		lazy[ind] = F();
-	} // recalc values for current node
-	void pull(int ind) { seg[ind] = seg[2*ind]+seg[2*ind+1]; }
-	void upd(int lo, int hi, F inc, int ind, int L, int R) {
-		push(ind); if (hi < L || R < lo) return;
-		if (lo <= L && R <= hi) {
-			lazy[ind] = inc; push(ind); return; }
-		int M = (L+R)/2; upd(lo,hi,inc,2*ind,L,M);
-		upd(lo,hi,inc,2*ind+1,M+1,R); pull(ind);
-	}
-	void upd(int lo, int hi, int inc, int mul) { upd(lo,hi,F(inc, mul),1,0,SZ-1); }
-	T query(int lo, int hi, int ind, int L, int R) {
-		push(ind); if (lo > R || L > hi) return T();
-		if (lo <= L && R <= hi) return seg[ind];
-		int M = (L+R)/2;
-		return query(lo,hi,2*ind,L,M)+query(lo,hi,2*ind+1,M+1,R);
-	}
-	T query(int lo, int hi) { return query(lo,hi,1,0,SZ-1); }
+	/// int first_at_least(int lo, int val, int ind, int l, int r) { // if seg stores max across range
+	/// 	if (r < lo || val > seg[ind]) return -1;
+	/// 	if (l == r) return l;
+	/// 	int m = (l+r)/2;
+	/// 	int res = first_at_least(lo,val,2*ind,l,m); if (res != -1) return res;
+	/// 	return first_at_least(lo,val,2*ind+1,m+1,r);
+	/// }
 };
 //* /Template
 
@@ -425,46 +334,45 @@ void solve() {
     def(int, N, Q);
     def(str, S);
 
-    vector<tuple<int, int, int>> queries(Q); re(queries);
-    each(x, queries) dbg(x);
+    dbg(N, Q);
+    dbg(S); RAYA;
 
-    RAYA;
-
-    vector<LazySeg::T> arr;
-
-
-    for(int i = 0; i < N; i++) {
-        arr.eb(LazySeg::T(int(S[i] - '0')));
+    SegTree<ll> st; st.init(N - 1);
+    for(int i = 0; i < N - 1; i++) {
+        st.upd(i, int(S[i] != S[i + 1]));
     }
 
-    int go = 1;
-    while(go < N) go *= 2;
-    while(N < go) {
-        arr.eb(LazySeg::T(0));
-        go--;
-    }
+    #define xd { for(int i = 0; i < N - 1; i++) { dbg(i, st.query(i, i)); } }
 
-    LazySeg tree; tree.init(arr);
-    #define xd for(int g = 0; g < N; g++) { dbg(tree.query(g, g).sum); } RAYA;
+    rep(Q) {
+        RAYA;
+        def(int, type, L, R); L--; R--;
+        dbg(type, L, R);
 
-    xd
+        if(N == 1 && type == 2) {
+            ps("Yes");
+            continue;
+        } else if(N == 1) continue;
 
-    for(int i = 0; i < Q; i++) {
-        int type, left, right;
-        tie(type, left, right) = queries[i];
-        left--; right--;
-        dbg(type, left, right);
-
+        assert(N >= 2);
         if(type == 1) {
-            tree.upd(left, right, 1, -1);
+            //? set L - 1
+            if(L - 1 >= 0) {
+                st.upd(L - 1, 1LL - st.query(L - 1, L - 1));
+            }
+            if(R < N - 1) {
+                st.upd(R, 1L - st.query(R, R));
+            }
         } else if(type == 2) {
-            bool ans = tree.query(left, right).ok;
+            if(R - L + 1 == 1) {
+                ps("Yes");
+                continue;
+            }
 
-            if(ans) ps("Yes");
+            ll sum = st.query(L, R - 1);
+            if(sum == R - L) ps("Yes");
             else ps("No");
         } else assert(false);
-
-        xd
     }
 }
 
