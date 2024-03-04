@@ -296,19 +296,7 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(int, n);
-    vl a(n); re(a); sor(a);
 
-    dbg(n);
-    dbg(a);
-
-    ll ans =
-        abs(a[0] - a[n - 2]) +
-        abs(a[n - 2] - a[1]) +
-        abs(a[1] - a[n - 1]) +
-        abs(a[n - 1] - a[0]);
-
-    ps(ans);
 }
 
 
@@ -321,9 +309,14 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 
 signed main() {
-    setIO();
+    setOut("243A.in");
+    int n = int(1e5);
+    vl a(n); for(int i = 0; i < n; i++) a[i] = i + 1;
 
-    ll t = 1; re(t);
+    ps(n);
+    ps(a);
+
+    ll t = 1; //? re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;

@@ -61,7 +61,7 @@ for (i = 1; i <= n; i++)
 
 * watch `carefully` the `constraints`, maybe it can be divided in two cases.
 
-* Exploit numeric constrains, ask yourself: ¿What is the maximum amount of different sums?
+* Exploit numeric constrains, ask yourself: ¿What is the maximum amount of different values?
 
 * `Try to implement the brute`, then make observations of what can be optimized.
 
@@ -69,7 +69,7 @@ for (i = 1; i <= n; i++)
 
 * Think hard in paper. Try to optimize the naive with Greedy.
 
-* Forgot a break that should end current loop and outer loop?
+* Forgot a `break` that `should` end current loop and outer loop?
 
 * Read `Carefully` the `Constraints` >:v
 

@@ -1,7 +1,7 @@
 //* sometimes pragmas don't work, if so, just comment it!
 //? #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
-#pragma GCC optimize ("trapv")
+//! #pragma GCC optimize ("trapv")
 
 //! #undef _GLIBCXX_DEBUG //? for Stress Testing
 
@@ -227,26 +227,9 @@ template <class... Ts> void ps(Ts const &...ts) {
 }  // namespace IO
 
 inline namespace Debug {
-template <typename... Args> void err(Args... args) {
-	Writer<cerr, true, false>{}.print_with_sep(" | ", args...);
-}
-template <typename... Args> void errn(Args... args) {
-	Writer<cerr, true, true>{}.print_with_sep(" | ", args...);
-}
-
-void err_prefix(str func, int line, string args) {
-	cerr << "\033[0;31m\u001b[1mDEBUG\033[0m"
-	     << " | "
-	     << "\u001b[34m" << func << "\033[0m"
-	     << ":"
-	     << "\u001b[34m" << line << "\033[0m"
-	     << " - "
-	     << "[" << args << "] = ";
-}
 
 #ifdef LOCAL
-#define dbg(args...) err_prefix(__FUNCTION__, __LINE__, #args), err(args)
-#define dbgn(args...) err_prefix(__FUNCTION__, __LINE__, #args), errn(args)
+#include "helpers/debug.h"
 
 #define chk(...) if (!(__VA_ARGS__)) cerr << "\033[41m" << "Line(" << __LINE__ << ") -> function(" \
 	 << __FUNCTION__  << ") -> CHK FAILED: (" << #__VA_ARGS__ << ")" << "\033[0m" << "\n", exit(0);
@@ -255,7 +238,6 @@ void err_prefix(str func, int line, string args) {
 #define RAYA MACRO(cerr << "\033[101m" << "================================" << "\033[0m" << endl;)
 #else
 #define dbg(...)
-#define dbgn(args...)
 
 #define chk(...)
 #define RAYA
@@ -313,128 +295,32 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* Template
 //* /Template
 
-ll brute(ll n) {
-    const vl coins{1, 3, 6, 10, 15};
+void solve() {
+    def(ll, n);
 
-    vb vis(n + 1);
-    vl dp(n + 1);
-    function<ll(ll)> solve = [&](ll x) {
-        if(x == 0) return 0LL;
+    ll ans = BIG;
+    for(ll a = 0; a < 3; a++) {
+        for(ll b = 0; b < 2; b++) {
+            for(ll c = 0; c < 5; c++) {
+                for(ll d = 0; d < 3; d++) {
+                    ll partial = 1LL * a + 3LL * b + 6LL * c + 10LL * d;
+                    if(partial > n) continue;
 
-        if(vis[x]) return dp[x];
-        vis[x] = true;
+                    ll tmp = n - partial;
+                    if(tmp % 15 == 0) {
+                        ll need_15 = fdiv(tmp, 15LL);
 
-        ll ans = BIG;
-
-        each(c, coins) {
-            if(x - c >= 0) {
-                ckmin(ans, solve(x - c) + 1);
-            }
-        }
-
-        return dp[x] = ans;
-    };
-
-    ll ans = solve(n);
-
-    ll go = n;
-    vl use;
-    while(true) {
-        bool xd = false;
-        ll mn = BIG;
-        each(c, coins) {
-            if(go - c >= 0) {
-                xd = true;
-                ckmin(mn, dp[go - c]);
-            }
-        }
-        if(!xd) break;
-
-        each(c, coins) {
-            if(dp[go - c] == mn) {
-                go -= c;
-                use.eb(c);
-                break;
+                        ckmin(ans, a + b + c + d + need_15);
+                    }
+                }
             }
         }
     }
-    assert(go == 0);
+    assert(ans != BIG);
 
-    map<ll, ll> hist;
-    each(x, use) hist[x]++;
-
-    return ans;
+    ps(ans);
 }
 
-ll solve(ll n) {
-    ll tmp = n;
-
-    vl coins{1, 3, 6, 10, 15};
-    reverse(all(coins));
-
-    map<ll, ll> hist;
-
-    const int l = sz(coins);
-    for(int i = 0; i < l; i++) {
-        assert(n >= 0);
-
-        //? get x such that n - c * x >= 0
-        ll left = 0; //? always good
-        ll right = ll(1e9 + 5); //? always bad
-
-        auto check = [&](ll m) {
-            return (n - m * coins[i] >= 0);
-        };
-
-        while(left + 1 < right) {
-            ll middle = fdiv(left + right, 2LL);
-
-            if(check(middle)) left = middle;
-            else right = middle;
-        }
-
-        n -= coins[i] * left;
-
-        if(left > 0)
-            hist[coins[i]] = left;
-    }
-
-    ll ans = 0;
-
-    ll S_w_15 = 0;
-    ll cnt_w_15 = 0;
-    each(item, hist) {
-        ans += item.s;
-
-        if(item.f != 15) {
-            S_w_15 += item.f * item.s;
-            cnt_w_15 += item.s;
-        }
-    }
-
-    ckmin(ans, ans - cnt_w_15 + brute(S_w_15));
-    if(hist[15] > 0) {
-        ckmin(ans, brute(S_w_15 + 15) + hist[15] - 1);
-    }
-
-    return ans;
-}
-
-void go() {
-    int cnt = 0;
-    for(ll n = 1; n <= 500; n++) {
-        //? ll ans = brute(n);
-        //? ll greedy = solve(n);
-        //? dbg(n, ans, greedy, ans == greedy);
-        //? if(ans != greedy) cnt++;
-        RAYA;
-        ll xx = brute(n);
-        ll yy = solve(n);
-        cnt += xx == yy;
-        dbg(xx == yy);
-    }
-    dbg("jaaa count:", cnt);
-}
 
 //? Generator
 int rng_int(int L, int R) { assert(L <= R);
@@ -447,28 +333,13 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    while(false) {
-        ll n = rng_ll(1, 1e5);
-        ll ans = brute(n);
-        ll greedy = solve(n);
-
-        dbg(n, ans, greedy);
-
-        if(ans != greedy) {
-            exit(0);
-            dbg("jaaa");
-        }
-    }
-
     ll t = 1;
     re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;
         RAYA;
-        def(ll, n);
-        ll ans = solve(n);
-        ps(ans);
+        solve();
     }
     RAYA;
     RAYA;

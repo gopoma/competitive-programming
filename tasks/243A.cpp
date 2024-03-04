@@ -297,17 +297,28 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 void solve() {
     def(int, n);
-    vl a(n); re(a); sor(a);
+    vl a(n); re(a);
 
-    dbg(n);
-    dbg(a);
+    //? dbg(n);
+    //? dbg(a); RAYA;
+    //? each(x, a) dbg(bitset<5>(x));
+    //? RAYA;
 
-    ll ans =
-        abs(a[0] - a[n - 2]) +
-        abs(a[n - 2] - a[1]) +
-        abs(a[1] - a[n - 1]) +
-        abs(a[n - 1] - a[0]);
+    set<ll> suffix;
+    set<ll> S;
+    for(int i = 0; i < n; i++) {
+        set<ll> new_suffix;
+        each(x, suffix) {
+            new_suffix.emplace(x | a[i]);
+            S.emplace(x | a[i]);
+        }
+        new_suffix.emplace(a[i]);
+        S.emplace(a[i]);
 
+        suffix = new_suffix;
+    }
+
+    ll ans = sz(S);
     ps(ans);
 }
 
@@ -321,9 +332,16 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 
 signed main() {
-    setIO();
+    const bool go = false;
+    if(!go) setIO();
+    else {
+        ios_base::sync_with_stdio(false);
+        cin.tie(nullptr);
 
-    ll t = 1; re(t);
+        setIn("243A.in");
+    }
+
+    ll t = 1; //? re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;
