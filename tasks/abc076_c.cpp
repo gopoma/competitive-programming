@@ -296,10 +296,40 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, R, G);
+    def(str, S, T);
+    dbg(S, T);
 
-    ll ans = 2LL * G - R;
-    ps(ans);
+    const int n = sz(S);
+    const int m = sz(T);
+    if(n < m) ps("UNRESTORABLE");
+    else {
+        bool ok = false;
+        for(int i = n - m; i >= 0; i--) {
+            bool local_ok = true;
+            for(int j = 0; j < m; j++) {
+                if(S[i + j] == '?') continue;
+                else if(S[i + j] != T[j]) {
+                    local_ok = false;
+                    break;
+                }
+            }
+
+            if(!local_ok) continue;
+
+            for(int j = 0; j < m; j++) {
+                S[i + j] = T[j];
+            }
+
+            ok = true;
+            break;
+        }
+
+        if(!ok) ps("UNRESTORABLE");
+        else {
+            each(x, S) if(x == '?') x = 'a';
+            ps(S);
+        }
+    }
 }
 
 

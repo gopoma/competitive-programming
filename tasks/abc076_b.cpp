@@ -296,9 +296,16 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, R, G);
+    def(ll, N, K);
 
-    ll ans = 2LL * G - R;
+    ll ans = 1;
+    rep(N) {
+        ll xx = 2LL * ans;
+        ll yy = ans + K;
+
+        if(xx > yy) ans = yy;
+        else ans = xx;
+    }
     ps(ans);
 }
 
