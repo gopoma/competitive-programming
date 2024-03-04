@@ -293,30 +293,47 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
-ll GetBit(ll mask, ll bit) { return (mask >> bit) & 1LL; }
-void TurnOn(ll& mask, ll bit) { mask = mask | (1LL << bit); }
-void TurnOff(ll& mask, ll bit) { mask = mask & (~(1LL << bit)); }
 //* /Template
 
 void solve() {
-    def(ll, n, m, k);
-    vl a(m + 1); re(a);
+    def(int, n);
+    vl a(n); re(a);
 
-    ll ans = 0;
-    for(int i = 0; i < m; i++) {
-        ll d = 0;
+    dbg(n);
+    dbg(a);
 
-        for(ll j = 0; j < 49; j++) {
-            if(GetBit(a[i], j) != GetBit(a[m], j)) {
-                d++;
+    set<ll> S;
+    each(x, a) S.emplace(x);
+
+    ll m = 1;
+    vl ans{a.ft};
+
+    bool already = false;
+    each(x, S) {
+        if(already) break;
+
+        for(ll i = 0; i <= 30; i++) {
+            if(already) break;
+
+            ll y = x + (1LL << i);
+            ll z = y + (1LL << i);
+
+            if(S.count(y)) {
+                m = 2;
+                ans = {x, y};
+
+                if(S.count(z)) {
+                    m = 3;
+                    ans = {x, y, z};
+
+                    already = true;
+                    break;
+                }
             }
-        }
-
-        if(d <= k) {
-            ans++;
         }
     }
 
+    ps(m);
     ps(ans);
 }
 

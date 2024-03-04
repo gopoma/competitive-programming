@@ -299,25 +299,16 @@ void TurnOff(ll& mask, ll bit) { mask = mask & (~(1LL << bit)); }
 //* /Template
 
 void solve() {
-    def(ll, n, m, k);
-    vl a(m + 1); re(a);
+    def(ll, n, k);
+    dbg(n, k);
 
-    ll ans = 0;
-    for(int i = 0; i < m; i++) {
-        ll d = 0;
-
-        for(ll j = 0; j < 49; j++) {
-            if(GetBit(a[i], j) != GetBit(a[m], j)) {
-                d++;
-            }
-        }
-
-        if(d <= k) {
-            ans++;
+    for(ll j = 0; j < 60; j++) {
+        if(GetBit(k, j)) {
+            ps(j + 1);
+            return;
         }
     }
-
-    ps(ans);
+    assert(false);
 }
 
 

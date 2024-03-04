@@ -293,28 +293,38 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
-ll GetBit(ll mask, ll bit) { return (mask >> bit) & 1LL; }
-void TurnOn(ll& mask, ll bit) { mask = mask | (1LL << bit); }
-void TurnOff(ll& mask, ll bit) { mask = mask & (~(1LL << bit)); }
 //* /Template
 
 void solve() {
-    def(ll, n, m, k);
-    vl a(m + 1); re(a);
+    def(int, n);
+    def(ll, x);
+
+    vl a(n); re(a);
+
+    dbg(n, x);
+    dbg(a);
+
+    map<ll, ll> hist;
+    each(e, a) hist[e]++;
 
     ll ans = 0;
-    for(int i = 0; i < m; i++) {
-        ll d = 0;
+    map<ll, bool> vis;
+    for(auto& [val, cnt]: hist) {
+        if(vis[val]) continue;
 
-        for(ll j = 0; j < 49; j++) {
-            if(GetBit(a[i], j) != GetBit(a[m], j)) {
-                d++;
-            }
+        //? val ^ need = x
+        //? val ^ need ^ val = x ^ val
+        //? need = x ^ val
+        ll need = x ^ val;
+
+        if(val == need) {
+            ans += fdiv((cnt - 1LL) * cnt, 2LL);
+        } else {
+            ans += cnt * hist[need];
+            vis[need] = true;
         }
 
-        if(d <= k) {
-            ans++;
-        }
+        vis[val] = true;
     }
 
     ps(ans);

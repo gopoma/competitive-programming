@@ -293,31 +293,80 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
-ll GetBit(ll mask, ll bit) { return (mask >> bit) & 1LL; }
-void TurnOn(ll& mask, ll bit) { mask = mask | (1LL << bit); }
-void TurnOff(ll& mask, ll bit) { mask = mask & (~(1LL << bit)); }
+vector<string> tokenize(string line, string separator) {
+    vector<string> tokens;
+    while(true) {
+        string token = line.substr(0, line.find(separator));
+        tokens.emplace_back(token);
+
+        if(line.find(separator) == string::npos) {
+            break;
+        }
+        line = line.substr(line.find(separator) + 1, int(line.size()) - line.find(separator) + 1);
+    }
+    return tokens;
+};
 //* /Template
 
 void solve() {
-    def(ll, n, m, k);
-    vl a(m + 1); re(a);
+    def(int, n, k);
+    vs S(n); re(S);
 
-    ll ans = 0;
-    for(int i = 0; i < m; i++) {
-        ll d = 0;
+    dbg(n, k);
+    dbg(S);
 
-        for(ll j = 0; j < 49; j++) {
-            if(GetBit(a[i], j) != GetBit(a[m], j)) {
-                d++;
+    vector<tuple<int, int, int, int>> ip;
+    each(x, S) {
+        vs nums = tokenize(x, ".");
+        assert(sz(nums) == 4);
+
+        ip.eb(stoi(nums[0]), stoi(nums[1]), stoi(nums[2]), stoi(nums[3]));
+    }
+
+    each(x, ip) dbg(x);
+
+    for(int ones = 1; ones <= 31; ones++) {
+        //? 111.....111000...000
+        vi d(32);
+        for(int i = 0; i < ones; i++) d[i] = 1;
+
+        vi nums(4);
+
+        int idx = 0;
+        for(int i = 0; i < 4; i++) {
+            vi xd;
+            rep(8) {
+                xd.eb(d[idx]);
+                idx++;
+            }
+            reverse(all(xd));
+
+            for(int j = 0; j < 8; j++) {
+                if(xd[j]) {
+                    nums[i] += (1 << j);
+                }
             }
         }
 
-        if(d <= k) {
-            ans++;
+        set<tuple<int, int, int, int>> go;
+        for(int i = 0; i < n; i++) {
+            auto val = make_tuple(
+                get<0>(ip[i]) & nums[0],
+                get<1>(ip[i]) & nums[1],
+                get<2>(ip[i]) & nums[2],
+                get<3>(ip[i]) & nums[3]
+            );
+            go.emplace(val);
+        }
+
+        dbg(nums, sz(go));
+
+        if(sz(go) == k) {
+            pr(nums[0], ".", nums[1], ".", nums[2], ".", nums[3], "\n");
+            return;
         }
     }
-
-    ps(ans);
+    ps("-1");
 }
 
 

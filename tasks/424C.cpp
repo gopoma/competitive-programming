@@ -293,31 +293,84 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
-ll GetBit(ll mask, ll bit) { return (mask >> bit) & 1LL; }
-void TurnOn(ll& mask, ll bit) { mask = mask | (1LL << bit); }
-void TurnOff(ll& mask, ll bit) { mask = mask & (~(1LL << bit)); }
 //* /Template
 
-void solve() {
-    def(ll, n, m, k);
-    vl a(m + 1); re(a);
-
+ll brute(int n, vl p) {
     ll ans = 0;
-    for(int i = 0; i < m; i++) {
-        ll d = 0;
-
-        for(ll j = 0; j < 49; j++) {
-            if(GetBit(a[i], j) != GetBit(a[m], j)) {
-                d++;
-            }
+    for(ll i = 0; i < n; i++) {
+        ll partial = p[i];
+        for(ll j = 0; j < n; j++) {
+            partial ^= ((i + 1) % (j + 1));
         }
+        ans ^= partial;
+    }
+    return ans;
+}
 
-        if(d <= k) {
-            ans++;
-        }
+ll solve(int n, vl p) {
+    ll ans = 0;
+    each(x, p) ans ^= x;
+
+    for(ll i = n - 1, d = 1; i >= 1; i--, d++) {
+        if(d % 2 == 0) continue;
+
+        ans ^= i;
     }
 
-    ps(ans);
+    const int MAXN = n + 5;
+    vl dp(MAXN);
+    for(ll i = 1; i < MAXN; i++) {
+        dp[i] = dp[i - 1] ^ i;
+    }
+
+    auto query_prefix = [&](ll x) {
+        return dp[x];
+    };
+//?    auto query_prefix = [&](ll x) {
+//?        x++;
+//?
+//?        ll S = 0;
+//?        for(ll i = 0; i < 40; i++) {
+//?            ll group_length = (1LL << (i + 1));
+//?            ll half_groups_length = (1LL << i);
+//?
+//?            ll amount_groups = fdiv(x, group_length);
+//?            ll remain = x % group_length;
+//?
+//?            ll val = 0;
+//?            if(amount_groups % 2 == 1) {
+//?                ll ones = fdiv(group_length, 2LL);
+//?                if(ones % 2 == 1) {
+//?                    val = 1;
+//?                }
+//?            }
+//?            if(remain > half_groups_length) val += remain - half_groups_length;
+//?
+//?            if(val % 2LL == 1LL) {
+//?                S += (1LL << i);
+//?            }
+//?        }
+//?        return S;
+//?    };
+
+    for(ll i = 1, d = n; i <= n; i++, d--) {
+        //? there are d nums
+        ll group_size = i;
+        ll amount_groups = fdiv(d, group_size);
+        ll to = i - 1;
+
+        ll C = 0;
+        if(amount_groups % 2 == 1) C = query_prefix(to);
+
+        ll remain = d % group_size;
+        if(remain > 0) {
+            C ^= query_prefix(remain - 1);
+        }
+
+        ans ^= C;
+    }
+
+    return ans;
 }
 
 
@@ -332,12 +385,35 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
+    while(false) {
+        RAYA;
+        int n = rng_int(1, 5);
+        vl p(n); each(x, p) x = rng_ll(0, 5);
+
+        ll ans = brute(n, p);
+        ll greedy = solve(n, p);
+
+        dbg(n, p);
+        dbg(ans, greedy);
+        if(ans != greedy) {
+            dbg("jaaa");
+            exit(0);
+        }
+    }
+
     ll t = 1; //? re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;
         RAYA;
-        solve();
+        def(int, n);
+        vl p(n); re(p);
+
+        dbg(n);
+        dbg(p);
+
+        ll ans = solve(n, p);
+        ps(ans);
     }
     RAYA;
     RAYA;
