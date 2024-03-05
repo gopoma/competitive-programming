@@ -297,44 +297,47 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 void solve() {
     def(int, n);
+    def(str, S, T);
 
-    vector<set<int>> mat;
+    dbg(n, S, T);
 
-    set<int> xd;
-    rep(n) {
-        def(int, m);
+    auto diff = [](str& A, str& B) {
+        assert(sz(A) == sz(B));
+        const int m = sz(A);
 
-        set<int> S;
-        rep(m) {
-            def(int, val);
-            S.emplace(val);
+        int d = 0;
+        for(int i = 0; i < m; i++) d += (A[i] != B[i]);
 
-            xd.emplace(val);
-        }
+        return d;
+    };
 
-        mat.eb(S);
+    str TR = T; reverse(all(TR));
+
+    int xx = diff(S, T);
+    int yy = diff(S, TR);
+
+    dbg(xx, yy);
+
+    ll ans = BIG;
+    if(xx == 0) ckmin(ans, 0LL);
+    if(yy == 0) ckmin(ans, 2LL);
+    if(xx == 1) ckmin(ans, 1LL);
+    if(yy == 1) ckmin(ans, 2LL);
+
+    if(xx > 0) {
+        ll xd = 0;
+        if(xx % 2 == 1) xd = 2LL * xx - 1LL;
+        else xd = 2LL * xx;
+        dbg("without rev:", xd);
+        ckmin(ans, xd);
     }
+    if(yy > 0) {
+        ll xd = 0;
+        if(yy % 2 == 0) xd = 2LL * yy - 1LL;
+        else xd = 2LL * yy;
+        dbg("with rev:", xd);
 
-    dbg(n);
-    each(x, mat) dbg(x);
-
-    vi gozu;
-    each(x, xd) gozu.eb(x);
-
-    int ans = 0;
-
-    for(int i = 0; i < sz(gozu); i++) {
-        set<int> go;
-
-        each(x, mat) {
-            if(x.count(gozu[i])) continue;
-
-            each(e, x) {
-                go.emplace(e);
-            }
-        }
-
-        ckmax(ans, sz(go));
+        ckmin(ans, xd);
     }
 
     ps(ans);

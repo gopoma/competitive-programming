@@ -295,51 +295,87 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* Template
 //* /Template
 
-void solve() {
-    def(int, n);
+ll brute(int n, vl a) {
+    function<ll(int, vl)> solve = [&](int n, vl go) {
+        if(n == 0) return 0LL;
 
-    vector<set<int>> mat;
+        ll partial = 0;
 
-    set<int> xd;
-    rep(n) {
-        def(int, m);
+        const int m = sz(go);
+        for(int i = 0; i < m; i++) {
+            vl new_go = go;
+            ll val = new_go[i];
 
-        set<int> S;
-        rep(m) {
-            def(int, val);
-            S.emplace(val);
+            new_go.erase(new_go.begin() + i);
 
-            xd.emplace(val);
-        }
-
-        mat.eb(S);
-    }
-
-    dbg(n);
-    each(x, mat) dbg(x);
-
-    vi gozu;
-    each(x, xd) gozu.eb(x);
-
-    int ans = 0;
-
-    for(int i = 0; i < sz(gozu); i++) {
-        set<int> go;
-
-        each(x, mat) {
-            if(x.count(gozu[i])) continue;
-
-            each(e, x) {
-                go.emplace(e);
+            if((i + 1) % 2 == 1) {
+                ckmax(partial, solve(n - 1, new_go) + val);
+            } else {
+                ckmax(partial, solve(n - 1, new_go));
             }
         }
 
-        ckmax(ans, sz(go));
-    }
+        return partial;
+    };
 
-    ps(ans);
+    ll ans = solve(n, a);
+    return ans;
 }
 
+ll solve(int n, vl a) {
+    assert(1 <= n);
+
+    if(a.ft >= 0) {
+        ll S = 0;
+        each(x, a) if(x > 0) S += x;
+        return S;
+    } else {
+        ll S = 0;
+
+        vb banned(n);
+        for(int i = 0; i < n; i++) {
+            if((i + 1) % 2 == 1 && a[i] >= 0) {
+                S += a[i];
+                banned[i] = true;
+            }
+        }
+
+        vl new_a;
+        for(int i = 0; i < n; i++) {
+            if(!banned[i]) new_a.eb(a[i]);
+        }
+
+        dbg(new_a);
+
+        const int m = sz(new_a);
+        vl can(m);
+        for(int i = 0; i < m; i++) {
+            can[i] = (new_a[i] > 0)? new_a[i] : 0;
+        }
+
+        for(int i = 1; i < m; i++) can[i] += can[i - 1];
+
+        dbg(can);
+
+        auto query = [&](int left, int right) {
+            ll sum = can[right];
+            if(0 <= left - 1) sum -= can[left - 1];
+            return sum;
+        };
+
+        ll mx = 0;
+        for(int i = 0; i < m - 1; i++) {
+            dbg(S, i, new_a[i], query(i + 1, m - 1), i + 1, m - 1);
+            if((i + 1) % 2 == 0) {
+                ckmax(mx, query(i + 1, m - 1));
+            } else {
+                ckmax(mx, query(i + 1, m - 1) + new_a[i]);
+            }
+        }
+
+        return S + mx;
+    }
+}
 
 //? Generator
 int rng_int(int L, int R) { assert(L <= R);
@@ -352,12 +388,45 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
+    bool go = false;
+    while(go) {
+        int n = rng_int(1, 9);
+        vl a(n); for(int i = 0; i < n; i++) a[i] = rng_ll(-2, 1);
+
+        //? n = 5;
+        //? a = {-2, 1, 6, 4, 1};
+        //?a[0] = 0;
+
+        ll ans = brute(n, a);
+        ll greedy = solve(n, a);
+
+        dbg(n);
+        dbg(a);
+
+        dbg(ans, greedy);
+
+        if(ans != greedy) {
+            dbg("jaaa");
+            exit(0);
+        }
+
+        if(!go) break;
+    }
+
     ll t = 1; re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;
         RAYA;
-        solve();
+        def(int, n);
+        vl a(n); re(a);
+
+        dbg(a);
+        dbg(n);
+
+        ll ans = solve(n, a);
+        dbg(ans);
+        ps(ans);
     }
     RAYA;
     RAYA;

@@ -1,9 +1,9 @@
 //* sometimes pragmas don't work, if so, just comment it!
-//? #pragma GCC optimize ("Ofast")
-//? #pragma GCC target ("avx,avx2")
+#pragma GCC optimize ("Ofast")
+#pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-//! #undef _GLIBCXX_DEBUG //? for Stress Testing
+#undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
@@ -296,48 +296,33 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(int, n);
+    def(ll, x);
 
-    vector<set<int>> mat;
+    auto F = [](ll x) { return x * x * x; };
 
-    set<int> xd;
-    rep(n) {
-        def(int, m);
+    auto check = [&](ll x) {
+        ll left  = 1; //? always good
+        ll right = ll(1e5); //? always bad
 
-        set<int> S;
-        rep(m) {
-            def(int, val);
-            S.emplace(val);
+        while(left + 1 < right) {
+            ll middle = fdiv(left + right, 2LL);
 
-            xd.emplace(val);
+            if(F(middle) <= x) left = middle;
+            else right = middle;
         }
 
-        mat.eb(S);
-    }
+        return (left * left * left == x);
+    };
 
-    dbg(n);
-    each(x, mat) dbg(x);
+    for(ll a = 1; a * a * a < x; a++) {
+        ll R = x - a * a * a;
 
-    vi gozu;
-    each(x, xd) gozu.eb(x);
-
-    int ans = 0;
-
-    for(int i = 0; i < sz(gozu); i++) {
-        set<int> go;
-
-        each(x, mat) {
-            if(x.count(gozu[i])) continue;
-
-            each(e, x) {
-                go.emplace(e);
-            }
+        if(check(R)) {
+            ps("YES");
+            return;
         }
-
-        ckmax(ans, sz(go));
     }
-
-    ps(ans);
+    ps("NO");
 }
 
 
@@ -347,7 +332,6 @@ int rng_int(int L, int R) { assert(L <= R);
 ll rng_ll(ll L, ll R) { assert(L <= R);
 	return uniform_int_distribution<ll>(L,R)(rng);  }
 //? /Generator
-
 
 signed main() {
     setIO();

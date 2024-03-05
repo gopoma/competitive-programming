@@ -296,47 +296,34 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(int, n);
+    def(ll, a, b, l);
 
-    vector<set<int>> mat;
+    set<ll> go;
 
-    set<int> xd;
-    rep(n) {
-        def(int, m);
+    ll val = 1, val2 = 1;
+    bool ok = true;
+    #define check1 if(val > l) { ok = false; break; }
+    #define check2 if(val2 > l) { ok = false; break; }
 
-        set<int> S;
-        rep(m) {
-            def(int, val);
-            S.emplace(val);
+    for(ll x = 0; x <= 28; x++) {
+        check1
 
-            xd.emplace(val);
+        val2 = val;
+
+        for(ll y = 0; y <= 28; y++) {
+            check2
+
+            if(l % val2 == 0)
+                go.emplace(fdiv(l, val2));
+
+            val2 *= b;
         }
 
-        mat.eb(S);
+        val *= a;
     }
 
-    dbg(n);
-    each(x, mat) dbg(x);
-
-    vi gozu;
-    each(x, xd) gozu.eb(x);
-
-    int ans = 0;
-
-    for(int i = 0; i < sz(gozu); i++) {
-        set<int> go;
-
-        each(x, mat) {
-            if(x.count(gozu[i])) continue;
-
-            each(e, x) {
-                go.emplace(e);
-            }
-        }
-
-        ckmax(ans, sz(go));
-    }
-
+    dbg(go);
+    ll ans = sz(go);
     ps(ans);
 }
 
