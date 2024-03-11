@@ -296,8 +296,41 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(int, N);
-    ps(string(N, '0' + N));
+    def(int, n);
+    def(str, S);
+
+    dbg(n);
+    dbg(S);
+
+    str bad1 = "pie";
+    str bad2 = "map";
+
+    ll ans = 0;
+    for(int i = 0; i < n; i++) {
+        str xd = S.substr(i, 3);
+        if(xd == bad1) {
+            assert(xd.ft == 'p');
+            S[i] = '$';
+            ans++;
+        }
+    }
+
+    for(int i = 0; i < n; i++) {
+        str xd = S.substr(i, 3);
+        if(xd == bad2) {
+            S[i] = '$';
+            ans++;
+        }
+    }
+
+    for(int i = 0; i < n; i++) {
+        str xd = S.substr(i, 3);
+        if(xd == bad1 || xd == bad2) {
+            assert(false);
+        }
+    }
+
+    ps(ans);
 }
 
 
@@ -312,7 +345,8 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    ll t = 1; //? re(t);
+    ll t = 1;
+    re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;

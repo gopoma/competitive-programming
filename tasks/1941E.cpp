@@ -293,11 +293,85 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
+/**
+ * Description: 1D point update and range query where \texttt{cmb} is
+ 	* any associative operation. \texttt{seg[1]==query(0,N-1)}.
+ * Time: O(\log N)
+ * Source:
+	* http://codeforces.com/blog/entry/18051
+	* KACTL
+ * Verification: SPOJ Fenwick
+ * API: SegTree<node> tree; tree.init(int(n));
+ */
+
+tcT> struct SegTree { // cmb(ID,b) = b
+	// const T ID{}; T cmb(T a, T b) { return a+b; }
+    T ID{BIG}; T cmb(T a, T b) { return min(a, b); }
+	int n; V<T> seg;
+	void init(int _n) { // upd, query also work if n = _n
+		for (n = 1; n < _n; ) n *= 2;
+		seg.assign(2*n,ID); }
+	void pull(int p) { seg[p] = cmb(seg[2*p],seg[2*p+1]); }
+	void upd(int p, T val) { // set val at position p
+		seg[p += n] = val; for (p /= 2; p; p /= 2) pull(p); }
+	T query(int l, int r) {	// zero-indexed, inclusive
+		T ra = ID, rb = ID;
+		for (l += n, r += n+1; l < r; l /= 2, r /= 2) {
+			if (l&1) ra = cmb(ra,seg[l++]);
+			if (r&1) rb = cmb(seg[--r],rb);
+		}
+		return cmb(ra,rb);
+	}
+	/// int first_at_least(int lo, int val, int ind, int l, int r) { // if seg stores max across range
+	/// 	if (r < lo || val > seg[ind]) return -1;
+	/// 	if (l == r) return l;
+	/// 	int m = (l+r)/2;
+	/// 	int res = first_at_least(lo,val,2*ind,l,m); if (res != -1) return res;
+	/// 	return first_at_least(lo,val,2*ind+1,m+1,r);
+	/// }
+};
+// /here goes the template!
 //* /Template
 
 void solve() {
-    def(int, N);
-    ps(string(N, '0' + N));
+    def(int, n, m, k, d);
+    vector<vl> a(n, vl(m)); re(a);
+
+    dbg(n, m, k, d);
+    each(x, a) {
+        each(e, x) e++;
+        dbg(x);
+    }
+
+    vl ans(n);
+    for(int row = 0; row < n; row++) {
+        SegTree<ll> dp; dp.init(m);
+
+        for(int right = 0; right < m; right++) {
+            int left = max(0, right - d - 1);
+
+            ll mn = dp.query(left, right);
+            if(mn == BIG) mn = 0;
+            dp.upd(right, a[row][right] + mn);
+        }
+
+        ans[row] = dp.query(m - 1, m - 1);
+    }
+
+    dbg("fino");
+
+    for(int i = 1; i < n; i++) ans[i] += ans[i - 1];
+    auto query = [&](int left, int right) {
+        ll sum = ans[right];
+        if(0 <= left - 1) sum -= ans[left - 1];
+        return sum;
+    };
+
+    ll result = BIG;
+    for(int i = 0; i < n - k + 1; i++) {
+        ckmin(result, query(i, i + k - 1));
+    }
+    ps(result);
 }
 
 
@@ -312,7 +386,8 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    ll t = 1; //? re(t);
+    ll t = 1;
+    re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;

@@ -296,8 +296,18 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(int, N);
-    ps(string(N, '0' + N));
+    def(ll, n, m, k);
+    vl b(n); re(b);
+    vl c(m); re(c);
+
+    ll ans = 0;
+    each(x, b) {
+        each(y, c) {
+            ans += ((x + y) <= k);
+        }
+    }
+
+    ps(ans);
 }
 
 
@@ -312,7 +322,8 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    ll t = 1; //? re(t);
+    ll t = 1;
+    re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;

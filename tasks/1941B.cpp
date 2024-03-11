@@ -296,8 +296,37 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(int, N);
-    ps(string(N, '0' + N));
+    def(int, n); assert(3 <= n);
+    vl a(n); re(a);
+
+    dbg(n);
+    dbg(a);
+
+    for(int i = 1; i < n - 1; i++) {
+        //? i - 1 and i + 1 exists
+        ll times = a[i - 1];
+
+        a[i - 1] -= times;
+        a[i] -= 2LL * times;
+        a[i + 1] -= times;
+
+        dbg(i, times, a[i - 1], a[i], a[i + 1]);
+
+        if(a[i - 1] < 0 || a[i] < 0 || a[i + 1] < 0) {
+            ps("NO");
+            return;
+        }
+    }
+
+    dbg(a);
+
+    for(int i = 0; i < n; i++) {
+        if(a[i] != 0) {
+            ps("NO");
+            return;
+        }
+    }
+    ps("YES");
 }
 
 
@@ -312,7 +341,8 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    ll t = 1; //? re(t);
+    ll t = 1;
+    re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;

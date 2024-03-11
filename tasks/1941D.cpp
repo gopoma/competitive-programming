@@ -3,7 +3,7 @@
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-//! #undef _GLIBCXX_DEBUG //? for Stress Testing
+//? #undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
@@ -296,8 +296,92 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(int, N);
-    ps(string(N, '0' + N));
+    def(int, n, m, x); x--;
+    vector<pair<int, char>> moves(m); re(moves);
+
+    //? dbg(n, m, x);
+    //? each(e, moves) dbg(e);
+    reverse(all(moves));
+
+    auto clockwise = [&](int current, int times) {
+        int result = current;
+        result += times;
+        if(result >= n) result -= n;
+        return result;
+    };
+
+    auto counterclockwise = [&](int current, int times) {
+        int result = current;
+        result -= times;
+        if(result < 0) result = n + result;
+        return result;
+    };
+
+
+    vb ans(n);
+    for(int i = 0; i < n; i++) {
+        vector<vector<bool>> dp(m + 1, vb(n + 1));
+        for(int idx = m; idx >= 0; idx--) {
+            for(int current = n - 1; current >= 0; current--) {
+                if(idx == m) {
+                    if(current == x) dp[idx][current] = true;
+                    else dp[idx][current] = false;
+                } else {
+                    bool result = false;
+                    if(moves[idx].s == '0') {
+                        //? 1: clockwise -> counterclockwise
+                        result |= dp[idx + 1][counterclockwise(current, moves[idx].f)];
+                    } else if(moves[idx].s == '1') {
+                        //? 0: counterclockwise -> clockwise
+                        result |= dp[idx + 1][clockwise(current, moves[idx].f)];
+                    } else {
+                        assert(moves[idx].s == '?');
+                        result |=
+                            dp[idx + 1][counterclockwise(current, moves[idx].f)]
+                            || dp[idx + 1][clockwise(current, moves[idx].f)];
+                    }
+                    dp[idx][current] = result;
+                }
+            }
+        }
+
+        /*
+        function<bool(int, int)> solve = [&](int idx, int current) -> bool {
+            if(idx == m) {
+                if(current == x) return true;
+                else return false;
+            }
+
+            bool result = false;
+            if(moves[idx].s == '0') {
+                //? 1: clockwise -> counterclockwise
+                result |= solve(idx + 1, counterclockwise(current, moves[idx].f));
+            } else if(moves[idx].s == '1') {
+                //? 0: counterclockwise -> clockwise
+                result |= solve(idx + 1, clockwise(current, moves[idx].f));
+            } else {
+                assert(moves[idx].s == '?');
+                result |=
+                    solve(idx + 1, counterclockwise(current, moves[idx].f))
+                    || solve(idx + 1, clockwise(current, moves[idx].f));
+            }
+
+            return result;
+        };
+        */
+
+        //ans[i] = solve(0, i);
+        ans[i] = dp[0][i];
+    }
+
+    vi results;
+    for(int i = 0; i < n; i++) {
+        if(ans[i]) {
+            results.eb(i + 1);
+        }
+    }
+    ps(sz(results));
+    ps(results);
 }
 
 
@@ -310,9 +394,14 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 
 signed main() {
-    setIO();
+    setIn("D.out");
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
 
-    ll t = 1; //? re(t);
+    //? setIO();
+
+    ll t = 1;
+    re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;

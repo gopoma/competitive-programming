@@ -296,8 +296,7 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(int, N);
-    ps(string(N, '0' + N));
+
 }
 
 
@@ -310,17 +309,19 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 
 signed main() {
-    setIO();
+    setOut("D.out");
 
-    ll t = 1; //? re(t);
+    int t = 1;
+    int n = 100;
+    int m = 1000;
+    int x = 1;
 
-    FOR(i, 1, t + 1) {
-        RAYA;
-        RAYA;
-        solve();
+    ps(t);
+    ps(n, m, x);
+
+    rep(m) {
+        ps(n - 1, '?');
     }
-    RAYA;
-    RAYA;
 
     #ifdef LOCAL
         cerr << fixed << setprecision(5);
