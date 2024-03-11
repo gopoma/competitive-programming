@@ -296,9 +296,32 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(int, B, G);
-    if(B > G) ps("Bat");
-    else ps("Glove");
+    def(int, n);
+    vl a(n); re(a);
+
+    each(x, a) x--;
+
+    dbg(n);
+    dbg(a);
+
+    ll current = 0;
+    ll tar = a[current];
+
+    ll ans = 1;
+    for(int i = 0; i < n; i++) {
+        ckmax(tar, a[i]);
+
+        if(i == tar) {
+            assert(a[i] == tar);
+            if(i < n - 1) ans++;
+            else {
+                assert(i == n - 1);
+                continue;
+            }
+        }
+    }
+
+    ps(ans);
 }
 
 

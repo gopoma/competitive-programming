@@ -296,9 +296,43 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(int, B, G);
-    if(B > G) ps("Bat");
-    else ps("Glove");
+    def(int, n);
+    vl a(n); re(a);
+
+    dbg(n);
+    dbg(a);
+
+    map<ll, ll> hist;
+    each(x, a)  hist[x]++;
+
+    multiset<pl> xd;
+    for(auto& [val, cnt]: hist) {
+        xd.emplace(cnt, val);
+    }
+
+    dbg(xd);
+
+    while(sz(xd) >= 2) {
+        dbg("go", xd);
+        pl mx = *xd.rbegin();
+        pl mn = *xd.begin();
+
+        safeErase(xd, mx);
+        safeErase(xd, mn);
+
+        if(mx.f > 1) {
+            xd.emplace(mx.f - 1, mx.s);
+        }
+        if(mn.f > 1) {
+            xd.emplace(mn.f - 1, mn.s);
+        }
+    }
+    dbg("fin", xd);
+
+    ll ans = 0;
+    each(x, xd) ans += x.f;
+
+    ps(ans);
 }
 
 
@@ -313,7 +347,7 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    ll t = 1; //? re(t);
+    ll t = 1; re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;

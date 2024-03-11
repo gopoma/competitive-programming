@@ -296,9 +296,85 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(int, B, G);
-    if(B > G) ps("Bat");
-    else ps("Glove");
+    def(int, N, K);
+    vi A(K); re(A);
+
+    dbg(N, K);
+    dbg(A);
+
+    vi single;
+    each(x, A) single.eb(x);
+
+    sor(single);
+    dbg(single);
+
+    const int m = sz(single);
+    if(m % 2 == 0) {
+        ll S = 0;
+        for(int i = 1; i < m; i += 2) {
+            S += single[i] - single[i - 1];
+        }
+        ps(S);
+    } else {
+        assert(m > 0);
+        if(m == 1) {
+            ps("0");
+            return;
+        }
+
+        ll left = 0;
+        for(int i = 2; i < m; i += 2) {
+            left += single[i] - single[i - 1];
+        }
+
+        reverse(all(single));
+        dbg(single);
+        ll right = 0;
+        for(int i = 1; i < m; i += 2) {
+            right += single[i] - single[i + 1];
+        }
+        reverse(all(single));
+
+        ll ans = min(left, right);
+        {
+            dbg(ans, "fino");
+            vl pref(m + 1); dbg(m + 1);
+            vl suff(m + 2); dbg(m + 2);
+
+            for(int i = 2; i <= m; i += 2) {
+                dbg("pref", i, single[i - 1], single[i - 2]);
+                pref[i] += pref[i - 2] + (single[i - 1] - single[i - 2]);
+            }
+
+            for(int i = m - 1; i >= 1; i -= 2) {
+                dbg("suff", i, single[i], single[i - 1]);
+                suff[i] += suff[i + 2] + (single[i] - single[i - 1]);
+            }
+            dbg(pref);
+            dbg(suff);
+
+            for(int i = 1; i < m - 1; i++) {
+                int idx = i + 1;
+                RAYA;
+                dbg(idx);
+                dbg(idx, idx - 1, idx + 1);
+                dbg(idx - 2, idx + 2);
+                if((idx - 1) % 2 == 0 && (idx + 1) % 2 == 0) {
+                    ll val = pref[idx - 1] + suff[idx + 1];
+                    dbg("evens", pref[idx - 1], suff[idx + 1], val);
+                    ckmin(ans, val);
+                } else {
+                    assert((idx - 1) % 2 == 1 && (idx + 1) % 2 == 1);
+                    ll val = pref[idx - 2] + suff[idx + 2] + (single[i + 1] - single[i - 1]);
+                    dbg("odds", pref[idx - 2], suff[i + 2], single[i + 1], single[i - 1], val);
+                    ckmin(ans, val);
+                }
+            }
+        }
+
+        dbg(left, right);
+        ps(ans);
+    }
 }
 
 
