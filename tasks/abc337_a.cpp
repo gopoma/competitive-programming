@@ -293,57 +293,24 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
-vector<string> tokenize(string line, string separator) {
-    vector<string> tokens;
-    while(true) {
-        string token = line.substr(0, line.find(separator));
-        tokens.emplace_back(token);
-
-        if(line.find(separator) == string::npos) {
-            break;
-        }
-        line = line.substr(line.find(separator) + 1, int(line.size()) - line.find(separator) + 1);
-    }
-    return tokens;
-};
-
 //* /Template
 
-//? void solve() {
-//?     def(str, S);
-//?     reverse(all(S));
-//?
-//?     str ans;
-//?     int go = 0;
-//?     while(S[go] != '.') {
-//?         ans.pb(S[go++]);
-//?     }
-//?     reverse(all(ans));
-//?
-//?     ps(ans);
-//? }
-
-//? void solve() {
-//?     def(str, S);
-//?     const int n = sz(S);
-//?     dbg(S);
-//?
-//?     int idx = S.find_last_of('.');
-//?     dbg(idx);
-//?     idx++;
-//?
-//?     str ans = S.substr(idx, n - idx + 1);
-//?
-//?     ps(ans);
-//? }
-
 void solve() {
-    def(str, S);
+    def(int, N);
 
-    vs xd = tokenize(S, ".");
-    dbg(xd);
-    ps(xd.bk);
+    int T = 0, A = 0;
+    rep(N) {
+        def(int, X, Y);
+
+        T += X;
+        A += Y;
+    }
+
+    if(T > A) ps("Takahashi");
+    else if(T < A) ps("Aoki");
+    else ps("Draw");
 }
+
 
 //? Generator
 int rng_int(int L, int R) { assert(L <= R);

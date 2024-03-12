@@ -9,6 +9,15 @@
 
 using namespace std;
 
+#ifdef LOCAL
+    #include "helpers/debug.h"
+#else
+    #define dbg(...)     0
+    #define chk(...)     0
+
+    #define RAYA         0
+#endif
+
 // building blocks
 using ll  = long long;
 using db  = long double; // or double, if TL is tight
@@ -149,100 +158,6 @@ tcTU > void safeErase(T &t, const U &u) {
 
 #define tcTUU tcT, class ...U
 
-inline namespace IO {
-#define SFINAE(x, ...)                                                         \
-	template <class, class = void> struct x : std::false_type {};              \
-	template <class T> struct x<T, std::void_t<__VA_ARGS__>> : std::true_type {}
-
-SFINAE(DefaultI, decltype(std::cin >> std::declval<T &>()));
-SFINAE(DefaultO, decltype(std::cout << std::declval<T &>()));
-SFINAE(IsTuple, typename std::tuple_size<T>::type);
-SFINAE(Iterable, decltype(std::begin(std::declval<T>())));
-
-template <auto &is> struct Reader {
-	template <class T> void Impl(T &t) {
-		if constexpr (DefaultI<T>::value) is >> t;
-		else if constexpr (Iterable<T>::value) {
-			for (auto &x : t) Impl(x);
-		} else if constexpr (IsTuple<T>::value) {
-			std::apply([this](auto &...args) { (Impl(args), ...); }, t);
-		} else static_assert(IsTuple<T>::value, "No matching type for read");
-	}
-	template <class... Ts> void read(Ts &...ts) { ((Impl(ts)), ...); }
-};
-
-template <class... Ts> void re(Ts &...ts) { Reader<cin>{}.read(ts...); }
-#define def(t, args...)                                                        \
-	t args;                                                                    \
-	re(args);
-
-template <auto &os, bool debug, bool print_nd> struct Writer {
-	string comma() const { return debug ? "," : ""; }
-	template <class T> constexpr char Space(const T &) const {
-		return print_nd && (Iterable<T>::value or IsTuple<T>::value) ? '\n'
-		                                                             : ' ';
-	}
-	template <class T> void Impl(T const &t) const {
-		if constexpr (DefaultO<T>::value) os << t;
-		else if constexpr (Iterable<T>::value) {
-			if (debug) os << '{';
-			int i = 0;
-			for (auto &&x : t)
-				((i++) ? (os << comma() << Space(x), Impl(x)) : Impl(x));
-			if (debug) os << '}';
-		} else if constexpr (IsTuple<T>::value) {
-			if (debug) os << '(';
-			std::apply(
-			    [this](auto const &...args) {
-				    int i = 0;
-				    (((i++) ? (os << comma() << " ", Impl(args)) : Impl(args)),
-				     ...);
-			    },
-			    t);
-			if (debug) os << ')';
-		} else static_assert(IsTuple<T>::value, "No matching type for print");
-	}
-	template <class T> void ImplWrapper(T const &t) const {
-		if (debug) os << "\033[0;31m";
-		Impl(t);
-		if (debug) os << "\033[0m";
-	}
-	template <class... Ts> void print(Ts const &...ts) const {
-		((Impl(ts)), ...);
-	}
-	template <class F, class... Ts>
-	void print_with_sep(const std::string &sep, F const &f,
-	                    Ts const &...ts) const {
-		ImplWrapper(f), ((os << sep, ImplWrapper(ts)), ...), os << '\n';
-	}
-	void print_with_sep(const std::string &) const { os << '\n'; }
-};
-
-template <class... Ts> void pr(Ts const &...ts) {
-	Writer<cout, false, true>{}.print(ts...);
-}
-template <class... Ts> void ps(Ts const &...ts) {
-	Writer<cout, false, true>{}.print_with_sep(" ", ts...);
-}
-}  // namespace IO
-
-inline namespace Debug {
-
-#ifdef LOCAL
-#include "helpers/debug.h"
-
-#define chk(...) if (!(__VA_ARGS__)) cerr << "\033[41m" << "Line(" << __LINE__ << ") -> function(" \
-	 << __FUNCTION__  << ") -> CHK FAILED: (" << #__VA_ARGS__ << ")" << "\033[0m" << "\n", exit(0);
-
-#define MACRO(code) do {code} while (false)
-#define RAYA MACRO(cerr << "\033[101m" << "================================" << "\033[0m" << endl;)
-#else
-#define dbg(...)
-
-#define chk(...)
-#define RAYA
-#endif
-
 const auto beg_time = std::chrono::high_resolution_clock::now();
 // https://stackoverflow.com/questions/47980498/accurate-c-c-clock-on-a-multi-core-processor-with-auto-overclock?noredirect=1&lq=1
 double time_elapsed() {
@@ -250,9 +165,6 @@ double time_elapsed() {
 	                                beg_time)
 	    .count();
 }
-}  // namespace Debug
-
-
 
 inline namespace FileIO {
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }
@@ -293,57 +205,65 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
-vector<string> tokenize(string line, string separator) {
-    vector<string> tokens;
-    while(true) {
-        string token = line.substr(0, line.find(separator));
-        tokens.emplace_back(token);
-
-        if(line.find(separator) == string::npos) {
-            break;
-        }
-        line = line.substr(line.find(separator) + 1, int(line.size()) - line.find(separator) + 1);
-    }
-    return tokens;
-};
-
 //* /Template
 
-//? void solve() {
-//?     def(str, S);
-//?     reverse(all(S));
-//?
-//?     str ans;
-//?     int go = 0;
-//?     while(S[go] != '.') {
-//?         ans.pb(S[go++]);
-//?     }
-//?     reverse(all(ans));
-//?
-//?     ps(ans);
-//? }
 
-//? void solve() {
-//?     def(str, S);
-//?     const int n = sz(S);
-//?     dbg(S);
-//?
-//?     int idx = S.find_last_of('.');
-//?     dbg(idx);
-//?     idx++;
-//?
-//?     str ans = S.substr(idx, n - idx + 1);
-//?
-//?     ps(ans);
-//? }
+ll t = 1;
 
-void solve() {
-    def(str, S);
+void solve(int testcase) {
+    char mx; cin >> mx;
+    assert(isupper(mx));
 
-    vs xd = tokenize(S, ".");
-    dbg(xd);
-    ps(xd.bk);
+    cin.ignore();
+
+    const int n = int(mx - 'A' + 1);
+    vector<vi> adj(n);
+
+    str edge;
+    while(true) {
+        getline(cin, edge);
+
+        if(sz(edge) == 0) break;
+
+        assert(sz(edge) == 2);
+        assert(isupper(edge.ft));
+        assert(isupper(edge.bk));
+
+        int u = int(edge.ft - 'A');
+        int v = int(edge.bk - 'A');
+
+        //? dbg(u, v);
+
+        adj[u].eb(v);
+        adj[v].eb(u);
+    }
+
+    //? for(int u = 0; u < n; u++) dbg(u, adj[u]);
+
+    vb vis(n);
+    function<void(int)> dfs = [&](int src) {
+        if(vis[src]) return;
+        vis[src] = true;
+
+        each(v, adj[src]) {
+            dfs(v);
+        }
+    };
+
+    int ans = 0;
+    for(int u = 0; u < n; u++) {
+        if(!vis[u]) {
+            ans++;
+
+            dfs(u);
+        }
+    }
+
+    cout << ans << "\n";
+
+    if(testcase < t) cout << "\n";
 }
+
 
 //? Generator
 int rng_int(int L, int R) { assert(L <= R);
@@ -354,14 +274,14 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 
 signed main() {
-    setIO();
+    //? setIO();
 
-    ll t = 1; //? re(t);
+    cin >> t;
 
     FOR(i, 1, t + 1) {
-        RAYA;
-        RAYA;
-        solve();
+        //? RAYA;
+        //? RAYA;
+        solve(i);
     }
     RAYA;
     RAYA;

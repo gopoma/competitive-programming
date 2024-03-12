@@ -293,57 +293,110 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
-vector<string> tokenize(string line, string separator) {
-    vector<string> tokens;
-    while(true) {
-        string token = line.substr(0, line.find(separator));
-        tokens.emplace_back(token);
+bool isPerfectSquare(long double x) {
+    if (x >= 0) {
+        long long sr = sqrt(x);
 
-        if(line.find(separator) == string::npos) {
-            break;
-        }
-        line = line.substr(line.find(separator) + 1, int(line.size()) - line.find(separator) + 1);
+        return (sr * sr == x);
     }
-    return tokens;
-};
+    return false;
+}
 
 //* /Template
 
-//? void solve() {
-//?     def(str, S);
-//?     reverse(all(S));
-//?
-//?     str ans;
-//?     int go = 0;
-//?     while(S[go] != '.') {
-//?         ans.pb(S[go++]);
-//?     }
-//?     reverse(all(ans));
-//?
-//?     ps(ans);
-//? }
-
-//? void solve() {
-//?     def(str, S);
-//?     const int n = sz(S);
-//?     dbg(S);
-//?
-//?     int idx = S.find_last_of('.');
-//?     dbg(idx);
-//?     idx++;
-//?
-//?     str ans = S.substr(idx, n - idx + 1);
-//?
-//?     ps(ans);
-//? }
-
 void solve() {
-    def(str, S);
+    def(int, n);
+    vl a(n); re(a);
 
-    vs xd = tokenize(S, ".");
-    dbg(xd);
-    ps(xd.bk);
+    def(int, q);
+
+    dbg(n);
+    dbg(a);
+
+    map<ll, ll> hist;
+    each(x, a) hist[x]++;
+
+    dbg(q);
+    vl ans;
+    for(int _ = 0; _ < q; _++) {
+        RAYA;
+        def(ll, x, y);
+        dbg(x, y);
+
+        //? a[i] = r
+        //? r * (x - r) = y
+        //? r * x - r ^ 2 = y
+        //? r ^ 2 - r * x + y = 0
+        //! r ^ 2 - x * r + y = 0
+
+        ll A = 1LL;
+        ll B = -x;
+        ll C = y;
+
+        ll d2 = B * B - 4LL * A * C;
+        dbg(d2);
+
+        if(!isPerfectSquare(d2)) ans.eb(0LL);
+        else {
+            dbg("go");
+
+            ll d = ll(sqrtl(d2));
+//?            i128 left  = i128(0); //? always bad
+//?            i128 right = i128(1e10); //? always good
+//?
+//?            while(left + 1 < right) {
+//?                i128 middle = (left + right) / i128(2);
+//?
+//?                if(middle * middle <= d2) left = middle;
+//?                else right = middle;
+//?            }
+//?
+//?            ll d = ll(left);
+//?            dbg(d);
+
+            auto calc = [&](ll ai, ll aj) {
+                if(ai == aj) {
+                    return fdiv(hist[ai] * (hist[ai] - 1LL), 2LL);
+                } else {
+                    return hist[ai] * hist[aj];
+                }
+            };
+
+            //? x1, x2 -> a[i]
+
+            set<pl> S;
+
+            {
+                ll x1 = -B + d;
+                if(x1 % (2LL * A) == 0LL) {
+                    x1 = fdiv(x1, 2LL * A);
+
+                    ll aj = x - x1;
+
+                    S.emplace(min(x1, aj), max(x1, aj));
+                }
+            }
+
+            {
+                ll x2 = -B - d;
+                if(x2 % (2LL * A) == 0LL) {
+                    x2 = fdiv(x2, 2LL * A);
+
+                    ll aj = x - x2;
+
+                    S.emplace(min(x2, aj), max(x2, aj));
+                }
+            }
+
+            ll sum = 0;
+            each(item, S) sum += calc(item.f, item.s);
+            ans.eb(sum);
+        }
+    }
+
+    ps(ans);
 }
+
 
 //? Generator
 int rng_int(int L, int R) { assert(L <= R);
@@ -356,7 +409,7 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    ll t = 1; //? re(t);
+    ll t = 1; re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;
