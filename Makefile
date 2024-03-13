@@ -4,3 +4,5 @@ run:
 	make compile && ./bin/${F}.out
 without:
 	g++ -std=c++17 -DLOCAL -o ./bin/${F}.out ${F} && ./bin/${F}.out
+xd:
+	g++ -std=c++17 -o ./bin/${F}.out ${F} && ./bin/${F}.out

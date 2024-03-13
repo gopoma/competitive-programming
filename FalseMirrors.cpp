@@ -297,33 +297,42 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 void solve() {
     def(int, N);
+    vl a(N); re(a);
+
     dbg(N);
+    dbg(a);
 
-    set<ll> dp;
-    vl go;
-    const int MAXN = 15;
+    map<vl, bool> vis;
+    map<vl, ll> dp;
+    function<ll(vl&)> backtrack = [&](vl& a) -> ll {
+        bool all_zeros = true;
+        each(x, a) all_zeros &= (x == 0);
 
-    for(int i = 1; i <= MAXN; i++) {
-        go.eb(stoll(string(i, '1')));
-    }
+        if(all_zeros) return 0LL;
 
-    dbg(go);
+        if(vis[a]) return dp[a];
+        vis[a];
 
-    {
-        for(int i = 0; i < MAXN; i++) {
-            for(int j = 0; j < MAXN; j++) {
-                for(int k = 0; k < MAXN; k++) {
-                    dp.emplace(go[i] + go[j] + go[k]);
-                }
-            }
+        ll ans = BIG;
+
+        for(int i = 0; i < N - 2; i++) {
+            if(a[i] == 0 && a[i + 1] == 0 && a[i + 2] == 0) continue;
+
+            vl new_a = a;
+            new_a[i] = 0;
+            new_a[i + 1] = 0;
+            new_a[i + 2] = 0;
+
+            ll sum = accumulate(all(new_a), 0LL);
+
+            ckmin(ans, backtrack(new_a) + sum);
         }
-    }
 
-    dbg(sz(dp));
+        return dp[a] = ans;
+    };
 
-    vl ans; each(x, dp) ans.eb(x);
-
-    ps(ans[N - 1]);
+    ll ans = backtrack(a);
+    ps(ans);
 }
 
 

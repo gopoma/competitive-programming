@@ -3,6 +3,8 @@
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
+//! #undef _GLIBCXX_DEBUG //? for Stress Testing
+
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
 using namespace std;
@@ -225,26 +227,9 @@ template <class... Ts> void ps(Ts const &...ts) {
 }  // namespace IO
 
 inline namespace Debug {
-template <typename... Args> void err(Args... args) {
-	Writer<cerr, true, false>{}.print_with_sep(" | ", args...);
-}
-template <typename... Args> void errn(Args... args) {
-	Writer<cerr, true, true>{}.print_with_sep(" | ", args...);
-}
-
-void err_prefix(str func, int line, string args) {
-	cerr << "\033[0;31m\u001b[1mDEBUG\033[0m"
-	     << " | "
-	     << "\u001b[34m" << func << "\033[0m"
-	     << ":"
-	     << "\u001b[34m" << line << "\033[0m"
-	     << " - "
-	     << "[" << args << "] = ";
-}
 
 #ifdef LOCAL
-#define dbg(args...) err_prefix(__FUNCTION__, __LINE__, #args), err(args)
-#define dbgn(args...) err_prefix(__FUNCTION__, __LINE__, #args), errn(args)
+#include "helpers/debug.h"
 
 #define chk(...) if (!(__VA_ARGS__)) cerr << "\033[41m" << "Line(" << __LINE__ << ") -> function(" \
 	 << __FUNCTION__  << ") -> CHK FAILED: (" << #__VA_ARGS__ << ")" << "\033[0m" << "\n", exit(0);
@@ -253,7 +238,6 @@ void err_prefix(str func, int line, string args) {
 #define RAYA MACRO(cerr << "\033[101m" << "================================" << "\033[0m" << endl;)
 #else
 #define dbg(...)
-#define dbgn(args...)
 
 #define chk(...)
 #define RAYA
@@ -313,53 +297,52 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 void solve() {
     def(int, H, W, N);
-    vs mat(H, string(W, '.'));
-
     dbg(H, W, N);
+
+    vs mat(H, string(W, '.'));
     each(x, mat) dbg(x);
 
-    vpi d{mp(-1, 0), mp(0, 1), mp(1, 0), mp(0, -1)};
-    int go = 0;
+    vpi directions{
+        mp(-1, 0),
+        mp(0, 1),
+        mp(1, 0),
+        mp(0, -1),
+    };
 
-    int x = 0;
-    int y = 0;
-
+    pi current = mp(0, 0);
+    int current_direction = 0;
     rep(N) {
+        auto [x, y] = current;
+
         if(mat[x][y] == '.') {
             mat[x][y] = '#';
 
-            go++;
-            go %= 4;
-
-            x += d[go].f;
-            y += d[go].s;
-
-            x += H;
-            x %= H;
-            y += W;
-            y %= W;
+            current_direction++;
+            if(current_direction >= 4) current_direction -= 4;
         } else {
             assert(mat[x][y] == '#');
 
             mat[x][y] = '.';
 
-            go--;
-            go += 4;
-            go %= 4;
-
-            x += d[go].f;
-            y += d[go].s;
-
-            x += H;
-            x %= H;
-            y += W;
-            y %= W;
+            current_direction--;
+            if(current_direction < 0) current_direction += 4;
         }
+
+        auto [dx, dy] = directions[current_direction];
+
+        int new_x = x + dx;
+        int new_y = y + dy;
+
+        if(new_x < 0) new_x += H;
+        if(new_x >= H) new_x -= H;
+
+        if(new_y < 0) new_y += W;
+        if(new_y >= W) new_y -= W;
+
+        current = mp(new_x, new_y);
     }
 
-    each(row, mat) {
-        ps(row);
-    }
+    ps(mat);
 }
 
 
@@ -374,7 +357,7 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    ll t = 1; //?re(t);
+    ll t = 1; //? re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;

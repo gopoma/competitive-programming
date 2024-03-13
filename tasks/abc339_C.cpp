@@ -3,6 +3,8 @@
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
+//! #undef _GLIBCXX_DEBUG //? for Stress Testing
+
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
 using namespace std;
@@ -225,26 +227,9 @@ template <class... Ts> void ps(Ts const &...ts) {
 }  // namespace IO
 
 inline namespace Debug {
-template <typename... Args> void err(Args... args) {
-	Writer<cerr, true, false>{}.print_with_sep(" | ", args...);
-}
-template <typename... Args> void errn(Args... args) {
-	Writer<cerr, true, true>{}.print_with_sep(" | ", args...);
-}
-
-void err_prefix(str func, int line, string args) {
-	cerr << "\033[0;31m\u001b[1mDEBUG\033[0m"
-	     << " | "
-	     << "\u001b[34m" << func << "\033[0m"
-	     << ":"
-	     << "\u001b[34m" << line << "\033[0m"
-	     << " - "
-	     << "[" << args << "] = ";
-}
 
 #ifdef LOCAL
-#define dbg(args...) err_prefix(__FUNCTION__, __LINE__, #args), err(args)
-#define dbgn(args...) err_prefix(__FUNCTION__, __LINE__, #args), errn(args)
+#include "helpers/debug.h"
 
 #define chk(...) if (!(__VA_ARGS__)) cerr << "\033[41m" << "Line(" << __LINE__ << ") -> function(" \
 	 << __FUNCTION__  << ") -> CHK FAILED: (" << #__VA_ARGS__ << ")" << "\033[0m" << "\n", exit(0);
@@ -253,7 +238,6 @@ void err_prefix(str func, int line, string args) {
 #define RAYA MACRO(cerr << "\033[101m" << "================================" << "\033[0m" << endl;)
 #else
 #define dbg(...)
-#define dbgn(args...)
 
 #define chk(...)
 #define RAYA
@@ -315,26 +299,37 @@ void solve() {
     def(int, N);
     vl A(N); re(A);
 
-    auto check = [&](ll start) {
+    dbg(N);
+    dbg(A);
+
+    auto check = [&](ll x) {
+        #define xd { if(x < 0) { return false; } }
+
+        xd
+
         for(int i = 0; i < N; i++) {
-            if(start < 0) return false;
-            start += A[i];
+            x += A[i];
+
+            xd
         }
-        if(start < 0) return false;
+
         return true;
     };
 
-    ll left = -1;    //? always bad
-    ll right = 1e17; //? always good
+    ll left = -1;        //? always bad
+    ll right = ll(1e15); //? always good
+
     while(left + 1 < right) {
         ll middle = fdiv(left + right, 2LL);
+
         if(check(middle)) right = middle;
         else left = middle;
     }
 
-    ll ans = right;
+    ll start = right;
+    ll ans = start;
     each(x, A) ans += x;
-    assert(ans >= 0);
+
     ps(ans);
 }
 
@@ -350,7 +345,7 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    ll t = 1; //?re(t);
+    ll t = 1; //? re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;

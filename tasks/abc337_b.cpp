@@ -15,9 +15,9 @@ using db  = long double; // or double, if TL is tight
 using str = string;      // yay python!
 
 //? priority_queue for minimum
-template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
+//? template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
 
-using ull  = unsigned long long;
+//? using ull  = unsigned long long;
 //? using i64  = long long;
 //? using u64  = uint64_t;
 //? using i128 = __int128;
@@ -296,34 +296,18 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(int, N);
-    dbg(N);
+    def(str, S);
 
-    set<ll> dp;
-    vl go;
-    const int MAXN = 15;
+    const int n = sz(S);
 
-    for(int i = 1; i <= MAXN; i++) {
-        go.eb(stoll(string(i, '1')));
-    }
+    vector<char> pref;
+    each(c, S) pref.eb(c);
 
-    dbg(go);
+    for(int i = 1; i < n; i++) ckmax(pref[i], pref[i - 1]);
 
-    {
-        for(int i = 0; i < MAXN; i++) {
-            for(int j = 0; j < MAXN; j++) {
-                for(int k = 0; k < MAXN; k++) {
-                    dp.emplace(go[i] + go[j] + go[k]);
-                }
-            }
-        }
-    }
-
-    dbg(sz(dp));
-
-    vl ans; each(x, dp) ans.eb(x);
-
-    ps(ans[N - 1]);
+    bool ok = true;
+    for(int i = 0; i < n; i++) ok &= (S[i] == pref[i]);
+    ps(ok?"Yes":"No");
 }
 
 
