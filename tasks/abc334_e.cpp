@@ -423,43 +423,69 @@ void solve() {
 
     DSU dsu; dsu.init(H * W);
     int komp = 0;
+
     vpi red;
     {
-        vector<vb> vis(H, vb(W));
         for(int i = 0; i < H; i++) {
             for(int j = 0; j < W; j++) {
-                if(S[i][j] == '.') {
-                    red.eb(i, j);
-                } else if(!vis[i][j] && S[i][j] == '#') {
-                    komp++;
+                if(S[i][j] == '.') red.eb(i, j);
+                else if(S[i][j] == '#') {
+                    for(int k = 0; k < 4; k++) {
+                        int x = i + dx[k];
+                        int y = j + dy[k];
 
-                    vis[i][j] = true;
-
-                    deque<pi> q;
-                    q.pb({i, j});
-
-                    // TODO: leader -> pair {i, j}
-
-                    while(!q.empty()) {
-                        auto [x, y] = q.ft; q.pop_front();
-
-                        for(int k = 0; k < 4; k++) {
-                            int new_x = x + dx[k];
-                            int new_y = y + dy[k];
-
-                            if(isValid(new_x, new_y) && !vis[new_x][new_y] && S[new_x][new_y] == '#') {
-                                vis[new_x][new_y] = true;
-
-                                q.pb({new_x, new_y});
-
-                                dsu.unite(idx[{i, j}], idx[{new_x, new_y}]);
-                            }
+                        if(isValid(x, y) && S[x][y] == '#') {
+                            dsu.unite(idx[{i, j}], idx[{x, y}]);
                         }
                     }
                 }
             }
         }
+
+        set<int> xd;
+        for(int i = 0; i < H; i++) {
+            for(int j = 0; j < W; j++) {
+                if(S[i][j] == '#') xd.emplace(dsu.get(idx[{i, j}]));
+            }
+        }
+        komp = sz(xd);
     }
+//?    {
+//?        vector<vb> vis(H, vb(W));
+//?        for(int i = 0; i < H; i++) {
+//?            for(int j = 0; j < W; j++) {
+//?                if(S[i][j] == '.') {
+//?                    red.eb(i, j);
+//?                } else if(!vis[i][j] && S[i][j] == '#') {
+//?                    komp++;
+//?
+//?                    vis[i][j] = true;
+//?
+//?                    deque<pi> q;
+//?                    q.pb({i, j});
+//?
+//?                    // TODO: leader -> pair {i, j}
+//?
+//?                    while(!q.empty()) {
+//?                        auto [x, y] = q.ft; q.pop_front();
+//?
+//?                        for(int k = 0; k < 4; k++) {
+//?                            int new_x = x + dx[k];
+//?                            int new_y = y + dy[k];
+//?
+//?                            if(isValid(new_x, new_y) && !vis[new_x][new_y] && S[new_x][new_y] == '#') {
+//?                                vis[new_x][new_y] = true;
+//?
+//?                                q.pb({new_x, new_y});
+//?
+//?                                dsu.unite(idx[{i, j}], idx[{new_x, new_y}]);
+//?                            }
+//?                        }
+//?                    }
+//?                }
+//?            }
+//?        }
+//?    }
 
     dbg(komp);
 
