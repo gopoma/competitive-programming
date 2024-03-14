@@ -296,44 +296,110 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(int, N);
+    def(int, N, M);
+    vi val(N); re(val);
 
     vector<vi> adj(N);
-    rep(N - 1) {
-        def(int, u, v); u--; v--;
-        dbg(u, v);
+    rep(M) {
+        def(int, U, V); U--; V--;
 
-        adj[u].eb(v);
-        adj[v].eb(u);
+        adj[U].eb(V);
+        adj[V].eb(U);
     }
+
+    dbg(N, M);
+    dbg(val);
+    for(int u = 0; u < N; u++) dbg(u, adj[u]);
 
     vb vis(N);
-    vi tam(N);
-    function<int(int)> dfs = [&](int src) -> int {
-        if(vis[src]) return 0;
+    vector<vi> components;
+    int current = -1;
+    function<void(int)> dfs = [&](int src) {
+        if(vis[src]) return;
         vis[src] = true;
 
-        tam[src] = 1;
+        components[current].eb(src);
+
         each(v, adj[src]) {
-            tam[src] += dfs(v);
+            if(val[src] == val[v]) {
+                dfs(v);
+            }
         }
+    };
 
-        return tam[src];
-    }; dfs(0);
+    for(int u = 0; u < N; u++) {
+        if(!vis[u]) {
+            components.eb(vi());
+            current++;
 
-    //? for(int u = 0; u < N; u++) dbg(u, adj[u]);
-    //? RAYA;
-    //? for(int u = 0; u < N; u++) dbg(u, tam[u]);
-
-    vi xd;
-    each(x, adj[0]) {
-        xd.eb(tam[x]);
+            dfs(u);
+        }
     }
-    sor(xd);
 
-    if(!xd.empty()) xd.pop_back();
-    int ans = accumulate(all(xd), 0) + 1;
-    ps(ans);
+    RAYA;
+    dbg(components);
+
+    map<int, int> idx;
+    int current_idx = -1;
+    int m = 0;
+    each(komp, components) {
+        current_idx++;
+        m++;
+
+        each(u, komp) {
+            idx[u] = current_idx;
+        }
+    }
+
+    RAYA;
+    dbg(idx);
+
+    vector<vi> adjacency(m);
+
+    for(int u = 0; u < N; u++) {
+        each(v, adj[u]) {
+            if(idx[u] == idx[v]) continue;
+            else {
+                assert(val[u] != val[v]);
+                if(val[u] < val[v]) {
+                    adjacency[idx[u]].eb(idx[v]);
+                } else {
+                    adjacency[idx[v]].eb(idx[u]);
+                }
+            }
+        }
+    }
+
+    //? We have a DAG
+    int from = idx[0];
+    int to = idx[N - 1];
+
+    RAYA;
+    for(int u = 0; u < m; u++) dbg(u, adjacency[u]);
+
+    dbg(from, to);
+
+    vb already(m + 5);
+    vl dp(m + 5);
+    function<ll(int)> solve = [&](int src) -> ll {
+        if(src == to) return 0LL;
+
+        if(already[src]) return dp[src];
+        already[src] = true;
+
+        ll ans = -BIG;
+        each(v, adjacency[src]) {
+            ckmax(ans, solve(v) + 1LL);
+        }
+        return dp[src] = ans;
+    };
+
+    ll ans = solve(from);
+    if(ans < 0) ps("0");
+    else {
+        ans++;
+        ps(ans);
+    }
 }
 
 

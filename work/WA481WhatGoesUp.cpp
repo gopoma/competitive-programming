@@ -9,15 +9,24 @@
 
 using namespace std;
 
+#ifdef LOCAL
+    #include "helpers/debug.h"
+#else
+    #define dbg(...)     0
+    #define chk(...)     0
+
+    #define RAYA         0
+#endif
+
 // building blocks
 using ll  = long long;
 using db  = long double; // or double, if TL is tight
 using str = string;      // yay python!
 
 //? priority_queue for minimum
-template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
+//? template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
 
-using ull  = unsigned long long;
+//? using ull  = unsigned long long;
 //? using i64  = long long;
 //? using u64  = uint64_t;
 //? using i128 = __int128;
@@ -149,100 +158,6 @@ tcTU > void safeErase(T &t, const U &u) {
 
 #define tcTUU tcT, class ...U
 
-inline namespace IO {
-#define SFINAE(x, ...)                                                         \
-	template <class, class = void> struct x : std::false_type {};              \
-	template <class T> struct x<T, std::void_t<__VA_ARGS__>> : std::true_type {}
-
-SFINAE(DefaultI, decltype(std::cin >> std::declval<T &>()));
-SFINAE(DefaultO, decltype(std::cout << std::declval<T &>()));
-SFINAE(IsTuple, typename std::tuple_size<T>::type);
-SFINAE(Iterable, decltype(std::begin(std::declval<T>())));
-
-template <auto &is> struct Reader {
-	template <class T> void Impl(T &t) {
-		if constexpr (DefaultI<T>::value) is >> t;
-		else if constexpr (Iterable<T>::value) {
-			for (auto &x : t) Impl(x);
-		} else if constexpr (IsTuple<T>::value) {
-			std::apply([this](auto &...args) { (Impl(args), ...); }, t);
-		} else static_assert(IsTuple<T>::value, "No matching type for read");
-	}
-	template <class... Ts> void read(Ts &...ts) { ((Impl(ts)), ...); }
-};
-
-template <class... Ts> void re(Ts &...ts) { Reader<cin>{}.read(ts...); }
-#define def(t, args...)                                                        \
-	t args;                                                                    \
-	re(args);
-
-template <auto &os, bool debug, bool print_nd> struct Writer {
-	string comma() const { return debug ? "," : ""; }
-	template <class T> constexpr char Space(const T &) const {
-		return print_nd && (Iterable<T>::value or IsTuple<T>::value) ? '\n'
-		                                                             : ' ';
-	}
-	template <class T> void Impl(T const &t) const {
-		if constexpr (DefaultO<T>::value) os << t;
-		else if constexpr (Iterable<T>::value) {
-			if (debug) os << '{';
-			int i = 0;
-			for (auto &&x : t)
-				((i++) ? (os << comma() << Space(x), Impl(x)) : Impl(x));
-			if (debug) os << '}';
-		} else if constexpr (IsTuple<T>::value) {
-			if (debug) os << '(';
-			std::apply(
-			    [this](auto const &...args) {
-				    int i = 0;
-				    (((i++) ? (os << comma() << " ", Impl(args)) : Impl(args)),
-				     ...);
-			    },
-			    t);
-			if (debug) os << ')';
-		} else static_assert(IsTuple<T>::value, "No matching type for print");
-	}
-	template <class T> void ImplWrapper(T const &t) const {
-		if (debug) os << "\033[0;31m";
-		Impl(t);
-		if (debug) os << "\033[0m";
-	}
-	template <class... Ts> void print(Ts const &...ts) const {
-		((Impl(ts)), ...);
-	}
-	template <class F, class... Ts>
-	void print_with_sep(const std::string &sep, F const &f,
-	                    Ts const &...ts) const {
-		ImplWrapper(f), ((os << sep, ImplWrapper(ts)), ...), os << '\n';
-	}
-	void print_with_sep(const std::string &) const { os << '\n'; }
-};
-
-template <class... Ts> void pr(Ts const &...ts) {
-	Writer<cout, false, true>{}.print(ts...);
-}
-template <class... Ts> void ps(Ts const &...ts) {
-	Writer<cout, false, true>{}.print_with_sep(" ", ts...);
-}
-}  // namespace IO
-
-inline namespace Debug {
-
-#ifdef LOCAL
-#include "helpers/debug.h"
-
-#define chk(...) if (!(__VA_ARGS__)) cerr << "\033[41m" << "Line(" << __LINE__ << ") -> function(" \
-	 << __FUNCTION__  << ") -> CHK FAILED: (" << #__VA_ARGS__ << ")" << "\033[0m" << "\n", exit(0);
-
-#define MACRO(code) do {code} while (false)
-#define RAYA MACRO(cerr << "\033[101m" << "================================" << "\033[0m" << endl;)
-#else
-#define dbg(...)
-
-#define chk(...)
-#define RAYA
-#endif
-
 const auto beg_time = std::chrono::high_resolution_clock::now();
 // https://stackoverflow.com/questions/47980498/accurate-c-c-clock-on-a-multi-core-processor-with-auto-overclock?noredirect=1&lq=1
 double time_elapsed() {
@@ -250,9 +165,6 @@ double time_elapsed() {
 	                                beg_time)
 	    .count();
 }
-}  // namespace Debug
-
-
 
 inline namespace FileIO {
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }
@@ -261,7 +173,7 @@ void setIO(str s = "") {
 	cin.tie(0)->sync_with_stdio(0);  // unsync C / C++ I/O streams
 	//? cout << fixed << setprecision(12);
     //? cerr << fixed << setprecision(12);
-	cin.exceptions(cin.failbit);
+	//? cin.exceptions(cin.failbit);
 	// throws exception when do smth illegal
 	// ex. try to read letter into int
 	if (sz(s)) setIn(s + ".in"), setOut(s + ".out");  // for old USACO
@@ -293,47 +205,110 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
+/**
+ * Description: 1D point update and range query where \texttt{cmb} is
+ 	* any associative operation. \texttt{seg[1]==query(0,N-1)}.
+ * Time: O(\log N)
+ * Source:
+	* http://codeforces.com/blog/entry/18051
+	* KACTL
+ * Verification: SPOJ Fenwick
+ * API: SegTree<node> tree; tree.init(int(n));
+ */
+
+tcT> struct SegTree { // cmb(ID,b) = b
+	// const T ID{}; T cmb(T a, T b) { return a+b; }
+    T ID{0LL}; T cmb(T a, T b) { return max(a, b); }
+	int n; V<T> seg;
+	void init(int _n) { // upd, query also work if n = _n
+		for (n = 1; n < _n; ) n *= 2;
+		seg.assign(2*n,ID); }
+	void pull(int p) { seg[p] = cmb(seg[2*p],seg[2*p+1]); }
+	void upd(int p, T val) { // set val at position p
+		seg[p += n] = val; for (p /= 2; p; p /= 2) pull(p); }
+	T query(int l, int r) {	// zero-indexed, inclusive
+		T ra = ID, rb = ID;
+		for (l += n, r += n+1; l < r; l /= 2, r /= 2) {
+			if (l&1) ra = cmb(ra,seg[l++]);
+			if (r&1) rb = cmb(seg[--r],rb);
+		}
+		return cmb(ra,rb);
+	}
+	/// int first_at_least(int lo, int val, int ind, int l, int r) { // if seg stores max across range
+	/// 	if (r < lo || val > seg[ind]) return -1;
+	/// 	if (l == r) return l;
+	/// 	int m = (l+r)/2;
+	/// 	int res = first_at_least(lo,val,2*ind,l,m); if (res != -1) return res;
+	/// 	return first_at_least(lo,val,2*ind+1,m+1,r);
+	/// }
+};
+// /here goes the template!
 //* /Template
 
 void solve() {
-    def(int, N);
+    ll val;
 
-    vector<vi> adj(N);
-    rep(N - 1) {
-        def(int, u, v); u--; v--;
-        dbg(u, v);
-
-        adj[u].eb(v);
-        adj[v].eb(u);
+    vl a;
+    while(cin >> val) {
+        a.eb(val);
     }
 
-    vb vis(N);
-    vi tam(N);
-    function<int(int)> dfs = [&](int src) -> int {
-        if(vis[src]) return 0;
-        vis[src] = true;
+    const int n = sz(a);
+    dbg(n);
+    dbg(a);
 
-        tam[src] = 1;
-        each(v, adj[src]) {
-            tam[src] += dfs(v);
+    map<ll, ll> forwards;
+    map<ll, ll> backwards;
+
+    {
+        vl tmp = a;
+        remDup(tmp);
+
+        const int m = sz(tmp);
+        for(int i = 0; i < m; i++) {
+            forwards[tmp[i]] = i + 1;
+            backwards[i + 1] = tmp[i];
         }
-
-        return tam[src];
-    }; dfs(0);
-
-    //? for(int u = 0; u < N; u++) dbg(u, adj[u]);
-    //? RAYA;
-    //? for(int u = 0; u < N; u++) dbg(u, tam[u]);
-
-    vi xd;
-    each(x, adj[0]) {
-        xd.eb(tam[x]);
     }
-    sor(xd);
 
-    if(!xd.empty()) xd.pop_back();
-    int ans = accumulate(all(xd), 0) + 1;
-    ps(ans);
+    vl a_comp = a;
+    each(x, a_comp) x = forwards[x];
+
+    assert(sz(a_comp) == sz(a));
+    dbg(a_comp);
+
+    assert(sz(forwards) == sz(backwards));
+    SegTree<ll> dp; dp.init(sz(forwards) + 5);
+
+    for(int i = 0; i < n; i++) {
+        ll go = dp.query(0, a_comp[i] - 1);
+
+        dp.upd(a_comp[i], go + 1);
+    }
+
+    ll length = dp.query(0, sz(forwards) + 4);
+    ll tar = length;
+    vl ans;
+    for(int i = n - 1; i >= 0; i--) {
+        ll current_length = dp.query(a_comp[i], a_comp[i]);
+        assert(current_length > 0);
+
+        if(current_length == tar) {
+            ans.eb(backwards[a_comp[i]]);
+            tar--;
+        }
+    }
+
+    reverse(all(ans));
+
+    cout << length << "\n";
+    cout << "-\n";
+
+    const int xd = sz(ans);
+    for(int i = 0; i < xd; i++) {
+        cout << ans[i];
+        if(i < xd - 1) cout << "\n";
+    }
 }
 
 
@@ -348,7 +323,8 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    ll t = 1; //? re(t);
+    ll t = 1;
+    //? cin >> t;
 
     FOR(i, 1, t + 1) {
         RAYA;

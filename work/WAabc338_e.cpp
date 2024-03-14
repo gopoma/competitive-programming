@@ -297,43 +297,13 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 void solve() {
     def(int, N);
+    vpi chords(N); re(chords);
 
-    vector<vi> adj(N);
-    rep(N - 1) {
-        def(int, u, v); u--; v--;
-        dbg(u, v);
-
-        adj[u].eb(v);
-        adj[v].eb(u);
+    dbg(N);
+    each(x, chords) {
+        dbg(x);
     }
-
-    vb vis(N);
-    vi tam(N);
-    function<int(int)> dfs = [&](int src) -> int {
-        if(vis[src]) return 0;
-        vis[src] = true;
-
-        tam[src] = 1;
-        each(v, adj[src]) {
-            tam[src] += dfs(v);
-        }
-
-        return tam[src];
-    }; dfs(0);
-
-    //? for(int u = 0; u < N; u++) dbg(u, adj[u]);
-    //? RAYA;
-    //? for(int u = 0; u < N; u++) dbg(u, tam[u]);
-
-    vi xd;
-    each(x, adj[0]) {
-        xd.eb(tam[x]);
-    }
-    sor(xd);
-
-    if(!xd.empty()) xd.pop_back();
-    int ans = accumulate(all(xd), 0) + 1;
-    ps(ans);
+    RAYA;
 }
 
 

@@ -296,43 +296,71 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(int, N);
+    def(int, H, W, K);
+    vs S(H); re(S);
 
-    vector<vi> adj(N);
-    rep(N - 1) {
-        def(int, u, v); u--; v--;
-        dbg(u, v);
+    dbg(H, W, K);
+    each(x, S) dbg(x);
+    RAYA;
 
-        adj[u].eb(v);
-        adj[v].eb(u);
-    }
+    vs go;
 
-    vb vis(N);
-    vi tam(N);
-    function<int(int)> dfs = [&](int src) -> int {
-        if(vis[src]) return 0;
-        vis[src] = true;
+    {
+        for(int i = 0; i < H; i++) {
+            str tmp;
+            for(int j = 0; j < W; j++) tmp.pb(S[i][j]);
 
-        tam[src] = 1;
-        each(v, adj[src]) {
-            tam[src] += dfs(v);
+            go.eb(tmp);
         }
 
-        return tam[src];
-    }; dfs(0);
+        for(int i = 0; i < W; i++) {
+            str tmp;
+            for(int j = 0;  j < H; j++) tmp.pb(S[j][i]);
 
-    //? for(int u = 0; u < N; u++) dbg(u, adj[u]);
-    //? RAYA;
-    //? for(int u = 0; u < N; u++) dbg(u, tam[u]);
-
-    vi xd;
-    each(x, adj[0]) {
-        xd.eb(tam[x]);
+            go.eb(tmp);
+        }
     }
-    sor(xd);
 
-    if(!xd.empty()) xd.pop_back();
-    int ans = accumulate(all(xd), 0) + 1;
+    each(x, go) dbg(x);
+    RAYA;
+
+    ll ans = BIG;
+    each(xd, go) {
+        const int m = sz(xd);
+
+        vl good(m);
+        vl bad(m);
+
+        for(int i = 0; i < m; i++) {
+            if(xd[i] == '.') good[i] = 0;
+            else if(xd[i] == 'o') good[i] = 1;
+            else {
+                assert(xd[i] == 'x');
+                bad[i] = 1;
+            }
+        }
+
+        for(int i = 1; i < m; i++) {
+            good[i] += good[i - 1];
+            bad[i] += bad[i - 1];
+        }
+
+        auto query = [](vl& arr, int left, int right) {
+            ll sum = arr[right];
+            if(0 <= left - 1) sum -= arr[left - 1];
+            return sum;
+        };
+
+        for(int i = 0; i < m - K + 1; i++) {
+            if(query(bad, i, i + K - 1) > 0) continue;
+            else {
+                ckmin(ans, K - query(good, i, i + K - 1));
+            }
+        }
+    }
+
+    if(ans == BIG) ans = -1;
+
     ps(ans);
 }
 

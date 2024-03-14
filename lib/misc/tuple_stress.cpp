@@ -3,7 +3,7 @@
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-//! #undef _GLIBCXX_DEBUG //? for Stress Testing
+#undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
@@ -295,45 +295,96 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* Template
 //* /Template
 
+// TODO: Fastest
+//? bool vis[60][60][60][60];
+//? int dist[60][60][60][60];
 void solve() {
     def(int, N);
+    vs S(N); re(S);
 
-    vector<vi> adj(N);
-    rep(N - 1) {
-        def(int, u, v); u--; v--;
-        dbg(u, v);
+    dbg(N);
+    each(x, S) dbg(x);
+    RAYA;
 
-        adj[u].eb(v);
-        adj[v].eb(u);
-    }
+    auto isValid = [&](int x, int y) {
+        return (0 <= x && x < N) && (0 <= y && y < N);
+    };
 
-    vb vis(N);
-    vi tam(N);
-    function<int(int)> dfs = [&](int src) -> int {
-        if(vis[src]) return 0;
-        vis[src] = true;
+    auto withoutObstacle = [&](int x, int y) {
+        return S[x][y] != '#';
+    };
 
-        tam[src] = 1;
-        each(v, adj[src]) {
-            tam[src] += dfs(v);
+    //? Get Players
+    vpi players;
+    for(int i = 0; i < N; i++) {
+        for(int j = 0; j < N; j++) {
+            if(S[i][j] == 'P') {
+                players.eb(i, j);
+            }
         }
-
-        return tam[src];
-    }; dfs(0);
-
-    //? for(int u = 0; u < N; u++) dbg(u, adj[u]);
-    //? RAYA;
-    //? for(int u = 0; u < N; u++) dbg(u, tam[u]);
-
-    vi xd;
-    each(x, adj[0]) {
-        xd.eb(tam[x]);
     }
-    sor(xd);
+    assert(sz(players));
+    dbg(players);
 
-    if(!xd.empty()) xd.pop_back();
-    int ans = accumulate(all(xd), 0) + 1;
-    ps(ans);
+    vi start{
+        players[0].f, players[0].s,
+        players[1].f, players[1].s
+    };
+
+    deque<vi> q;
+    q.eb(start);
+
+    vector<vector<vector<vb>>> vis(N, vector<vector<vb>>(N, vector<vb>(N, vb(N))));
+    vis[start[0]][start[1]][start[2]][start[3]] = true;
+
+    //? int dist[60][60][60][60]{-1};
+    vector<vector<vector<vi>>> dist(N, vector<vector<vi>>(N, vector<vi>(N, vi(N))));
+    dist[start[0]][start[1]][start[2]][start[3]] = 0;
+
+    while(!q.empty()) {
+        vi current = q.ft; q.pop_front();
+        int x1 = current[0];
+        int y1 = current[1];
+        int x2 = current[2];
+        int y2 = current[3];
+
+        for(int k = 0; k < 4; k++) {
+            assert(isValid(x1, y1) && isValid(x2, y2));
+
+            int new_x1 = x1 + dx[k];
+            int new_y1 = y1 + dy[k];
+            int new_x2 = x2 + dx[k];
+            int new_y2 = y2 + dy[k];
+
+            if(!isValid(new_x1, new_y1) || !withoutObstacle(new_x1, new_y1)) {
+                new_x1 = x1;
+                new_y1 = y1;
+            }
+
+            if(!isValid(new_x2, new_y2) || !withoutObstacle(new_x2, new_y2)) {
+                new_x2 = x2;
+                new_y2 = y2;
+            }
+
+            assert(isValid(new_x1, new_y1) && isValid(new_x2, new_y2));
+
+            if(!vis[new_x1][new_y1][new_x2][new_y2]) {
+                vis[new_x1][new_y1][new_x2][new_y2] = true;
+
+                dist[new_x1][new_y1][new_x2][new_y2] = dist[x1][y1][x2][y2] + 1;
+
+                if(mp(new_x1, new_y1) == mp(new_x2, new_y2)) {
+                    ps(dist[new_x1][new_y1][new_x2][new_y2]);
+                    return;
+                }
+
+                vi tmp{new_x1, new_y1, new_x2, new_y2};
+                q.eb(tmp);
+            }
+        }
+    }
+
+    ps("-1");
 }
 
 
