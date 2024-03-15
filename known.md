@@ -76,3 +76,5 @@ for (i = 1; i <= n; i++)
 * Both `Lazy Segment Tree` templates require that size must be a power of $2$.
 
 * `Simulate your algorithm in paper` >:v
+
+* When working nearly `BIG`, ensure you enable `trapv` if you don't know where is the WA.
