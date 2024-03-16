@@ -78,3 +78,5 @@ for (i = 1; i <= n; i++)
 * `Simulate your algorithm in paper` >:v
 
 * When working nearly `BIG`, ensure you enable `trapv` if you don't know where is the WA.
+
+* `Sort` as many times as you can.

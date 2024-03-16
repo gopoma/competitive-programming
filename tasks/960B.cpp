@@ -205,96 +205,40 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
-/**
- * Description: 1D range increment and sum query.
- * Source: USACO Counting Haybales
- 	* https://codeforces.com/blog/entry/82400
- * Verification: USACO Counting Haybales
- */
-
-struct LazySeg {
-	struct F { // lazy update
-		ll inc = 0;
-		F() {}
-		F(int x) { inc = x; }
-		F& operator*=(const F& a) { inc += a.inc; return *this; }
-	}; V<F> lazy;
-	struct T { // data you need to store for each interval
-		ll sz = 1, mn = BIG, sum = 0;
-		T() {}
-		T(int x) { mn = sum = x; }
-		friend T operator+(const T& a, const T& b) {
-			T res; res.sz = a.sz+b.sz;
-			res.mn = min(a.mn,b.mn), res.sum = a.sum+b.sum;
-			return res;
-		}
-		T& operator*=(const F& a) {
-			mn += a.inc; sum += (ll)sz*a.inc; return *this; }
-	}; V<T> seg;
-	int SZ = 1;
-	void init(const V<T>& _seg) {
-		while (SZ < sz(_seg)) SZ *= 2;
-		seg.rsz(2*SZ); lazy.rsz(2*SZ);
-		F0R(i,SZ) seg[SZ+i] = _seg[i];
-		ROF(i,1,SZ) pull(i);
-	}
-	void push(int ind) { /// modify values for current node
-		seg[ind] *= lazy[ind];
-		if (ind < SZ) F0R(i,2) lazy[2*ind+i] *= lazy[ind];
-		lazy[ind] = F();
-	} // recalc values for current node
-	void pull(int ind) { seg[ind] = seg[2*ind]+seg[2*ind+1]; }
-	void upd(int lo, int hi, F inc, int ind, int L, int R) {
-		push(ind); if (hi < L || R < lo) return;
-		if (lo <= L && R <= hi) {
-			lazy[ind] = inc; push(ind); return; }
-		int M = (L+R)/2; upd(lo,hi,inc,2*ind,L,M);
-		upd(lo,hi,inc,2*ind+1,M+1,R); pull(ind);
-	}
-	void upd(int lo, int hi, int inc) { upd(lo,hi,{inc},1,0,SZ-1); }
-	T query(int lo, int hi, int ind, int L, int R) {
-		push(ind); if (lo > R || L > hi) return T();
-		if (lo <= L && R <= hi) return seg[ind];
-		int M = (L+R)/2;
-		return query(lo,hi,2*ind,L,M)+query(lo,hi,2*ind+1,M+1,R);
-	}
-	T query(int lo, int hi) { return query(lo,hi,1,0,SZ-1); }
-};
 //* /Template
 
 void solve() {
-    int n, q; cin >> n >> q;
-    vl a(n); each(x, a) cin >> x;
+    ll n, k1, k2; cin >> n >> k1 >> k2;
+    vl a(n), b(n);
+    each(x, a) cin >> x;
+    each(x, b) cin >> x;
 
-    dbg(n, q);
+    dbg(n, k1, k2);
     dbg(a);
+    dbg(b);
 
-    vector<LazySeg::T> arr;
-    for(int i = 0; i < n; i++) arr.eb(LazySeg::T(0));
-
-    int m = 1;
-    while(m < n) m *= 2;
-    while(sz(arr) < m) arr.eb(LazySeg::T(0));
-
-    LazySeg st; st.init(arr);
-
-    rep(q) {
-        int l, r; cin >> l >> r; l--; r--;
-        dbg(l, r);
-
-        st.upd(l, r, 1);
+    multiset<pl> mm;
+    for(int i = 0; i < n; i++) {
+        ll val = abs(a[i] - b[i]);
+        mm.emplace(val * val, val);
     }
 
-    vl hist;
-    for(int i = 0; i < n; i++) hist.eb(st.query(i, i).sum);
+    rep(k1 + k2) {
+        auto [val, dist] = *mm.rbegin();
+        safeErase(mm, mp(val, dist));
 
-    dbg(hist);
+        assert(dist >= 0);
 
-    sort(rall(a));
-    sort(rall(hist));
+        if(dist == 0) {
+            mm.emplace(1LL, dist + 1);
+        } else {
+            mm.emplace((dist - 1LL) * (dist - 1LL), dist - 1LL);
+        }
+    }
 
     ll ans = 0;
-    for(int i = 0; i < n; i++) ans += a[i] * hist[i];
+    each(x, mm) ans += x.f;
+
     cout << ans << "\n";
 }
 

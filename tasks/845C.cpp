@@ -260,42 +260,72 @@ struct LazySeg {
 	}
 	T query(int lo, int hi) { return query(lo,hi,1,0,SZ-1); }
 };
+
 //* /Template
 
 void solve() {
-    int n, q; cin >> n >> q;
-    vl a(n); each(x, a) cin >> x;
+    int n; cin >> n;
 
-    dbg(n, q);
-    dbg(a);
+    vpi shows;
+    vi values;
+    rep(n) {
+        int l, r; cin >> l >> r;
+
+        shows.eb(l, r);
+
+        values.eb(l);
+        values.eb(r);
+    }
+
+    remDup(values);
+
+    dbg(n);
+    dbg(shows);
+    dbg(values);
+
+    map<int, int> forwards;
+    {
+        const int m = sz(values);
+        for(int i = 0; i < m; i++) {
+            forwards[values[i]] = i;
+        }
+    }
+
+    each(x, shows) {
+        x.f = forwards[x.f];
+        x.s = forwards[x.s];
+    }
+
+    dbg(shows);
+
+    const int l = sz(values);
 
     vector<LazySeg::T> arr;
-    for(int i = 0; i < n; i++) arr.eb(LazySeg::T(0));
+    rep(l) arr.eb(LazySeg::T(0));
 
     int m = 1;
-    while(m < n) m *= 2;
+    while(m < l) m *= 2;
     while(sz(arr) < m) arr.eb(LazySeg::T(0));
 
     LazySeg st; st.init(arr);
+    LazySeg st2; st2.init(arr);
 
-    rep(q) {
-        int l, r; cin >> l >> r; l--; r--;
-        dbg(l, r);
-
-        st.upd(l, r, 1);
+    sor(shows); //? XDDD
+    each(x, shows) {
+        assert(x.f < x.s);
+        if(st.query(x.f, x.s).sum == 0) {
+            st.upd(x.f, x.s, 1);
+        } else {
+            if(st2.query(x.f, x.s).sum == 0) {
+                st2.upd(x.f, x.s, 1);
+            } else {
+                cout << "NO\n";
+                return;
+            }
+        }
     }
 
-    vl hist;
-    for(int i = 0; i < n; i++) hist.eb(st.query(i, i).sum);
-
-    dbg(hist);
-
-    sort(rall(a));
-    sort(rall(hist));
-
-    ll ans = 0;
-    for(int i = 0; i < n; i++) ans += a[i] * hist[i];
-    cout << ans << "\n";
+    cout << "YES\n";
 }
 
 

@@ -206,96 +206,83 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 //* Template
 /**
- * Description: 1D range increment and sum query.
- * Source: USACO Counting Haybales
- 	* https://codeforces.com/blog/entry/82400
- * Verification: USACO Counting Haybales
+ * Description: 1D point update and range query where \texttt{cmb} is
+ 	* any associative operation. \texttt{seg[1]==query(0,N-1)}.
+ * Time: O(\log N)
+ * Source:
+	* http://codeforces.com/blog/entry/18051
+	* KACTL
+ * Verification: SPOJ Fenwick
+ * API: SegTree<node> tree; tree.init(int(n));
  */
 
-struct LazySeg {
-	struct F { // lazy update
-		ll inc = 0;
-		F() {}
-		F(int x) { inc = x; }
-		F& operator*=(const F& a) { inc += a.inc; return *this; }
-	}; V<F> lazy;
-	struct T { // data you need to store for each interval
-		ll sz = 1, mn = BIG, sum = 0;
-		T() {}
-		T(int x) { mn = sum = x; }
-		friend T operator+(const T& a, const T& b) {
-			T res; res.sz = a.sz+b.sz;
-			res.mn = min(a.mn,b.mn), res.sum = a.sum+b.sum;
-			return res;
+tcT> struct SegTree { // cmb(ID,b) = b
+	// const T ID{}; T cmb(T a, T b) { return a+b; }
+    T ID{0LL}; T cmb(T a, T b) { return gcd(a, b); }
+	int n; V<T> seg;
+	void init(int _n) { // upd, query also work if n = _n
+		for (n = 1; n < _n; ) n *= 2;
+		seg.assign(2*n,ID); }
+	void pull(int p) { seg[p] = cmb(seg[2*p],seg[2*p+1]); }
+	void upd(int p, T val) { // set val at position p
+		seg[p += n] = val; for (p /= 2; p; p /= 2) pull(p); }
+	T query(int l, int r) {	// zero-indexed, inclusive
+		T ra = ID, rb = ID;
+		for (l += n, r += n+1; l < r; l /= 2, r /= 2) {
+			if (l&1) ra = cmb(ra,seg[l++]);
+			if (r&1) rb = cmb(seg[--r],rb);
 		}
-		T& operator*=(const F& a) {
-			mn += a.inc; sum += (ll)sz*a.inc; return *this; }
-	}; V<T> seg;
-	int SZ = 1;
-	void init(const V<T>& _seg) {
-		while (SZ < sz(_seg)) SZ *= 2;
-		seg.rsz(2*SZ); lazy.rsz(2*SZ);
-		F0R(i,SZ) seg[SZ+i] = _seg[i];
-		ROF(i,1,SZ) pull(i);
+		return cmb(ra,rb);
 	}
-	void push(int ind) { /// modify values for current node
-		seg[ind] *= lazy[ind];
-		if (ind < SZ) F0R(i,2) lazy[2*ind+i] *= lazy[ind];
-		lazy[ind] = F();
-	} // recalc values for current node
-	void pull(int ind) { seg[ind] = seg[2*ind]+seg[2*ind+1]; }
-	void upd(int lo, int hi, F inc, int ind, int L, int R) {
-		push(ind); if (hi < L || R < lo) return;
-		if (lo <= L && R <= hi) {
-			lazy[ind] = inc; push(ind); return; }
-		int M = (L+R)/2; upd(lo,hi,inc,2*ind,L,M);
-		upd(lo,hi,inc,2*ind+1,M+1,R); pull(ind);
-	}
-	void upd(int lo, int hi, int inc) { upd(lo,hi,{inc},1,0,SZ-1); }
-	T query(int lo, int hi, int ind, int L, int R) {
-		push(ind); if (lo > R || L > hi) return T();
-		if (lo <= L && R <= hi) return seg[ind];
-		int M = (L+R)/2;
-		return query(lo,hi,2*ind,L,M)+query(lo,hi,2*ind+1,M+1,R);
-	}
-	T query(int lo, int hi) { return query(lo,hi,1,0,SZ-1); }
+	/// int first_at_least(int lo, int val, int ind, int l, int r) { // if seg stores max across range
+	/// 	if (r < lo || val > seg[ind]) return -1;
+	/// 	if (l == r) return l;
+	/// 	int m = (l+r)/2;
+	/// 	int res = first_at_least(lo,val,2*ind,l,m); if (res != -1) return res;
+	/// 	return first_at_least(lo,val,2*ind+1,m+1,r);
+	/// }
 };
+// /here goes the template!
 //* /Template
 
 void solve() {
-    int n, q; cin >> n >> q;
+    int n; cin >> n;
     vl a(n); each(x, a) cin >> x;
 
-    dbg(n, q);
+    dbg(n);
     dbg(a);
 
-    vector<LazySeg::T> arr;
-    for(int i = 0; i < n; i++) arr.eb(LazySeg::T(0));
+    ll g = 0LL;
+    each(x, a) g = gcd(g, x);
 
-    int m = 1;
-    while(m < n) m *= 2;
-    while(sz(arr) < m) arr.eb(LazySeg::T(0));
+    if(g > 1LL) cout << "-1\n";
+    else {
+        ll ones = 0LL;
+        each(x, a) ones += (x == 1LL);
 
-    LazySeg st; st.init(arr);
+        if(ones > 0LL) {
+            ll ans = n - ones;
+            cout << ans << "\n";
+        } else {
+            SegTree<ll> st; st.init(n);
+            for(int i = 0; i < n; i++) st.upd(i, a[i]);
 
-    rep(q) {
-        int l, r; cin >> l >> r; l--; r--;
-        dbg(l, r);
+            ll ans = BIG;
+            for(int i = 0; i < n; i++) {
+                for(int j = i + 1; j < n; j++) {
+                    assert(i < j);
 
-        st.upd(l, r, 1);
+                    if(st.query(i, j) == 1LL) {
+                        ll val = ll(abs(j - i)) + n - 1LL;
+                        dbg(i, j, n, val);
+                        ckmin(ans, val);
+                    }
+                }
+            }
+
+            cout << ans << "\n";
+        }
     }
-
-    vl hist;
-    for(int i = 0; i < n; i++) hist.eb(st.query(i, i).sum);
-
-    dbg(hist);
-
-    sort(rall(a));
-    sort(rall(hist));
-
-    ll ans = 0;
-    for(int i = 0; i < n; i++) ans += a[i] * hist[i];
-    cout << ans << "\n";
 }
 
 
