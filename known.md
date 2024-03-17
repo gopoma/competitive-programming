@@ -79,4 +79,6 @@ for (i = 1; i <= n; i++)
 
 * When working nearly `BIG`, ensure you enable `trapv` if you don't know where is the WA.
 
-* `Sort` as many times as you can.
+* `Sort` input if you can and then do your work!.
+
+* do `Coordinate Compression` when working with segments and Lazy Segment Tree, or check carefully the constraints in case of `multitest`.
