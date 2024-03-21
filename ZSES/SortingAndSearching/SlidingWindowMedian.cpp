@@ -293,31 +293,92 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
+/**
+ * Author: Lukas Polacek
+ * Date: 2009-10-30
+ * License: CC0
+ * Source: folklore/TopCoder
+ * Description: Computes partial sums a[0] + a[1] + ... + a[pos - 1], and updates single elements a[i],
+ * taking the difference between the old and new value.
+ * Time: Both operations are $O(\log N)$.
+ * Status: Stress-tested
+ */
+
+tcT> struct BIT {
+	int N; V<T> data;
+	void init(int _N) { N = _N; data.rsz(N); }
+	void add(int p, T x) { for (++p;p<=N;p+=p&-p) data[p-1] += x; }
+	T sum(int l, int r) { return sum(r+1)-sum(l); }
+	T sum(int r) { T s = 0; for(;r;r-=r&-r)s+=data[r-1]; return s; }
+	int lower_bound(T sum) {
+		if (sum <= 0) return -1;
+		int pos = 0;
+		for (int pw = 1<<25; pw; pw >>= 1) {
+			int npos = pos+pw;
+			if (npos <= N && data[npos-1] < sum)
+				pos = npos, sum -= data[pos-1];
+		}
+		return pos;
+	}
+};
+
 //* /Template
 
 void solve() {
-    def(int, n);
+    def(int, n, k);
     vi x(n); re(x);
 
-    dbg(n);
+    dbg(n, k);
     dbg(x);
 
-    const int mx = *max_element(all(x));
-    vi cnt(mx + 1);
-
-    each(e, x) cnt[e]++;
-
-    for(int d = mx; d >= 1; d--) {
-        int u = 0;
-        for(int e = d; e <= mx; e += d) {
-            u += cnt[e];
+    //? Coordinate Compression
+    int mx = -79;
+    map<int, int> forwards;
+    map<int, int> backwards;
+    {
+        vi tmp = x;
+        remDup(tmp);
+        mx = sz(tmp);
+        for(int i = 0; i < mx; i++) {
+            forwards[tmp[i]] = i;
+            backwards[i] = tmp[i];
         }
-        if(u >= 2) {
-            ps(d);
-            return;
-        }
+
+        each(e, x) e = forwards[e];
     }
-    assert(false);
+    assert(mx != -79);
+    dbg(x);
+    dbg(forwards);
+    dbg(backwards);
+
+    BIT<int> st; st.init(mx + 5);
+    vi ans;
+
+    int tar = int(cdiv(ll(k), 2LL));
+    auto work = [&]() {
+        int idx = st.lower_bound(tar);
+        ans.eb(backwards[idx]);
+    };
+
+    {
+        for(int i = 0; i < k; i++) {
+            st.add(x[i], 1);
+        }
+
+        work();
+    }
+
+    for(int i = k; i < n; i++) {
+        //? add back
+        st.add(x[i], 1);
+
+        //? remove front
+        st.add(x[i - k], -1);
+
+        work();
+    }
+
+    ps(ans);
 }
 
 

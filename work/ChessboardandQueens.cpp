@@ -296,28 +296,67 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(int, n);
-    vi x(n); re(x);
+    const int n = 8;
+    vs S(n); re(S);
 
     dbg(n);
-    dbg(x);
+    each(x, S) dbg(x);
 
-    const int mx = *max_element(all(x));
-    vi cnt(mx + 1);
+    vector<vb> banned(n, vb(n));
+    for(int i = 0; i < n; i++) for(int j = 0; j < n; j++) if(S[i][j] == '*') banned[i][j] = true;
 
-    each(e, x) cnt[e]++;
+    RAYA;
+    each(x, banned) dbg(x);
 
-    for(int d = mx; d >= 1; d--) {
-        int u = 0;
-        for(int e = d; e <= mx; e += d) {
-            u += cnt[e];
+    auto check = [&](int x, int y) {
+        return (0 <= x && x < n) && (0 <= y && y < n);
+    };
+
+    auto apply = [&](vector<vb>& used, int i, int j, pi dir) {
+        auto [ddx, ddy] = dir;
+
+        while(check(i, j)) {
+            used[i][j] = true;
+
+            i += ddx;
+            j += ddy;
         }
-        if(u >= 2) {
-            ps(d);
-            return;
+    };
+
+    set<vpi> ans;
+    function<void(int, vector<vb>, vpi)> backtrack = [&](int step, vector<vb> used, vpi current) {
+        dbg(step, current, sz(ans));
+        if(step == 8) {
+            sor(current);
+            ans.emplace(current);
         }
-    }
-    assert(false);
+        else {
+            for(int i = 0; i < n; i++) {
+                for(int j = 0; j < n; j++) {
+                    if(!used[i][j] && !banned[i][j]) {
+                        vector<vb> new_used = used;
+
+                        for(int k = 0; k < 8; k++) {
+                            apply(new_used, i, j, mp(dddx[k], dddy[k]));
+                        }
+
+                        vpi new_current = current;
+                        new_current.eb(i, j);
+
+                        backtrack(step + 1, new_used, new_current);
+                    }
+                }
+            }
+        }
+    };
+
+    vector<vb> tmp(n, vb(n));
+    vpi tmp2;
+    backtrack(0, tmp, tmp2);
+
+    int ways = sz(ans);
+    dbg(ways);
+    ps(ways);
 }
 
 
