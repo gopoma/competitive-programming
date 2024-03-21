@@ -1,8 +1,10 @@
 //? template: https://github.com/bqi343/cp-notebook/blob/master/Implementations/content/contest/TemplateLong.cpp
 // sometimes pragmas don't work, if so, just comment it!
-//? #pragma GCC optimize ("Ofast")
+#pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx2")
 //! #pragma GCC optimize ("trapv")
+
+#undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h>
 
@@ -311,8 +313,8 @@ void solve() {
 
     vi p(n); re(p); each(x, p) x--;
 
-    dbg(go);
-    dbg(p);
+    //? dbg(go);
+    //? dbg(p);
 
     vi ans(n);
     for(int i = 0; i < n; i++) {
@@ -337,7 +339,10 @@ signed main() {
     startTime = clock();
 
     // read read read
-    setIO();
+    //? setIO();
+    setIn("ListRemovalsTLE.in");
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
 
     ll t = 1LL;
     //?cin >> t;

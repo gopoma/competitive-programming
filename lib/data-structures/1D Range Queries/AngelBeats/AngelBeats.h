@@ -575,7 +575,7 @@ int main() {
         switch(t) {
         case 0: {
             LL(x);
-            seg.range_chmin(l, r, x);
+            seg.range_chmin(l, r, x); // TODO [l, r[
             break;
         }
         case 1: {
