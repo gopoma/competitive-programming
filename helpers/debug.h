@@ -17,7 +17,7 @@ using str = string; // yay python!
 //? using u64 = uint64_t; //? for Number Theory related
 //? using i128 = __int128; //? for Number Theory related
 //? using u128 = __uint128_t; //? for Number Theory related
-template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>; // minima
+//? template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>; // minima
 
 //? pairs
 using pi = pair<int,int>;
