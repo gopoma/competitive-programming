@@ -4,7 +4,7 @@ using db  = long double; // or double, if TL is tight
 using str = string;      // yay python!
 
 //? priority_queue for minimum
-//? template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
+template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
 
 //? using ull  = unsigned long long;
 //? using i64  = long long;
