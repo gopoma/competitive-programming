@@ -296,36 +296,42 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(int, n, m);
+    def(ll, n, m, v);
+    dbg(n, m, v);
 
-    vector<vb> banned(n, vb(n));
-    rep(m) {
-        def(int, a, b); a--; b--;
+    //? x - (v - ...)
+    //? 1 - (n - 1)
 
-        banned[a][b] = true;
-        banned[b][a] = true;
-    }
+    ll free = 1LL;
+    ll k = fdiv((n - 1LL) * (n - 2LL), 2LL);
+    ll mx = free + k;
+    if(m < n - 1 || mx < m) ps("-1");
+    else {
+        int banned = 1; if(banned == v) banned++;
+        dbg(banned);
 
-    for(int u = 0; u < n; u++) {
-        bool ok = true;
+        ps(banned, v);
 
-        for(int v = 0; v < n; v++) {
-            if(u == v) continue;
+        ll cnt = 0;
+        #define check if(cnt == m - 1) { break; }
+        for(ll x = 1; x <= n; x++) {
+            check
 
-            ok &= !banned[u][v];
-        }
+            if(x == banned) continue;
+            for(ll y = x + 1; y <= n; y++) {
+                check
 
-        if(ok) {
-            ps(n - 1);
-            for(int v = 0; v < n; v++) {
-                if(u == v) continue;
+                if(y == banned) continue;
 
-                ps(u + 1, v + 1);
+                ps(x, y);
+                cnt++;
+
+                check
             }
-            return;
+
+            check
         }
     }
-    assert(false);
 }
 
 

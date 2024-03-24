@@ -15,9 +15,9 @@ using db  = long double; // or double, if TL is tight
 using str = string;      // yay python!
 
 //? priority_queue for minimum
-//? template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
+template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
 
-//? using ull  = unsigned long long;
+using ull  = unsigned long long;
 //? using i64  = long long;
 //? using u64  = uint64_t;
 //? using i128 = __int128;
@@ -227,26 +227,9 @@ template <class... Ts> void ps(Ts const &...ts) {
 }  // namespace IO
 
 inline namespace Debug {
-template <typename... Args> void err(Args... args) {
-	Writer<cerr, true, false>{}.print_with_sep(" | ", args...);
-}
-template <typename... Args> void errn(Args... args) {
-	Writer<cerr, true, true>{}.print_with_sep(" | ", args...);
-}
-
-void err_prefix(str func, int line, string args) {
-	cerr << "\033[0;31m\u001b[1mDEBUG\033[0m"
-	     << " | "
-	     << "\u001b[34m" << func << "\033[0m"
-	     << ":"
-	     << "\u001b[34m" << line << "\033[0m"
-	     << " - "
-	     << "[" << args << "] = ";
-}
 
 #ifdef LOCAL
-#define dbg(args...) err_prefix(__FUNCTION__, __LINE__, #args), err(args)
-#define dbgn(args...) err_prefix(__FUNCTION__, __LINE__, #args), errn(args)
+#include "helpers/debug.h"
 
 #define chk(...) if (!(__VA_ARGS__)) cerr << "\033[41m" << "Line(" << __LINE__ << ") -> function(" \
 	 << __FUNCTION__  << ") -> CHK FAILED: (" << #__VA_ARGS__ << ")" << "\033[0m" << "\n", exit(0);
@@ -255,7 +238,6 @@ void err_prefix(str func, int line, string args) {
 #define RAYA MACRO(cerr << "\033[101m" << "================================" << "\033[0m" << endl;)
 #else
 #define dbg(...)
-#define dbgn(args...)
 
 #define chk(...)
 #define RAYA
@@ -316,45 +298,38 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 void solve() {
     def(int, n, m);
 
-    vi deg(n, 0);
-    vector<vb> mat(n, vb(n, false));
-
-    vpi edges;
+    vpl edges;
+    vector<vb> adj(n, vb(n));
+    vl degree(n);
     rep(m) {
         def(int, a, b); a--; b--;
-        if(a > b) swap(a, b);
 
-        mat[a][b] = true;
-        mat[b][a] = true;
+        edges.eb(a, b);
 
-        edges.eb(mp(a, b));
+        adj[a][b] = true;
+        adj[b][a] = true;
 
-        deg[a]++;
-        deg[b]++;
+        degree[a]++;
+        degree[b]++;
     }
 
-    for(int u = 0; u < n; u++) deg[u] = max(0, deg[u] - 2);
-
-    bool ok = false;
     ll ans = BIG;
-    for(int i = 0; i < m; i++) {
-        for(int j = i + 1; j < m; j++) {
-            vi V;
-            V.eb(edges[i].f); V.eb(edges[i].s);
-            V.eb(edges[j].f); V.eb(edges[j].s);
-            remDup(V);
+    each(e, edges) {
+        auto [u, v] = e;
+        assert(adj[u][v]);
 
-            if(sz(V) == 3) {
-                if(mat[V[0]][V[1]] && mat[V[1]][V[2]] && mat[V[2]][V[0]]) {
-                    ok = true;
-                    ckmin(ans, ll(deg[V[0]]) + ll(deg[V[1]]) + ll(deg[V[2]]));
-                }
+        for(int w = 0; w < n; w++) {
+            if(w != u && w != v && adj[w][u] && adj[w][v]) {
+                assert(degree[u] >= 2);
+                assert(degree[v] >= 2);
+                assert(degree[w] >= 2);
+                ckmin(ans, degree[u] + degree[v] + degree[w] - 6);
             }
         }
     }
 
-    if(!ok) ps(-1);
-    else ps(ans);
+    if(ans == BIG) ans = -1;
+    ps(ans);
 }
 
 

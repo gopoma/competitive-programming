@@ -295,39 +295,60 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* Template
 //* /Template
 
-void solve() {
-    def(int, n, m);
+void brute() {
+    set<ll> can;
+    for(ll b = 1; b <= 200; b++) {
+        for(ll a = 1; a <= 200; a++) {
+            if(b <= a) continue;
 
-    vector<vb> banned(n, vb(n));
-    rep(m) {
-        def(int, a, b); a--; b--;
-
-        banned[a][b] = true;
-        banned[b][a] = true;
-    }
-
-    for(int u = 0; u < n; u++) {
-        bool ok = true;
-
-        for(int v = 0; v < n; v++) {
-            if(u == v) continue;
-
-            ok &= !banned[u][v];
-        }
-
-        if(ok) {
-            ps(n - 1);
-            for(int v = 0; v < n; v++) {
-                if(u == v) continue;
-
-                ps(u + 1, v + 1);
-            }
-            return;
+            ll x = (b - a) * (b + a);
+            can.emplace(x);
         }
     }
-    assert(false);
+
+    dbg(*can.begin());
+    safeErase(can, *can.begin());
+    dbg(*can.begin());
+    safeErase(can, *can.begin());
+
+    vl go;
+    each(x, can) go.eb(x);
+
+    dbg(sz(go));
+
+    const int m = sz(go);
+    for(int i = 0; i < m; i += 3) {
+        ll a = go[i];
+        ll b = go[i + 1];
+        ll c = go[i + 2];
+
+        dbg(a,b,c);
+
+        chk(a + 1 == b);
+        chk(b + 1 == c);
+    }
 }
 
+void solve() {
+    def(ll, N);
+    dbg(N);
+
+    if(N == 1) ps(3);
+    else if(N == 2) ps(5);
+    else {
+        N -= 2;
+        dbg(N);
+
+        //? 1 2 3 -> 1
+        //? 4 5 6 -> 2
+        //? 7 8 9 -> 3
+        ll n = cdiv(N, 3LL);
+        ll L = 4LL*n + 3LL;
+
+        ll ans = L + (N - 1LL) % 3LL;
+        ps(ans);
+    }
+}
 
 //? Generator
 int rng_int(int L, int R) { assert(L <= R);
@@ -340,7 +361,7 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    ll t = 1; //? re(t);
+    ll t = 1;
 
     FOR(i, 1, t + 1) {
         RAYA;

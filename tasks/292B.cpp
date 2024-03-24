@@ -298,34 +298,22 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 void solve() {
     def(int, n, m);
 
-    vector<vb> banned(n, vb(n));
+    vi degree(n);
     rep(m) {
-        def(int, a, b); a--; b--;
+        def(int, x, y); x--; y--;
 
-        banned[a][b] = true;
-        banned[b][a] = true;
+        degree[x]++;
+        degree[y]++;
     }
 
-    for(int u = 0; u < n; u++) {
-        bool ok = true;
+    for(int u = 0; u < n; u++) dbg(u, degree[u]);
 
-        for(int v = 0; v < n; v++) {
-            if(u == v) continue;
+    map<int, int> hist; each(x, degree) hist[x]++;
 
-            ok &= !banned[u][v];
-        }
-
-        if(ok) {
-            ps(n - 1);
-            for(int v = 0; v < n; v++) {
-                if(u == v) continue;
-
-                ps(u + 1, v + 1);
-            }
-            return;
-        }
-    }
-    assert(false);
+    if(hist[n - 1] == 1 && hist[1] == n - 1) ps("star topology");
+    else if(hist[1] == 2 && hist[2] == n - 2) ps("bus topology");
+    else if(hist[2] == n) ps("ring topology");
+    else ps("unknown topology");
 }
 
 

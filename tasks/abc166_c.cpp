@@ -296,36 +296,30 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(int, n, m);
+    def(int, N, M);
+    vl H(N); re(H);
 
-    vector<vb> banned(n, vb(n));
-    rep(m) {
-        def(int, a, b); a--; b--;
+    dbg(N, M);
+    dbg(H);
 
-        banned[a][b] = true;
-        banned[b][a] = true;
-    }
+    vb good(N, true);
+    rep(M) {
+        def(int, A, B); A--; B--;
+        dbg(A, B);
 
-    for(int u = 0; u < n; u++) {
-        bool ok = true;
+        if(H[A] > H[B]) swap(A, B);
 
-        for(int v = 0; v < n; v++) {
-            if(u == v) continue;
-
-            ok &= !banned[u][v];
-        }
-
-        if(ok) {
-            ps(n - 1);
-            for(int v = 0; v < n; v++) {
-                if(u == v) continue;
-
-                ps(u + 1, v + 1);
-            }
-            return;
+        //? A <= B
+        if(H[A] == H[B]) {
+            good[A] = false;
+            good[B] = false;
+        } else {
+            good[A] = false;
         }
     }
-    assert(false);
+
+    ll ans = count(all(good), true);
+    ps(ans);
 }
 
 

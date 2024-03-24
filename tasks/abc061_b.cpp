@@ -296,36 +296,17 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(int, n, m);
+    def(int, N, M);
 
-    vector<vb> banned(n, vb(n));
-    rep(m) {
+    vl degree(N);
+    rep(M) {
         def(int, a, b); a--; b--;
 
-        banned[a][b] = true;
-        banned[b][a] = true;
+        degree[a]++;
+        degree[b]++;
     }
 
-    for(int u = 0; u < n; u++) {
-        bool ok = true;
-
-        for(int v = 0; v < n; v++) {
-            if(u == v) continue;
-
-            ok &= !banned[u][v];
-        }
-
-        if(ok) {
-            ps(n - 1);
-            for(int v = 0; v < n; v++) {
-                if(u == v) continue;
-
-                ps(u + 1, v + 1);
-            }
-            return;
-        }
-    }
-    assert(false);
+    each(x, degree) ps(x);
 }
 
 

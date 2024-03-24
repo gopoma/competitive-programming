@@ -296,36 +296,13 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(int, n, m);
+    def(ll, x);
 
-    vector<vb> banned(n, vb(n));
-    rep(m) {
-        def(int, a, b); a--; b--;
+    ll a = x - 1LL;
+    ll b = 1LL;
 
-        banned[a][b] = true;
-        banned[b][a] = true;
-    }
-
-    for(int u = 0; u < n; u++) {
-        bool ok = true;
-
-        for(int v = 0; v < n; v++) {
-            if(u == v) continue;
-
-            ok &= !banned[u][v];
-        }
-
-        if(ok) {
-            ps(n - 1);
-            for(int v = 0; v < n; v++) {
-                if(u == v) continue;
-
-                ps(u + 1, v + 1);
-            }
-            return;
-        }
-    }
-    assert(false);
+    //? assert(gcd(a, b) + lcm(a, b) == x);
+    ps(a, b);
 }
 
 
@@ -340,7 +317,7 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    ll t = 1; //? re(t);
+    ll t = 1; re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;

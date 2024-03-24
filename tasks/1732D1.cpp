@@ -296,36 +296,34 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(int, n, m);
+    def(int, q);
 
-    vector<vb> banned(n, vb(n));
-    rep(m) {
-        def(int, a, b); a--; b--;
+    map<ll, ll> ans;
+    set<ll> already; already.emplace(0LL);
+    rep(q) {
+        def(char, type);
 
-        banned[a][b] = true;
-        banned[b][a] = true;
-    }
+        if(type == '+') {
+            def(ll, x);
 
-    for(int u = 0; u < n; u++) {
-        bool ok = true;
+            assert(!already.count(x));
+            already.emplace(x);
+        } else {
+            assert(type == '?');
 
-        for(int v = 0; v < n; v++) {
-            if(u == v) continue;
+            def(ll, x);
 
-            ok &= !banned[u][v];
-        }
-
-        if(ok) {
-            ps(n - 1);
-            for(int v = 0; v < n; v++) {
-                if(u == v) continue;
-
-                ps(u + 1, v + 1);
+            ll tar = (ans[x] == 0)? x : ans[x];
+            while(already.count(tar)) {
+                tar += x;
             }
-            return;
+
+            ans[x] = tar;
+
+            assert(!already.count(tar));
+            ps(tar);
         }
     }
-    assert(false);
 }
 
 
@@ -339,6 +337,9 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 signed main() {
     setIO();
+    //? setIn("D.in");
+    //? ios_base::sync_with_stdio(false);
+    //? cin.tie(nullptr);
 
     ll t = 1; //? re(t);
 
