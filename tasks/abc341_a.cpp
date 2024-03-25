@@ -296,11 +296,13 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, A, B, D);
+    def(ll, N);
 
-    vl ans;
-    for(ll x = A; x <= B; x += D) {
-        ans.eb(x);
+    str ans;
+    ll x = 1;
+    rep(2*N+1) {
+        ans.pb(ts(x).ft);
+        x ^= 1;
     }
     ps(ans);
 }

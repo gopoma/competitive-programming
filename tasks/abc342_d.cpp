@@ -296,11 +296,44 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, A, B, D);
+    def(ll, N);
+    vl A(N); re(A);
 
-    vl ans;
-    for(ll x = A; x <= B; x += D) {
-        ans.eb(x);
+    map<ll, ll> hist;
+    auto factorize = [&](ll num) {
+        map<ll, ll> factors;
+        for(ll x = 2; x * x <= num; x++) {
+            while(num % x == 0) {
+                factors[x]++;
+
+                num = fdiv(num, x);
+            }
+        }
+        if(num > 1) factors[num]++;
+        return factors;
+    };
+
+    ll ans = 0;
+    for(int i = 0; i < N; i++) {
+        if(A[i] == 0) {
+            ans += i;
+
+            hist[0]++;
+        } else {
+            map<ll, ll> factors = factorize(A[i]);
+
+            ll k = 1LL;
+            for(auto& [d, cnt]: factors) {
+                ll p = cnt % 2LL;
+                rep(p) k *= d;
+            }
+
+            dbg(i, A[i], k, hist[k]);
+
+            ans += hist[k] + hist[0];
+
+            hist[k]++;
+        }
     }
     ps(ans);
 }

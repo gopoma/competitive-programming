@@ -296,12 +296,63 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, A, B, D);
+    def(int, H, W, N);
+    def(str, T);
 
-    vl ans;
-    for(ll x = A; x <= B; x += D) {
-        ans.eb(x);
+    vs S(H); re(S);
+
+    dbg(H, W, N);
+    dbg(T);
+    each(x, S) dbg(x);
+
+    auto check = [&](int x, int y) {
+        return (0 <= x && x < H) && (0 <= y && y < W);
+    };
+
+    auto isLand = [&](int x, int y) {
+        assert(check(x, y));
+        return S[x][y] == '.';
+    };
+
+    ll ans = 0;
+    for(int i = 0; i < H; i++) {
+        for(int j = 0; j < W; j++) {
+            if(isLand(i, j)) {
+                pi current = mp(i, j);
+
+                bool ok = true;
+                for(int k = 0; k < N; k++) {
+                    char direction = T[k];
+
+                    pi d = mp(-79, -79);
+                    if(direction == 'L') {
+                        d = mp(0, -1);
+                    } else if(direction == 'R') {
+                        d = mp(0, 1);
+                    } else if(direction == 'U') {
+                        d = mp(-1, 0);
+                    } else {
+                        assert(direction == 'D');
+
+                        d = mp(1, 0);
+                    }
+                    assert(d != mp(-79, -79));
+
+                    current = mp(current.f + d.f, current.s + d.s);
+
+                    if(!check(current.f, current.s)) {
+                        ok = false;
+                        break;
+                    }
+
+                    ok &= isLand(current.f, current.s);
+                }
+
+                ans += ok;
+            }
+        }
     }
+
     ps(ans);
 }
 

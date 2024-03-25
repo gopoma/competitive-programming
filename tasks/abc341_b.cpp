@@ -296,12 +296,18 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, A, B, D);
+    def(int, N);
+    vl A(N); re(A);
 
-    vl ans;
-    for(ll x = A; x <= B; x += D) {
-        ans.eb(x);
+    vpl C(N - 1); re(C);
+
+    for(int i = 0; i < N - 1; i++) {
+        auto [S, T] = C[i];
+
+        A[i + 1] += fdiv(A[i], S) * T;
     }
+
+    ll ans = A.bk;
     ps(ans);
 }
 

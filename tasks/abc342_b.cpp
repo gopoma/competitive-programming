@@ -296,13 +296,21 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, A, B, D);
+    def(int, N);
+    vi P(N); re(P);
 
-    vl ans;
-    for(ll x = A; x <= B; x += D) {
-        ans.eb(x);
+    map<int, int> idx;
+    for(int i = 0; i < N; i++) {
+        idx[P[i]] = i;
     }
-    ps(ans);
+
+    def(int, Q);
+    rep(Q) {
+        def(int, A, B);
+
+        if(idx[A] < idx[B]) ps(A);
+        else ps(B);
+    }
 }
 
 

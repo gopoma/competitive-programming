@@ -296,12 +296,25 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, A, B, D);
+    def(ll, N, M, K); assert(N != M);
+    dbg(N, M, K);
 
-    vl ans;
-    for(ll x = A; x <= B; x += D) {
-        ans.eb(x);
+    auto check = [&](ll x) {
+        ll cnt = fdiv(x, N) + fdiv(x, M) - 2LL * fdiv(x, lcm(N, M));
+        return cnt >= K;
+    };
+
+    ll left = 0; //? always bad
+    ll right = ll(1e18); //? always good
+
+    while(left + 1 < right) {
+        ll middle = fdiv(left + right, 2LL);
+
+        if(check(middle)) right = middle;
+        else left = middle;
     }
+
+    ll ans = right;
     ps(ans);
 }
 

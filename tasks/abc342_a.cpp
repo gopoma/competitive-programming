@@ -296,13 +296,15 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, A, B, D);
+    def(str, S);
 
-    vl ans;
-    for(ll x = A; x <= B; x += D) {
-        ans.eb(x);
+    for(int i = 0; i < sz(S); i++) {
+        if(count(all(S), S[i]) == 1) {
+            ps(i + 1);
+            return;
+        }
     }
-    ps(ans);
+    assert(false);
 }
 
 

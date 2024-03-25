@@ -296,12 +296,25 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, A, B, D);
+    def(int, N);
+    def(str, S);
+    def(int, Q);
 
-    vl ans;
-    for(ll x = A; x <= B; x += D) {
-        ans.eb(x);
+    map<char, char> go;
+    for(char x = 'a'; x <= 'z'; x++) go[x] = x;
+
+    rep(Q) {
+        def(char, c, d);
+
+        for(auto& [key, val]: go) {
+            if(val == c) {
+                val = d;
+            }
+        }
     }
+
+    str ans;
+    for(int i = 0; i < N; i++) ans.pb(go[S[i]]);
     ps(ans);
 }
 

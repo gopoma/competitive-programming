@@ -17,7 +17,7 @@ using str = string;      // yay python!
 //? priority_queue for minimum
 template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
 
-//? using ull  = unsigned long long;
+using ull  = unsigned long long;
 //? using i64  = long long;
 //? using u64  = uint64_t;
 //? using i128 = __int128;
@@ -227,26 +227,9 @@ template <class... Ts> void ps(Ts const &...ts) {
 }  // namespace IO
 
 inline namespace Debug {
-template <typename... Args> void err(Args... args) {
-	Writer<cerr, true, false>{}.print_with_sep(" | ", args...);
-}
-template <typename... Args> void errn(Args... args) {
-	Writer<cerr, true, true>{}.print_with_sep(" | ", args...);
-}
-
-void err_prefix(str func, int line, string args) {
-	cerr << "\033[0;31m\u001b[1mDEBUG\033[0m"
-	     << " | "
-	     << "\u001b[34m" << func << "\033[0m"
-	     << ":"
-	     << "\u001b[34m" << line << "\033[0m"
-	     << " - "
-	     << "[" << args << "] = ";
-}
 
 #ifdef LOCAL
-#define dbg(args...) err_prefix(__FUNCTION__, __LINE__, #args), err(args)
-#define dbgn(args...) err_prefix(__FUNCTION__, __LINE__, #args), errn(args)
+#include "helpers/debug.h"
 
 #define chk(...) if (!(__VA_ARGS__)) cerr << "\033[41m" << "Line(" << __LINE__ << ") -> function(" \
 	 << __FUNCTION__  << ") -> CHK FAILED: (" << #__VA_ARGS__ << ")" << "\033[0m" << "\n", exit(0);
@@ -255,7 +238,6 @@ void err_prefix(str func, int line, string args) {
 #define RAYA MACRO(cerr << "\033[101m" << "================================" << "\033[0m" << endl;)
 #else
 #define dbg(...)
-#define dbgn(args...)
 
 #define chk(...)
 #define RAYA
@@ -336,22 +318,25 @@ template<class C, bool directed> struct Dijkstra {
 		}
 	}
 };
+
 //* /Template
 
 void solve() {
-    def(int,  N);
+    def(int, N);
 
-    Dijkstra<ll, true> D; D.init(N);
+    Dijkstra<ll, true> G; G.init(N);
+
     for(int i = 0; i < N - 1; i++) {
         def(ll, A, B, X);
 
-        D.ae(i, i + 1, A);
-        D.ae(i, X - 1, B);
+        G.ae(i, i + 1, A);
+        G.ae(i, int(X - 1), B);
     }
 
-    D.gen(0);
+    G.gen(0);
 
-    ps(D.dist[N - 1]);
+    ll ans = G.dist[N - 1];
+    ps(ans);
 }
 
 
