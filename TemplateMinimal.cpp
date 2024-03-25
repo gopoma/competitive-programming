@@ -16,7 +16,6 @@ template<class T> using V = vector<T>;
 #define all(x) begin(x), end(x)
 
 void solve() {
-    dbg("xd");
 }
 
 int main() {

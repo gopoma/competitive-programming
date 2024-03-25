@@ -10,6 +10,28 @@ using namespace std;
 
 
 
+//? building blocks
+using ll = long long;
+using ull = unsigned long long;
+using db = long double; // or double, if TL is tight
+using str = string; // yay python!
+//? using i64 = long long; //? for Number Theory related
+//? using u64 = uint64_t; //? for Number Theory related
+//? using i128 = __int128; //? for Number Theory related
+//? using u128 = __uint128_t; //? for Number Theory related
+//? template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>; // minima
+
+//? pairs
+using pi = pair<int,int>;
+using pl = pair<ll,ll>;
+using pd = pair<db,db>;
+
+#define mp make_pair
+#define f first
+#define s second
+
+
+
 //? Source: https://stackoverflow.com/a/31116392/12128483
 template<typename Type, unsigned N, unsigned Last>
 struct TuplePrinter {
