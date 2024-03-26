@@ -152,7 +152,34 @@ long long binpow(long long a, long long b) {
 //? /Custom Helpers
 
 
+
 void solve() {
+    int n; cin >> n;
+    dbg(n);
+
+    vpi moves;
+
+    auto add_move = [&](int from, int to) {
+        moves.eb(from, to);
+    };
+
+    function<void(int, int, int)> solve = [&](int disks, int start, int end) {
+        if(disks == 1) {
+            add_move(start, end);
+            return;
+        }
+
+        int other = 6 - start - end;
+
+        solve(disks - 1, start, other);
+
+        add_move(start, end);
+
+        solve(disks - 1, other, end);
+    }; solve(n, 1, 3);
+
+    cout << sz(moves) << "\n";
+    each(x, moves) cout << x.f << " " << x.s << "\n";
 }
 
 int main() {

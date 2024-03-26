@@ -34,48 +34,21 @@ double time_elapsed() {
 
 
 
-// building blocks
-using ll  = long long;
-using db  = long double; // or double, if TL is tight
-using str = string;      // yay python!
+using ll = long long;
+using db = long double; // or double if tight TL
+using str = string;
 
-//? priority_queue for minimum
-template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
-
-using ull  = unsigned long long;
-//? using i64  = long long;
-//? using u64  = uint64_t;
-//? using i128 = __int128;
-//? using u128 = __uint128_t;
-//? using f128 = __float128;
-
-
-
-// pairs
-using pi = pair<int, int>;
-using pl = pair<ll, ll>;
-using pd = pair<db, db>;
-
+using pi = pair<int,int>;
 #define mp make_pair
 #define f first
 #define s second
 
-
-
-#define tcT template <class T
-#define tcTU tcT, class U
-//! ^ lol this makes everything look weird but I'll try it
-
-tcT > using V = vector<T>;
-tcT, size_t SZ > using AR = array<T, SZ>;
+#define tcT template<class T
+tcT> using V = vector<T>;
+tcT, size_t SZ> using AR = array<T,SZ>;
 using vi = V<int>;
 using vb = V<bool>;
-using vl = V<ll>;
-using vd = V<db>;
-using vs = V<str>;
 using vpi = V<pi>;
-using vpl = V<pl>;
-using vpd = V<pd>;
 
 // vectors
 // oops size(x), rbegin(x), rend(x) need C++17
@@ -92,9 +65,6 @@ using vpd = V<pd>;
 #define bk back()
 #define ts to_string
 
-
-
-// loops
 #define FOR(i,a,b) for (int i = (a); i < (b); ++i)
 #define F0R(i,a) FOR(i,0,a)
 #define ROF(i,a,b) for (int i = (b)-1; i >= (a); --i)
@@ -102,75 +72,50 @@ using vpd = V<pd>;
 #define rep(a) F0R(_,a)
 #define each(a,x) for (auto& a: x)
 
-
-
 const int MOD = 1e9+7;
-const ll BIG = 1e18;  //? not too close to LLONG_MAX
 const db PI = acos((db)-1);
 mt19937 rng(0); // or mt19937_64
-
-
-
-ll cdiv(ll a, ll b) {
-	return a / b + ((a ^ b) > 0 && a % b);
-}  // divide a by b rounded up
-ll fdiv(ll a, ll b) {
-	return a / b - ((a ^ b) < 0 && a % b);
-}  // divide a by b rounded down
 
 tcT> bool ckmin(T& a, const T& b) {
 	return b < a ? a = b, 1 : 0; } // set a = min(a,b)
 tcT> bool ckmax(T& a, const T& b) {
 	return a < b ? a = b, 1 : 0; } // set a = max(a,b)
 
-tcT > void remDup(vector<T> &v) {  // sort and remove duplicates
-	sort(all(v));
-	v.erase(unique(all(v)), end(v));
-}
-tcTU > void safeErase(T &t, const U &u) {
-	auto it = t.find(u);
-	assert(it != end(t));
-	t.erase(it);
-}
-
-
-
-//? Custom Helpers
-template <typename T>
-inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
-
-long long binpow(long long a, long long b) {
-    long long res = 1;
-    while (b > 0) {
-        if (b & 1)
-            res = res * a;
-        a = a * a;
-        b >>= 1;
-    }
-    return res;
-}
-//? /Custom Helpers
-
-
 void solve() {
+    string S, T; cin >> S >> T;
+    dbg(S, T);
+
+    const int n = sz(S);
+    const int m = sz(T);
+
+    int j = m - 1;
+    vb banned(n);
+    for(int i = n - 1; i >= 0; i--) {
+        if(banned[i]) continue;
+        if(j == -1) break;
+
+        if(S[i] == T[j]) {
+            j--;
+        } else {
+            for(int k = 0; k <= i; k++) {
+                if(S[k] == S[i]) {
+                    banned[k] = true;
+                }
+            }
+        }
+    }
+
+    bool ok = (j == -1);
+    cout << (ok?"YES":"NO") << "\n";
 }
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
     int t = 1;
-    //? cin >> t;
+    cin >> t;
 
     for(int idx = 0; idx < t; idx++) {
         solve();
     }
-    RAYA;
-    RAYA;
-
-    #ifdef LOCAL
-        cerr << fixed << setprecision(5);
-        cerr << "\033[42m++++++++++++++++++++\033[0m\n";
-        cerr << "\033[42mtime = " << time_elapsed() << "ms\033[0m\n";
-        cerr << "\033[42m++++++++++++++++++++\033[0m";
-    #endif
 }
