@@ -153,19 +153,19 @@ long long binpow(long long a, long long b) {
 
 
 void solve() {
-    ll N; cin >> N;
+    ll H; cin >> H;
 
     map<ll, ll> memo;
     function<ll(ll)> dp = [&](ll x) {
-        if(x == 1LL) return 0LL;
+        if(x == 1LL) return 1LL;
 
         if(memo.count(x)) return memo[x];
 
-        ll ans = x + dp(fdiv(x, 2LL)) + dp(cdiv(x, 2LL));
+        ll ans = 1LL + 2LL * dp(fdiv(x, 2LL));
         return memo[x] = ans;
     };
 
-    ll ans = dp(N);
+    ll ans = dp(H);
     dbg(ans);
     cout << ans << "\n";
 }

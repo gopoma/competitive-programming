@@ -152,22 +152,49 @@ long long binpow(long long a, long long b) {
 //? /Custom Helpers
 
 
+ll GetBit(ll mask, ll bit) { return (mask >> bit) & 1LL; }
+void TurnOn(ll& mask, ll bit) { mask = mask | (1LL << bit); }
+void TurnOff(ll& mask, ll bit) { mask = mask & (~(1LL << bit)); }
+
+
 void solve() {
-    ll N; cin >> N;
+    ll n; cin >> n;
+    dbg(n);
 
-    map<ll, ll> memo;
-    function<ll(ll)> dp = [&](ll x) {
-        if(x == 1LL) return 0LL;
+    auto get = [&](ll x) {
+        vl candidates;
+        for(int i = 0; i < n; i++) {
+            ll val = x;
+            if(GetBit(x, i)) TurnOff(val, i);
+            else TurnOn(val, i);
 
-        if(memo.count(x)) return memo[x];
-
-        ll ans = x + dp(fdiv(x, 2LL)) + dp(cdiv(x, 2LL));
-        return memo[x] = ans;
+            candidates.eb(val);
+        }
+        return candidates;
     };
 
-    ll ans = dp(N);
-    dbg(ans);
-    cout << ans << "\n";
+    vb vis(1LL << n);
+    vl ans;
+    function<void(ll)> dfs = [&](ll u) {
+        if(vis[u]) return;
+
+        ans.eb(u);
+        vis[u] = true;
+
+        vl candidates = get(u);
+        each(v, candidates) {
+            dfs(v);
+        }
+    }; dfs(0);
+
+    each(x, ans) {
+        str val;
+        for(int i = n - 1; i >= 0; i--) {
+            if(GetBit(x, i)) val.pb('1');
+            else val.pb('0');
+        }
+        cout << val << "\n";
+    }
 }
 
 int main() {
