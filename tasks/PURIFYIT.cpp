@@ -1,5 +1,5 @@
 //* sometimes pragmas don't work, if so, just comment it!
-//? #pragma GCC optimize ("Ofast")
+#pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
@@ -293,10 +293,105 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
+/**
+ * Description: Pollard-rho randomized factorization algorithm. Returns prime
+   * factors of a number, in arbitrary order (e.g. 2299 -> \{11, 19, 11\}).
+ * Time: $O(N^{1/4})$, less for numbers with small factors
+ * Source: KACTL
+	* https://en.wikipedia.org/wiki/Pollard%27s_rho_algorithm
+	* https://codeforces.com/contest/1033/submission/44009089 is faster?
+ * Verification: https://www.spoj.com/problems/FACT0/
+ */
+
+/// using db = long double;
+using ul = uint64_t;
+ul modMul(ul a, ul b, const ul mod) {
+	ll ret = a*b-mod*(ul)((db)a*b/mod);
+	return ret+((ret<0)-(ret>=(ll)mod))*mod; }
+ul modPow(ul a, ul b, const ul mod) {
+	if (b == 0) return 1;
+	ul res = modPow(a,b/2,mod); res = modMul(res,res,mod);
+	return b&1 ? modMul(res,a,mod) : res;
+}
+
+
+
+bool prime(ul n) { // not ll!
+	if (n < 2 || n % 6 % 4 != 1) return n-2 < 2;
+	ul A[] = {2, 325, 9375, 28178, 450775, 9780504, 1795265022},
+	    s = __builtin_ctzll(n-1), d = n>>s;
+	each(a,A) {   // ^ count trailing zeroes
+		ul p = modPow(a,d,n), i = s;
+		while (p != 1 && p != n-1 && a%n && i--) p = modMul(p,p,n);
+		if (p != n-1 && i != s) return 0;
+	}
+	return 1;
+}
+
+
+
+ul pollard(ul n) { // return some nontrivial factor of n
+	auto f = [n](ul x) { return modMul(x, x, n) + 1; };
+	ul x = 0, y = 0, t = 30, prd = 2, i = 1, q;
+	while (t++ % 40 || gcd(prd, n) == 1) { /// speedup: don't take gcd every it
+		if (x == y) x = ++i, y = f(x);
+		if ((q = modMul(prd, max(x,y)-min(x,y), n))) prd = q;
+		x = f(x), y = f(f(y));
+	}
+	return gcd(prd, n);
+}
+void factor_rec(ul n, map<ul,int>& cnt) {
+	if (n == 1) return;
+	if (prime(n)) { ++cnt[n]; return; }
+	ul u = pollard(n);
+	factor_rec(u,cnt), factor_rec(n/u,cnt);
+}
+
+V<pair<ul,int>> factor(ul n) {
+	map<ul,int> cnt; factor_rec(n,cnt);
+	return V<pair<ul,int>>(all(cnt));
+}
 //* /Template
 
-void solve() {
+map<ll, ll> factorize(ll N) {
+    map<ll, ll> factors;
+    for(ll x = 2; x * x <= N; x++) {
+        while(N % x == 0) {
+            factors[x]++;
+            N = fdiv(N, x);
+        }
+    }
+    if(N > 1) factors[N]++;
+    return factors;
+}
 
+const int mx = int(3e5);
+vl dp(mx + 5, 0);
+void precompute() {
+    dp[1] = 1;
+    for(ll num = 2; num <= mx; num++) {
+        V<pair<ul,int>> factors = factor(num);
+
+        ll partial = 0LL;
+        each(x, factors) {
+            auto [val, cnt] = x;
+
+            ckmax(partial, binpow(val, cnt));
+        }
+
+        dp[num] = partial;
+
+        dp[num] += dp[num - 1];
+    }
+}
+
+void solve() {
+    def(ll, L, R);
+    dbg(L, R);
+
+    ll ans = dp[R] - dp[L - 1];
+    dbg(ans);
+    ps(ans);
 }
 
 
@@ -313,6 +408,8 @@ signed main() {
 
     ll t = 1;
     re(t);
+
+    precompute();
 
     FOR(i, 1, t + 1) {
         RAYA;

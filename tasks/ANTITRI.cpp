@@ -296,7 +296,39 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
+    def(ll, N, L);
+    dbg(N, L);
 
+    auto check = [&](vl arr) {
+        for(int i = 0; i < N; i++) {
+            for(int j = 0; j < N; j++) {
+                if(i == j) continue;
+                ll a = arr[i];
+                ll b = arr[j];
+                ll c = L;
+                chk(!((a + b > c) && (b + c > a) && (a + c > b)));
+            }
+        }
+    };
+
+    if(L >= 2004) {
+        dbg("fino");
+        vl ans(N); for(int i = 0; i < N; i++) ans[i] = i + 1;
+
+        chk(ans.ft >= 1 && ans.bk <= ll(1e9));
+        //? check(ans);
+        ps(ans);
+    } else {
+        vl ans;
+        ans.eb(L + 1);
+        rep(N - 1) {
+            ans.eb(ans.bk + L + 1);
+        }
+        chk(ans.ft >= 1 && ans.bk <= ll(1e9));
+        //? check(ans);
+        ps(ans);
+    }
+    dbg("ok");
 }
 
 

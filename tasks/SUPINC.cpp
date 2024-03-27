@@ -296,7 +296,20 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
+    def(ll, N, K, X); K--;
 
+    if(K >= 32) {
+        ps("No");
+        return;
+    }
+
+    vl xd(N);
+    for(ll i = 0; i < min(N, K + 3); i++) {
+        xd[i] = (1LL << (i));
+    }
+
+    if(xd[K] <= X) ps("Yes");
+    else ps("No");
 }
 
 

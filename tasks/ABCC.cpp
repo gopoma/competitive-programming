@@ -296,7 +296,110 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
+    def(int, N);
+    def(str, A, B);
 
+    dbg(N);
+    dbg(A);
+    dbg(B);
+
+    #define YES { ps("Yes"); return; }
+    #define NO  { ps("No"); return; }
+
+    for(int i = 0; i < N; i++) {
+        if(A[i] != B[i] && (A[i] == 'b' || B[i] == 'b')) {
+            NO
+        }
+    }
+
+    vector<map<char, int>> hists;
+    int idx = -1; //? current_idx
+    vector<char> group;
+    set<int> hasA;
+    set<int> hasC;
+    for(int i = 0; i < N; i++) {
+        if(A[i] == 'b') {
+            assert(B[i] == 'b');
+
+            if(!group.empty()) {
+                map<char, int> hist;
+                idx++; //? current_idx
+
+                each(c, group) {
+                    hist[c]++;
+
+                    if(c == 'a') {
+                        hasA.emplace(idx);
+                    } else if(c == 'c') {
+                        hasC.emplace(idx);
+                    } else assert(false);
+                }
+
+                hists.eb(hist);
+
+                group.clear();
+            }
+        } else {
+            if(A[i] == B[i]) continue;
+            else {
+                group.eb(A[i]);
+            }
+        }
+    }
+
+    if(!group.empty()) {
+                map<char, int> hist;
+                idx++; //? current_idx
+
+                each(c, group) {
+                    hist[c]++;
+
+                    if(c == 'a') {
+                        hasA.emplace(idx);
+                    } else if(c == 'c') {
+                        hasC.emplace(idx);
+                    } else assert(false);
+                }
+
+                hists.eb(hist);
+            }
+
+    if(idx == -1) YES
+    else {
+        dbg(hists);
+        int m = idx + 1;
+        dbg(idx, m);
+
+        for(int i = 0; i < m; i++) {
+            //? RAYA;
+            const int aa = hists[i]['a'];
+            const int cc = hists[i]['c'];
+
+            //? dbg(i, aa, cc);
+
+            rep(aa) {
+                auto k = hasC.upper_bound(i);
+                if(k == hasC.end()) NO
+
+                int tar_idx = *k;
+
+                dbg(tar_idx);
+
+                assert(hists[tar_idx]['c'] > 0);
+                hists[tar_idx]['c']--;
+
+                if(hists[tar_idx]['c'] == 0) {
+                    safeErase(hasC, tar_idx);
+                }
+            }
+
+            rep(cc) {
+                NO
+            }
+        }
+
+        YES
+    }
 }
 
 
