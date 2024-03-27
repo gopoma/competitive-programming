@@ -135,22 +135,6 @@ tcTU > void safeErase(T &t, const U &u) {
 
 
 
-inline namespace FileIO {
-void setIn(str s) { freopen(s.c_str(), "r", stdin); }
-void setOut(str s) { freopen(s.c_str(), "w", stdout); }
-void setIO(str s = "") {
-	cin.tie(0)->sync_with_stdio(0);  // unsync C / C++ I/O streams
-	//? cout << fixed << setprecision(12);
-    //? cerr << fixed << setprecision(12);
-	cin.exceptions(cin.failbit);
-	// throws exception when do smth illegal
-	// ex. try to read letter into int
-	if (sz(s)) setIn(s + ".in"), setOut(s + ".out");  // for old USACO
-}
-}  // namespace FileIO
-
-
-
 //? Custom Helpers
 template <typename T>
 inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
@@ -169,6 +153,57 @@ long long binpow(long long a, long long b) {
 
 
 void solve() {
+    int n; cin >> n;
+
+    map<pi, int> ans;
+    vector<vi> adj(n + 1);
+    vpi edges;
+    vi degree(n + 1);
+    rep(n - 1) {
+        int u, v; cin >> u >> v;
+
+        if(u > v) swap(u, v);
+
+        adj[u].eb(v);
+        adj[v].eb(u);
+
+        edges.eb(u, v);
+
+        degree[u]++;
+        degree[v]++;
+    }
+
+    int tar = 0;
+    for(int u = 1; u <= n; u++) {
+        if(ckmax(degree[tar], degree[u])) {
+            tar = u;
+        }
+    }
+    assert(tar != 0);
+
+    dbg(tar);
+
+    int current = 0;
+    each(u, adj[tar]) {
+        int from = u;
+        int to = tar;
+
+        if(from > to) swap(from, to);
+
+        ans[mp(from, to)] = current++;
+    }
+
+    each(e, edges) {
+        auto [u, v] = e;
+        assert(u < v);
+
+        if(ans.count(mp(u, v))) {
+            cout << ans[mp(u, v)] << "\n";
+        } else {
+            cout << current << "\n";
+            current++;
+        }
+    }
 }
 
 int main() {
@@ -178,8 +213,6 @@ int main() {
     //? cin >> t;
 
     for(int idx = 0; idx < t; idx++) {
-        RAYA;
-        RAYA;
         solve();
     }
     RAYA;

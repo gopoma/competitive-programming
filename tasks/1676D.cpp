@@ -169,13 +169,55 @@ long long binpow(long long a, long long b) {
 
 
 void solve() {
+    int n, m; cin >> n >> m;
+    vector<vl> a(n, vl(m)); each(v, a) each(x, v) cin >> x;
+
+    dbg(n, m);
+    each(row, a) dbg(row);
+    RAYA;
+
+    auto check = [&](int i, int j) {
+        return (0 <= i && i < n) && (0 <= j && j < m);
+    };
+
+    vpl directions = {
+        mp(-1, -1),
+        mp(-1, +1),
+        mp(+1, +1),
+        mp(+1, -1),
+    };
+
+    auto work = [&](int i, int j) {
+        ll sum = 0;
+        each(d, directions) {
+            ll current_x = i;
+            ll current_y = j;
+
+            while(check(current_x, current_y)) {
+                sum += a[current_x][current_y];
+
+                current_x += d.f;
+                current_y += d.s;
+            }
+        }
+        return sum;
+    };
+
+    ll ans = 0;
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < m; j++) {
+            ckmax(ans, work(i, j) - 3LL * a[i][j]);
+        }
+    }
+
+    cout << ans << "\n";
 }
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
     int t = 1;
-    //? cin >> t;
+    cin >> t;
 
     for(int idx = 0; idx < t; idx++) {
         RAYA;

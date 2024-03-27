@@ -169,13 +169,99 @@ long long binpow(long long a, long long b) {
 
 
 void solve() {
+    ll mx = (1LL << 31LL);
+
+    int n; cin >> n; assert(3 <= n);
+    int ntmp = n;
+    //? dbg(n);
+
+    dbg(bitset<34>((1LL << 31LL) - 1LL));
+    dbg(bitset<34>(ll(2e5 + 10)));
+
+    auto get = [&](vl arr) {
+        ll val = 0;
+        each(x, arr) {
+            assert(x < mx);
+            val ^= x;
+        }
+        return val;
+    };
+
+    auto check = [&](vl G1, vl G2) {
+        ll val1 = get(G1);
+        ll val2 = get(G2);
+
+        //? RAYA; dbg("checking");
+        //? dbg(G1);
+        //? dbg(G2);
+        //? dbg(val1, val2);
+        if(val1 != val2) {
+            assert(val1 == val2);
+        }
+
+        set<ll> xd;
+        each(x, G1) xd.emplace(x);
+        each(x, G2) xd.emplace(x);
+
+        assert(sz(xd) == n);
+    };
+
+    bool even = n % 2 == 0;
+    if(n % 2 == 1) n--;
+    else n -= 2;
+
+    vl G1, G2;
+    ll current = mx - 1;
+    for(int i = 0; i < n; i++) {
+        if(i % 2 == 0) G1.eb(current);
+        else G2.eb(current);
+        current--;
+    }
+
+    //? dbg(n, G1, G2);
+
+    assert(sz(G1) == sz(G2));
+    ll val = get(G1) ^ get(G2);
+    if(val == 0) {
+        G2.pop_back();
+        G2.push_back(current);
+    }
+    val = get(G1) ^ get(G2);
+    assert(val != 0);
+
+    G1.eb(val);
+    assert(sz(G1) > sz(G2));
+
+    if(sz(G1) > sz(G2)) swap(G1, G2);
+    if(even) G1.eb(0);
+
+    n++;
+    if(even) n++;
+    //? check(G1, G2);
+
+    assert(n == ntmp);
+    assert(sz(G1) <= sz(G2)); swap(G1, G2);
+    vl ans;
+    for(int i = 0; i < n; i++) {
+        if(i % 2 == 0) {
+            ans.eb(G1.bk);
+            G1.pop_back();
+        } else {
+            ans.eb(G2.bk);
+            G2.pop_back();
+        }
+    }
+
+    for(int i = 0; i < n; i++) {
+        cout << ans[i] << " \n"[i == n - 1];
+    }
 }
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
     int t = 1;
-    //? cin >> t;
+    cin >> t;
 
     for(int idx = 0; idx < t; idx++) {
         RAYA;

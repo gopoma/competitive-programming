@@ -169,13 +169,53 @@ long long binpow(long long a, long long b) {
 
 
 void solve() {
+    int n, k; cin >> n >> k;
+    str S; cin >> S;
+
+    dbg(n, k);
+    dbg(S);
+
+    ll ans = 0;
+    vb vis(n);
+    for(int i = 0; i <= k/2; i++) {
+        int L = i;
+        int R = n - i - 1;
+        map<char, ll> hist;
+
+        while(L < n) {
+            if(vis[L]) break;
+            vis[L] = true;
+            hist[S[L]]++;
+
+            L += k;
+        }
+
+        while(R >= 0) {
+            if(vis[R]) break;
+            vis[R] = true;
+            hist[S[R]]++;
+
+            R -= k;
+        }
+
+        ll mx = 0;
+        ll sum = 0;
+        for(auto& [val, cnt]: hist) {
+            sum += cnt;
+            ckmax(mx, cnt);
+        }
+
+        ans += sum - mx;
+    }
+    dbg(ans);
+    cout << ans << "\n";
 }
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
     int t = 1;
-    //? cin >> t;
+    cin >> t;
 
     for(int idx = 0; idx < t; idx++) {
         RAYA;

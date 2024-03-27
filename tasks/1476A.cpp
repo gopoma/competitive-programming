@@ -169,13 +169,22 @@ long long binpow(long long a, long long b) {
 
 
 void solve() {
+    ll n, k; cin >> n >> k;
+    ll have = n;
+    ll need = (have % k == 0)? 0 : (k - (have % k));
+    dbg(n, k);
+    dbg(have, need);
+
+    ll ans = 1 + cdiv(need, n);
+    dbg(ans);
+    cout << ans << "\n";
 }
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
     int t = 1;
-    //? cin >> t;
+    cin >> t;
 
     for(int idx = 0; idx < t; idx++) {
         RAYA;

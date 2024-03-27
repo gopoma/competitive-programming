@@ -135,6 +135,7 @@ tcTU > void safeErase(T &t, const U &u) {
 
 
 
+
 inline namespace FileIO {
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }
 void setOut(str s) { freopen(s.c_str(), "w", stdout); }
@@ -169,17 +170,101 @@ long long binpow(long long a, long long b) {
 
 
 void solve() {
+    ll n, m, k; cin >> n >> m >> k;
+
+    vl a(n); each(x, a) cin >> x;
+    vl b(m); each(x, b) cin >> x;
+
+    //? dbg(n, m, k);
+    //? dbg(a, b);
+
+    //? RAYA;
+    //? vector<vl> c(n, vl(m)); for(int i = 0; i < n; i++) for(int j = 0; j < m; j++) c[i][j] = a[i] * b[j];
+    //? each(row, c) dbg(row);
+    //? RAYA;
+
+    auto get_divisors = [](ll N) {
+        vl divisors;
+        for(ll x = 1; x * x <= N; x++) {
+            if(N % x == 0) {
+                divisors.eb(x);
+
+                if(x != fdiv(N, x)) divisors.eb(fdiv(N, x));
+            }
+        }
+        sor(divisors);
+        return divisors;
+    };
+
+    auto work = [&](vl& arr) {
+        const int l = sz(arr);
+        map<ll, ll> hist;
+
+        int current = 0;
+        for(int i = 0; i < l; i++) {
+            if(arr[i] == 1) {
+                current++;
+            } else {
+                assert(arr[i] == 0);
+
+                if(current > 0) {
+                    hist[current]++;
+                }
+                current = 0;
+            }
+        }
+        if(current > 0) {
+            hist[current]++;
+        }
+
+        return hist;
+    };
+
+    map<ll, ll> heights = work(a);
+    map<ll, ll> widths = work(b);
+    vl divisors = get_divisors(k);
+
+    dbg(heights, widths);
+    dbg(k, divisors);
+
+    ll ans = 0;
+    for(auto& [h, cnt_h]: heights) {
+        for(auto& [w, cnt_w]: widths) {
+            ll contrib = cnt_h * cnt_w;
+            for(auto& d: divisors) {
+                ll xx = d;
+                ll yy = fdiv(k, d);
+                dbg(xx, yy);
+
+                if(xx <= h && yy <= w) {
+                    //? add
+
+                    ll aa = h - xx + 1LL;
+                    ll bb = w - yy + 1LL;
+
+                    ans += contrib * aa * bb;
+                }
+            }
+        }
+    }
+
+    dbg(ans);
+    cout << ans << "\n";
 }
 
 int main() {
-    cin.tie(0)->sync_with_stdio(0);
+    const bool go = true;
+    if(go) {
+        cin.tie(0)->sync_with_stdio(0);
+    } else {
+        setIn("1323B.in");
+        cin.tie(0)->sync_with_stdio(0);
+    }
 
     int t = 1;
     //? cin >> t;
 
     for(int idx = 0; idx < t; idx++) {
-        RAYA;
-        RAYA;
         solve();
     }
     RAYA;

@@ -167,15 +167,28 @@ long long binpow(long long a, long long b) {
 }
 //? /Custom Helpers
 
+struct SWindow {
+    int zeros = 0;
+    int ones = 0;
+    int jokers = 0;
+};
 
 void solve() {
+    int n, k; cin >> n >> k;
+    str S; cin >> S;
+
+    dbg(n, k);
+    dbg(S);
+
+    bool ok = true;
+    cout << (ok?"YES":"NO") << "\n";
 }
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
     int t = 1;
-    //? cin >> t;
+    cin >> t;
 
     for(int idx = 0; idx < t; idx++) {
         RAYA;
