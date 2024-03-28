@@ -10,7 +10,7 @@ void solve() {
     if(k >= 3) cout << "0\n";
     else if(k == 2) {
         vector<i64> diffs;
-        set<i64> fvals; for(auto& x: a) fvals.emplace(x);
+        multiset<i64> fvals; for(auto& x: a) fvals.emplace(x);
 
         i64 ans = *min_element(a.begin(), a.end());
         for(int i = 0; i < n; i++) {
