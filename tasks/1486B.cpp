@@ -167,114 +167,42 @@ long long binpow(long long a, long long b) {
 }
 //? /Custom Helpers
 
-/**
- * Description: DP with Binary Search
- * Source: own
- * Verification: https://cses.fi/problemset/task/1145/
- */
 
-int lis(vi v) {
-	vi min_last{INT_MIN}; // min last term of increasing sequence with i terms
-	for (int x: v) {
-		int lo = lower_bound(all(min_last),x)-begin(min_last);
-		if (lo == sz(min_last)) min_last.pb(0);
-		min_last[lo] = x;
-	}
-	return sz(min_last)-1;
-}
+void solve() {
+    int n; cin >> n;
 
-int brute(int n, vi a) {
-    sor(a);
+    vpl h(n); each(x, h) cin >> x.f >> x.s;
 
-    int ans = 0;
-    do {
-        vi tmp = a;
+    dbg(n);
+    each(x, h) dbg(x.f, x.s);
 
-        int local_ans = lis(tmp);
-        reverse(all(tmp));
-        ckmin(local_ans, lis(tmp));
-
-        ckmax(ans, local_ans);
-    } while(next_permutation(all(a)));
-
-    sor(a);
-    do {
-        vi tmp = a;
-
-        int local_ans = lis(tmp);
-        reverse(all(tmp));
-        ckmin(local_ans, lis(tmp));
-
-        if(local_ans == ans) {
-            reverse(all(tmp));
-            dbg(tmp);
-        }
-    } while(next_permutation(all(a)));
-    return ans;
-}
-
-int solve(int n, vi a) {
-    map<int, int> hist; each(x, a) hist[x]++;
-
-    for(auto& [val, cnt]: hist) ckmin(cnt, 2);
-
-    vi L, R; bool turn = true;
-    int mx = -79;
-    for(auto& [val, cnt]: hist) {
-        ckmax(mx, val);
-        if(cnt == 1) {
-            if(turn) L.eb(val);
-            else R.eb(val);
-            turn = !turn;
-        }
-        if(cnt == 2) {
-            L.eb(val);
-            R.eb(val);
-        }
+    vl xx, yy;
+    each(x, h) {
+        xx.eb(x.f);
+        yy.eb(x.s);
     }
-    assert(mx != -79);
 
-    vi tot = L; reverse(all(R)); each(x, R) tot.eb(x);
+    sor(xx);
+    sor(yy);
 
-    dbg(L);
-    dbg(R);
-    dbg(tot);
+    if(n % 2 == 0) {
+        int idx_median1 = n / 2 - 1;
+        int idx_median2 = n / 2;
 
-    int ans = lis(tot);
-    reverse(all(tot));
-    ckmin(ans, lis(tot));
+        ll aa = xx[idx_median2] - xx[idx_median1] + 1LL;
+        ll bb = yy[idx_median2] - yy[idx_median1] + 1LL;
 
-    return ans;
+        ll ans = aa * bb;
+        cout << ans << "\n";
+    } else {
+        int idx_median = n / 2;
+
+        cout << "1\n";
+    }
 }
-
-//? Generator
-int rng_int(int L, int R) { assert(L <= R);
-	return uniform_int_distribution<int>(L,R)(rng);  }
-ll rng_ll(ll L, ll R) { assert(L <= R);
-	return uniform_int_distribution<ll>(L,R)(rng);  }
-//? /Generator
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
-
-    while(true) {
-        int n = rng_int(1, 11);
-        vi a(n); each(x, a) x = rng_int(1, 10);
-
-        int ans = brute(n, a);
-        dbg("Greedy begins");
-        int greedy = solve(n, a);
-
-        RAYA;
-        dbg(n);
-        dbg(a);
-        dbg(ans, greedy);
-
-        if(ans != greedy) {
-            dbg("jaaa");
-        }
-        assert(ans == greedy);
-    }
 
     int t = 1;
     cin >> t;
@@ -282,12 +210,7 @@ int main() {
     for(int idx = 0; idx < t; idx++) {
         RAYA;
         RAYA;
-
-        int n; cin >> n;
-        vi a(n); each(x, a) cin >> x;
-
-        int ans = solve(n, a);
-        cout << ans << "\n";
+        solve();
     }
     RAYA;
     RAYA;
