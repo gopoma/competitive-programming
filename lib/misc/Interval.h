@@ -20,6 +20,6 @@ for(int i = 0; i < n; i++) {
     sgmts[i] = Interval(l, r, i);
 }
 
-sor(sgmts);
+sor(sgmts); // TODO: For Sorting!
 
 each(x, sgmts) dbg(x.l, x.r, x.idx);
