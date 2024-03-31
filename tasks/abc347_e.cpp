@@ -296,35 +296,66 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, a, b, C);
-    dbg(a, b, C);
+    def(ll, N, Q);
+    vl X(Q); re(X);
 
-    ll need = __builtin_popcountll(C);
-    if(a + b < need) ps("-1");
-    else {
-        assert(a + b >= need);
+    dbg(N, Q);
+    dbg(X);
 
-        for(ll x = 1; x <= need; x++) {
-            ll y = need - x;
-            assert(x + y == need);
 
-            ll remA = a - x;
-            ll remB = b - y;
 
-            if(remA < 0 || remB < 0) continue;
-
-            if(remA == remB) {
-                ll X = 0;
-                ll Y = 0;
-
-                assert(__builtin_popcountll(X) == a);
-                assert(__builtin_popcountll(Y) == b);
-                assert(X ^ Y == C);
-                return;
-            }
+    vl amount;
+    set<ll> already;
+    vector<vl> where(N + 1);
+    for(ll i = 0; i < Q; i++) {
+        if(already.count(X[i])) {
+            safeErase(already, X[i]);
+        } else {
+            already.emplace(X[i]);
         }
-        ps("-1");
+
+        amount.eb(sz(already));
+        where[X[i]].eb(i);
     }
+
+
+
+    vl pref = amount;
+    {
+        const int m = sz(pref);
+        for(int i = 1; i < m; i++) pref[i] += pref[i - 1];
+    }
+
+    auto query = [&](ll left, ll right) {
+        assert(left <= right);
+        ll sum = pref[right];
+        if(0 <= left - 1) sum -= pref[left - 1];
+        return sum;
+    };
+
+    vl ans(N);
+    for(ll x = 1; x <= N; x++) {
+        if(sz(where[x]) == 0) continue;
+        assert(sz(where[x]) > 0);
+
+        if(sz(where[x]) % 2 == 0) {
+            for(ll j = 0; j < sz(where[x]); j += 2) {
+                //? work with where[x][j] and where[x][j + 1]
+
+                ans[x - 1] += query(where[x][j], where[x][j + 1] - 1);
+            }
+        } else {
+            for(ll j = 0; j < sz(where[x]) - 1; j += 2) {
+                //? work with where[x][j] and where[x][j + 1]
+
+                ans[x - 1] += query(where[x][j], where[x][j + 1] - 1);
+            }
+
+            ans[x - 1] += query(where[x].bk, sz(pref) - 1);
+        }
+    }
+    dbg(ans);
+    ps(ans);
 }
 
 
