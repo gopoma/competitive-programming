@@ -1,26 +1,60 @@
-// sometimes pragmas don't work, if so, just comment it!
-#pragma GCC optimize(3,"Ofast","inline")
-#pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,avx2")
+//* sometimes pragmas don't work, if so, just comment it!
+//? #pragma GCC optimize ("Ofast")
+//? #pragma GCC target ("avx,avx2")
+//! #pragma GCC optimize ("trapv")
+
+//! #undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h>
 
 using namespace std;
 
+#ifdef LOCAL
+#include "debugICPC.h"
+
+#define chk(...) if (!(__VA_ARGS__)) cerr << "\033[41m" << "Line(" << __LINE__ << ") -> function(" \
+	 << __FUNCTION__  << ") -> CHK FAILED: (" << #__VA_ARGS__ << ")" << "\033[0m" << "\n", exit(0);
+
+#define MACRO(code) do {code} while (false)
+#define RAYA MACRO(cerr << "\033[101m" << "================================" << "\033[0m" << endl;)
+#else
+#define dbg(...)
+
+#define chk(...)
+#define RAYA
+#endif
+
+const auto beg_time = std::chrono::high_resolution_clock::now();
+// https://stackoverflow.com/questions/47980498/accurate-c-c-clock-on-a-multi-core-processor-with-auto-overclock?noredirect=1&lq=1
+double time_elapsed() {
+	return chrono::duration<double>(std::chrono::high_resolution_clock::now() -
+	                                beg_time)
+	    .count();
+}
+
 
 
 // building blocks
-using ll = long long;
-using db = long double; // or double, if TL is tight
-using str = string; // yay python!
-// using u128 = __uint128_t; // for Number Theory related
-template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>; // minima
+using ll  = long long;
+using db  = long double; // or double, if TL is tight
+using str = string;      // yay python!
+
+//? priority_queue for minimum
+template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
+
+using ull  = unsigned long long;
+//? using i64  = long long;
+//? using u64  = uint64_t;
+//? using i128 = __int128;
+//? using u128 = __uint128_t;
+//? using f128 = __float128;
 
 
 
 // pairs
-using pi = pair<int,int>;
-using pl = pair<ll,ll>;
-using pd = pair<db,db>;
+using pi = pair<int, int>;
+using pl = pair<ll, ll>;
+using pd = pair<db, db>;
 
 #define mp make_pair
 #define f first
@@ -28,12 +62,12 @@ using pd = pair<db,db>;
 
 
 
-#define tcT template<class T
+#define tcT template <class T
 #define tcTU tcT, class U
-// ^ lol this makes everything look weird but I'll try it
+//! ^ lol this makes everything look weird but I'll try it
 
-tcT> using V = vector<T>;
-tcT, size_t SZ> using AR = array<T,SZ>;
+tcT > using V = vector<T>;
+tcT, size_t SZ > using AR = array<T, SZ>;
 using vi = V<int>;
 using vb = V<bool>;
 using vl = V<ll>;
@@ -42,14 +76,6 @@ using vs = V<str>;
 using vpi = V<pi>;
 using vpl = V<pl>;
 using vpd = V<pd>;
-
-
-
-// using u128 = __uint128_t;
-tcT> using V = vector<T>;
-tcT, size_t SZ> using AR = array<T, SZ>;
-
-
 
 // vectors
 // oops size(x), rbegin(x), rend(x) need C++17
@@ -64,11 +90,9 @@ tcT, size_t SZ> using AR = array<T, SZ>;
 #define eb emplace_back
 #define ft front()
 #define bk back()
+#define ts to_string
 
-#define lb lower_bound
-#define ub upper_bound
-tcT> int lwb(V<T>& a, const T& b) { return int(lb(all(a),b)-bg(a)); }
-tcT> int upb(V<T>& a, const T& b) { return int(ub(all(a),b)-bg(a)); }
+
 
 // loops
 #define FOR(i,a,b) for (int i = (a); i < (b); ++i)
@@ -80,139 +104,124 @@ tcT> int upb(V<T>& a, const T& b) { return int(ub(all(a),b)-bg(a)); }
 
 
 
-// bitwise ops
-// also see https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html
-constexpr int pct(int x) { return __builtin_popcount(x); } // # of bits set
-constexpr int bits(int x) { // assert(x >= 0); // make C++11 compatible until USACO updates ...
-	return x == 0 ? 0 : 31-__builtin_clz(x); } // floor(log2(x))
-constexpr int p2(int x) { return 1<<x; }
-constexpr int msk2(int x) { return p2(x)-1; }
-
-ll cdiv(ll a, ll b) { return a/b+((a^b)>0&&a%b); } // divide a by b rounded up
-ll fdiv(ll a, ll b) { return a/b-((a^b)<0&&a%b); } // divide a by b rounded down
+const int MOD = 1e9+7;
+const ll BIG = 1e18;  //? not too close to LLONG_MAX
+const db PI = acos((db)-1);
+mt19937 rng(0); // or mt19937_64
 
 
 
-#define tcTUU tcT, class ...U
+ll cdiv(ll a, ll b) {
+	return a / b + ((a ^ b) > 0 && a % b);
+}  // divide a by b rounded up
+ll fdiv(ll a, ll b) {
+	return a / b - ((a ^ b) < 0 && a % b);
+}  // divide a by b rounded down
+
+tcT> bool ckmin(T& a, const T& b) {
+	return b < a ? a = b, 1 : 0; } // set a = min(a,b)
+tcT> bool ckmax(T& a, const T& b) {
+	return a < b ? a = b, 1 : 0; } // set a = max(a,b)
+
+tcT > void remDup(vector<T> &v) {  // sort and remove duplicates
+	sort(all(v));
+	v.erase(unique(all(v)), end(v));
+}
+tcTU > void safeErase(T &t, const U &u) {
+	auto it = t.find(u);
+	assert(it != end(t));
+	t.erase(it);
+}
+
+
 
 inline namespace FileIO {
-	void setIn(str s)  { freopen(s.c_str(),"r",stdin); }
-	void setOut(str s) { freopen(s.c_str(),"w",stdout); }
-	void setIO(str s = "") {
-		cin.tie(0)->sync_with_stdio(0); // unsync C / C++ I/O streams
-		// cin.exceptions(cin.failbit);
-		// throws exception when do smth illegal
-		// ex. try to read letter into int
-		if (sz(s)) setIn(s+".in"), setOut(s+".out"); // for old USACO
-	}
+void setIn(str s) { freopen(s.c_str(), "r", stdin); }
+void setOut(str s) { freopen(s.c_str(), "w", stdout); }
+void setIO(str s = "") {
+	cin.tie(0)->sync_with_stdio(0);  // unsync C / C++ I/O streams
+	//? cout << fixed << setprecision(12);
+    //? cerr << fixed << setprecision(12);
+	cin.exceptions(cin.failbit);
+	// throws exception when do smth illegal
+	// ex. try to read letter into int
+	if (sz(s)) setIn(s + ".in"), setOut(s + ".out");  // for old USACO
 }
+}  // namespace FileIO
 
 
 
-// for debugging!
-#define MACRO(code) do {code} while (false)
-#define DBG(x) MACRO(cerr << #x << " = " << (x) << endl;)
-#define DBGY(x) MACRO(cerr << #x << " = " << (x) << " , ";)
-#define DBG2(x,y) MACRO(DBGY(x); DBG(y);)
-#define DBG3(x,y,z) MACRO(DBGY(x); DBGY(y); DBG(z);)
-#define DBG4(x,y,z,w) MACRO(DBGY(x); DBGY(y); DBGY(z); DBG(w);)
-#define RAYA MACRO(cerr << " ================ " << endl;)
-
+//? Custom Helpers
 template <typename T>
-ostream& operator <<(ostream &os, const vector<T>& v) {
-    os << "[";
+inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
-    for(int i = 0; i < int(v.size()); i++) {
-        if (i > 0) os << " ";
-        os << v[i];
+long long binpow(long long a, long long b) {
+    long long res = 1;
+    while (b > 0) {
+        if (b & 1)
+            res = res * a;
+        a = a * a;
+        b >>= 1;
     }
-    return os << "]";
+    return res;
 }
+//? /Custom Helpers
 
-template <typename T>
-ostream& operator <<(ostream &os, const set<T>& v) {
-    vector<T> tmp;
-    for(auto& e: v) {
-        tmp.emplace_back(e);
-    }
-
-    return os << tmp;
-}
-
-template <typename T>
-ostream& operator <<(ostream &os, const pair<T, T>& v) {
-    return os << "{" << v.first << ", " << v.second << "}";
-}
-
-
-
-mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
-
-// Direction vectors
-ll dRow[] = { -1LL, 0LL, 1LL,  0LL };
-ll dCol[] = {  0LL, 1LL, 0LL, -1LL };
-
-const int MOD = (int)1e9+7; // 998244353;
-const int MX = (int)2e5+5;
-const ll BIG = 1e18; // not too close to LLONG_MAX
-const db PI = acos((db)-1);
-const char n_l = '\n';
-
-
-
-// here goes the template!
-// /here goes the template!
-
-// here goes the work!
-const ll INF = ll(1e12);
 
 void solve() {
-    ll n;
-    cin >> n;
+    int n; cin >> n;
+    vl a(n); each(x, a) cin >> x;
 
-    V<ll> a(n + 1);
-    for(int i = 1; i <= n; i++) {
-        cin >> a[i];
+    vl dp(n + 5, BIG);
+    for(int idx = n; idx >= 0; idx--) {
+        if(idx == n) dp[idx] = 0LL;
+        else {
+            ckmin(dp[idx], dp[idx + 1] + 1LL);
+
+            if((idx + int(a[idx]) + 1) <= n) {
+                ckmin(dp[idx], dp[idx + int(a[idx]) + 1]);
+            }
+        }
     }
+    ll ans = dp[0];
+    cout << ans << "\n";
 
-    // pos in [1, n]
-    V<ll> memo(n + 5);
-    V<bool> vis(n + 5);
-    function<long long(long long)> solve = [&](long long pos) {
-        if(pos == n + 1LL) return 0LL;
-        if(pos > n + 1LL) return INF;
-
-        if(vis[pos]) return memo[pos];
-
-        vis[pos] = true;
-
-        ll ans = min(1LL + solve(pos + 1LL), solve(pos + a[pos] + 1LL));
-
-        return memo[pos] = ans;
-    };
-
-    ll ans = solve(1);
-    cout << ans << n_l;
+//?    vb vis(n + 5);
+//?    vl memo(n + 5);
+//?    function<ll(int)> dp = [&](int idx) -> ll {
+//?        if(idx == n) return 0LL;
+//?        if(idx > n) return BIG;
+//?
+//?        if(vis[idx]) return memo[idx];
+//?        vis[idx] = true;
+//?
+//?        ll ans = min(dp(idx + 1) + 1LL, dp(idx + int(a[idx] + 1)));
+//?        return memo[idx] = ans;
+//?    };
+//?
+//?    ll ans = dp(0);
+//?    dbg(ans);
+//?    cout << ans << "\n";
 }
 
-signed main() {
-    // read read read
-	setIO();
+int main() {
+    cin.tie(0)->sync_with_stdio(0);
 
-    long long t = 1LL;
+    int t = 1;
     cin >> t;
 
-    while(t--) {
+    for(int idx = 0; idx < t; idx++) {
+        RAYA;
+        RAYA;
         solve();
     }
+    RAYA;
+    RAYA;
 
-    // should actually read the stuff at the bottom
+    #ifdef LOCAL
+        cerr << fixed << setprecision(5);
+        cerr << "\033[42m++++++++++++++++++++\033[0m\n";
+        cerr << "\033[42mtime = " << time_elapsed() << "ms\033[0m\n";
+        cerr << "\033[42m++++++++++++++++++++\033[0m";
+    #endif
 }
-
-/* stuff you should look for
-	* int overflow, array bounds
-	* special cases (n=1?)
-	* do smth instead of nothing and stay organized
-	* WRITE STUFF DOWN
-	* DON'T GET STUCK ON ONE APPROACH
-*/

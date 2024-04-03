@@ -167,103 +167,61 @@ long long binpow(long long a, long long b) {
 }
 //? /Custom Helpers
 
-/**
- * Author: Lukas Polacek
- * Date: 2009-10-30
- * License: CC0
- * Source: folklore/TopCoder
- * Description: Computes partial sums a[0] + a[1] + ... + a[pos - 1], and updates single elements a[i],
- * taking the difference between the old and new value.
- * Time: Both operations are $O(\log N)$.
- * Status: Stress-tested
- */
-
-tcT> struct BIT {
-	int N; V<T> data;
-	void init(int _N) { N = _N; data.rsz(N); }
-	void add(int p, T x) { for (++p;p<=N;p+=p&-p) data[p-1] += x; }
-	T sum(int l, int r) { return sum(r+1)-sum(l); }
-	T sum(int r) { T s = 0; for(;r;r-=r&-r)s+=data[r-1]; return s; }
-	int lower_bound(T sum) {
-		if (sum <= 0) return -1;
-		int pos = 0;
-		for (int pw = 1<<25; pw; pw >>= 1) {
-			int npos = pos+pw;
-			if (npos <= N && data[npos-1] < sum)
-				pos = npos, sum -= data[pos-1];
-		}
-		return pos;
-	}
-};
-
-struct Interval {
-    ll l;
-    ll r;
-    ll idx;
-
-    Interval() {}
-
-    Interval(ll _l, ll _r, ll _idx): l(_l), r(_r), idx(_idx) {}
-
-    bool operator<(const Interval& rhs) {
-        if(l == rhs.l) return r > rhs.r;
-        return l < rhs.l;
-    }
-};
 
 void solve() {
     int n; cin >> n;
-    vpl arr(n); each(x, arr) cin >> x.f >> x.s;
+    vl a(n); each(x, a) cin >> x;
+    str S; cin >> S; assert(sz(S) == n);
 
     dbg(n);
-    each(x, arr) dbg(x);
-    RAYA;
+    dbg(a);
+    dbg(S);
 
-    //? Coordinate Compression
-    int mx = -79; //? for st
-    {
-        vl values;
-        each(x, arr) {
-            values.eb(x.f);
-            values.eb(x.s);
-        }
+    vl pref = a; for(int i = 1; i < n; i++) pref[i] ^= pref[i - 1];
+    auto query = [&](int L, int R) {
+        assert(L <= R);
+        ll sum = pref[R];
+        if(0 <= L - 1) sum ^= pref[L - 1];
+        return sum;
+    };
 
-        remDup(values);
-        const int m = sz(values);
-        mx = m + 25;
+    vl ans(2);
+    for(int i = 0; i < n; i++) {
+        if(S[i] == '0') {
+            ans[0] ^= a[i];
+        } else {
+            assert(S[i] == '1');
 
-        map<ll, ll> forwards;
-        for(int i = 0; i < m; i++) {
-            forwards[values[i]] = i + 1;
-        }
-
-        each(x, arr) {
-            x.f = forwards[x.f];
-            x.s = forwards[x.s];
+            ans[1] ^= a[i];
         }
     }
-    assert(mx != -79);
 
-    each(x, arr) dbg(x.f, x.s);
-    RAYA;
-    dbg(mx);
+    int q; cin >> q;
+    dbg(q);
 
+    vl results;
+    rep(q) {
+        int tp; cin >> tp;
+        if(tp == 1) {
+            int l, r; cin >> l >> r; l--; r--;
+            dbg(l, r);
 
+            ll val = query(l, r);
+            ans[0] ^= val;
+            ans[1] ^= val;
+        } else {
+            assert(tp == 2);
 
-    vector<Interval> sgmts;
-    for(int i = 0; i < n; i++) sgmts.eb(Interval(arr[i].f, arr[i].s, i));
+            int g; cin >> g;
+            dbg(g);
 
-    sor(sgmts);
-
-    BIT<ll> st; st.init(mx);
-    ll ans = 0;
-    for(int i = n - 1; i >= 0; i--) {
-        ans += st.sum(sgmts[i].l, sgmts[i].r);
-
-        st.add(sgmts[i].r, 1LL);
+            ll R = ans[g];
+            dbg(R);
+            results.eb(R);
+        }
     }
-    dbg(ans);
-    cout << ans << "\n";
+    const int m = sz(results);
+    for(int i = 0; i < m; i++) cout << results[i] << " \n"[i == m - 1];
 }
 
 int main() {

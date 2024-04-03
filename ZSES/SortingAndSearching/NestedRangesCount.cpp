@@ -167,6 +167,21 @@ long long binpow(long long a, long long b) {
 }
 //? /Custom Helpers
 
+struct Interval {
+    int l;
+    int r;
+    int idx;
+
+    Interval() {}
+
+    Interval(int _l, int _r, int _idx): l(_l), r(_r), idx(_idx) {}
+
+    bool operator<(const Interval& rhs) {
+        if(l == rhs.l) return r > rhs.r;
+        return l < rhs.l;
+    }
+};
+
 /**
  * Author: Lukas Polacek
  * Date: 2009-10-30
@@ -196,81 +211,86 @@ tcT> struct BIT {
 	}
 };
 
-struct Interval {
-    ll l;
-    ll r;
-    ll idx;
-
-    Interval() {}
-
-    Interval(ll _l, ll _r, ll _idx): l(_l), r(_r), idx(_idx) {}
-
-    bool operator<(const Interval& rhs) {
-        if(l == rhs.l) return r > rhs.r;
-        return l < rhs.l;
-    }
-};
-
 void solve() {
     int n; cin >> n;
-    vpl arr(n); each(x, arr) cin >> x.f >> x.s;
+
+    vector<Interval> arr;
+    for(int i = 0; i < n; i++) {
+        int x, y; cin >> x >> y;
+
+        arr.eb(Interval(x, y, i));
+    }
 
     dbg(n);
-    each(x, arr) dbg(x);
+    each(x, arr) dbg(x.l, x.r, x.idx);
     RAYA;
 
-    //? Coordinate Compression
     int mx = -79; //? for st
+    //? Coordinate Compression
     {
-        vl values;
+        vi values;
         each(x, arr) {
-            values.eb(x.f);
-            values.eb(x.s);
+            values.eb(x.l);
+            values.eb(x.r);
         }
 
         remDup(values);
         const int m = sz(values);
         mx = m + 25;
 
-        map<ll, ll> forwards;
+        map<int, int> forwards;
         for(int i = 0; i < m; i++) {
             forwards[values[i]] = i + 1;
         }
 
         each(x, arr) {
-            x.f = forwards[x.f];
-            x.s = forwards[x.s];
+            x.l = forwards[x.l];
+            x.r = forwards[x.r];
         }
     }
     assert(mx != -79);
 
-    each(x, arr) dbg(x.f, x.s);
+    each(x, arr) dbg(x.l, x.r, x.idx);
     RAYA;
-    dbg(mx);
 
+    sor(arr);
 
+    each(x, arr) dbg(x.l, x.r, x.idx);
 
-    vector<Interval> sgmts;
-    for(int i = 0; i < n; i++) sgmts.eb(Interval(arr[i].f, arr[i].s, i));
+    //? How many other ranges it contains
+    vi contains(n);
+    {
+        BIT<int> st; st.init(mx);
+        for(int i = n - 1; i >= 0; i--) {
+            contains[arr[i].idx] = st.sum(arr[i].l, arr[i].r);
 
-    sor(sgmts);
-
-    BIT<ll> st; st.init(mx);
-    ll ans = 0;
-    for(int i = n - 1; i >= 0; i--) {
-        ans += st.sum(sgmts[i].l, sgmts[i].r);
-
-        st.add(sgmts[i].r, 1LL);
+            st.add(arr[i].r, 1);
+            dbg(i);
+        }
     }
-    dbg(ans);
-    cout << ans << "\n";
+
+    //? How many other ranges contain it.
+    vi contained(n);
+    {
+        BIT<int> st; st.init(mx);
+        for(int i = 0; i < n; i++) {
+            contained[arr[i].idx] = st.sum(arr[i].r, mx - 1);
+
+            st.add(arr[i].r, 1);
+        }
+    }
+
+    {
+        for(int i = 0; i < n; i++) cout << contains[i] << " \n"[i == n - 1];
+        for(int i = 0; i < n; i++) cout << contained[i] << " \n"[i == n - 1];
+    }
 }
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
     int t = 1;
-    cin >> t;
+    //? cin >> t;
 
     for(int idx = 0; idx < t; idx++) {
         RAYA;
