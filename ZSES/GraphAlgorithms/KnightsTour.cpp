@@ -168,34 +168,48 @@ long long binpow(long long a, long long b) {
 //? /Custom Helpers
 
 
-void solve() {
-    int start_row, start_col; cin >> start_row >> start_col; start_row--; start_col--;
-    dbg(start_row, start_col);
-
-    const int n = 6;
+void solve(int start_row, int start_col) {
+    const int n = 8;
     auto isValid = [&](int row, int col) {
         return (0 <= row && row < n) && (0 <= col && col < n);
     };
 
-    bool ok = false;
-    #define check { if(ok) { return; } }
+
 
     const vi ddx = {-2, -2, -1, +1, +2, +2, +1, -1};
     const vi ddy = {-1, +1, +2, +2, +1, -1, -2, -2};
+
+
 
     const int NONE = -79;
     AR<AR<int, n>, n> mtx; for(int i = 0; i < n; i++) for(int j = 0; j < n; j++) mtx[i][j] = NONE;
     mtx[start_row][start_col] = 1;
 
+    bool ok = false;
+    #define check { if(ok) { return; } }
+
+    auto get = [&](int row, int col, int parent_row, int parent_col) {
+        assert(isValid(row, col));
+
+        int R = 0;
+        for(int k = 0; k < 8; k++) {
+            int new_x = row + ddx[k];
+            int new_y = col + ddy[k];
+
+            if(isValid(new_x, new_y) && mtx[new_x][new_y] == NONE && !(new_x == parent_row && new_y == parent_col)) {
+                R++;
+            }
+        }
+        return R;
+    };
+
     int cnt = 0;
     function<void(int, int, int)> backtrack = [&](int num, int row, int col) {
         cnt++;
-        if(num == n*n+1) {
-            dbg(num, row, col);
-            RAYA;
-            dbg("fino");
-            each(row, mtx) dbg(row);
-            RAYA;
+
+        mtx[row][col] = num;
+
+        if(num == n * n) {
             ok = true;
             check
         }
@@ -203,30 +217,56 @@ void solve() {
         check
 
         //? try
+        vector<pair<int, pi>> go;
         for(int k = 0; k < 8; k++) {
+            check
+
             int new_x = row + ddx[k];
             int new_y = col + ddy[k];
 
             if(isValid(new_x, new_y) && mtx[new_x][new_y] == NONE) {
-                mtx[new_x][new_y] = num;
-
-                check
-
-                backtrack(num + 1, new_x, new_y);
-
-                check
-
-                mtx[new_x][new_y] = NONE;
+                go.eb(mp(get(new_x, new_y, row, col), mp(new_x, new_y)));
             }
 
             check
         }
 
+        sor(go);
+
         check
-    }; backtrack(2, start_row, start_col);
+
+        if(go.empty()) {
+            mtx[row][col] = NONE;
+            return;
+        }
+
+        each(e, go) {
+            check
+
+            int act_row = e.s.f;
+            int act_col = e.s.s;
+
+            backtrack(num + 1, act_row, act_col);
+
+            check
+        }
+
+        check
+
+        mtx[row][col] = NONE;
+
+        check
+    }; backtrack(1, start_row, start_col);
 
     each(row, mtx) dbg(row);
     dbg(cnt);
+    RAYA;
+
+    each(row, mtx) {
+        each(x, row)
+            cout << x << " ";
+        cout << "\n";
+    }
 }
 
 int main() {
@@ -238,7 +278,10 @@ int main() {
     for(int idx = 0; idx < t; idx++) {
         RAYA;
         RAYA;
-        solve();
+        int start_row, start_col; cin >> start_row >> start_col; start_row--; start_col--; swap(start_row, start_col);
+        dbg(start_row, start_col);
+
+        solve(start_row, start_col);
     }
     RAYA;
     RAYA;
