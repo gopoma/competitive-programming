@@ -280,7 +280,14 @@ T sqrt(mi a) {
 }
 
 void solve() {
+    //! n is prime, a and n are relatively prime
     int a, n; cin >> a >> n;
+    dbg(a, n);
+
+    if(n == 2) {
+        cout << "1\n";
+        return;
+    }
 
     mi::set_mod(n);
 
@@ -290,17 +297,18 @@ void solve() {
 
     if(ans == -1) cout << "No root\n";
     else {
-        int val1 = ans;
-        int val2 = n - ans;
+        vi results{ans, n - ans}; remDup(results);
+        const int m = sz(results);
 
-        assert(val1 != val2);
-
-        cout << val1 << " " << val2 << "\n";
+        for(int i = 0; i < m; i++) {
+            cout << results[i] << " \n"[i == m - 1];
+        }
     }
 
 }
 
 int main() {
+    //? setIn("SquareRoot.in");
     cin.tie(0)->sync_with_stdio(0);
 
     int t = 1;
