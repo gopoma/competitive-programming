@@ -350,7 +350,8 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 	return uniform_int_distribution<ll>(L,R)(rng);  }
 //? /Generator
 
-
+//? https://atcoder.jp/contests/abc344/tasks/abc344_e
+//? E - Insert or Erase
 signed main() {
     setIO();
 
