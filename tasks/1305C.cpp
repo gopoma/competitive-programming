@@ -293,82 +293,114 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
+/**
+ * Description: Barrett reduction computes $a \% b$ about 4 times faster than usual
+ 	* where $b>1$ is constant but not known at compile time. Division by $b$ is replaced
+ 	* by multiplication by $m$ and shifting right 64 bits.
+ * Source: KACTL
+ 	* https://github.com/kth-competitive-programming/kactl/blob/master/content/various/FastMod.h
+ 	* https://en.wikipedia.org/wiki/Barrett_reduction
+ * Verification: http://www.usaco.org/index.php?page=viewproblem2&cpid=1045
+ */
+
+using ul = uint64_t; using L = __uint128_t;
+struct FastMod {
+	ul b, m; FastMod(ul b) : b(b), m(-1ULL / b) {}
+	ul reduce(ul a) {
+		ul q = (ul)((__uint128_t(m) * a) >> 64), r = a - q * b;
+		return r - (r >= b) * b; }
+};
+
+/**
+ * Description: modular arithmetic operations
+ * Source:
+	* KACTL
+	* https://codeforces.com/blog/entry/63903
+	* https://codeforces.com/contest/1261/submission/65632855 (tourist)
+	* https://codeforces.com/contest/1264/submission/66344993 (ksun)
+	* also see https://github.com/ecnerwala/cp-book/blob/master/src/modnum.hpp (ecnerwal)
+	* https://github.com/atcoder/ac-library/blob/master/atcoder/modint.hpp
+ * Verification:
+	* https://open.kattis.com/problems/modulararithmetic
+ */
+
+template<int id> struct mint {
+	static FastMod MF;
+	static int mod() { return (int)MF.b; }
+	static void set_mod(int m) { assert(1 <= m); MF = FastMod(m); }
+	int v; explicit operator int() const { return v; } // explicit -> don't silently convert to int
+	mint() { v = 0; }
+	mint(ll _v) { v = int((-mod() < _v && _v < mod()) ? _v : _v % mod());
+		if (v < 0) v += mod(); }
+	friend bool operator==(const mint& a, const mint& b) {
+		return a.v == b.v; }
+	friend bool operator!=(const mint& a, const mint& b) {
+		return !(a == b); }
+	friend bool operator<(const mint& a, const mint& b) {
+		return a.v < b.v; }
+	friend void re(mint& a) { ll x; re(x); a = mint(x); }
+	friend str ts(mint a) { return ts(a.v); }
+    friend ostream &operator<<(ostream &os, mint a) {
+		os << ts(a);
+		return os;
+	}
+
+	mint& operator+=(const mint& m) {
+		if ((v += m.v) >= mod()) v -= mod();
+		return *this; }
+	mint& operator-=(const mint& m) {
+		if ((v -= m.v) < 0) v += mod();
+		return *this; }
+	mint& operator*=(const mint& m) {
+		v = (int)MF.reduce((ll)v*m.v); return *this; }
+	mint& operator/=(const mint& m) { return (*this) *= inv(m); }
+	friend mint pow(mint a, ll p) {
+		mint ans = 1; assert(p >= 0);
+		for (; p; p /= 2, a *= a) if (p&1) ans *= a;
+		return ans; }
+	friend mint inv(const mint& a) { assert(a.v != 0);
+		return pow(a,mod()-2); }
+
+	mint operator-() const { return mint(-v); }
+	mint& operator++() { return *this += 1; }
+	mint& operator--() { return *this -= 1; }
+	friend mint operator+(mint a, const mint& b) { return a += b; }
+	friend mint operator-(mint a, const mint& b) { return a -= b; }
+	friend mint operator*(mint a, const mint& b) { return a *= b; }
+	friend mint operator/(mint a, const mint& b) { return a /= b; }
+};
+template<int id> FastMod mint<id>::MF = FastMod(1);
+
+typedef mint<0> mi; // 5 is primitive root for both common mods
+typedef vector<mi> vmi;
+typedef pair<mi,mi> pmi;
+typedef vector<pmi> vpmi;
+
+vector<vmi> scmb; // small combinations
+void genComb(int SZ) {
+	scmb.assign(SZ,vmi(SZ)); scmb[0][0] = 1;
+	FOR(i,1,SZ) F0R(j,i+1)
+		scmb[i][j] = scmb[i-1][j]+(j?scmb[i-1][j-1]:0);
+}
+
 //* /Template
 
-ll brute(int n, vi a) {
-    vi pref = a; for(int i = 1; i < n; i++) pref[i] += pref[i - 1];
-    auto query = [&](int L, int R) {
-        assert(L <= R);
-        int sum = pref[R];
-        if(0 <= L - 1) sum -= pref[L - 1];
-        return sum;
-    };
+mi brute(int n, int m, vi a) {
+    mi::set_mod(m);
 
-    ll ans = 0;
-    for(int l = 1; l <= n; l++) {
-        ll contrib = 0;
-        for(int j = 0; j < n; j++) {
-            int from = j;
-            int to = j + l - 1;
-            if(to >= n) break;
-
-            if(query(from, to) == l) {
-                contrib++;
-            }
+    mi ans = 1;
+    for(int i = 0; i < n; i++) {
+        for(int j = i + 1; j < n; j++) {
+            ans *= mi(abs(a[i] - a[j]));
         }
-        ans += contrib;
     }
-
-    dbg(pref);
-
     return ans;
 }
 
-ll solve(int n, vi a) {
-    ll ans = 0;
+mi solve(int n, int m, vi a) {
+	if(n > m) return mi(0);
 
-    vi pref = a; for(int i = 1; i < n; i++) pref[i] += pref[i - 1];
-    vi zeros(n); for(int i = 0; i < n; i++) zeros[i] = (a[i] == 0);
-    for(int i = 1; i < n; i++) zeros[i] += zeros[i - 1];
-
-    auto query = [&](vi& arr, int L, int R) {
-        int sum = arr[R];
-        if(0 <= L - 1) sum -= arr[L - 1];
-        return sum;
-    };
-
-    for(int L = 0; L < n; L++) {
-        int length = (n - 1) - L + 1;
-        auto check = [&](int x) {
-            if(x == 0) return true;
-
-            int left = L;
-            int right = L + x - 1;
-
-            int sum = query(pref, left, right);
-            if(sum > length) return false;
-            if(sum == 0) return true;
-
-            return sum == x || (query(pref, left, left + sum - 1) == sum);
-        };
-
-        int left = 0;
-        int right = length + 1;
-
-        while(left + 1 < right) {
-            int middle = (left + right) >> 1;
-
-            if(check(middle)) left = middle;
-            else right = middle;
-        }
-
-        dbg(L, left);
-
-        if(left == 0) continue;
-
-        ans += left - query(zeros, L, L + left - 1);
-    }
-    return ans;
+    return brute(n, m, a);
 }
 
 
@@ -383,43 +415,41 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    while(true) {
+    while(false) {
         RAYA;
-        int n = rng_int(1, 10);
-        str S; rep(n) S.pb(ts(rng_int(0, 9)).ft);
-        vi a(n); for(int j = 0; j < n; j++) a[j] = int(S[j] - '0');
+        int n = rng_int(2, int(2e3));
+        int m = rng_int(1, 1000);
+
+        vi a(n); each(x, a) x = rng_int(1, 100);
+
+        mi ans = brute(n, m, a);
+        mi greedy = solve(n, m, a);
 
         dbg(n);
-        dbg(S);
+        dbg(m);
         dbg(a);
-
-        ll ans = brute(n, a);
-        dbg("Greedy");
-        ll greedy = solve(n, a);
 
         dbg(ans, greedy);
 
         chk(ans == greedy);
     }
 
-    ll t = 1; re(t);
+    ll t = 1; //? re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;
         RAYA;
 
-        def(int, n);
-        def(str, S);
-        vi a(n); for(int j = 0; j < n; j++) a[j] = int(S[j] - '0');
+        def(int, n, m);
+        vi a(n); re(a);
 
-        dbg(n);
-        dbg(S);
+        dbg(n, m);
         dbg(a);
 
-        ll ans = solve(n, a);
+        mi ans = solve(n, m, a);
 
-        dbg(ans);
-        ps(ans);
+        dbg(ans.v);
+        ps(ans.v);
     }
     RAYA;
     RAYA;
