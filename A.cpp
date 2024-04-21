@@ -296,7 +296,54 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
+    def(int, n, k);
 
+    vector<vi> adj(n);
+    rep(n - 1) {
+        def(int, u, v); u--; v--;
+
+        adj[u].eb(v);
+        adj[v].eb(u);
+    }
+
+    dbg(n);
+    for(int u = 0; u < n; u++) dbg(u, adj[u]);
+
+    vl stsz(n);
+    vl height(n);
+
+    vb vis(n);
+    function<void(int, int)> dfs = [&](int u, int level) {
+        if(vis[u]) return;
+        vis[u] = true;
+
+        height[u] = level;
+
+        stsz[u] = 1;
+        each(v, adj[u]) {
+            if(vis[v]) continue;
+
+            dfs(v, level + 1);
+
+            stsz[u] += stsz[v];
+        }
+    }; dfs(0, 1);
+
+    vl val(n);
+    for(int u = 0; u < n; u++) {
+        val[u] = height[u] - stsz[u];
+    }
+    chk(accumulate(all(val), 0LL) == 0LL);
+
+    for(int u = 0; u < n; u++) dbg(u, stsz[u], height[u], val[u]);
+
+    sort(rall(val));
+
+    ll ans = 0;
+    for(int i = 0; i < k; i++) ans += val[i];
+
+    dbg(ans);
+    ps(ans);
 }
 
 

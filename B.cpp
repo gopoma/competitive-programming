@@ -311,7 +311,7 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    ll t = 1; //? re(t);
+    ll t = 1; re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;
