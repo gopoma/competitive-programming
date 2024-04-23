@@ -89,7 +89,7 @@ const int MX = (int)2e5 + 5;
 const ll BIG = 1e18;  //? not too close to LLONG_MAX
 const db PI = acos((db)-1);
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
-mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
+mt19937 rng(0);
 
 
 
@@ -295,14 +295,7 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* Template
 //* /Template
 
-void solve() {
-    def(int, n, m);
-    vl a(n), b(m); re(a, b);
-
-    dbg(n, m);
-    dbg(a);
-    dbg(b);
-
+vl brute(int n, int m, vl a, vl b) {
     vl ans(m);
     for(int i = 0; i < m; i++) {
         ll g = 0;
@@ -311,27 +304,238 @@ void solve() {
         }
         ans[i] = g;
     }
-    dbg(ans);
+    return ans;
 }
 
+vl solve(int n, int m, vl a, vl b) {
+    assert(a.size() == n);
+    assert(b.size() == m);
+
+    {
+        bool ok = true;
+        ll tar = a.front();
+        for(auto& x: a) ok &= (x == tar);
+
+        if(ok) {
+            vl ans;
+            for(int i = 0; i < m; i++) {
+                ans.emplace_back(tar + b[i]);
+            }
+
+            return ans;
+        }
+    }
+
+    vl norm(n);
+    ll mn = *min_element(all(a));
+
+    ll g = 0;
+    for(int i = 0; i < n; i++) {
+        norm[i] = a[i] - mn;
+
+        g = gcd(g, norm[i]);
+    }
+
+    vl ans;
+    for(int i = 0; i < m; i++) {
+        ll tar = b[i] + mn;
+
+        ans.emplace_back(gcd(g, tar));
+    }
+
+    return ans;
+}
 
 //? Generator
+/**
+ * Description: Generate various types of trees.
+ * Source: Own + Dhruv Rohatgi
+ */
+
+////////////// DISTRIBUTIONS
+
+// return int in [L,R] inclusive
 int rng_int(int L, int R) { assert(L <= R);
 	return uniform_int_distribution<int>(L,R)(rng);  }
 ll rng_ll(ll L, ll R) { assert(L <= R);
 	return uniform_int_distribution<ll>(L,R)(rng);  }
+
+// return double in [L,R] inclusive
+db rng_db(db L, db R) { assert(L <= R);
+	return uniform_real_distribution<db>(L,R)(rng); }
+
+// http://cplusplus.com/reference/random/geometric_distribution/geometric_distribution/
+// flip a coin which is heads with probability p until you flip heads
+// mean value of c is 1/p-1
+int rng_geo(db p) { assert(0 < p && p <= 1); // p large -> closer to 0
+	return geometric_distribution<int>(p)(rng); }
+
+////////////// VECTORS + PERMS
+
+// shuffle a vector
+template<class T> void shuf(vector<T>& v) { shuffle(all(v),rng); }
+
+// generate random permutation of [0,N-1]
+vi randPerm(int N) { vi v(N); iota(all(v),0); shuf(v); return v; }
+
+// random permutation of [0,N-1] with first element 0
+vi randPermZero(int N) { vi v(N-1); iota(all(v),1);
+	shuf(v); v.ins(bg(v),0); return v; }
+
+// shuffle permutation of [0,N-1]
+vi shufPerm(vi v) {
+	int N = sz(v); vi key = randPerm(N);
+	vi res(N); F0R(i,N) res[key[i]] = key[v[i]];
+	return res;
+}
+
+// vector with all entries in [L,R]
+vi rng_vec(int N, int L, int R) {
+	vi res; F0R(_,N) res.pb(rng_int(L,R));
+	return res;
+}
+
+// vector with all entries in [L,R], unique
+vi rng_vec_unique(int N, int L, int R) {
+	set<int> so_far; vi res;
+	F0R(_,N) {
+		int x; do { x = rng_int(L,R); } while (so_far.count(x));
+		so_far.ins(x); res.pb(x);
+	}
+	return res;
+}
+
+////////////// GRAPHS
+
+// relabel edges ed according to perm, shuffle
+vpi relabelAndShuffle(vpi ed, vi perm) {
+	each(t,ed) {
+		t.f = perm[t.f], t.s = perm[t.s];
+		if (rng()&1) swap(t.f,t.s);
+	}
+	shuf(ed); return ed;
+}
+
+// shuffle graph with vertices [0,N-1]
+vpi shufGraph(int N, vpi ed) { // randomly swap endpoints, rearrange labels
+	return relabelAndShuffle(ed,randPerm(N)); }
+vpi shufGraphZero(int N, vpi ed) {
+	return relabelAndShuffle(ed,randPermZero(N)); }
+
+// shuffle tree given N-1 edges
+vpi shufTree(vpi ed) { return shufGraph(sz(ed)+1,ed); }
+// randomly swap endpoints, rearrange labels
+vpi shufRootedTree(vpi ed) {
+	return relabelAndShuffle(ed,randPermZero(sz(ed)+1)); }
+
+void pgraphOne(int N, vpi ed) {
+	ps(N,sz(ed));
+	each(e,ed) ps(1+e.f,1+e.s);
+}
+
+////////////// GENERATING TREES
+
+// for generating tall tree
+pi geoEdge(int i, db p) { assert(i > 0);
+	return {i,max(0,i-1-rng_geo(p))}; }
+
+// generate edges of tree with verts [0,N-1]
+// smaller back -> taller tree
+vpi treeRand(int N, int back) {
+	assert(N >= 1 && back >= 0); vpi ed;
+	FOR(i,1,N) ed.eb(i,i-1-rng_int(0,min(back,i-1)));
+	return ed; }
+
+// generate path
+vpi path(int N) { return treeRand(N,0); }
+
+// generate tall tree (large diameter)
+// the higher the p the taller the tree
+vpi treeTall(int N, db p) { assert(N >= 1);
+	vpi ed; FOR(i,1,N) ed.pb(geoEdge(i,p));
+	return ed; }
+
+// generate tall tree, then add rand at end
+vpi treeTallShort(int N, db p) {
+	assert(N >= 1); int mid = (N+1)/2;
+	vpi ed = treeTall(mid,p);
+	FOR(i,mid,N) ed.eb(i,rng_int(0,i-1));
+	return ed; }
+
+// lots of stuff connected to either heavy1 or heavy2
+vpi treeTallHeavy(int N, db p) {
+	assert(N >= 1); // + bunch of rand
+	vpi ed; int heavy1 = 0, heavy2 = N/2;
+	FOR(i,1,N) {
+		if(i < N/4) ed.eb(i,heavy1);
+		else if (i > heavy2 && i < 3*N/4) ed.eb(i,heavy2);
+		else ed.pb(geoEdge(i,p));
+	}
+	return ed;
+}
+
+// heavy tall tree + random
+// lots of verts connected to heavy1 or heavy2
+vpi treeTallHeavyShort(int N, db p) {
+	assert(N >= 1); // + almost-path + rand
+	vpi ed; int heavy1 = 0, heavy2 = N/2;
+	FOR(i,1,N) {
+		if(i < N/4) ed.eb(i,heavy1);
+		else if (i <= heavy2) ed.pb(geoEdge(i,p)); // tall -> heavy1
+		else if (i > heavy2 && i < 3*N/4) ed.eb(i,heavy2);
+		else ed.eb(i,rng_int(0,i-1));
+	}
+	return ed;
+}
+
+int rand_prime(int l, int r) {
+	while(1) {
+		int x = rng_int(l,r);
+		bool bad = 0;
+		for (int i = 2; i*i <= x; ++i) if (x%i == 0) bad = 1;
+		if (!bad) return x;
+	}
+}
 //? /Generator
 
 
 signed main() {
     setIO();
 
+    while(false) {
+        RAYA;
+        int n = rng_int(1, 100);
+        int m = rng_int(1, 100);
+
+        vl a(n); each(x, a) x = rng_ll(1, 1e18);
+        vl b(m); each(x, b) x = rng_ll(1, 1e18);
+
+        vl ans = brute(n, m, a, b);
+        vl greedy = solve(n, m, a, b);
+
+        dbg(n, m);
+        dbg(a);
+        dbg(b);
+        dbg(ans);
+        dbg(greedy);
+
+        chk(ans == greedy);
+    }
+
     ll t = 1; //? re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;
         RAYA;
-        solve();
+        def(int, n, m);
+        vl a(n), b(m); re(a, b);
+
+        dbg(n, m);
+        dbg(a);
+        dbg(b);
+
+        vl ans = solve(n, m, a, b);
+        ps(ans);
     }
     RAYA;
     RAYA;
