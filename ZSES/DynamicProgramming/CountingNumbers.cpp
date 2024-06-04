@@ -181,6 +181,7 @@ ll brute(ll L, ll R) {
     return ans;
 }
 
+//? Reference: https://codeforces.com/blog/entry/53960
 ll slv(ll L, ll R) {
     auto get = [](ll R) -> ll {
         if(R < 0) return 0;
