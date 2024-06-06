@@ -293,62 +293,47 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
-/**
- * Description: Deterministic primality test, works up to $2^{64}$.
- 	* For larger numbers, extend $A$ randomly.
- * Source: KACTL
-	* https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test
- * Verification: https://www.spoj.com/problems/FACT0/
- */
-
-/// using db = long double;
-using ul = uint64_t;
-ul modMul(ul a, ul b, const ul mod) {
-	ll ret = a*b-mod*(ul)((db)a*b/mod);
-	return ret+((ret<0)-(ret>=(ll)mod))*mod; }
-ul modPow(ul a, ul b, const ul mod) {
-	if (b == 0) return 1;
-	ul res = modPow(a,b/2,mod); res = modMul(res,res,mod);
-	return b&1 ? modMul(res,a,mod) : res;
-}
-
-bool prime(ul n) { // not ll!
-	if (n < 2 || n % 6 % 4 != 1) return n-2 < 2;
-	ul A[] = {2, 325, 9375, 28178, 450775, 9780504, 1795265022},
-	    s = __builtin_ctzll(n-1), d = n>>s;
-	each(a,A) {   // ^ count trailing zeroes
-		ul p = modPow(a,d,n), i = s;
-		while (p != 1 && p != n-1 && a%n && i--) p = modMul(p,p,n);
-		if (p != n-1 && i != s) return 0;
-	}
-	return 1;
-}
-
 //* /Template
 
 void solve() {
-    //? <>
-    def(ll, Q);
-    vpl queries(Q); re(queries);
+    def(ll, n, k, q);
+    vpl suggestions(n), queries(q); re(suggestions, queries);
 
-    const int mx = int(1e5) + 5;
-    vl pref(mx);
-    for(ll x = 1; x < mx; x++) {
-        if((x & 1) && prime(x) && prime(fdiv(x + 1LL, 2LL))) {
-            pref[x] = 1;
-        }
-        pref[x] += pref[x - 1];
-    }
-    auto query = [&](int L, int R) -> ll {
-        ll sum = pref[R];
-        if(0 <= L - 1) sum -= pref[L - 1];
-        return sum;
+    ll MX = -BIG;
+    each(suggest, suggestions) ckmax(MX, max(suggest.f, suggest.s));
+    each(query, queries) ckmax(MX, max(query.f, query.s));
+    assert(MX != -BIG);
+
+    const ll length = MX + 5;
+    vl dp(length);
+    auto add_range = [&](ll L, ll R) {
+        dp[L] += 1;
+        dp[R + 1] -= 1;
     };
 
-    each(que, queries) {
-        auto [L, R] = que;
+    each(suggest, suggestions) {
+        auto [L, R] = suggest;
+
+        add_range(L, R);
+    }
+
+    for(int i = 1; i < length; i++) {
+        dp[i] += dp[i - 1];
+    }
+    each(x, dp) x = (x >= k);
+    for(int i = 1; i < length; i++) {
+        dp[i] += dp[i - 1];
+    }
+
+    auto query = [&](ll L, ll R) {
+        ll S = dp[R];
+        if(0 < L - 1) S -= dp[L - 1];
+        return S;
+    };
+
+    each(q, queries) {
+        auto [L, R] = q;
         ll ans = query(L, R);
-        dbg(ans);
         ps(ans);
     }
 }

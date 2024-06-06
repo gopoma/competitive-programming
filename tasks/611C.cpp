@@ -294,60 +294,71 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 //* Template
 /**
- * Description: Deterministic primality test, works up to $2^{64}$.
- 	* For larger numbers, extend $A$ randomly.
+ * Description: calculates rectangle sums in constant time
  * Source: KACTL
-	* https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test
- * Verification: https://www.spoj.com/problems/FACT0/
+ * Verification: POI 16 Ticket Inspector
  */
 
-/// using db = long double;
-using ul = uint64_t;
-ul modMul(ul a, ul b, const ul mod) {
-	ll ret = a*b-mod*(ul)((db)a*b/mod);
-	return ret+((ret<0)-(ret>=(ll)mod))*mod; }
-ul modPow(ul a, ul b, const ul mod) {
-	if (b == 0) return 1;
-	ul res = modPow(a,b/2,mod); res = modMul(res,res,mod);
-	return b&1 ? modMul(res,a,mod) : res;
-}
-
-bool prime(ul n) { // not ll!
-	if (n < 2 || n % 6 % 4 != 1) return n-2 < 2;
-	ul A[] = {2, 325, 9375, 28178, 450775, 9780504, 1795265022},
-	    s = __builtin_ctzll(n-1), d = n>>s;
-	each(a,A) {   // ^ count trailing zeroes
-		ul p = modPow(a,d,n), i = s;
-		while (p != 1 && p != n-1 && a%n && i--) p = modMul(p,p,n);
-		if (p != n-1 && i != s) return 0;
+template<class T> struct PrefixSums {
+	vector<vector<T>> sum;
+	void init(const vector<vector<T>>& v) {
+		int R = sz(v), C = sz(v[0]);
+		sum.assign(R+1,vector<T>(C+1));
+		F0R(i,R) F0R(j,C)
+			sum[i+1][j+1] = v[i][j]+sum[i+1][j]+sum[i][j+1]-sum[i][j];
 	}
-	return 1;
-}
+	T get(int X1, int X2, int Y1, int Y2) {
+		X2 ++, Y2 ++;
+		return sum[X2][Y2]-sum[X1][Y2]
+			-sum[X2][Y1]+sum[X1][Y1];
+	}
+};
 
 //* /Template
 
 void solve() {
     //? <>
-    def(ll, Q);
-    vpl queries(Q); re(queries);
+    def(ll, h, w);
+    vs S(h); re(S);
 
-    const int mx = int(1e5) + 5;
-    vl pref(mx);
-    for(ll x = 1; x < mx; x++) {
-        if((x & 1) && prime(x) && prime(fdiv(x + 1LL, 2LL))) {
-            pref[x] = 1;
+    dbg(h, w);
+    each(x, S) dbg(x);
+
+    vector<vl> __nxt(h, vl(w));
+    vector<vl> __bottom(h, vl(w));
+    for(int i = 0; i < h; i++) {
+        for(int j = 0; j < w; j++) {
+            //? nxt cell
+            if(j + 1 < w) {
+                __nxt[i][j] = (S[i][j] == '.' && S[i][j + 1] == '.');
+            }
+
+            //? bottom cell
+            if(i + 1 < h) {
+                __bottom[i][j] = (S[i][j] == '.' && S[i + 1][j] == '.');
+            }
         }
-        pref[x] += pref[x - 1];
     }
-    auto query = [&](int L, int R) -> ll {
-        ll sum = pref[R];
-        if(0 <= L - 1) sum -= pref[L - 1];
-        return sum;
-    };
 
-    each(que, queries) {
-        auto [L, R] = que;
-        ll ans = query(L, R);
+    PrefixSums<ll> nxt; nxt.init(__nxt);
+    PrefixSums<ll> bottom; bottom.init(__bottom);
+
+    RAYA;
+    def(ll, q);
+    rep(q) {
+        def(ll, r1, c1, r2, c2);
+        r1--; c1--; r2--; c2--;
+        dbg(r1, c1, r2, c2);
+
+        ll ans = 0;
+        //? nxt
+        if(c2 - c1 + 1 >= 2) {
+            ans += nxt.get(r1, r2, c1, c2 - 1);
+        }
+        //? bottom
+        if(r2 - r1 + 1 >= 2) {
+            ans += bottom.get(r1, r2 - 1, c1, c2);
+        }
         dbg(ans);
         ps(ans);
     }
