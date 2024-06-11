@@ -296,23 +296,82 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, N);
-    vl A(N); re(A);
-    dbg(N);
-    dbg(A);
+    //? <>
+    def(ll, n, l, r);
+    dbg(n, l, r);
 
-    vl pref = A; for(int i = 1; i < N;i++) pref[i] = gcd(pref[i], pref[i - 1]);
-    vl suff = A; for(int i = N - 2; i >= 0; i--) suff[i]= gcd(suff[i], suff[i + 1]);
+    map<ll, bool> vis_cnt;
+    map<ll, pl> memo_cnt;
+    //? first: counter
+    //? second: #ones
+    function<pl(ll)> cnt = [&](ll x) -> pl {
+        if(x == 0) return mp(1LL, 0LL);
+        if(x == 1) return mp(1LL, 1LL);
 
-    ll ans = 0;
-    for(int i = 0; i < N; i++) {
+        if(vis_cnt[x]) return memo_cnt[x];
+        vis_cnt[x] = true;
+
+
+
+        pl tar = cnt(fdiv(x, 2LL));
+
+        ll counter = tar.f + 1LL + tar.f;
+        ll ones = tar.s + (x & 1LL) + tar.s;
+
+        return memo_cnt[x] = mp(counter, ones);
+    };
+
+    dbg(cnt(7));
+    dbg(cnt(10));
+
+    auto pref = [&](ll R) -> ll {
+        if(R == 0) return 0;
+        //? cnt
+        //? first: counter
+        //? second: #ones
         ll act = 0;
+        ll ans = 0;
+        function<void(ll)> solve = [&](ll x) {
+            auto [counter, ones] = cnt(fdiv(x, 2LL));
 
-        if(0 <= i - 1) act = gcd(act, pref[i - 1]);
-        if(i + 1 < N) act = gcd(act, suff[i + 1]);
+            if(x > 1) {
+                if(act + counter > R) {
+                    solve(fdiv(x, 2LL));
+                    return;
+                } else {
+                    act += counter;
+                    ans += ones;
+                }
+                if(act == R) return;
+            }
 
-        ckmax(ans, act);
-    }
+
+            act++;
+            ans += (x & 1LL);
+
+            if(act == R) return;
+
+            if(x > 1) {
+                if(act + counter > R) {
+                    solve(fdiv(x, 2LL));
+                    return;
+                } else {
+                    act += counter;
+                    ans += ones;
+                }
+
+                if(act == R) return;
+            }
+        };
+        solve(n);
+        return ans;
+    };
+
+    ll right = pref(r);
+    ll left = pref(l - 1);
+    dbg(right, left);
+
+    ll ans = right - left;
     dbg(ans);
     ps(ans);
 }

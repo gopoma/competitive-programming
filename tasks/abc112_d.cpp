@@ -296,22 +296,29 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, N);
-    vl A(N); re(A);
-    dbg(N);
-    dbg(A);
+    def(ll, N, M);
 
-    vl pref = A; for(int i = 1; i < N;i++) pref[i] = gcd(pref[i], pref[i - 1]);
-    vl suff = A; for(int i = N - 2; i >= 0; i--) suff[i]= gcd(suff[i], suff[i + 1]);
+    auto get_divisors = [&](ll num) -> vl {
+        vl divisors;
+        for(ll x = 1; x * x <= num; x++) {
+            if(num % x == 0) {
+                divisors.eb(x);
 
-    ll ans = 0;
-    for(int i = 0; i < N; i++) {
-        ll act = 0;
+                ll act = fdiv(num, x);
+                if(x != act) {
+                    divisors.eb(act);
+                }
+            }
+        }
+        return divisors;
+    };
 
-        if(0 <= i - 1) act = gcd(act, pref[i - 1]);
-        if(i + 1 < N) act = gcd(act, suff[i + 1]);
-
-        ckmax(ans, act);
+    ll ans = 1;
+    vl divisors = get_divisors(M);
+    each(d, divisors) {
+        if(N * d <= M) {
+            ckmax(ans, d);
+        }
     }
     dbg(ans);
     ps(ans);

@@ -296,24 +296,15 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, N);
-    vl A(N); re(A);
-    dbg(N);
-    dbg(A);
-
-    vl pref = A; for(int i = 1; i < N;i++) pref[i] = gcd(pref[i], pref[i - 1]);
-    vl suff = A; for(int i = N - 2; i >= 0; i--) suff[i]= gcd(suff[i], suff[i + 1]);
-
+    def(ll, K);
     ll ans = 0;
-    for(int i = 0; i < N; i++) {
-        ll act = 0;
-
-        if(0 <= i - 1) act = gcd(act, pref[i - 1]);
-        if(i + 1 < N) act = gcd(act, suff[i + 1]);
-
-        ckmax(ans, act);
+    for(int a = 1; a <= K; a++) {
+        for(int b = 1; b <= K; b++) {
+            for(int c = 1; c <= K; c++) {
+                ans += gcd(a, gcd(b, c));
+            }
+        }
     }
-    dbg(ans);
     ps(ans);
 }
 

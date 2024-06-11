@@ -1,7 +1,7 @@
 //* sometimes pragmas don't work, if so, just comment it!
 //? #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
-//! #pragma GCC optimize ("trapv")
+#pragma GCC optimize ("trapv")
 
 //! #undef _GLIBCXX_DEBUG //? for Stress Testing
 
@@ -295,26 +295,107 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* Template
 //* /Template
 
-void solve() {
-    def(ll, N);
-    vl A(N); re(A);
-    dbg(N);
-    dbg(A);
+char solve() {
+    //? <>
+    def(ll, n, k);
+    dbg(n, k);
 
-    vl pref = A; for(int i = 1; i < N;i++) pref[i] = gcd(pref[i], pref[i - 1]);
-    vl suff = A; for(int i = N - 2; i >= 0; i--) suff[i]= gcd(suff[i], suff[i + 1]);
+    const str base = "What are you doing at the end of the world? Are you busy? Will you save us?";
+    const str part1 = "What are you doing while sending \"";
+    const str part2 = "\"? Are you busy? Will you send \"";
+    const str part3 = "\"?";
+    dbg(sz(base));
+    dbg(sz(part1));
+    dbg(sz(part2));
+    dbg(sz(part3));
 
-    ll ans = 0;
-    for(int i = 0; i < N; i++) {
+    ll memo_cnt[int(1e5)+1];
+    memset(memo_cnt, -1, sizeof(memo_cnt));
+    function<ll(ll)> cnt = [&](ll x) -> ll {
+        if(x == -1) return 0;
+        if(x == 0) return sz(base);
+        if(memo_cnt[x] != -1) return memo_cnt[x];
+
+        /*
+            What are you doing while sending
+            What are you doing at the end of the world? Are you busy? Will you save us?
+            ? Are you busy? Will you send
+            What are you doing at the end of the world? Are you busy? Will you save us?
+            ?
+         */
+
+        ll ans = sz(part1) + cnt(x - 1) + sz(part2) + cnt(x - 1) + sz(part3);
+        return memo_cnt[x] = ans;
+    };
+    dbg(cnt(0));
+    dbg(cnt(1));
+    dbg(cnt(54));
+    dbg(cnt(53));
+    chk(ll(1e18) <= cnt(54));
+    chk(ll(1e18) <= cnt(53));
+
+    if(n <= 54 && k > cnt(n)) {
+        dbg(n, cnt(n));
+        return '.';
+    } else {
         ll act = 0;
+        char ans = '$';
+        bool ok = false;
+        #define check if(ok) { return; }
+        #define check_good(S) if(act + sz(S) >= k) { /*dbg("check_good", S, sz(S), k, act);*/ ans = S[k - act - 1]; ok = true; check }
+        function<void(ll)> solve = [&](ll x) -> void {
+            check
 
-        if(0 <= i - 1) act = gcd(act, pref[i - 1]);
-        if(i + 1 < N) act = gcd(act, suff[i + 1]);
+            if(x == 0) {
+                check_good(base);
+                act += sz(base);
+            } else {
+                //?const str part1 = "What are you doing while sending ";
+                //?const str part2 = "? Are you busy? Will you send ";
+                //?const str part3 = "?";
 
-        ckmax(ans, act);
+                check_good(part1);
+                act += sz(part1);
+
+                ll counter = cnt(x - 1);
+                if(act + counter > k) {
+                    solve(x - 1);
+                    check
+                } else {
+                    act += counter;
+                }
+
+                check_good(part2);
+                act += sz(part2);
+
+                if(act + counter > k) {
+                    solve(x - 1);
+                    check
+                } else {
+                    act += counter;
+                }
+
+                check_good(part3);
+                act += sz(part3);
+            }
+
+            check
+        };
+        if(n <= 54) {
+            solve(n);
+        } else {
+            ll add = ll(sz(part1)) * (ll(n) - 55LL);
+            if(act + add >= k) {
+                return part1[(k - 1LL) % ll(sz(part1))];
+            }
+            act += add;
+            dbg(add);
+            assert(act + cnt(53) > k);
+            solve(55);
+        }
+        assert(ans != '$');
+        return ans;
     }
-    dbg(ans);
-    ps(ans);
 }
 
 
@@ -329,13 +410,17 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    ll t = 1; //? re(t);
+    ll t = 1; re(t);
 
+    str ans = "";
     FOR(i, 1, t + 1) {
         RAYA;
         RAYA;
-        solve();
+        char partial = solve();
+        ans.pb(partial);
     }
+    dbg(ans);
+    ps(ans);
     RAYA;
     RAYA;
 
