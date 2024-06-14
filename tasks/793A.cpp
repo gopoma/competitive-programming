@@ -296,35 +296,30 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, n, x);
+    def(ll, n, k);
     vl a(n); re(a);
 
-    dbg(n);
+    dbg(n, k);
     dbg(a);
 
-    map<ll, ll> hist;
-    each(e, a) hist[e]++;
-
-    set<ll> S; each(e, a) S.emplace(e);
-    ll ans = 0;
-    map<ll, bool> vis;
-    each(e, S) {
-        if(vis[e]) continue;
-        vis[e] = true;
-
-        ll tar = e ^ x;
-
-        if(e == tar) {
-            ans += fdiv(hist[e] * (hist[tar] - 1LL), 2LL);
-        } else {
-            ans += hist[e] * hist[tar];
-        }
-
-        vis[tar] = true;
+    bool ok = true;
+    each(x, a) {
+        ok &= (x % k == a.ft % k);
     }
 
-    dbg(ans);
-    ps(ans);
+    if(!ok) {
+        ps("-1");
+    } else {
+        ll mn = *min_element(all(a));
+
+        ll ans = 0;
+        each(x, a) {
+            ans += fdiv(x - mn, k);
+        }
+
+        dbg(ans);
+        ps(ans);
+    }
 }
 
 

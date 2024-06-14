@@ -293,38 +293,40 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
+bool issubsequence(string& s1, string& s2) {
+    int n = s1.length(), m = s2.length();
+    int i = 0, j = 0;
+    while (i < n && j < m) {
+        if (s1[i] == s2[j])
+            i++;
+        j++;
+    }
+    /*If i reaches end of s1,that mean we found all
+    characters of s1 in s2,
+    so s1 is subsequence of s2, else not*/
+    return i == n;
+}
 //* /Template
 
 void solve() {
-    def(ll, n, x);
-    vl a(n); re(a);
-
+    def(str, n);
     dbg(n);
-    dbg(a);
 
-    map<ll, ll> hist;
-    each(e, a) hist[e]++;
-
-    set<ll> S; each(e, a) S.emplace(e);
-    ll ans = 0;
-    map<ll, bool> vis;
-    each(e, S) {
-        if(vis[e]) continue;
-        vis[e] = true;
-
-        ll tar = e ^ x;
-
-        if(e == tar) {
-            ans += fdiv(hist[e] * (hist[tar] - 1LL), 2LL);
-        } else {
-            ans += hist[e] * hist[tar];
+    vs can;
+    for(ll x = 0; x < 1000; x++) {
+        if(x % 8 == 0) {
+            can.eb(ts(x));
         }
-
-        vis[tar] = true;
     }
 
-    dbg(ans);
-    ps(ans);
+    each(x, can) {
+        if(issubsequence(x, n)) {
+            ps("YES");
+            ps(x);
+            return;
+        }
+    }
+    ps("NO");
 }
 
 
