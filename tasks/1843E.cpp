@@ -297,47 +297,55 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 void solve() {
     //? <>
-    def(ll, n);
-    vl b(n); re(b);
-    dbg(n);
-    dbg(b);
+    def(ll, n, m);
+    vpl segments(m); re(segments);
+    each(x, segments) { x.f--; x.s--; }
 
-    map<ll, vl> transitions;
-    for(int i = 0; i < n; i++) {
-        int u = i;
-        int v = i + b[i];
-        assert(u < v);
+    def(ll, q);
+    vl changes(q); re(changes);
+    each(x, changes) x--;
 
-        if(v >= n) continue;
+    dbg(n, m);
+    dbg(q);
+    dbg(segments);
+    dbg(changes);
 
-        transitions[u].eb(v + 1);
-    }
-    for(int i = n - 1; i >= 0; i--) {
-        int u = i - b[i];
-        int v = i;
-        assert(u < v);
-
-        if(u < 0) continue;
-
-        transitions[u].eb(v + 1);
-    }
-
-    vb vis(n);
-    vb memo(n);
-    function<bool(int)> dp = [&](int idx) -> bool {
-        if(idx == n) return true;
-        if(vis[idx]) return memo[idx];
-        vis[idx] = true;
-
-        bool ans = false;
-        each(v, transitions[idx]) {
-            ans |= dp(v);
+    auto check = [&](int R) -> bool {
+        //? [0, R]
+        vi arr(n);
+        for(int i = 0; i <= R; i++) {
+            arr[changes[i]] = 1;
         }
+        for(int i = 1; i < n; i++) arr[i] += arr[i - 1];
+        auto query = [&](int left, int right) -> int {
+            int sum = arr[right];
+            if(0 <= left - 1) sum -= arr[left - 1];
+            return sum;
+        };
 
-        return memo[idx] = ans;
+        bool ok = false;
+        for(auto& [l, r]: segments) {
+            int length = r - l + 1;
+            int ones = query(l, r);
+            int zeros = length - ones;
+
+            ok |= (ones > zeros);
+        }
+        dbg(R, ok);
+        return ok;
     };
-    bool ans = dp(0);
-    ps(ans?"YES":"NO");
+    int left = -1; //? always bad
+    int right = q; //? always good
+    while(left + 1 < right) {
+        int middle = (left + right) >> 1;
+
+        if(check(middle)) right = middle;
+        else left = middle;
+    }
+    dbg(right);
+
+    if(right == q) ps("-1");
+    else ps(right + 1);
 }
 
 

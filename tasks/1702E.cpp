@@ -296,48 +296,66 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    //? <>
-    def(ll, n);
-    vl b(n); re(b);
+    def(int, n);
+    vpl a(n); re(a);
     dbg(n);
-    dbg(b);
+    dbg(a);
 
-    map<ll, vl> transitions;
+    map<ll, ll> hist;
+    map<ll, vl> where;
     for(int i = 0; i < n; i++) {
-        int u = i;
-        int v = i + b[i];
-        assert(u < v);
+        if(a[i].f == a[i].s) {
+            ps("NO");
+            return;
+        }
+        hist[a[i].f]++;
+        hist[a[i].s]++;
 
-        if(v >= n) continue;
-
-        transitions[u].eb(v + 1);
+        where[a[i].f].eb(i);
+        where[a[i].s].eb(i);
     }
-    for(int i = n - 1; i >= 0; i--) {
-        int u = i - b[i];
-        int v = i;
-        assert(u < v);
-
-        if(u < 0) continue;
-
-        transitions[u].eb(v + 1);
+    for(auto& [val, cnt]: hist) if(cnt >= 3) {
+        ps("NO");
+        return;
     }
 
     vb vis(n);
-    vb memo(n);
-    function<bool(int)> dp = [&](int idx) -> bool {
-        if(idx == n) return true;
-        if(vis[idx]) return memo[idx];
-        vis[idx] = true;
+    vi color(n);
+    const int NONE = 0;
+    const int RED = 1;
+    const int BLACK = 2;
+    bool ok = true;
+    for(int i = 0; i < n; i++) {
+        if(!vis[i]) {
+            deque<int> q; q.eb(i);
+            vis[i] = true;
+            color[i] = RED;
 
-        bool ans = false;
-        each(v, transitions[idx]) {
-            ans |= dp(v);
+            while(!q.empty()) {
+                int u = q.ft; q.pop_front();
+
+                vl vecinos;
+                each(x, where[a[u].f]) if(x != u) vecinos.eb(x);
+                each(x, where[a[u].s]) if(x != u) vecinos.eb(x);
+                remDup(vecinos);
+
+                each(v, vecinos) {
+                    if(vis[v]) {
+                        assert(color[u] != NONE);
+                        assert(color[v] != NONE);
+
+                        ok &= (color[u] != color[v]);
+                    } else {
+                        color[v] = (color[u] == RED)? BLACK : RED;
+                        vis[v] = true;
+                        q.eb(v);
+                    }
+                }
+            }
         }
+    }
 
-        return memo[idx] = ans;
-    };
-    bool ans = dp(0);
-    ps(ans?"YES":"NO");
+    ps(ok?"YES":"NO");
 }
 
 

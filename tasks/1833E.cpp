@@ -297,47 +297,65 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 void solve() {
     //? <>
-    def(ll, n);
-    vl b(n); re(b);
+    def(int, n);
+    vi a(n); re(a);
     dbg(n);
-    dbg(b);
+    dbg(a);
 
-    map<ll, vl> transitions;
+    vpi edges;
     for(int i = 0; i < n; i++) {
         int u = i;
-        int v = i + b[i];
-        assert(u < v);
-
-        if(v >= n) continue;
-
-        transitions[u].eb(v + 1);
+        int v = a[i] - 1;
+        assert(u != v);
+        if(u > v) swap(u, v);
+        edges.eb(u, v);
     }
-    for(int i = n - 1; i >= 0; i--) {
-        int u = i - b[i];
-        int v = i;
-        assert(u < v);
+    remDup(edges);
 
-        if(u < 0) continue;
+    vi degree(n);
+    vector<vi> adj(n);
+    for(auto& [u, v]: edges) {
+        degree[u]++;
+        degree[v]++;
 
-        transitions[u].eb(v + 1);
+        adj[u].eb(v);
+        adj[v].eb(u);
     }
 
     vb vis(n);
-    vb memo(n);
-    function<bool(int)> dp = [&](int idx) -> bool {
-        if(idx == n) return true;
-        if(vis[idx]) return memo[idx];
-        vis[idx] = true;
+    vi component;
+    function<void(int)> dfs = [&](int u) {
+        if(vis[u]) return;
+        vis[u] = true;
 
-        bool ans = false;
-        each(v, transitions[idx]) {
-            ans |= dp(v);
+        component.eb(u);
+
+        each(v, adj[u]) {
+            dfs(v);
         }
-
-        return memo[idx] = ans;
     };
-    bool ans = dp(0);
-    ps(ans?"YES":"NO");
+
+    int normals = 0;
+    int cycles = 0;
+
+    for(int u = 0; u < n; u++) {
+        if(!vis[u]) {
+            dfs(u);
+
+            bool isNormal = false;
+            each(x, component) {
+                isNormal |= (degree[x] == 1);
+            }
+            if(isNormal) normals++;
+            else cycles++;
+
+            component.clear();
+        }
+    }
+
+    int mn = cycles + bool(normals);
+    int mx = cycles + normals;
+    ps(mn, mx);
 }
 
 

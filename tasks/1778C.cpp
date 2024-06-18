@@ -1,9 +1,9 @@
 //* sometimes pragmas don't work, if so, just comment it!
-//? #pragma GCC optimize ("Ofast")
+#pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-//! #undef _GLIBCXX_DEBUG //? for Stress Testing
+#undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
@@ -293,51 +293,70 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
+ll C(ll n, ll k) {
+    double res = 1;
+    for (ll i = 1; i <= k; ++i)
+        res = res * (n - k + i) / i;
+    return (ll)(res + 0.01);
+}
 //* /Template
 
 void solve() {
-    //? <>
-    def(ll, n);
-    vl b(n); re(b);
-    dbg(n);
-    dbg(b);
+//?    for(ll tot = 1; tot <= 10; tot++) {
+//?        for(ll can = 0; can <= tot; can++) {
+//?            dbg(tot, can, C(tot, can));
+//?        }
+//?    }
 
-    map<ll, vl> transitions;
-    for(int i = 0; i < n; i++) {
-        int u = i;
-        int v = i + b[i];
-        assert(u < v);
+    def(ll, n, k);
+    def(str, a, b);
+    dbg(n, k);
+    dbg(a, b);
 
-        if(v >= n) continue;
+    set<char> S; each(c, a) S.emplace(c);
+    vector<char> u; each(x, S) u.eb(x);
 
-        transitions[u].eb(v + 1);
-    }
-    for(int i = n - 1; i >= 0; i--) {
-        int u = i - b[i];
-        int v = i;
-        assert(u < v);
+    ll tot = sz(S); chk(sz(u) == tot);
+    ll choose = min(tot, k); chk(choose <= tot);
+    dbg(tot, choose);
 
-        if(u < 0) continue;
+    ll ans = 0;
+    for(int i = 0; i < (1 << tot); i++) {
+        if(pct(i) == choose) {
 
-        transitions[u].eb(v + 1);
-    }
+            set<char> good;
+            for(int j = 0; j < tot; j++) {
+                if(i & (1 << j)) {
+                    good.emplace(u[j]);
+                }
+            }
 
-    vb vis(n);
-    vb memo(n);
-    function<bool(int)> dp = [&](int idx) -> bool {
-        if(idx == n) return true;
-        if(vis[idx]) return memo[idx];
-        vis[idx] = true;
+            str new_a = a;
+            for(int j = 0; j < n; j++) {
+                if(good.count(new_a[j])) {
+                    new_a[j] = b[j];
+                }
+            }
 
-        bool ans = false;
-        each(v, transitions[idx]) {
-            ans |= dp(v);
+            //? dbg(bitset<12>(i), new_a, b);
+
+            ll local_ans = 0;
+            ll act = 0;
+            for(int j = 0; j < n; j++) {
+                if(new_a[j] == b[j]) {
+                    act++;
+                } else {
+                    if(act > 0) local_ans += fdiv(act*(act+1LL),2LL);
+                    act = 0;
+                }
+            }
+            if(act > 0) local_ans += fdiv(act*(act+1LL),2LL);
+            ckmax(ans, local_ans);
         }
+    }
 
-        return memo[idx] = ans;
-    };
-    bool ans = dp(0);
-    ps(ans?"YES":"NO");
+    dbg(ans);
+    ps(ans);
 }
 
 

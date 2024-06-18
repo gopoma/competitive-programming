@@ -295,49 +295,114 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* Template
 //* /Template
 
+using E = pair<bool, vl>;
+void check(E ans) {
+    if(!ans.f) {
+        chk(!ans.f);
+    } else {
+        vl arr = ans.s;
+        ll mx = *max_element(all(arr));
+        ll mn = *min_element(all(arr));
+
+        const int n = sz(arr);
+        ll mx_sum = -BIG;
+        for(int l = 0; l < n; l++) {
+            for(int r = l; r < n; r++) {
+                ll sum = 0;
+                for(int k = l; k <= r; k++) {
+                    sum += arr[k];
+                }
+                ckmax(mx_sum, abs(sum));
+            }
+        }
+        chk(mx_sum != -BIG);
+        dbg(mx_sum, mx, mn);
+        chk(mx_sum < mx - mn);
+    }
+}
+
+E brute(ll n, vl a) {
+    sor(a);
+    ll mx = *max_element(all(a));
+    ll mn = *min_element(all(a));
+
+    bool ans = false;
+    vl arr_ans;
+    do {
+        ll mx_sum = -BIG;
+        for(int l = 0; l < n; l++) {
+            for(int r = l; r < n; r++) {
+                ll sum = 0;
+                for(int k = l; k <= r; k++) {
+                    sum += a[k];
+                }
+                ckmax(mx_sum, abs(sum));
+            }
+        }
+        chk(mx_sum != -BIG);
+
+        bool ok = (mx_sum < mx - mn);
+        if(ok) {
+            ans = true;
+            arr_ans = a;
+            dbg(a, mx_sum, mx, mn);
+        }
+    } while(next_permutation(all(a)));
+    return mp(ans, arr_ans);
+}
+
+E slv(ll n, vl a) {
+    bool all_zeros = true;
+    each(x, a) all_zeros &= (x == 0);
+    if(all_zeros) return mp(false, vl());
+
+    ll mx = *max_element(all(a));
+    ll mn = *min_element(all(a));
+
+    vl positives, negatives;
+    ll zeros = 0;
+
+    sor(a);
+    each(x, a) {
+        if(x < 0) negatives.eb(x);
+        else if(x > 0) positives.eb(x);
+        else zeros++;
+    } reverse(all(positives));
+
+    vector<vl> groups;
+    {
+        const int m = min(sz(positives), sz(negatives));
+        for(int i = 0; i < m; i++) {
+            vl container{positives[i], negatives[i]};
+            groups.eb(container);
+        }
+    }
+
+    rep(zeros) ans.eb(0);
+
+    while(sz(ans) < n) ans.eb(0);
+    dbg("Greedy", ans);
+    return mp(true, ans);
+}
+
 void solve() {
     //? <>
     def(ll, n);
-    vl b(n); re(b);
+    vl a(n); re(a);
     dbg(n);
-    dbg(b);
+    dbg(a);
+    chk(accumulate(all(a), 0LL) == 0LL);
 
-    map<ll, vl> transitions;
-    for(int i = 0; i < n; i++) {
-        int u = i;
-        int v = i + b[i];
-        assert(u < v);
+    brute(n, a);
+    E ans = slv(n, a);
+    dbg(ans);
 
-        if(v >= n) continue;
-
-        transitions[u].eb(v + 1);
+    if(!ans.f) ps("NO");
+    else {
+        ps("YES");
+        ps(ans.s);
+        check(ans);
     }
-    for(int i = n - 1; i >= 0; i--) {
-        int u = i - b[i];
-        int v = i;
-        assert(u < v);
-
-        if(u < 0) continue;
-
-        transitions[u].eb(v + 1);
-    }
-
-    vb vis(n);
-    vb memo(n);
-    function<bool(int)> dp = [&](int idx) -> bool {
-        if(idx == n) return true;
-        if(vis[idx]) return memo[idx];
-        vis[idx] = true;
-
-        bool ans = false;
-        each(v, transitions[idx]) {
-            ans |= dp(v);
-        }
-
-        return memo[idx] = ans;
-    };
-    bool ans = dp(0);
-    ps(ans?"YES":"NO");
 }
 
 
@@ -351,6 +416,39 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 signed main() {
     setIO();
+
+    while(0) {
+        RAYA;
+        ll n = rng_ll(1, 7);
+        vl a(n); each(x, a) x = rng_ll(-20, 20);
+
+//?        if(accumulate(all(a), 0LL) != 0LL) {
+//?            ll have = 0;
+//?            for(int i = 0; i < n - 1; i++) {
+//?                have += a[i];
+//?            }
+//?            a.bk = -have;
+//?        }
+        while(accumulate(all(a), 0LL) != 0LL) {
+            each(x, a) x = rng_ll(-5, 5);
+        }
+        chk(accumulate(all(a), 0LL) == 0LL);
+        sor(a);
+
+        dbg(n);
+        dbg(a);
+
+        E ans = brute(n, a);
+        dbg("Greedy");
+        E greedy = slv(n, a);
+        dbg("/Greedy");
+        dbg(ans);
+        dbg(greedy);
+        check(ans);
+        check(greedy);
+
+        chk(ans.f == greedy.f);
+    }
 
     ll t = 1; re(t);
 

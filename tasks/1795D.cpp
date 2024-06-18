@@ -84,7 +84,7 @@ tcT > int upb(V<T> &a, const T &b) { return int(ub(all(a), b) - bg(a)); }
 
 
 
-const int MOD = 1e9 + 7;
+const int MOD = 998244353;
 const int MX = (int)2e5 + 5;
 const ll BIG = 1e18;  //? not too close to LLONG_MAX
 const db PI = acos((db)-1);
@@ -293,51 +293,135 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
+
+/**
+ * Description: modular arithmetic operations
+ * Source:
+ * KACTL
+ * https://codeforces.com/blog/entry/63903
+ * https://codeforces.com/contest/1261/submission/65632855 (tourist)
+ * https://codeforces.com/contest/1264/submission/66344993 (ksun)
+ * also see https://github.com/ecnerwala/cp-book/blob/master/src/modnum.hpp
+ * (ecnerwal) Verification: https://open.kattis.com/problems/modulararithmetic
+ */
+
+template <int MOD, int RT> struct mint {
+	static const int mod = MOD;
+	static constexpr mint rt() { return RT; }  // primitive root for FFT
+	int v;
+	explicit operator int() const {
+		return v;
+	}  // explicit -> don't silently convert to int
+	mint() : v(0) {}
+	mint(ll _v) {
+		v = int((-MOD < _v && _v < MOD) ? _v : _v % MOD);
+		if (v < 0) v += MOD;
+	}
+	bool operator==(const mint &o) const { return v == o.v; }
+	friend bool operator!=(const mint &a, const mint &b) { return !(a == b); }
+	friend bool operator<(const mint &a, const mint &b) { return a.v < b.v; }
+	friend istream &operator>>(istream &is, mint &a) {
+		ll x;
+		is >> x;
+		a = mint(x);
+		return is;
+	}
+	friend ostream &operator<<(ostream &os, mint a) {
+		os << int(a);
+		return os;
+	}
+
+	mint &operator+=(const mint &o) {
+		if ((v += o.v) >= MOD) v -= MOD;
+		return *this;
+	}
+	mint &operator-=(const mint &o) {
+		if ((v -= o.v) < 0) v += MOD;
+		return *this;
+	}
+	mint &operator*=(const mint &o) {
+		v = int((ll)v * o.v % MOD);
+		return *this;
+	}
+	mint &operator/=(const mint &o) { return (*this) *= inv(o); }
+	friend mint pow(mint a, ll p) {
+		mint ans = 1;
+		assert(p >= 0);
+		for (; p; p /= 2, a *= a)
+			if (p & 1) ans *= a;
+		return ans;
+	}
+	friend mint inv(const mint &a) {
+		assert(a.v != 0);
+		return pow(a, MOD - 2);
+	}
+
+	mint operator-() const { return mint(-v); }
+	mint &operator++() { return *this += 1; }
+	mint &operator--() { return *this -= 1; }
+	friend mint operator+(mint a, const mint &b) { return a += b; }
+	friend mint operator-(mint a, const mint &b) { return a -= b; }
+	friend mint operator*(mint a, const mint &b) { return a *= b; }
+	friend mint operator/(mint a, const mint &b) { return a /= b; }
+};
+
+using mi = mint<MOD, 5>;  // 5 is primitive root for both common mods
+using vmi = V<mi>;
+using pmi = pair<mi, mi>;
+using vpmi = V<pmi>;
+
+
+/**
+ * Description: Combinations modulo a prime $MOD$. Assumes $2\le N \le MOD$.
+ * Time: O(N)
+ * Source: KACTL
+ * Verification: https://dmoj.ca/problem/tle17c4p5
+ * Usage: F.init(10); F.C(6, 4); // 15
+ */
+
+struct {
+	vmi invs, fac, ifac;
+	void init(int N) { // idempotent
+		invs.rsz(N), fac.rsz(N), ifac.rsz(N);
+		invs[1] = fac[0] = ifac[0] = 1;
+		FOR(i,2,N) invs[i] = mi(-(ll)MOD/i*(int)invs[MOD%i]);
+		FOR(i,1,N) fac[i] = fac[i-1]*i, ifac[i] = ifac[i-1]*invs[i];
+	}
+	mi C(int a, int b) {
+		if (a < b || b < 0) return 0;
+		return fac[a]*ifac[b]*ifac[a-b];
+	}
+} F;
 //* /Template
 
 void solve() {
     //? <>
     def(ll, n);
-    vl b(n); re(b);
+    vl w(n); re(w);
     dbg(n);
-    dbg(b);
+    dbg(w);
+    assert(n % 6 == 0);
 
-    map<ll, vl> transitions;
-    for(int i = 0; i < n; i++) {
-        int u = i;
-        int v = i + b[i];
-        assert(u < v);
+    mi ans = 1;
 
-        if(v >= n) continue;
+    ll triangles = fdiv(n, 3LL);
+    for(int i = 0; i < triangles; i++) {
+        ll a = w[3*i];
+        ll b = w[3*i+1];
+        ll c = w[3*i+2];
+        dbg(a, b, c);
 
-        transitions[u].eb(v + 1);
+        vl sums{a+b, b+c, a+c};
+        ll mx = *max_element(all(sums));
+
+        ll cnt = 0;
+        each(x, sums) cnt += (x == mx);
+
+        ans *= cnt;
     }
-    for(int i = n - 1; i >= 0; i--) {
-        int u = i - b[i];
-        int v = i;
-        assert(u < v);
-
-        if(u < 0) continue;
-
-        transitions[u].eb(v + 1);
-    }
-
-    vb vis(n);
-    vb memo(n);
-    function<bool(int)> dp = [&](int idx) -> bool {
-        if(idx == n) return true;
-        if(vis[idx]) return memo[idx];
-        vis[idx] = true;
-
-        bool ans = false;
-        each(v, transitions[idx]) {
-            ans |= dp(v);
-        }
-
-        return memo[idx] = ans;
-    };
-    bool ans = dp(0);
-    ps(ans?"YES":"NO");
+    ans *= F.fac[triangles] * F.ifac[fdiv(triangles, 2LL)] * F.ifac[fdiv(triangles, 2LL)];
+    dbg(ans);
+    ps(ans);
 }
 
 
@@ -352,7 +436,9 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    ll t = 1; re(t);
+    F.init(int(5e5));
+
+    ll t = 1; //? re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;
