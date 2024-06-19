@@ -89,7 +89,7 @@ const int MX = (int)2e5 + 5;
 const ll BIG = 1e18;  //? not too close to LLONG_MAX
 const db PI = acos((db)-1);
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
-mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
+mt19937 rng(0);
 
 
 
@@ -295,114 +295,113 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* Template
 //* /Template
 
-using E = pair<bool, vl>;
-void check(E ans) {
-    if(!ans.f) {
-        chk(!ans.f);
+ll steps_brute(ll x) {
+    map<ll, bool> vis;
+    map<ll, ll> memo;
+    function<ll(ll)> dp = [&](ll act) {
+        if(act == x) return 0LL;
+        if(act > x) return BIG;
+        if(vis[act]) return memo[act];
+        vis[act] = true;
+        ll ans = BIG;
+        for(ll val = 1; val <= act; val++) {
+            ckmin(ans, dp(act + fdiv(act, val)) + 1LL);
+        }
+        assert(ans != BIG);
+        return memo[act] = ans;
+    };
+    return dp(1);
+}
+
+ll MX_NUM = ll(1e3) + 5;
+vl dp(MX_NUM, BIG);
+bool go = false;
+void precompute() {
+    dp[1] = 0;
+    for(ll x = 1; x < MX_NUM; x++) {
+        for(ll d = 1; d <= x; d++) {
+            ll nxt = x + fdiv(x, d);
+            if(nxt < MX_NUM) ckmin(dp[nxt], dp[x] + 1LL);
+        }
+    }
+}
+
+ll steps(ll num) {
+    if(!go) {
+        precompute();
+        go = true;
+    }
+    return dp[num];
+}
+
+ll slv(ll n, ll k, vl b, vl c) {
+    vl cost(n);
+    for(int i = 0; i < n; i++) {
+        cost[i] = steps(b[i]);
+    }
+    vl value = c;
+    dbg(k);
+    dbg(cost);
+    dbg(value);
+
+    ll MX_COST = 12LL;
+    if(n * MX_COST <= k) {
+        return accumulate(all(value), 0LL);
     } else {
-        vl arr = ans.s;
-        ll mx = *max_element(all(arr));
-        ll mn = *min_element(all(arr));
-
-        const int n = sz(arr);
-        ll mx_sum = -BIG;
-        for(int l = 0; l < n; l++) {
-            for(int r = l; r < n; r++) {
-                ll sum = 0;
-                for(int k = l; k <= r; k++) {
-                    sum += arr[k];
+        ll MX_HAVE = n * MX_COST + 5;
+        vl dp(MX_HAVE + 5, -BIG);
+        vl last_dp(MX_HAVE + 5, -BIG);
+        for(ll idx = n; idx >= 0; idx--) {
+            for(ll have = 0; have <= MX_HAVE; have++) {
+                if(have > k) dp[have] = -BIG;
+                else if(idx == n) {
+                    assert(have <= k);
+                    dp[have] = 0LL;
+                } else {
+                    ckmax(dp[have], last_dp[have]);
+                    if(have + cost[idx] <= MX_HAVE) {
+                        ckmax(dp[have], last_dp[have + cost[idx]] + value[idx]);
+                    }
                 }
-                ckmax(mx_sum, abs(sum));
+            }
+            for(ll have = 0; have <= MX_HAVE; have++) {
+                last_dp[have] = dp[have];
             }
         }
-        chk(mx_sum != -BIG);
-        dbg(mx_sum, mx, mn);
-        chk(mx_sum < mx - mn);
+
+        ll ans = dp[0];
+        return ans;
+//?        map<ll, map<ll, bool>> vis;
+//?        map<ll, map<ll, ll>> memo;
+//?        function<ll(ll, ll)> solve = [&](ll idx, ll have) -> ll {
+//?            if(have > k) return -BIG;
+//?            if(idx == n) {
+//?                assert(have <= k);
+//?                return 0LL;
+//?            }
+//?
+//?            if(vis[idx][have]) return memo[idx][have];
+//?            vis[idx][have] = true;
+//?
+//?            ll ans = max(solve(idx + 1LL, have), solve(idx + 1LL, have + cost[idx]) + value[idx]);
+//?            return memo[idx][have] = ans;
+//?        };
+//?        ll ans = solve(0, 0);
+//?        return ans;
     }
-}
-
-E brute(ll n, vl a) {
-    sor(a);
-    ll mx = *max_element(all(a));
-    ll mn = *min_element(all(a));
-
-    bool ans = false;
-    vl arr_ans;
-    do {
-        ll mx_sum = -BIG;
-        for(int l = 0; l < n; l++) {
-            for(int r = l; r < n; r++) {
-                ll sum = 0;
-                for(int k = l; k <= r; k++) {
-                    sum += a[k];
-                }
-                ckmax(mx_sum, abs(sum));
-            }
-        }
-        chk(mx_sum != -BIG);
-
-        bool ok = (mx_sum < mx - mn);
-        if(ok) {
-            ans = true;
-            arr_ans = a;
-            dbg(a, mx_sum, mx, mn);
-        }
-    } while(next_permutation(all(a)));
-    return mp(ans, arr_ans);
-}
-
-E slv(ll n, vl a) {
-    bool all_zeros = true;
-    each(x, a) all_zeros &= (x == 0);
-    if(all_zeros) return mp(false, vl());
-
-    ll mx = *max_element(all(a));
-    ll mn = *min_element(all(a));
-
-    vl positives, negatives;
-    ll zeros = 0;
-
-    sor(a);
-    each(x, a) {
-        if(x < 0) negatives.eb(x);
-        else if(x > 0) positives.eb(x);
-        else zeros++;
-    } reverse(all(positives));
-
-    vector<vl> groups;
-    {
-        const int m = min(sz(positives), sz(negatives));
-        for(int i = 0; i < m; i++) {
-            vl container{positives[i], negatives[i]};
-            groups.eb(container);
-        }
-    }
-
-    rep(zeros) ans.eb(0);
-
-    while(sz(ans) < n) ans.eb(0);
-    dbg("Greedy", ans);
-    return mp(true, ans);
+    assert(false);
 }
 
 void solve() {
-    //? <>
-    def(ll, n);
-    vl a(n); re(a);
-    dbg(n);
-    dbg(a);
-    chk(accumulate(all(a), 0LL) == 0LL);
+    def(ll, n, k);
+    vl b(n), c(n); re(b, c);
+    dbg(n, k);
+    dbg(b);
+    dbg(c);
 
-    brute(n, a);
-    E ans = slv(n, a);
+    ll ans = slv(n, k, b, c);
     dbg(ans);
-
-    if(!ans.f) ps("NO");
-    else {
-        ps("YES");
-        ps(ans.s);
-        check(ans);
-    }
+    ps(ans);
 }
 
 
@@ -419,36 +418,22 @@ signed main() {
 
     while(0) {
         RAYA;
-        ll n = rng_ll(1, 7);
-        vl a(n); each(x, a) x = rng_ll(-20, 20);
+        ll val = rng_ll(1, 1000);
+        dbg(val);
 
-//?        if(accumulate(all(a), 0LL) != 0LL) {
-//?            ll have = 0;
-//?            for(int i = 0; i < n - 1; i++) {
-//?                have += a[i];
-//?            }
-//?            a.bk = -have;
-//?        }
-        while(accumulate(all(a), 0LL) != 0LL) {
-            each(x, a) x = rng_ll(-5, 5);
-        }
-        chk(accumulate(all(a), 0LL) == 0LL);
-        sor(a);
-
-        dbg(n);
-        dbg(a);
-
-        E ans = brute(n, a);
-        dbg("Greedy");
-        E greedy = slv(n, a);
-        dbg("/Greedy");
+        ll ans = steps_brute(val);
+        ll greedy = steps(val);
         dbg(ans);
         dbg(greedy);
-        check(ans);
-        check(greedy);
 
-        chk(ans.f == greedy.f);
+        chk(ans == greedy);
     }
+
+//?    ll mx = 0;
+//?    for(ll x = 1; x <= 1000; x++) {
+//?        ckmax(mx, steps(x));
+//?    }
+//?    dbg(mx);
 
     ll t = 1; re(t);
 

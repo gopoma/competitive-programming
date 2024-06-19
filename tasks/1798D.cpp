@@ -295,141 +295,177 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* Template
 //* /Template
 
-str nxt_brute(str S, int k) {
-    k--;
-    const int n = sz(S);
-    chk(k <= n);
+using E = pair<bool, vl>;
+void check(E ans) {
+    #ifdef LOCAL
+        dbg("xd");
+        if(!ans.f) {
+            chk(!ans.f);
+        } else {
+            vl arr = ans.s;
+            ll mx = *max_element(all(arr));
+            ll mn = *min_element(all(arr));
 
-    rep(k) {
-        const int m = sz(S);
-        str local_ans = "|";
-        for(int banned = 0; banned < m; banned++) {
-            str act = "";
-            for(int i = 0; i < m; i++) {
-                if(i == banned) continue;
-                act.pb(S[i]);
+            const int n = sz(arr);
+            ll mx_sum = -BIG;
+            for(int l = 0; l < n; l++) {
+                for(int r = l; r < n; r++) {
+                    ll sum = 0;
+                    for(int k = l; k <= r; k++) {
+                        sum += arr[k];
+                    }
+                    ckmax(mx_sum, abs(sum));
+                }
             }
-            ckmin(local_ans, act);
+            chk(mx_sum != -BIG);
+            dbg(mx_sum, mx, mn);
+            chk(mx_sum < mx - mn);
         }
-        chk(local_ans != "|");
-        S = local_ans;
-    }
-    return S;
+    #else
+    #endif
 }
 
-using E = list<int>::iterator;
-str nxt(str S, int k) {
-    k--;
-    const int n = sz(S);
+E brute(ll n, vl a) {
+    sor(a);
+    ll mx = *max_element(all(a));
+    ll mn = *min_element(all(a));
 
-    list<int> L;
-    map<int, E> keep;
-    for(int x = 0; x < n; x++) L.emplace_back(x);
+    bool ans = false;
+    vl arr_ans;
+    ll cnt = 0;
+    do {
+        ll mx_sum = -BIG;
+        for(int l = 0; l < n; l++) {
+            for(int r = l; r < n; r++) {
+                ll sum = 0;
+                for(int k = l; k <= r; k++) {
+                    sum += a[k];
+                }
+                ckmax(mx_sum, abs(sum));
+            }
+        }
+        chk(mx_sum != -BIG);
+
+        bool ok = (mx_sum < mx - mn);
+        if(ok) {
+            ans = true;
+            arr_ans = a;
+            cnt++;
+            dbg(a, mx_sum, mx, mn, cnt);
+        }
+    } while(next_permutation(all(a)));
+    return mp(ans, arr_ans);
+}
+
+bool good(ll n, vl a) {
+    ll mx = *max_element(all(a));
+    ll mn = *min_element(all(a));
+
+    ll mx_sum = 0;
+    ll mn_sum = 0;
+
+    for(int i = 1; i < n; i++) a[i] += a[i - 1];
 
     {
-        int x = 0;
-        for(auto it = L.begin(); it != L.end(); ++it) keep[x++] = it;
-    }
+        ll mn = 0;
+        ll mx = 0;
+        for(int i = 0; i < n; i++) {
+            ckmax(mx_sum, a[i] - mn);
+            ckmin(mn_sum, a[i] - mx);
 
-    int go = 0;
-    if(go == k) return S;
-    //? dbg(go, k);
-    #define check if(go == k) { break; }
-    for(int act = 0; act < n; act++) {
-        //? dbg(act, keep.count(act));
-        if(!keep.count(act)) continue;
-
-        E cc = keep[act];
-        if(cc == L.begin()) continue;
-
-        E pp = prev(keep[act]);
-        //? dbg(act, *pp, *cc, S[*pp], S[*cc]);
-
-        while(S[*pp] > S[*cc]) {
-            //? dbg("In", *pp, *cc, S[*pp], S[*cc], go);
-            safeErase(keep, *pp);
-            L.erase(pp);
-
-            go++;
-            check
-
-            if(cc == L.begin()) break;
-            pp = prev(keep[act]);
-        }
-        check
-    }
-
-    vi remain;
-    for(auto& [x, _]: keep) {
-        remain.eb(x);
-    }
-    //? dbg(go, k, remain);
-
-    while(go < k) {
-        go++;
-        remain.pop_back();
-    }
-
-    str ans = "";
-    each(x, remain) ans.pb(S[x]);
-
-    return ans;
-}
-
-char brute(str S, ll pos) {
-    const ll n = sz(S);
-
-    vs xd;
-    for(int k = 1; k <= n; k++) {
-        xd.eb(nxt_brute(S, k));
-    }
-    chk(!xd.bk.empty());
-
-    str comb = "";
-    each(w, xd) {
-        each(c, w) {
-            comb.pb(c);
+            ckmin(mn, a[i]);
+            ckmax(mx, a[i]);
         }
     }
-    return comb[pos - 1];
+    return max(abs(mx_sum), abs(mn_sum)) < mx - mn;
 }
 
-char solve(str S, ll pos) {
+// shuffle a vector
+template<class T> void shuf(vector<T>& v) { shuffle(all(v),rng); }
+
+E slv(ll n, vl a) {
+    sor(a);
+    bool all_zeros = true;
+    each(x, a) all_zeros &= (x == 0);
+    if(all_zeros) return mp(false, vl());
+
+    vl negatives, positives;
+    ll zeros = 0;
+    each(x, a) {
+        if(x < 0) negatives.eb(x);
+        else if(x > 0) positives.eb(x);
+        else zeros++;
+    }
+    sor(negatives);
+    sor(positives);
+
+    ll mx = *max_element(all(a));
+    ll mn = *min_element(all(a));
+
+    vl ans;
+    ll mx_sum  = 0, mn_sum  = 0;
+    ll current_pref = 0, mx_pref = 0, mn_pref = 0;
+
+    auto update = [&](ll val) {
+        current_pref += val;
+        ckmax(mx_sum, current_pref - mn_pref);
+        ckmin(mn_sum, current_pref - mx_pref);
+        ckmax(mx_pref, current_pref);
+        ckmin(mn_pref, current_pref);
+    };
+    auto can = [&](ll val) {
+        ll mx_sum_tmp  = mx_sum, mn_sum_tmp = mn_sum;
+        ll current_pref_tmp = current_pref, mx_pref_tmp = mx_pref, mn_pref_tmp = mn_pref;
+        current_pref_tmp += val;
+
+        ckmax(mx_sum_tmp, current_pref_tmp - mn_pref_tmp);
+        ckmin(mn_sum_tmp, current_pref_tmp - mx_pref_tmp);
+        ckmax(mx_pref_tmp, current_pref_tmp);
+        ckmin(mn_pref_tmp, current_pref_tmp);
+
+        return max(abs(mx_sum_tmp), abs(mn_sum_tmp)) < mx - mn;
+    };
+    auto gozu = [&]() {
+        return max(abs(mx_sum), abs(mn_sum)) < mx - mn;
+    };
+    while(!negatives.empty() && !positives.empty()) {
+        if(!can(positives.bk)) {
+            while(!negatives.empty() && can(negatives.bk)) {
+                ans.eb(negatives.bk);
+                update(negatives.bk);
+                negatives.pop_back();
+            }
+        }
+        if(can(positives.bk)) {
+            ans.eb(positives.bk);
+            update(positives.bk);
+            positives.pop_back();
+        }
+    }
+    while(!negatives.empty()) { ans.eb(negatives.bk); negatives.pop_back(); }
+    while(!positives.empty()) { ans.eb(positives.bk); positives.pop_back(); }
+
+    rep(zeros) ans.eb(0LL);
+    return mp(true, ans);
+}
+
+void solve() {
     //? <>
-    const ll n = sz(S);
+    def(ll, n);
+    vl a(n); re(a);
+    dbg(n);
+    dbg(a);
+    chk(accumulate(all(a), 0LL) == 0LL);
 
-    auto get = [&](ll x) {
-        if(x == 0) return 0LL;
-        ll o = n + 1LL - x - 1LL;
-        ll ans = fdiv(n * (n + 1LL), 2LL) - fdiv(o * (o + 1LL), 2LL);
-        return ans;
-    };
+    E ans = slv(n, a);
+    dbg(ans);
 
-    auto good = [&](ll R) {
-        bool ok = get(R) <= pos;
-        dbg(R, get(R), pos, ok);
-        return ok;
-    };
-
-    ll left = 0;  //? always good
-    ll right = n; //? always bad
-    while(left + 1 < right) {
-        ll middle = fdiv(left + right, 2LL);
-        if(good(middle)) left = middle;
-        else right = middle;
+    if(!ans.f) ps("NO");
+    else {
+        ps("YES");
+        ps(ans.s);
+        check(ans);
     }
-    ll tar = left;
-    if(get(tar) < pos) tar++;
-
-    str S_tar = nxt(S, tar);
-    ll xd = get(tar - 1LL);
-    dbg(tar, S_tar);
-
-    ll idx = pos - xd - 1LL;
-    char ans = S_tar[idx];
-    //? dbg(idx, ans);
-
-    return ans;
 }
 
 
@@ -446,55 +482,49 @@ signed main() {
 
     while(0) {
         RAYA;
-        int n = rng_int(1, 200);
-        str S = ""; rep(n) S.pb(char('a'+rng_int(0, 20)));
-        int k = rng_int(1, n);
-        dbg(n);
-        dbg(S);
-        dbg(k);
+        ll n = rng_ll(1, 1000);
+        vl a(n); each(x, a) x = rng_ll(-15, 15);
 
-        str ans = nxt_brute(S, k);
-        str greedy = nxt(S, k);
-        dbg(ans);
-        dbg(greedy);
-
-        chk(ans == greedy);
-    }
-
-    while(0) {
-        RAYA;
-        ll n = rng_int(1, 100);
-        str S = ""; rep(n) S.pb(char('a'+rng_int(0, 20)));
-        ll pos = rng_ll(1LL, fdiv(n * (n + 1LL), 2LL));
+//?        if(accumulate(all(a), 0LL) != 0LL) {
+//?            ll have = 0;
+//?            for(int i = 0; i < n - 1; i++) {
+//?                have += a[i];
+//?            }
+//?            a.bk = -have;
+//?        }
+        while(accumulate(all(a), 0LL) != 0LL) {
+            each(x, a) x = rng_ll(-5, 5);
+        }
+        chk(accumulate(all(a), 0LL) == 0LL);
+        sor(a);
 
         dbg(n);
-        dbg(S);
-        dbg(pos);
+        dbg(a);
 
-        char ans = brute(S, pos);
-        char greedy = solve(S, pos);
+        //? brute(n, a);
+        E ans = slv(n, a);
         dbg(ans);
-        dbg(greedy);
+        check(ans);
 
-        chk(ans == greedy);
+//?        E ans = slv(n, a);
+//?        dbg("Greedy");
+//?        E greedy = slv(n, a);
+//?        dbg("/Greedy");
+//?        dbg(ans);
+//?        dbg(greedy);
+//?        check(ans);
+//?        check(greedy);
+
+//?        chk(ans.f == greedy.f);
     }
 
     ll t = 1; re(t);
 
-    str ans = "";
     FOR(i, 1, t + 1) {
         RAYA;
         RAYA;
-        def(str, S);
-        def(ll, pos);
-        dbg(S);
-        dbg(pos);
-
-        char partial = solve(S, pos);
-        ans.pb(partial);
+        solve();
     }
-    dbg(ans);
-    ps(ans);
     RAYA;
     RAYA;
 
