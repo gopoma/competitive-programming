@@ -296,8 +296,34 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, A, B);
-    ps(A^B);
+    def(ll, N);
+    vpl edges(N - 1); re(edges);
+    dbg(N);
+    dbg(edges);
+    vector<vl> adj(N+5);
+    each(e, edges) {
+        adj[e.f].eb(e.s);
+        adj[e.s].eb(e.f);
+    }
+    each(x, adj) sor(x);
+    vl ans;
+    vb vis(N+5);
+    function<void(ll)> dfs = [&](ll src) {
+        dbg("dfs", src, adj[src]);
+        ans.eb(src);
+        each(v, adj[src]) {
+            if(!vis[v]) {
+                vis[v] = true;
+                if(sz(adj[v]) == 1) {
+                    ans.eb(v);
+                } else {
+                    dfs(v);
+                }
+                ans.eb(src);
+            }
+        }
+    }; vis[1] = true; dfs(1);
+    ps(ans);
 }
 
 

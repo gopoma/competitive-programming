@@ -296,8 +296,34 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, A, B);
-    ps(A^B);
+    def(ll, H, W, N);
+    vpl cards(N); re(cards);
+
+    vl xx, yy;
+    each(c, cards) {
+        xx.eb(c.f);
+        yy.eb(c.s);
+    }
+
+    {
+        remDup(xx);
+        remDup(yy);
+
+        map<ll, ll> to_xx;
+        for(int i = 0; i < sz(xx); i++) {
+            to_xx[xx[i]] = i + 1;
+        }
+        map<ll, ll> to_yy;
+        for(int i = 0; i < sz(yy); i++) {
+            to_yy[yy[i]] = i + 1;
+        }
+        each(c, cards) {
+            c.f = to_xx[c.f];
+            c.s = to_yy[c.s];
+        }
+    }
+
+    ps(cards);
 }
 
 

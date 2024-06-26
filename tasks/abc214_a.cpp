@@ -296,8 +296,10 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, A, B);
-    ps(A^B);
+    def(int, N);
+    if(1<=N&&N<=125) ps(4);
+    else if(126<=N&&N<=211) ps(6);
+    else ps(8);
 }
 
 

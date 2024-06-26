@@ -296,8 +296,44 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, A, B);
-    ps(A^B);
+    def(ll, S);
+
+    S *= 2LL;
+
+    auto get_divisors = [&](ll num) -> vl {
+        vl divisors;
+        for(ll x = 1; x * x <= num; x++) {
+            if(num % x == 0) {
+                divisors.eb(x);
+                ll other = fdiv(num, x);
+                if(x != other) {
+                    divisors.eb(other);
+                }
+            }
+        }
+        return divisors;
+    };
+
+
+    vl divisors = get_divisors(S);
+    dbg(S, divisors);
+
+    pl ans = mp(-BIG, -BIG);
+    each(N, divisors) {
+        ll other = fdiv(S, N);
+        ll two_A = other - (N - 1LL);
+        if(two_A > 0 && two_A % 2 == 0) {
+            ll A = fdiv(two_A, 2LL);
+            dbg(A, N);
+            chk(S == N * (2LL * A + N - 1LL));
+            ckmax(ans, mp(N, A));
+        }
+    }
+    assert(ans != mp(-BIG, -BIG));
+
+    auto [N, A] = ans;
+    dbg(A, N);
+    ps(A, N);
 }
 
 

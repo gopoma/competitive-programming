@@ -296,8 +296,19 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, A, B);
-    ps(A^B);
+    def(ll, n);
+    def(str, S);
+
+    ll k = sz(S);
+
+    ll ans = 1;
+    ll act = n;
+    while(act > 0) {
+        ans *= act;
+        act -= k;
+    }
+    dbg(ans);
+    ps(ans);
 }
 
 

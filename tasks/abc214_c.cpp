@@ -296,8 +296,26 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, A, B);
-    ps(A^B);
+    def(ll, N);
+    vl S(N), T(N); re(S, T);
+
+    ll mn = *min_element(all(T));
+    ll mn_idx = -1;
+    for(int i = 0; i < N; i++) if(T[i] == mn) {
+        mn_idx = i;
+        break;
+    }
+    assert(mn_idx != -1);
+    dbg(mn_idx);
+
+    vl ans(N, BIG); ans[mn_idx] = mn;
+    for(int i = 1; i < N; i++) {
+        ll idx_current = (mn_idx + i) % N;
+        ll idx_prev = (mn_idx + (i - 1LL) + 4LL*N) % N;
+
+        ans[idx_current] = min(T[idx_current], ans[idx_prev] + S[idx_prev]);
+    }
+    each(x, ans) ps(x);
 }
 
 

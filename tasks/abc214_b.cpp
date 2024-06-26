@@ -296,8 +296,18 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, A, B);
-    ps(A^B);
+    def(ll, S, T);
+    ll ans = 0;
+    for(ll a = 0; a <= S; a++) {
+        for(ll b = 0; b <= S; b++) {
+            for(ll c = 0; c <= S; c++) {
+                if(a+b+c<=S&&(a*b*c)<=T) {
+                    ans++;
+                }
+            }
+        }
+    }
+    ps(ans);
 }
 
 

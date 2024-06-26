@@ -296,8 +296,13 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    def(ll, A, B);
-    ps(A^B);
+    def(ll, N);
+    vl A(N); re(A);
+
+    vpl go(N);
+    for(ll i = 0; i < N; i++) go.eb(A[i], i + 1);
+    sort(rall(go));
+    ps(go[1].s);
 }
 
 
