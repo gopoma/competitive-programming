@@ -293,44 +293,116 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
+/**
+ * Description: shortest path
+ * Source: own
+ * Verification: https://open.kattis.com/problems/shortestpath1
+ */
+
+template<class C, bool directed> struct Dijkstra {
+	int SZ; V<C> dist;
+	V<V<pair<int,C>>> adj;
+	void init(int _SZ) { SZ = _SZ; adj.clear(); adj.rsz(SZ); }
+	void ae(int u, int v, C cost) {
+		adj[u].pb({v,cost}); if (!directed) adj[v].pb({u,cost}); }
+	void gen(int st) {
+		dist.assign(SZ,numeric_limits<C>::max());
+		using T = pair<C,int>; pqg<T> pq;
+		auto ad = [&](int a, C b) {
+			if (dist[a] <= b) return;
+			pq.push({dist[a] = b,a});
+		}; ad(st,0);
+		while (sz(pq)) {
+			T x = pq.top(); pq.pop(); if (dist[x.s] < x.f) continue;
+			each(y,adj[x.s]) ad(y.f,x.f+y.s);
+		}
+	}
+};
+
 //* /Template
 
 void solve() {
-    //? <>
-    def(ll, N, M);
-    vl A(N); re(A);
-    dbg(N, M);
-    dbg(A);
+    def(ll, H, W);
+    vs S(H); re(S);
+    dbg(H, W);
+    each(x, S) dbg(x);
 
-    remDup(A);
+    auto check_bounds = [&](int i, int j) -> bool {
+        return (0<=i&&i<H)&&(0<=j&&j<W);
+    };
 
-    const ll MX = max(*max_element(all(A)), M) + 5LL;
-    vl hist(MX);
-    each(x, A) hist[x]++;
-
-    vb can(MX, true);
-    for(ll i = 2; i <= M; i++) {
-        ll count = 0;
-        for(ll j = i; j < MX; j += i) {
-            count += hist[j];
-        }
-        if(count != 0) {
-            for(ll j = i; j < MX; j += i) {
-                can[j] = false;
+    Dijkstra<ll, true> G; G.init(H*W+5);
+    auto get = [&](int i, int j) -> int {
+        return W*i+j;
+    };
+    for(int i = 0; i < H; i++) {
+        for(int j = 0; j < W; j++) {
+            //? current S[i][j]
+            set<pl> square;
+            for(int a = 0; a < 2; a++) {
+                for(int b = 0; b < 2; b++) {
+                    int new_i = i + a;
+                    int new_j = j + b;
+                    if(check_bounds(new_i, new_j)) {
+                        square.emplace(new_i, new_j);
+                    }
+                }
+            }
+            vpi perimeter;
+            each(x, square) {
+                for(int k = 0; k < 4; k++) {
+                    int new_i = x.f + dx[k];
+                    int new_j = x.s + dy[k];
+                    if(check_bounds(new_i, new_j)&&!square.count(mp(new_i,new_j))) {
+                        perimeter.eb(new_i, new_j);
+                    }
+                }
+            }
+            each(xx, perimeter) {
+                each(yy, square) {
+                    int u = get(xx.f, xx.s);
+                    int v = get(yy.f, yy.s);
+                    G.ae(u, v, 1);
+                }
+            }
+            each(xx, square) {
+                for(int k = 0; k < 4; k++) {
+                    int new_i = xx.f + dx[k];
+                    int new_j = xx.s + dy[k];
+                    if(check_bounds(new_i, new_j)&&!square.count(mp(new_i,new_j))&&S[new_i][new_j]=='.') {
+                        int u = get(xx.f, xx.s);
+                        int v = get(new_i, new_j);
+                        G.ae(u, v, 0);
+                    }
+                }
             }
         }
     }
-    vl ans;
-    for(ll x = 1; x <= M; x++) {
-        if(can[x]) {
-            ans.eb(x);
+    {
+        for(int i = 0; i < H; i++) {
+            for(int j = 0; j < W; j++) {
+                if(S[i][j]=='.') {
+                    for(int k = 0; k < 4; k++) {
+                        int new_x = i + dx[k];
+                        int new_y = j + dy[k];
+                        if(check_bounds(new_x, new_y)&&S[new_x][new_y]=='.') {
+                            int u = get(i, j);
+                            int v = get(new_x, new_y);
+
+                            G.ae(u, v, 0);
+                            G.ae(v, u, 0);
+                        }
+                    }
+                }
+            }
         }
     }
+    G.gen(get(0, 0));
+    ll ans = G.dist[get(H - 1, W - 1)];
     dbg(ans);
-    ps(sz(ans));
-    each(x, ans) ps(x);
+    ps(ans);
 }
-
+//? </!>
 
 //? Generator
 int rng_int(int L, int R) { assert(L <= R);

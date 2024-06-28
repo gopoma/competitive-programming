@@ -293,42 +293,179 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
+/**
+ * Description: 1D range increment and sum query.
+ * Source: USACO Counting Haybales
+ 	* https://codeforces.com/blog/entry/82400
+ * Verification: USACO Counting Haybales
+ */
+
+struct LazySeg {
+	struct F { // lazy update
+		ll inc = 0;
+		F() {}
+		F(int x) { inc = x; }
+		F& operator*=(const F& a) { inc += a.inc; return *this; }
+	}; V<F> lazy;
+	struct T { // data you need to store for each interval
+		ll sz = 1, mn = BIG, sum = 0;
+		T() {}
+		T(int x) { mn = sum = x; }
+		friend T operator+(const T& a, const T& b) {
+			T res; res.sz = a.sz+b.sz;
+			res.mn = min(a.mn,b.mn), res.sum = a.sum+b.sum;
+			return res;
+		}
+		T& operator*=(const F& a) {
+			mn += a.inc; sum += (ll)sz*a.inc; return *this; }
+	}; V<T> seg;
+	int SZ = 1;
+	void init(const V<T>& _seg) {
+		while (SZ < sz(_seg)) SZ *= 2;
+		seg.rsz(2*SZ); lazy.rsz(2*SZ);
+		F0R(i,SZ) seg[SZ+i] = _seg[i];
+		ROF(i,1,SZ) pull(i);
+	}
+	void push(int ind) { /// modify values for current node
+		seg[ind] *= lazy[ind];
+		if (ind < SZ) F0R(i,2) lazy[2*ind+i] *= lazy[ind];
+		lazy[ind] = F();
+	} // recalc values for current node
+	void pull(int ind) { seg[ind] = seg[2*ind]+seg[2*ind+1]; }
+	void upd(int lo, int hi, F inc, int ind, int L, int R) {
+		push(ind); if (hi < L || R < lo) return;
+		if (lo <= L && R <= hi) {
+			lazy[ind] = inc; push(ind); return; }
+		int M = (L+R)/2; upd(lo,hi,inc,2*ind,L,M);
+		upd(lo,hi,inc,2*ind+1,M+1,R); pull(ind);
+	}
+	void upd(int lo, int hi, int inc) { upd(lo,hi,{inc},1,0,SZ-1); }
+	T query(int lo, int hi, int ind, int L, int R) {
+		push(ind); if (lo > R || L > hi) return T();
+		if (lo <= L && R <= hi) return seg[ind];
+		int M = (L+R)/2;
+		return query(lo,hi,2*ind,L,M)+query(lo,hi,2*ind+1,M+1,R);
+	}
+	T query(int lo, int hi) { return query(lo,hi,1,0,SZ-1); }
+};
+
 //* /Template
 
 void solve() {
-    //? <>
-    def(ll, N, M);
+    def(ll, N, K);
     vl A(N); re(A);
-    dbg(N, M);
+    sort(rall(A));
+    dbg(N, K);
     dbg(A);
 
-    remDup(A);
-
-    const ll MX = max(*max_element(all(A)), M) + 5LL;
-    vl hist(MX);
-    each(x, A) hist[x]++;
-
-    vb can(MX, true);
-    for(ll i = 2; i <= M; i++) {
-        ll count = 0;
-        for(ll j = i; j < MX; j += i) {
-            count += hist[j];
-        }
-        if(count != 0) {
-            for(ll j = i; j < MX; j += i) {
-                can[j] = false;
-            }
-        }
+    if(K >= accumulate(all(A), 0LL)) {
+        ll ans = 0;
+        each(x, A) ans += fdiv(x * (x + 1LL), 2LL);
+        dbg(ans);
+        ps(ans);
+        return;
     }
-    vl ans;
-    for(ll x = 1; x <= M; x++) {
-        if(can[x]) {
-            ans.eb(x);
+
+
+    LazySeg st;
+    {
+        ll m = 1LL;
+        while(m < N) m *= 2LL;
+        vector<LazySeg::T> __init(m);
+        for(int i = 0; i < N; i++) {
+            __init[i] = LazySeg::T(A[i]);
+        }
+        st.init(__init);
+    }
+
+    ll lp = 0;
+    ll ans = 0;
+    auto get = [&](ll idx) {
+        return st.query(idx, idx).sum;
+    };
+    const bool xd = false;
+    auto ddd = [&]() {
+        if(xd) {
+            vl act;
+            for(int i = 0; i < N; i++) {
+                act.eb(st.query(i,i).sum);
+            }
+            dbg(act);
+        }
+    };
+    while(lp < N) {
+        RAYA;
+        //? Right Pointer
+        ll left = lp; //? alwayg good
+        ll right = N + 1; //? always bad
+        auto check = [&](ll idx) {
+            return get(idx) == get(lp);
+        };
+        while(left + 1 < right) {
+            ll middle = (left + right) >> 1LL;
+            if(check(middle)) left = middle;
+            else right = middle;
+        }
+        ll rp = left;
+        dbg(lp, rp, ans, K); ddd();
+
+        assert(lp <= rp);
+        ll layer_cnt = rp - lp + 1LL;
+        if(rp + 1 >= N) { //? out of bounds
+            ll layers_take = fdiv(K, layer_cnt);
+            ans += layer_cnt * (
+                fdiv(get(lp) * (get(lp) + 1LL), 2LL) -
+                fdiv((get(lp) - layers_take) * (get(lp) - layers_take + 1LL), 2LL)
+            );
+
+            ll rem = K % layer_cnt;
+            ans += rem * (get(lp) - layers_take);
+            K = 0;
+            break;
+        } else {
+            ll nxt = get(rp + 1);
+            ll can_layers = get(lp) - nxt;
+            if(K >= can_layers * layer_cnt) {
+                dbg(can_layers, layer_cnt);
+                K -= can_layers * layer_cnt;
+
+                ll R = get(lp);
+                ll L = nxt;
+                dbg(R,L);
+                ll contrib =
+                    layer_cnt * (fdiv(R*(R+1LL), 2LL) - fdiv((L)*(L+1LL), 2LL));
+                dbg(contrib);
+
+                ans += contrib;
+
+                st.upd(lp, rp, -can_layers);
+                continue;
+            }
+
+            dbg("here");
+
+            ll layers_take = fdiv(K, layer_cnt);
+            ll R = get(lp);
+            ll L = R - layers_take;
+            ll contrib = layer_cnt * (
+                fdiv((R)*(R+1LL), 2LL) -
+                fdiv((L) * (L + 1LL), 2LL)
+            );
+            ans += contrib;
+            dbg(R, L, contrib, layer_cnt);
+
+
+            ll rem = K % layer_cnt;
+            dbg(layers_take, rem);
+            ll contrib2 = rem * (get(lp) - layers_take);
+            ans += contrib2;
+            dbg(contrib2);
+            K = 0;
+            break;
         }
     }
     dbg(ans);
-    ps(sz(ans));
-    each(x, ans) ps(x);
+    ps(ans);
 }
 
 

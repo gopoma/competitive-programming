@@ -296,40 +296,27 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-    //? <>
-    def(ll, N, M);
-    vl A(N); re(A);
-    dbg(N, M);
-    dbg(A);
-
-    remDup(A);
-
-    const ll MX = max(*max_element(all(A)), M) + 5LL;
-    vl hist(MX);
-    each(x, A) hist[x]++;
-
-    vb can(MX, true);
-    for(ll i = 2; i <= M; i++) {
-        ll count = 0;
-        for(ll j = i; j < MX; j += i) {
-            count += hist[j];
+    def(str, S);
+    str X, Y;
+    bool on = true;
+    each(c, S) {
+        if(c == '.') {
+            on = false;
+            continue;
         }
-        if(count != 0) {
-            for(ll j = i; j < MX; j += i) {
-                can[j] = false;
-            }
+
+        if(on) {
+            X.pb(c);
+        } else {
+            Y.pb(c);
         }
     }
-    vl ans;
-    for(ll x = 1; x <= M; x++) {
-        if(can[x]) {
-            ans.eb(x);
-        }
-    }
-    dbg(ans);
-    ps(sz(ans));
-    each(x, ans) ps(x);
-}
+    dbg(X, Y);
+    int y = stoi(Y);
+    if(0 <= y && y <= 2) cout << X << "-\n";
+    else if(3 <= y && y <= 6) cout << X << "\n";
+    else cout << X << "+\n";
+}//<>
 
 
 //? Generator

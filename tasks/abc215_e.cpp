@@ -84,7 +84,7 @@ tcT > int upb(V<T> &a, const T &b) { return int(ub(all(a), b) - bg(a)); }
 
 
 
-const int MOD = 1e9 + 7;
+const int MOD = 998244353;
 const int MX = (int)2e5 + 5;
 const ll BIG = 1e18;  //? not too close to LLONG_MAX
 const db PI = acos((db)-1);
@@ -293,42 +293,156 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
+
+/**
+ * Description: modular arithmetic operations
+ * Source:
+ * KACTL
+ * https://codeforces.com/blog/entry/63903
+ * https://codeforces.com/contest/1261/submission/65632855 (tourist)
+ * https://codeforces.com/contest/1264/submission/66344993 (ksun)
+ * also see https://github.com/ecnerwala/cp-book/blob/master/src/modnum.hpp
+ * (ecnerwal) Verification: https://open.kattis.com/problems/modulararithmetic
+ */
+
+template <int MOD, int RT> struct mint {
+	static const int mod = MOD;
+	static constexpr mint rt() { return RT; }  // primitive root for FFT
+	int v;
+	explicit operator int() const {
+		return v;
+	}  // explicit -> don't silently convert to int
+	mint() : v(0) {}
+	mint(ll _v) {
+		v = int((-MOD < _v && _v < MOD) ? _v : _v % MOD);
+		if (v < 0) v += MOD;
+	}
+	bool operator==(const mint &o) const { return v == o.v; }
+	friend bool operator!=(const mint &a, const mint &b) { return !(a == b); }
+	friend bool operator<(const mint &a, const mint &b) { return a.v < b.v; }
+	friend istream &operator>>(istream &is, mint &a) {
+		ll x;
+		is >> x;
+		a = mint(x);
+		return is;
+	}
+	friend ostream &operator<<(ostream &os, mint a) {
+		os << int(a);
+		return os;
+	}
+
+	mint &operator+=(const mint &o) {
+		if ((v += o.v) >= MOD) v -= MOD;
+		return *this;
+	}
+	mint &operator-=(const mint &o) {
+		if ((v -= o.v) < 0) v += MOD;
+		return *this;
+	}
+	mint &operator*=(const mint &o) {
+		v = int((ll)v * o.v % MOD);
+		return *this;
+	}
+	mint &operator/=(const mint &o) { return (*this) *= inv(o); }
+	friend mint pow(mint a, ll p) {
+		mint ans = 1;
+		assert(p >= 0);
+		for (; p; p /= 2, a *= a)
+			if (p & 1) ans *= a;
+		return ans;
+	}
+	friend mint inv(const mint &a) {
+		assert(a.v != 0);
+		return pow(a, MOD - 2);
+	}
+
+	mint operator-() const { return mint(-v); }
+	mint &operator++() { return *this += 1; }
+	mint &operator--() { return *this -= 1; }
+	friend mint operator+(mint a, const mint &b) { return a += b; }
+	friend mint operator-(mint a, const mint &b) { return a -= b; }
+	friend mint operator*(mint a, const mint &b) { return a *= b; }
+	friend mint operator/(mint a, const mint &b) { return a /= b; }
+};
+
+using mi = mint<MOD, 5>;  // 5 is primitive root for both common mods
+using vmi = V<mi>;
+using pmi = pair<mi, mi>;
+using vpmi = V<pmi>;
+
 //* /Template
+using E = mi;
 
-void solve() {
-    //? <>
-    def(ll, N, M);
-    vl A(N); re(A);
-    dbg(N, M);
-    dbg(A);
+//? <>
+E dp[1001][11][1 << 10 + 1];
+E slv(ll N, str S) {
+    vi C(N);
+    for(int i = 0; i < N; i++) {
+        C[i] = int(S[i] - 'A');
+    }
+    const int UNSET = 10;
 
-    remDup(A);
-
-    const ll MX = max(*max_element(all(A)), M) + 5LL;
-    vl hist(MX);
-    each(x, A) hist[x]++;
-
-    vb can(MX, true);
-    for(ll i = 2; i <= M; i++) {
-        ll count = 0;
-        for(ll j = i; j < MX; j += i) {
-            count += hist[j];
-        }
-        if(count != 0) {
-            for(ll j = i; j < MX; j += i) {
-                can[j] = false;
+    for(int idx = N; idx >= 0; idx--) {
+        for(int last = 0; last <= UNSET;  last++) {
+            for(int mask = 0; mask < (1 << 10); mask++) {
+                if(idx == N) {
+                    if(last == UNSET) dp[idx][last][mask] = E(0);
+                    else dp[idx][last][mask] = E(1);
+                }
+                else {
+                    dp[idx][last][mask] += dp[idx + 1][last][mask]; //? no take
+                    int act = C[idx];
+                    if(act == last) {
+                        dp[idx][last][mask] += dp[idx + 1][act][mask];
+                    } else {
+                        if(mask & (1 << act)) {
+                            //? Do nothing
+                        } else {
+                            dp[idx][last][mask] += dp[idx + 1][act][mask | (1 << act)];
+                        }
+                    }
+                }
             }
         }
     }
-    vl ans;
-    for(ll x = 1; x <= M; x++) {
-        if(can[x]) {
-            ans.eb(x);
-        }
-    }
+    E ans = dp[0][UNSET][0];
+    return ans;
+
+//?    map<ll, map<ll, map<ll, bool>>> vis;
+//?    map<ll, map<ll, map<ll, E>>> memo;
+//?    function<E(int, int, int)> dp = [&](int idx, int last, int mask) -> E {
+//?        if(idx == N) {
+//?            if(last == UNSET) return E(0);
+//?            return E(1);
+//?        }
+//?        if(vis[idx][last][mask]) return memo[idx][last][mask];
+//?        vis[idx][last][mask] = true;
+//?
+//?        E ans = dp(idx + 1, last, mask); //? no take
+//?        int act = C[idx];
+//?        if(act == last) {
+//?            ans += dp(idx + 1, act, mask);
+//?        } else {
+//?            if(mask & (1 << act)) {
+//?                //? Do nothing
+//?            } else {
+//?                ans += dp(idx + 1, act, mask | (1 << act));
+//?            }
+//?        }
+//?
+//?        return memo[idx][last][mask] = ans;
+//?    };
+//?    E ans = dp(0, UNSET, 0);
+//?    return ans;
+}
+
+void solve() {
+    def(ll, N);
+    def(str, S);
+
+    E ans = slv(N, S);
     dbg(ans);
-    ps(sz(ans));
-    each(x, ans) ps(x);
+    ps(ans);
 }
 
 
