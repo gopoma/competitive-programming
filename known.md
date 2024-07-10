@@ -82,3 +82,5 @@ for (i = 1; i <= n; i++)
 * `Sort` input if you can and then do your work!.
 
 * do `Coordinate Compression` when working with segments and Lazy Segment Tree, or check carefully the constraints in case of `multitest`.
+
+* `sqrt` is not safe for `long long` integers. Try to use `Binary Search` and `bigint` when possible.
