@@ -89,7 +89,7 @@ const int MX = (int)2e5 + 5;
 const ll BIG = 1e18;  //? not too close to LLONG_MAX
 const db PI = acos((db)-1);
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
-mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
+mt19937 rng(0);
 
 
 
@@ -293,8 +293,131 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
+/**
+ * Description: Disjoint Set Union with path compression
+ 	* and union by size. Add edges and test connectivity.
+ 	* Use for Kruskal's or Boruvka's minimum spanning tree.
+ * Time: O(\alpha(N))
+ * Source: CSAcademy, KACTL
+ * Verification: *
+ */
+
+struct DSU {
+	vi e; void init(int N) { e = vi(N,-1); }
+	int get(int x) { return e[x] < 0 ? x : e[x] = get(e[x]); }
+	bool sameSet(int a, int b) { return get(a) == get(b); }
+	int size(int x) { return -e[get(x)]; }
+	bool unite(int x, int y) { // union by size
+		x = get(x), y = get(y); if (x == y) return 0;
+		if (e[x] > e[y]) swap(x,y);
+		e[x] += e[y]; e[y] = x; return 1;
+	}
+};
+
+/**tcT> T kruskal(int N, vector<pair<T,pi>> ed) {
+	sort(all(ed));
+	T ans = 0; DSU D; D.init(N); // edges that unite are in MST
+	each(a,ed) if (D.unite(a.s.f,a.s.s)) ans += a.f;
+	return ans;
+}*/
 //* /Template
 
+using vvl = V<vl>;
+using E = tuple<ll, ll, ll>; //? value - node - parent
+ll brute(ll n, vl has, vvl mtx) {
+    each(x, has) chk(0 <= x && x < n);
+    vpl edges;
+    for(ll u = 0; u < n; u++) {
+        for(ll v = 0; v < n; v++) {
+            if(u < v) {
+                edges.eb(u, v);
+            }
+        }
+    }
+    const ll N = sz(edges);
+    ll ans = BIG;
+    for(ll mask = 0; mask < (1LL << N); mask++) {
+        vvl adj(n);
+        vpl current_edges;
+        for(ll i = 0; i < N; i++) {
+            if(mask & (1LL << i)) {
+                auto [u, v] = edges[i];
+                adj[u].eb(v);
+                adj[v].eb(u);
+                current_edges.eb(u, v);
+            }
+        }
+        vb vis(n);
+        each(start, has) {
+            if(!vis[start]) {
+                vis[start] = true;
+                deque<ll> q; q.eb(start);
+                while(!q.empty()) {
+                    ll u = q.ft; q.pop_front();
+                    each(v, adj[u]) {
+                        if(!vis[v]) {
+                            vis[v] = true;
+                            q.eb(v);
+                        }
+                    }
+                }
+            }
+        }
+        bool ok = true;
+        for(int u = 0; u < n; u++) ok &= vis[u];
+        if(ok) {
+            ll S = 0;
+            for(auto& [u, v]: current_edges) S += mtx[u][v];
+            ckmin(ans, S);
+        }
+    }
+    chk(ans != BIG);
+    return ans;
+}
+ll slv(ll n, vl has, vvl mtx) {
+    each(x, has) chk(0 <= x && x < n);
+    V<E> edges;
+    set<ll> in; each(x, has) in.emplace(x);
+    for(int u = 0; u < n; u++) {
+        for(int v = u + 1; v < n; v++) {
+            if(in.count(u) && in.count(v)) continue;
+
+            edges.eb(mtx[u][v], u, v);
+        }
+    }
+    ll ans = 0;
+    DSU dsu; dsu.init(n);
+    sor(edges);
+    auto reached = [&](int u) -> bool {
+        for(int v = 0; v < n; v++) {
+            if(dsu.get(v) == dsu.get(u) && in.count(v)) return true;
+        }
+        return false;
+    };
+    for(auto& [w, u, v]: edges) {
+        bool uR = reached(u);
+        bool vR = reached(v);
+        //?dbg("got", u, v, mtx[u][v], uR, vR);
+        if(uR&&vR) continue;
+        if(!uR&&!vR&&dsu.unite(u, v)) {
+            dbg("take", u, v, mtx[u][v]);
+            ans += w;
+            continue;
+        }
+        if(!uR&&!vR)continue;
+        if(uR) {
+            swap(u, v);
+            swap(uR, vR);
+        }
+        chk(!uR);
+        chk(vR);
+        if(dsu.unite(u, v)) {
+            dbg("take", u, v, mtx[u][v]);
+            ans += w;
+        }
+    }
+    return ans;
+} //? <>
 void solve() {
     def(ll, n, k);
     vl has(k); re(has); each(x, has) x--;
@@ -303,44 +426,11 @@ void solve() {
     dbg(has);
     each(row, mtx) dbg(row);
 
-    using E = tuple<ll, ll, ll>; //? value - node - parent
-    multiset<E> q;
-    V<E> dist(n);
-    vb vis(n);
-    each(u, has) vis[u] = true;
-    each(u, has) {
-        dist[u] = make_tuple(0, u, -1);
-        for(ll v = 0; v < n; v++) {
-            if(!vis[v]) {
-                assert(mtx[u][v] > 0);
-                q.emplace(mtx[u][v], v, u);
-            }
-        }
-    }
-    while(!q.empty()) {
-        auto [value, u, parent] = *q.begin();
-        safeErase(q, make_tuple(value, u, parent));
-        if(vis[u]) continue;
-        vis[u] = true;
-        dist[u] = make_tuple(value, u, parent);
-        for(ll v = 0; v < n; v++) {
-            if(!vis[v]) {
-                assert(mtx[u][v] > 0);
-                q.emplace(value + mtx[u][v], v, u);
-            }
-        }
-    }
-    for(ll u = 0; u < n; u++) dbg(u, dist[u]);
-    ll ans = 0;
-    for(ll u = 0; u < n; u++) {
-        auto [value, node, parent] = dist[u];
-        assert(node == u);
-        if(parent != -1) ans += mtx[node][parent];
-    }
+    each(x, has) assert(0 <= x && x < n);
+    ll ans = slv(n, has, mtx);
     dbg(ans);
     ps(ans);
-} //? <>
-
+}
 
 //? Generator
 int rng_int(int L, int R) { assert(L <= R);
@@ -352,6 +442,36 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 signed main() {
     setIO();
+
+    while(0) {
+        RAYA;
+        ll n = rng_ll(1, 4);
+        ll k = rng_ll(1, n);
+        set<ll> S;
+        while(sz(S) < k) {
+            S.emplace(rng_ll(1, n));
+        }
+        vl has; each(x, S) has.eb(x);
+        each(x, has) x--;
+        vvl mtx(n, vl(n));
+        for(int u = 0; u < n; u++) {
+            for(int v = u + 1; v < n; v++) {
+                mtx[u][v] = mtx[v][u] = rng_ll(1, 10);
+            }
+        }
+        dbg(n);
+        dbg(has);
+        each(row, mtx) dbg(row);
+        dbg("Brute");
+        ll ans = brute(n, has, mtx);
+        dbg("/Brute");
+        dbg("Greedy");
+        ll greedy = slv(n, has, mtx);
+        dbg("/Greedy");
+        dbg(ans);
+        dbg(greedy);
+        chk(ans == greedy);
+    }
 
     ll t = 1; //? re(t);
 
