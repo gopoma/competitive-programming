@@ -21,14 +21,13 @@ inline int read(){
 	return t;
 }
 int N;
-int a[250002];
 void solve() {
     N = read();
     multiset<int> ms;
     for(int i = 0; i < N; i++) {
         int act = read();
-        ms.emplace(act);
         if(ms.size() > N/2) continue;
+        ms.emplace(act);
     }
 }
 
