@@ -5,34 +5,30 @@
 
 //! #undef _GLIBCXX_DEBUG //? for Stress Testing
 
-#include <stdio.h> //? if you don't want IntelliSense
+#include <cstdio> //? if you don't want IntelliSense
 #include <algorithm>
-#include <set>
 using namespace std;
 
 //* Template
 //* /Template
 
-#define re register
-inline int read(){
-	re int t=0;re char v=getchar();
-	while(v<'0')v=getchar();
-	while(v>='0')t=(t<<3)+(t<<1)+v-48,v=getchar();
-	return t;
-}
 int N;
+int a[250000];
 void solve() {
-    N = read();
-    multiset<int> ms;
-    for(int i = 0; i < N; i++) {
-        int act = read();
-        if(ms.size() > N/2) continue;
-        ms.emplace(act);
+    scanf("%d", &N);
+    for(int i = 0; i < N; i++) scanf("%d", &a[i]);
+    sort(a,a+N);
+    if(N&1) printf("%.1f\n", float(a[N/2]));
+    else {
+        double ans = double((long long)(a[N/2])+(long long)(a[N/2-1]))/double(2);
+        printf("%.1f\n", ans);
     }
 }
 
 
 signed main() {
+    //? setIO();
+
     solve();
 }
 
