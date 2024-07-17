@@ -297,13 +297,13 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 void solve() {
     def(ll, n, k);
-    vpl movies(n); re(movies);
+    vpl movies(n); re(movies); each(x, movies) { x.s--; }
     dbg(n, k);
     each(x, movies) dbg(x);
     RAYA;
     sort(all(movies), [](pl& A, pl& B) {
         if(A.s != B.s) return (A.s < B.s);
-        return A.f > B.f;
+        return A.f > B.f; //! doesn't mind
     });
     each(x, movies) dbg(x);
 
