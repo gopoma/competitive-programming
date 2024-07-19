@@ -293,42 +293,70 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
-const int MAXN = 2e5 + 5;
-const int MAXD = 30;  // ceil(log2(10^9))
+/**
+ * Description: Tarjan's, DFS once to generate
+ 	* strongly connected components in topological order. $a,b$
+ 	* in same component if both $a\to b$ and $b\to a$ exist.
+ 	* Uses less memory than Kosaraju b/c doesn't store reverse edges.
+ * Time: O(N+M)
+ * Source: KACTL
+ 	* https://github.com/kth-competitive-programming/kactl/blob/master/content/graph/SCC.h
+ * Verification: https://cses.fi/problemset/task/1686/
+ */
 
-int parent[MAXN][MAXD];
-int jump(int a, int d) {
-	for (int i = 0; i < MAXD; i++)
-		if (d & (1 << i)) a = parent[a][i];
-	return a;
-}
+struct SCC {
+	int N, ti = 0; V<vi> adj;
+	vi disc, comp, stk, comps;
+	void init(int _N){ N = _N, adj.rsz(N);
+		disc.rsz(N), comp.rsz(N,-1);}
+	void ae(int x, int y) { adj[x].pb(y); }
+	int dfs(int x) {
+		int low = disc[x] = ++ti; stk.pb(x);
+		each(y,adj[x]) if (comp[y] == -1) // comp[y] == -1,
+			ckmin(low,disc[y]?:dfs(y));  // disc[y] != 0 -> in stack
+		if (low == disc[x]) { // make new SCC
+			// pop off stack until you find x
+			comps.pb(x); for (int y = -1; y != x;)
+				comp[y = stk.bk] = x, stk.pop_back();
+		}
+		return low;
+	}
+	void gen() {
+		F0R(i,N) if (!disc[i]) dfs(i);
+		reverse(all(comps));
+	}
+};
 //* /Template
 
 void solve() {
-    def(ll, n, q);
-    vl nxt(n); re(nxt);
-    vpl queries(q); re(queries);
+    def(int, n, m);
+    vpi edges(m); re(edges);
+    each(x, edges) { x.f--; x.s--; }
 
-    dbg(n, q);
-    dbg(nxt);
-
-    //? Template
-    //! 1-indexed
-    for (int i = 1; i <= n; i++) { parent[i][0] = nxt[i - 1]; }
-
-    // Evaluate the parent matrix
-	for (int d = 1; d < MAXD; d++) {
-		for (int i = 1; i <= n; i++) {
-			parent[i][d] = parent[parent[i][d - 1]][d - 1];
-		}
+    SCC st; st.init(n);
+    for(auto& [u, v]: edges) {
+        st.ae(u, v);
     }
-    //? /Template
+    st.gen();
 
-    for(auto& [x, k]: queries) {
-        ll ans = jump(x, k);
-        dbg(ans);
-        ps(ans);
+    int kingdoms = -1;
+    { //? Coordinate Compression
+        vi values;
+        for(int u = 0; u < n; u++)
+            values.eb(st.comp[u]);
+        remDup(values);
+        map<int, int> guarda;
+        kingdoms = sz(values);
+        for(int i = 0; i < kingdoms; i++) {
+            guarda[values[i]] = i + 1;
+        }
+        for(int u = 0; u < n; u++) {
+            st.comp[u] = guarda[st.comp[u]];
+        }
     }
+    assert(kingdoms != -1);
+    ps(kingdoms);
+    ps(st.comp);
 }
 
 

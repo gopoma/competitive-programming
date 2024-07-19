@@ -293,41 +293,19 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
-const int MAXN = 2e5 + 5;
-const int MAXD = 30;  // ceil(log2(10^9))
-
-int parent[MAXN][MAXD];
-int jump(int a, int d) {
-	for (int i = 0; i < MAXD; i++)
-		if (d & (1 << i)) a = parent[a][i];
-	return a;
-}
 //* /Template
 
 void solve() {
-    def(ll, n, q);
-    vl nxt(n); re(nxt);
-    vpl queries(q); re(queries);
-
-    dbg(n, q);
-    dbg(nxt);
-
-    //? Template
-    //! 1-indexed
-    for (int i = 1; i <= n; i++) { parent[i][0] = nxt[i - 1]; }
-
-    // Evaluate the parent matrix
-	for (int d = 1; d < MAXD; d++) {
-		for (int i = 1; i <= n; i++) {
-			parent[i][d] = parent[parent[i][d - 1]][d - 1];
-		}
-    }
-    //? /Template
-
-    for(auto& [x, k]: queries) {
-        ll ans = jump(x, k);
-        dbg(ans);
-        ps(ans);
+    def(int, n, m);
+    vector<vi> A(n, vi(m)); re(A);
+    if(n == 1 && m == 1) ps("-1");
+    else {
+        int rotL = 1;
+        rotate(A.begin(), A.begin() + rotL, A.end());
+        each(x, A) {
+            rotate(x.begin(), x.begin() + rotL, x.end());
+        }
+        each(x, A) ps(x);
     }
 }
 
@@ -343,7 +321,7 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    ll t = 1; //? re(t);
+    ll t = 1; re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;

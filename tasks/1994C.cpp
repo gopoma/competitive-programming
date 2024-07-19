@@ -89,7 +89,7 @@ const int MX = (int)2e5 + 5;
 const ll BIG = 1e18;  //? not too close to LLONG_MAX
 const db PI = acos((db)-1);
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
-mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
+mt19937 rng(0);
 
 
 
@@ -295,8 +295,66 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* Template
 //* /Template
 
-void solve() {
+ll brute(ll n, ll x, vl a) {
+    ll ans = 0;
+    for(int L = 0; L < n; L++) {
+        for(int R = 0; R < n; R++) {
+            ll g = 0;
+            for(int i = L; i <= R; i++) {
+                g += a[i];
+                if(g > x) g = 0;
+            }
+            ans += (g != 0);
+        }
+    }
+    return ans;
+}
 
+ll slv(ll n, ll x, vl a) {
+    a.eb(x + 10); n++;
+
+    vl pref = a;
+    for(int i = 1; i < n; i++)
+        pref[i] += pref[i - 1];
+    auto query = [&](int L, int R) -> ll {
+        ll sum = pref[R];
+        if(0 <= L - 1) sum -= pref[L - 1];
+        return sum;
+    };
+
+    vl dp(n + 5);
+    for(int L = n - 2; L >= 0; L--) {
+        if(a[L] > x) dp[L] = dp[L + 1];
+        else {
+            auto check = [&](int R) -> bool {
+                return (query(L, R) <= x);
+            };
+            int left  = L;     //? always good
+            int right = n - 1; //? always bad
+            while(left + 1 < right) {
+                int middle = (left + right) >> 1;
+                if(check(middle)) left = middle;
+                else right = middle;
+            }
+            int tar = left;
+            dp[L] = (tar - L + 1LL) + dp[tar + 2];
+        }
+    }
+
+    dbg(a);
+    dbg(dp);
+    ll ans = accumulate(all(dp), 0LL);
+    return ans;
+}
+
+void solve() {
+    def(ll, n, x);
+    vl a(n); re(a);
+    dbg(n, x);
+    dbg(a);
+    ll ans = slv(n, x, a);
+    dbg(ans);
+    ps(ans);
 }
 
 
@@ -311,7 +369,19 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    ll t = 1; //? re(t);
+    while(0) {
+        RAYA;
+        ll n = rng_ll(1, 5);
+        ll x = rng_ll(1, 10);
+        vl a(n); each(e, a) e = rng_ll(1, 10);
+        dbg(n, x, a);
+        ll ans = brute(n, x, a);
+        ll greedy = slv(n, x, a);
+        dbg(ans, greedy);
+        chk(ans == greedy);
+    }
+
+    ll t = 1; re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;

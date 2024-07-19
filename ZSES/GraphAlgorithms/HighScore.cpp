@@ -293,42 +293,61 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
-const int MAXN = 2e5 + 5;
-const int MAXD = 30;  // ceil(log2(10^9))
+/**
+ * Description: Shortest Path w/ negative edge weights
+    * Can be useful with linear programming
+    * Constraints of the form x_i-x_j<k
+ * Source: Own
+ * Verification:
+    * https://open.kattis.com/problems/shortestpath3
+    * https://probgate.org/viewproblem.php?pid=378
+ */
 
-int parent[MAXN][MAXD];
-int jump(int a, int d) {
-	for (int i = 0; i < MAXD; i++)
-		if (d & (1 << i)) a = parent[a][i];
-	return a;
-}
+const ll INF = BIG;
+template<int SZ> struct BellmanFord {
+    int n;
+    vi adj[SZ];
+    V<pair<pi,int>> ed;
+    void ae(int u, int v, int w) {
+        adj[u].pb(v), ed.pb({{u,v},w}); }
+    ll dist[SZ];
+    void genBad(int x) {
+        // if x is reachable from negative cycle
+        // -> update dists of all vertices which x can go to
+        if (dist[x] == -INF) return;
+        dist[x] = -INF;
+        each(t,adj[x]) genBad(t);
+    }
+    void init(int _n, int s) {
+        n = _n; F0R(i,n) dist[i] = INF;
+        dist[s] = 0;
+        F0R(i,n) each(a,ed) if (dist[a.f.f] < INF)
+            ckmin(dist[a.f.s],dist[a.f.f]+a.s);
+        each(a,ed) if (dist[a.f.f] < INF
+                    && dist[a.f.s] > dist[a.f.f]+a.s)
+            genBad(a.f.s);
+    }
+};
 //* /Template
 
+BellmanFord<2505> G;
+using E = tuple<int, int, ll>;
 void solve() {
-    def(ll, n, q);
-    vl nxt(n); re(nxt);
-    vpl queries(q); re(queries);
-
-    dbg(n, q);
-    dbg(nxt);
-
-    //? Template
-    //! 1-indexed
-    for (int i = 1; i <= n; i++) { parent[i][0] = nxt[i - 1]; }
-
-    // Evaluate the parent matrix
-	for (int d = 1; d < MAXD; d++) {
-		for (int i = 1; i <= n; i++) {
-			parent[i][d] = parent[parent[i][d - 1]][d - 1];
-		}
+    def(int, n, m);
+    V<E> edges(m); re(edges);
+    for(auto& [u, v, w]: edges) {
+        u--; v--;
+        G.ae(u, v, -w);
     }
-    //? /Template
 
-    for(auto& [x, k]: queries) {
-        ll ans = jump(x, k);
-        dbg(ans);
-        ps(ans);
-    }
+    const int start = 0;
+    G.init(n, start);
+
+    const int to = n - 1;
+    ll ans = -G.dist[to];
+
+    if(ans == INF) ps("-1");
+    else ps(ans);
 }
 
 

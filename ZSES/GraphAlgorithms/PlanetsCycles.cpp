@@ -293,10 +293,101 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
 
 //* Template
+const int MAXN = 2e5 + 5;
+const int MAXD = 30;  // ceil(log2(10^9))
+
+int parent[MAXN][MAXD];
+int jump(int a, int d) {
+	for (int i = 0; i < MAXD; i++)
+		if (d & (1 << i)) a = parent[a][i];
+	return a;
+}
 //* /Template
 
 void solve() {
+    def(int, n);
+    vi nxt(n); re(nxt);
+    dbg(n);
+    dbg(nxt);
 
+    //? Template
+    //! 1-indexed
+    for (int i = 1; i <= n; i++) { parent[i][0] = nxt[i - 1]; }
+
+    // Evaluate the parent matrix
+	for (int d = 1; d < MAXD; d++) {
+		for (int i = 1; i <= n; i++) {
+			parent[i][d] = parent[parent[i][d - 1]][d - 1];
+		}
+    }
+    //? /Template
+
+    dbg(jump(1, 1));
+    dbg(jump(1, 2));
+    dbg(jump(1, 3));
+
+    V<vi> adj(n + 5);
+    for(int u = 0; u < n; u++) adj[u + 1].eb(nxt[u]);
+    vb inCycle(n + 5);
+    vi length(n + 5);
+    vi color(n + 5);
+    const int NONE = 0;
+    const int PROCESSING = 1;
+    const int DONE = 2;
+    for(int u = 1; u <= n; u++) {
+        if(color[u] == NONE) {
+            vi stk;
+            function<void(int)> dfs = [&](int src) -> void {
+                if(color[src] == DONE) return;
+                color[src] = PROCESSING;
+
+                stk.eb(src);
+                each(v, adj[src]) {
+                    if(color[v] == NONE) dfs(v);
+                    else if(color[v] == DONE) continue;
+                    else {
+                        assert(color[v] == PROCESSING);
+                        //? found cycle that starts in v
+                        assert(!stk.empty());
+                        int idx = sz(stk) - 1;
+                        vi cycle;
+                        while(stk[idx] != v) {
+                            cycle.eb(stk[idx]);
+                            idx--;
+                        }
+                        cycle.eb(v);
+                        each(x, cycle) {
+                            inCycle[x] = true;
+                            length[x] = sz(cycle);
+                        }
+                    }
+                }
+                stk.pop_back();
+                color[src] = DONE;
+            }; dfs(u);
+        } else assert(color[u] == DONE);
+    }
+    for(int u = 1; u <= n; u++) dbg(u, inCycle[u], length[u]);
+    vi ans;
+    for(int u = 1; u <= n; u++) {
+        if(inCycle[u]) {
+            ans.eb(length[u]);
+        } else {
+            auto check = [&](int steps) -> bool {
+                return inCycle[jump(u, steps)];
+            };
+            int left  = 0;          //? always bad
+            int right = int(n + 5); //? always good
+            while(left + 1 < right) {
+                int middle = (left + right) >> 1;
+                if(check(middle)) right = middle;
+                else left = middle;
+            }
+            int steps_to_cycle = right;
+            ans.eb(steps_to_cycle + length[jump(u, steps_to_cycle)]);
+        }
+    }
+    ps(ans);
 }
 
 

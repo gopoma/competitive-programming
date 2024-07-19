@@ -296,7 +296,20 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 //* /Template
 
 void solve() {
-
+    def(int, N);
+    def(str, S, T);
+    vi sones, tones;
+    for(int i = 0; i < N; i++) {
+        if(S[i] == '1') sones.eb(i);
+        if(T[i] == '1') tones.eb(i);
+    }
+    if(sones.empty() && tones.empty()) ps("YES");
+    else if(tones.empty()) ps("YES");
+    else if(sones.empty()) ps("NO");
+    else {
+        if(sones.ft <= tones.ft) ps("YES");
+        else ps("NO");
+    }
 }
 
 
@@ -311,7 +324,7 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    ll t = 1; //? re(t);
+    ll t = 1; re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;
