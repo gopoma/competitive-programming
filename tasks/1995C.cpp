@@ -1,9 +1,9 @@
 //* sometimes pragmas don't work, if so, just comment it!
-#pragma GCC optimize ("Ofast")
+//? #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-#undef _GLIBCXX_DEBUG //? for Stress Testing
+//! #undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
@@ -299,27 +299,37 @@ using vvb = V<vb>;
 //* /Template
 
 void solve() {
-    def(ll, n);
+    def(int, n);
     vl a(n); re(a);
     dbg(n);
     dbg(a);
-    vl opts(n);
-    for(int i = 1; i < n; i++) {
-        auto check = [&](ll pot) -> bool {
-            db A = db(opts[i - 1]) * log(db(2)) + log(db(a[i - 1]));
-            db B = db(pot) * log(db(2)) + log(db(a[i]));
-            return (abs(A - B) < 1e-9 || A < B);
+    vl powers(n);
+
+    int idx = 0;
+    while(idx < n && a[idx] == 1) idx++;
+
+    for(int i = idx + 1; i < n; i++) {
+        if(a[i] == 1) {
+            ps("-1");
+            return;
+        }
+        auto check = [&](ll pot) {
+            db A = db(powers[i - 1]) * db(log(db(2))) + log(log(a[i - 1]));
+            db B = db(pot) * db(log(db(2))) + log(log(a[i]));
+            return (abs(A - B) < db(1e-9)) || (A < B);
         };
         ll left = -1; //? always bad
-        ll right = ll(1e16); //? always good
+        ll right = ll(1e10); //? always good
         while(left + 1 < right) {
             ll middle = fdiv(left + right, 2LL);
             if(check(middle)) right = middle;
             else left = middle;
         }
-        opts[i] = right;
+        ll ans = right;
+        powers[i] = ans;
     }
-    ll ans = accumulate(all(opts), 0LL);
+    dbg(powers);
+    ll ans = accumulate(all(powers), 0LL);
     dbg(ans);
     ps(ans);
 }

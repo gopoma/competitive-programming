@@ -1,9 +1,9 @@
 //* sometimes pragmas don't work, if so, just comment it!
-#pragma GCC optimize ("Ofast")
+//? #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-#undef _GLIBCXX_DEBUG //? for Stress Testing
+//! #undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
@@ -299,29 +299,29 @@ using vvb = V<vb>;
 //* /Template
 
 void solve() {
-    def(ll, n);
-    vl a(n); re(a);
-    dbg(n);
-    dbg(a);
-    vl opts(n);
-    for(int i = 1; i < n; i++) {
-        auto check = [&](ll pot) -> bool {
-            db A = db(opts[i - 1]) * log(db(2)) + log(db(a[i - 1]));
-            db B = db(pot) * log(db(2)) + log(db(a[i]));
-            return (abs(A - B) < 1e-9 || A < B);
-        };
-        ll left = -1; //? always bad
-        ll right = ll(1e16); //? always good
-        while(left + 1 < right) {
-            ll middle = fdiv(left + right, 2LL);
-            if(check(middle)) right = middle;
-            else left = middle;
+    def(ll, n, k);
+    if(k == 0) ps("0");
+    else {
+        vl a{n};
+        {
+            for(ll act = n - 1; act >= 1; act--) {
+                a.eb(act);
+                a.eb(act);
+            }
         }
-        opts[i] = right;
+        dbg(n, k);
+        dbg(a);
+
+        ll ans = 0;
+        ll act = 0;
+        each(x, a) {
+            dbg(act);
+            ans++;
+            if(act + x >= k) break;
+            act += x;
+        }
+        ps(ans);
     }
-    ll ans = accumulate(all(opts), 0LL);
-    dbg(ans);
-    ps(ans);
 }
 
 

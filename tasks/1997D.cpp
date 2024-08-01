@@ -1,9 +1,9 @@
 //* sometimes pragmas don't work, if so, just comment it!
-#pragma GCC optimize ("Ofast")
+//? #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-#undef _GLIBCXX_DEBUG //? for Stress Testing
+//! #undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
@@ -299,27 +299,61 @@ using vvb = V<vb>;
 //* /Template
 
 void solve() {
-    def(ll, n);
-    vl a(n); re(a);
-    dbg(n);
-    dbg(a);
-    vl opts(n);
-    for(int i = 1; i < n; i++) {
-        auto check = [&](ll pot) -> bool {
-            db A = db(opts[i - 1]) * log(db(2)) + log(db(a[i - 1]));
-            db B = db(pot) * log(db(2)) + log(db(a[i]));
-            return (abs(A - B) < 1e-9 || A < B);
-        };
-        ll left = -1; //? always bad
-        ll right = ll(1e16); //? always good
-        while(left + 1 < right) {
-            ll middle = fdiv(left + right, 2LL);
-            if(check(middle)) right = middle;
-            else left = middle;
-        }
-        opts[i] = right;
+    def(int, n);
+    vl a(n + 5);
+    for(int u = 1; u <= n; u++) cin >> a[u];
+    vpl edges;
+    for(int u = 1; u < n; u++) {
+        def(ll, v);
+        edges.eb(u + 1, v);
     }
-    ll ans = accumulate(all(opts), 0LL);
+    dbg(n);
+
+    vvl adj(n + 5);
+    each(x, edges) {
+        auto [u, v] = x;
+        adj[u].eb(v);
+        adj[v].eb(u);
+    }
+    for(int u = 1; u <= n; u++) {
+        dbg(u, a[u], adj[u]);
+    }
+
+    const int root = 1;
+    auto check = [&](ll val) -> bool {
+        if(a[root] >= val) return true;
+        function<bool(int, int, ll)> dfs = [&](int u, int parent, ll need) -> bool {
+            if(need >= ll(1e16)) return false;
+            if(sz(adj[u]) == 1) {
+                if(a[u] >= need) return true;
+                else return false;
+            }
+            bool ok = true;
+            each(v, adj[u]) {
+                if(v == parent) continue;
+                if(need <= a[u]) {
+                    ok &= dfs(v, u, need);
+                } else {
+                    ok &= dfs(v, u, need + (need - a[u]));
+                }
+            }
+            return ok;
+        };
+        bool ok = true;
+        each(v, adj[root]) {
+            ok &= dfs(v, root, (val - a[root]));
+        }
+        return ok;
+    };
+
+    ll left = 0; //? always good
+    ll right = ll(1e16); //? always bad
+    while(left + 1 < right) {
+        ll middle = fdiv(left + right, 2LL);
+        if(check(middle)) left = middle;
+        else right = middle;
+    }
+    ll ans = left;
     dbg(ans);
     ps(ans);
 }

@@ -1,9 +1,9 @@
 //* sometimes pragmas don't work, if so, just comment it!
-#pragma GCC optimize ("Ofast")
+//? #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-#undef _GLIBCXX_DEBUG //? for Stress Testing
+//! #undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
@@ -89,7 +89,7 @@ const int MX = (int)2e5 + 5;
 const ll BIG = 1e18;  //? not too close to LLONG_MAX
 const db PI = acos((db)-1);
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
-mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
+mt19937 rng(0);
 
 
 
@@ -298,28 +298,104 @@ using vvb = V<vb>;
 //* Template
 //* /Template
 
-void solve() {
-    def(ll, n);
-    vl a(n); re(a);
-    dbg(n);
+ll brute(ll n, ll m, vpl have) {
+    vl a;
+    for(auto& [val, c]: have) {
+        rep(c) a.eb(val);
+    }
+
+    sor(a);
     dbg(a);
-    vl opts(n);
-    for(int i = 1; i < n; i++) {
-        auto check = [&](ll pot) -> bool {
-            db A = db(opts[i - 1]) * log(db(2)) + log(db(a[i - 1]));
-            db B = db(pot) * log(db(2)) + log(db(a[i]));
-            return (abs(A - B) < 1e-9 || A < B);
+    vl pref = a; for(int i = 1; i < sz(a); i++) pref[i] += pref[i - 1];
+    auto query = [&](int L, int R) -> ll {
+        ll sum = pref[R];
+        if(0 <= L - 1) sum -= pref[L - 1];
+        return sum;
+    };
+
+    ll ans = 0;
+    for(int fixedLeft = 0; fixedLeft < sz(a); fixedLeft++) {
+        if(a[fixedLeft] > m) continue;
+        auto check = [&](ll R) -> bool {
+            return (a[R] - a[fixedLeft] <= 1 && query(fixedLeft, R) <= m);
         };
-        ll left = -1; //? always bad
-        ll right = ll(1e16); //? always good
+        ll left = fixedLeft; //? always good
+        ll right = sz(a); //? always bad
         while(left + 1 < right) {
             ll middle = fdiv(left + right, 2LL);
-            if(check(middle)) right = middle;
-            else left = middle;
+            if(check(middle)) left = middle;
+            else right = middle;
         }
-        opts[i] = right;
+        if(ckmax(ans, query(fixedLeft, left))) {
+            dbg(fixedLeft, left, a[fixedLeft], a[left], query(fixedLeft, left));
+        }
     }
-    ll ans = accumulate(all(opts), 0LL);
+    return ans;
+}
+
+ll slv(ll n, ll m, vpl have) {
+    sor(have);
+    ll ans = 0;
+    for(int i = 0; i < n; i++) {
+        auto [a, c] = have[i];
+        ll can = min(fdiv(m, a), c);
+        ckmax(ans, can * a);
+    }
+
+    for(int i = 1; i < n; i++) {
+        auto [a1, c1] = have[i - 1];
+        auto [a2, c2] = have[i];
+        if(a2 - a1 > 1) continue;
+        if(a1 * c1 + a2 * c2 <= m) {
+            ckmax(ans, a1 * c1 + a2 * c2);
+            continue;
+        }
+        {
+            ll rc1 = 0;
+            for(ll bit = 36; bit >= 0; bit--) {
+                if((rc1 | (1LL << bit)) <= c1 && (rc1 | (1LL << bit)) * a1 <= m) {
+                    rc1 |= (1LL << bit);
+                }
+            }
+            c1 = rc1;
+        }
+        {
+            ll left = 0; //? always good
+            ll right = c2 + 1; //? always bad
+            while(left + 1 < right) {
+                ll middle = fdiv(left + right, 2LL);
+                if(a1*c1+a2*middle<=m) left = middle;
+                else right = middle;
+            }
+            ll rc2 = left;
+            ll current_ans = a1*c1 + a2*rc2;
+            chk(current_ans <= m);
+            ll queda = c2 - rc2;
+            ll left2 = 0; //? always good
+            ll right2 = min(c1, queda) + 1; //? always bad
+            while(left2 + 1 < right2) {
+                ll middle = fdiv(left2 + right2, 2LL);
+                if(current_ans + middle <= m) left2 = middle;
+                else right2 = middle;
+            }
+            ll exchange = left2;
+            current_ans += exchange;
+            ckmax(ans, current_ans);
+        }
+    }
+    return ans;
+}
+
+void solve() {
+    def(ll, n, m);
+    vl a(n), c(n); re(a, c);
+    dbg(n, m);
+    dbg(a);
+    dbg(c);
+    vpl have;
+    for(int i = 0; i < n; i++) have.eb(a[i], c[i]);
+    dbg(have);
+    ll ans = slv(n, m, have);
     dbg(ans);
     ps(ans);
 }
@@ -335,6 +411,32 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 signed main() {
     setIO();
+
+    while(0) {
+        RAYA;
+        ll n = rng_ll(1, 10);
+        ll m = rng_ll(1, 100);
+        vpl have(n);
+        set<ll> S;
+        each(x, have) {
+            x.f = rng_ll(1, 10);
+            while(S.count(x.f)) {
+                x.f = rng_ll(1, 10);
+            }
+            S.emplace(x.f);
+            x.s = rng_ll(1, 10);
+        }
+        dbg(n, m);
+        dbg(have);
+        dbg("Brute");
+        ll ans = brute(n, m, have);
+        //?dbg("Greedy");
+        //?ll greedy = slv(n, m, have);
+        //?dbg("/Greedy");
+        dbg(ans);
+        //?dbg(greedy);
+        //?chk(ans == greedy);
+    }
 
     ll t = 1; re(t);
 

@@ -1,9 +1,9 @@
 //* sometimes pragmas don't work, if so, just comment it!
-#pragma GCC optimize ("Ofast")
+//? #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-#undef _GLIBCXX_DEBUG //? for Stress Testing
+//! #undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
@@ -299,27 +299,33 @@ using vvb = V<vb>;
 //* /Template
 
 void solve() {
-    def(ll, n);
-    vl a(n); re(a);
-    dbg(n);
+    def(ll, n, m);
+    vl a(n); re(a); sor(a);
+    dbg(n, m);
     dbg(a);
-    vl opts(n);
-    for(int i = 1; i < n; i++) {
-        auto check = [&](ll pot) -> bool {
-            db A = db(opts[i - 1]) * log(db(2)) + log(db(a[i - 1]));
-            db B = db(pot) * log(db(2)) + log(db(a[i]));
-            return (abs(A - B) < 1e-9 || A < B);
+
+    vl pref = a; for(int i = 1; i < n; i++) pref[i] += pref[i - 1];
+    auto query = [&](int L, int R) -> ll {
+        ll sum = pref[R];
+        if(0 <= L - 1) sum -= pref[L - 1];
+        return sum;
+    };
+
+    ll ans = 0;
+    for(int fixedLeft = 0; fixedLeft < n; fixedLeft++) {
+        if(a[fixedLeft] > m) continue;
+        auto check = [&](ll R) -> bool {
+            return (a[R] - a[fixedLeft] <= 1 && query(fixedLeft, R) <= m);
         };
-        ll left = -1; //? always bad
-        ll right = ll(1e16); //? always good
+        ll left = fixedLeft; //? always good
+        ll right = n; //? always bad
         while(left + 1 < right) {
             ll middle = fdiv(left + right, 2LL);
-            if(check(middle)) right = middle;
-            else left = middle;
+            if(check(middle)) left = middle;
+            else right = middle;
         }
-        opts[i] = right;
+        ckmax(ans, query(fixedLeft, left));
     }
-    ll ans = accumulate(all(opts), 0LL);
     dbg(ans);
     ps(ans);
 }

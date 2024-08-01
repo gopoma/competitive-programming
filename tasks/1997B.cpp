@@ -1,9 +1,9 @@
 //* sometimes pragmas don't work, if so, just comment it!
-#pragma GCC optimize ("Ofast")
+//? #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-#undef _GLIBCXX_DEBUG //? for Stress Testing
+//! #undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
@@ -299,27 +299,31 @@ using vvb = V<vb>;
 //* /Template
 
 void solve() {
-    def(ll, n);
-    vl a(n); re(a);
+    def(int, n);
+    vs S(2); re(S);
     dbg(n);
-    dbg(a);
-    vl opts(n);
-    for(int i = 1; i < n; i++) {
-        auto check = [&](ll pot) -> bool {
-            db A = db(opts[i - 1]) * log(db(2)) + log(db(a[i - 1]));
-            db B = db(pot) * log(db(2)) + log(db(a[i]));
-            return (abs(A - B) < 1e-9 || A < B);
-        };
-        ll left = -1; //? always bad
-        ll right = ll(1e16); //? always good
-        while(left + 1 < right) {
-            ll middle = fdiv(left + right, 2LL);
-            if(check(middle)) right = middle;
-            else left = middle;
+    dbg(S);
+
+    vs tar1 = {
+        "...",
+        "x.x"
+    };
+    vs tar2 = {
+        "x.x",
+        "..."
+    };
+    ll ans = 0;
+    for(int C = 1; C < n - 1; C++) {
+        vs act;
+        for(int i = 0; i < 2; i++) {
+            str current;
+            for(int j = -1; j <= +1; j++) {
+                current.pb(S[i][C + j]);
+            }
+            act.eb(current);
         }
-        opts[i] = right;
+        ans += (act == tar1) + (act == tar2);
     }
-    ll ans = accumulate(all(opts), 0LL);
     dbg(ans);
     ps(ans);
 }
