@@ -30,7 +30,7 @@ rotate(vec2.begin(), vec2.begin() + vec2.size() - rotR, vec2.end());
 
 * `Complexity in Recursive dp`: Complejidad que acarrea la tabla en sí por la Complejidad de un cálculo simple de estado.
 
-* It is my impression that Pull dp is best for counting.
+* It is my impression that `Top-Down` dp is best for counting.
 
 * Think in `invariants`.
 
@@ -61,26 +61,29 @@ for (i = 1; i <= n; i++)
 
 * watch `carefully` the `constraints`, maybe it can be divided in two cases.
 
-* Exploit numeric constrains, ask yourself: ¿What is the maximum amount of different values?
+* Exploit numeric constrains, ask yourself: ¿What is the maximum amount of **different values**?
 
 * `Try to implement the brute`, then make observations of what can be optimized.
 
-* In case you think that are INF possibilities, remember the visisited array.
+* In case you think that are **INF** possibilities, remember the `visited` array.
 
-* Think hard in paper. Try to optimize the naive with Greedy.
+* **Think hard** in paper. Try to optimize the naive with Greedy.
 
-* Forgot a `break` that `should` end current loop and outer loop?
+* **Forgot** a `break` that `should` end current loop and outer loop (`rage quit`)?
 
-* Read `Carefully` the `Constraints` >:v
+* **Read** `Carefully` the `Constraints` >:v
 
-* Both `Lazy Segment Tree` templates require that size must be a power of $2$.
+* **Both** `Lazy Segment Tree` templates require that size must be a power of $2$.
 
 * `Simulate your algorithm in paper` >:v
 
 * When working nearly `BIG`, ensure you enable `trapv` if you don't know where is the WA.
 
-* `Sort` input if you can and then do your work!.
+* `Sort` the input if possible before processing; it might resolve issues with `dp` or make a `Greedy` approach feasible.
 
-* do `Coordinate Compression` when working with segments and Lazy Segment Tree, or check carefully the constraints in case of `multitest`.
+* do `Coordinate Compression` when working with segments and Lazy Segment Tree (**check carefully** the **constraints** in case of `multitest`).
 
-* `sqrt` is not safe for `long long` integers. Try to use `Binary Search` and `bigint` when possible.
+* `sqrt` is not safe for `long long` integers. Try to use `Binary Search` and `bigint` when possible. **Refer to:** https://atcoder.jp/contests/abc361/submissions/55416069
+
+* $N=2000, M=1000$ and $O(N{M}^{2})$, but:
+$dp[idx][current] = \sum_{x = l}^{r} dp[idx + 1][x]$? (note the `contiguous` range (`subarray`)) try to store `prefix sum` in each `dp[i][j]` and now: $dp[idx][current] = dp[idx + 1][r] - dp[idx + 1][l - 1] + dp[idx][current - 1]$ (just be aware of indexing), **Refer to:** https://leetcode.com/submissions/detail/1352504065/
