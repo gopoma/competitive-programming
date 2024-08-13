@@ -1,9 +1,9 @@
 //* sometimes pragmas don't work, if so, just comment it!
-//? #pragma GCC optimize ("Ofast")
+#pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-//! #undef _GLIBCXX_DEBUG //? for Stress Testing
+#undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
@@ -237,10 +237,10 @@ inline namespace Debug {
 #define MACRO(code) do {code} while (false)
 #define RAYA MACRO(cerr << "\033[101m" << "================================" << "\033[0m" << endl;)
 #else
-//? #define dbg(...)
+#define dbg(...)
 
 #define chk(...)
-//? #define RAYA
+#define RAYA
 #endif
 
 const auto beg_time = std::chrono::high_resolution_clock::now();
@@ -293,8 +293,189 @@ using vvl = V<vl>;
 using vvb = V<vb>;
 //? /Custom Helpers
 
-#define dbg(x) ps(#x); ps(x)
-#define RAYA ps("================================")
+
 
 //* Template
 //* /Template
+
+void solve() {
+    def(int, n, q);
+    vi a(n - 1); re(a);
+    vi p(n); re(p);
+    vpi queries(q); re(queries);
+
+    dbg(n, q);
+    dbg(a);
+    dbg(p);
+    dbg(queries);
+    dbg("xd");
+
+    const int MAXN = n + 5;
+    const int ROOT = 1;
+    vvi adj(MAXN);
+    {
+        for(int i = 0; i < n - 1; i++) {
+            int u = i + 2;
+            int v = a[i];
+
+            adj[u].eb(v);
+            adj[v].eb(u);
+        }
+        //? for(int u = 1; u <= n; u++) dbg(u, adj[u]);
+    }
+
+    vi where(MAXN);
+    vi parent_in_permutation(MAXN, -1);
+    vvi children_in_permutation(MAXN);
+    {
+        vi order;
+        function<void(int, int)> dfs = [&](int src, int parent) -> void {
+            order.eb(src);
+            each(v, adj[src]) {
+                if(v != parent) {
+                    dfs(v, src);
+                }
+            }
+        }; dfs(ROOT, -1);
+        dbg(order, p);
+
+        map<int, int> backwards;
+        for(int i = 0; i < n; i++) {
+            backwards[order[i]] = i;
+        }
+
+
+        for(int u = 1; u <= n; u++) {
+            if(u != ROOT) { //? assign parent
+                parent_in_permutation[backwards[u]] = backwards[u/2];
+            }
+
+            if(2 * u <= n) { //? assign children
+                children_in_permutation[backwards[u]].eb(backwards[2*u]);
+                children_in_permutation[backwards[u]].eb(backwards[2*u+1]);
+            }
+        }
+        //? dbg(parent_in_permutation);
+        //? dbg(children_in_permutation);
+    }
+
+
+
+    auto check = [&](int idx) -> bool {
+        bool ok = true;
+        if(idx != 0) {
+            int current_parent = p[parent_in_permutation[idx]];
+            int real_parent = p[idx] / 2;
+
+            ok &= (current_parent == real_parent);
+        }
+
+        if(sz(children_in_permutation[idx]) == 2) {
+            vi current_children{
+                p[children_in_permutation[idx].ft],
+                p[children_in_permutation[idx].bk]
+            }; sor(current_children);
+            vi real_children{2 * p[idx], 2 * p[idx] + 1};
+
+            ok &= (current_children == real_children);
+        }
+
+        return ok;
+    };
+
+    int bads = 0;
+    for(int idx = 0; idx < n; idx++) {
+        bool ok = check(idx);
+        bads += !ok;
+    }
+    dbg(bads);
+
+
+
+    for(auto& [xx, yy]: queries) {
+        RAYA;
+        dbg("query", xx, yy);
+        xx--; yy--;
+
+        vi inTransition{xx, yy};
+        if(parent_in_permutation[xx] != -1) {
+            inTransition.eb(parent_in_permutation[xx]);
+        }
+        if(parent_in_permutation[yy] != -1) {
+            inTransition.eb(parent_in_permutation[yy]);
+        }
+        if(sz(children_in_permutation[xx]) == 2) {
+            inTransition.eb(children_in_permutation[xx].ft);
+            inTransition.eb(children_in_permutation[xx].bk);
+        }
+        if(sz(children_in_permutation[yy]) == 2) {
+            inTransition.eb(children_in_permutation[yy].ft);
+            inTransition.eb(children_in_permutation[yy].bk);
+        }
+        remDup(inTransition);
+
+        vb prv;
+        each(x, inTransition) prv.eb(check(x));
+        swap(p[xx], p[yy]);
+        vb current;
+        each(x, inTransition) current.eb(check(x));
+        dbg(inTransition, prv, current);
+
+        const int N = sz(prv);
+        for(int i = 0; i < N; i++) {
+            bool okprv = prv[i];
+            bool okcurrent = current[i];
+            if(okprv == okcurrent) continue;
+            else {
+                if(okprv == false && okcurrent == true) {
+                    bads--;
+                } else {
+                    assert(okprv == true && okcurrent == false);
+                    bads++;
+                }
+            }
+        }
+
+        //? for(int u = 1; u <= n; u++) dbg(u, good[u]);
+        dbg(bads);
+        ps((bads == 0)?"YES":"NO");
+    }
+}
+
+
+//? Generator
+int rng_int(int L, int R) { assert(L <= R);
+	return uniform_int_distribution<int>(L,R)(rng);  }
+ll rng_ll(ll L, ll R) { assert(L <= R);
+	return uniform_int_distribution<ll>(L,R)(rng);  }
+//? /Generator
+
+
+signed main() {
+    setIO();
+
+    ll t = 1; re(t);
+
+    FOR(i, 1, t + 1) {
+        RAYA;
+        RAYA;
+        solve();
+    }
+    RAYA;
+    RAYA;
+
+    #ifdef LOCAL
+        cerr << fixed << setprecision(5);
+        cerr << "\033[42m++++++++++++++++++++\033[0m\n";
+        cerr << "\033[42mtime = " << time_elapsed() << "ms\033[0m\n";
+        cerr << "\033[42m++++++++++++++++++++\033[0m";
+    #endif
+}
+
+/* stuff you should look for
+ * int overflow, array bounds
+ * special cases (n=1?)
+ * do smth instead of nothing and stay organized
+ * WRITE STUFF DOWN
+ * DON'T GET STUCK ON ONE APPROACH
+ */

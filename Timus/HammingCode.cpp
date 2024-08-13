@@ -9,15 +9,24 @@
 
 using namespace std;
 
+#ifdef LOCAL
+    #include "helpers/debug.h"
+#else
+    #define dbg(...)     0
+    #define chk(...)     0
+
+    #define RAYA         0
+#endif
+
 // building blocks
 using ll  = long long;
 using db  = long double; // or double, if TL is tight
 using str = string;      // yay python!
 
 //? priority_queue for minimum
-template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
+//? template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
 
-using ull  = unsigned long long;
+//? using ull  = unsigned long long;
 //? using i64  = long long;
 //? using u64  = uint64_t;
 //? using i128 = __int128;
@@ -149,100 +158,6 @@ tcTU > void safeErase(T &t, const U &u) {
 
 #define tcTUU tcT, class ...U
 
-inline namespace IO {
-#define SFINAE(x, ...)                                                         \
-	template <class, class = void> struct x : std::false_type {};              \
-	template <class T> struct x<T, std::void_t<__VA_ARGS__>> : std::true_type {}
-
-SFINAE(DefaultI, decltype(std::cin >> std::declval<T &>()));
-SFINAE(DefaultO, decltype(std::cout << std::declval<T &>()));
-SFINAE(IsTuple, typename std::tuple_size<T>::type);
-SFINAE(Iterable, decltype(std::begin(std::declval<T>())));
-
-template <auto &is> struct Reader {
-	template <class T> void Impl(T &t) {
-		if constexpr (DefaultI<T>::value) is >> t;
-		else if constexpr (Iterable<T>::value) {
-			for (auto &x : t) Impl(x);
-		} else if constexpr (IsTuple<T>::value) {
-			std::apply([this](auto &...args) { (Impl(args), ...); }, t);
-		} else static_assert(IsTuple<T>::value, "No matching type for read");
-	}
-	template <class... Ts> void read(Ts &...ts) { ((Impl(ts)), ...); }
-};
-
-template <class... Ts> void re(Ts &...ts) { Reader<cin>{}.read(ts...); }
-#define def(t, args...)                                                        \
-	t args;                                                                    \
-	re(args);
-
-template <auto &os, bool debug, bool print_nd> struct Writer {
-	string comma() const { return debug ? "," : ""; }
-	template <class T> constexpr char Space(const T &) const {
-		return print_nd && (Iterable<T>::value or IsTuple<T>::value) ? '\n'
-		                                                             : ' ';
-	}
-	template <class T> void Impl(T const &t) const {
-		if constexpr (DefaultO<T>::value) os << t;
-		else if constexpr (Iterable<T>::value) {
-			if (debug) os << '{';
-			int i = 0;
-			for (auto &&x : t)
-				((i++) ? (os << comma() << Space(x), Impl(x)) : Impl(x));
-			if (debug) os << '}';
-		} else if constexpr (IsTuple<T>::value) {
-			if (debug) os << '(';
-			std::apply(
-			    [this](auto const &...args) {
-				    int i = 0;
-				    (((i++) ? (os << comma() << " ", Impl(args)) : Impl(args)),
-				     ...);
-			    },
-			    t);
-			if (debug) os << ')';
-		} else static_assert(IsTuple<T>::value, "No matching type for print");
-	}
-	template <class T> void ImplWrapper(T const &t) const {
-		if (debug) os << "\033[0;31m";
-		Impl(t);
-		if (debug) os << "\033[0m";
-	}
-	template <class... Ts> void print(Ts const &...ts) const {
-		((Impl(ts)), ...);
-	}
-	template <class F, class... Ts>
-	void print_with_sep(const std::string &sep, F const &f,
-	                    Ts const &...ts) const {
-		ImplWrapper(f), ((os << sep, ImplWrapper(ts)), ...), os << '\n';
-	}
-	void print_with_sep(const std::string &) const { os << '\n'; }
-};
-
-template <class... Ts> void pr(Ts const &...ts) {
-	Writer<cout, false, true>{}.print(ts...);
-}
-template <class... Ts> void ps(Ts const &...ts) {
-	Writer<cout, false, true>{}.print_with_sep(" ", ts...);
-}
-}  // namespace IO
-
-inline namespace Debug {
-
-#ifdef LOCAL
-#include "helpers/debug.h"
-
-#define chk(...) if (!(__VA_ARGS__)) cerr << "\033[41m" << "Line(" << __LINE__ << ") -> function(" \
-	 << __FUNCTION__  << ") -> CHK FAILED: (" << #__VA_ARGS__ << ")" << "\033[0m" << "\n", exit(0);
-
-#define MACRO(code) do {code} while (false)
-#define RAYA MACRO(cerr << "\033[101m" << "================================" << "\033[0m" << endl;)
-#else
-//? #define dbg(...)
-
-#define chk(...)
-//? #define RAYA
-#endif
-
 const auto beg_time = std::chrono::high_resolution_clock::now();
 // https://stackoverflow.com/questions/47980498/accurate-c-c-clock-on-a-multi-core-processor-with-auto-overclock?noredirect=1&lq=1
 double time_elapsed() {
@@ -250,9 +165,6 @@ double time_elapsed() {
 	                                beg_time)
 	    .count();
 }
-}  // namespace Debug
-
-
 
 inline namespace FileIO {
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }
@@ -288,13 +200,83 @@ long long binpow(long long a, long long b) {
 const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
 const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
-using vvi = V<vi>;
-using vvl = V<vl>;
-using vvb = V<vb>;
 //? /Custom Helpers
 
-#define dbg(x) ps(#x); ps(x)
-#define RAYA ps("================================")
+
 
 //* Template
 //* /Template
+
+void solve() {
+    const int n = 7;
+    vi a(n); each(x, a) cin >> x;
+    dbg(n);
+    dbg(a);
+
+    for(int mask = 0; mask < (1 << 4); mask++) {
+        vi left;
+        for(int i = 0; i < 4; i++) {
+            if(mask & (1 << i)) left.eb(1);
+            else left.eb(0);
+        }
+        vi right;
+        right.eb((left[1] + left[2] + left[3]) % 2);
+        right.eb((left[0] + left[2] + left[3]) % 2);
+        right.eb((left[0] + left[1] + left[3]) % 2);
+
+        vi act;
+        each(x, left) act.eb(x);
+        each(x, right) act.eb(x);
+
+        int diffs = 0;
+        for(int i = 0; i < n; i++) {
+            diffs += (act[i] != a[i]);
+        }
+        if(diffs <= 1) {
+            for(int i = 0; i < n; i++) {
+                cout << act[i] << " \n"[i == n - 1];
+            }
+            return;
+        }
+    }
+    assert(false);
+}
+
+
+//? Generator
+int rng_int(int L, int R) { assert(L <= R);
+	return uniform_int_distribution<int>(L,R)(rng);  }
+ll rng_ll(ll L, ll R) { assert(L <= R);
+	return uniform_int_distribution<ll>(L,R)(rng);  }
+//? /Generator
+
+
+signed main() {
+    setIO();
+
+    ll t = 1;
+    //? cin >> t;
+
+    FOR(i, 1, t + 1) {
+        RAYA;
+        RAYA;
+        solve();
+    }
+    RAYA;
+    RAYA;
+
+    #ifdef LOCAL
+        cerr << fixed << setprecision(5);
+        cerr << "\033[42m++++++++++++++++++++\033[0m\n";
+        cerr << "\033[42mtime = " << time_elapsed() << "ms\033[0m\n";
+        cerr << "\033[42m++++++++++++++++++++\033[0m";
+    #endif
+}
+
+/* stuff you should look for
+ * int overflow, array bounds
+ * special cases (n=1?)
+ * do smth instead of nothing and stay organized
+ * WRITE STUFF DOWN
+ * DON'T GET STUCK ON ONE APPROACH
+ */
