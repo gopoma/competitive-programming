@@ -213,6 +213,7 @@ void solve() {
             ff *= 256ULL;
         }
 
+        //? Template
         auto convert = [&](ull num, ull base = 62ULL) {
             V<int> res;
 
@@ -224,6 +225,7 @@ void solve() {
             reverse(all(res));
             return res;
         };
+        //? /Template
 
         V<int> converted = convert(x);
 
