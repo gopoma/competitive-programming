@@ -1,9 +1,9 @@
 //* sometimes pragmas don't work, if so, just comment it!
-#pragma GCC optimize ("Ofast")
-#pragma GCC target ("avx,avx2")
+//? #pragma GCC optimize ("Ofast")
+//? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-#undef _GLIBCXX_DEBUG //? for Stress Testing
+//! #undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
@@ -15,9 +15,9 @@ using db  = long double; // or double, if TL is tight
 using str = string;      // yay python!
 
 //? priority_queue for minimum
-//? template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
+template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
 
-//? using ull  = unsigned long long;
+using ull  = unsigned long long;
 //? using i64  = long long;
 //? using u64  = uint64_t;
 //? using i128 = __int128;
@@ -288,73 +288,68 @@ long long binpow(long long a, long long b) {
 const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
 const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
+using vvi = V<vi>;
+using vvl = V<vl>;
+using vvb = V<vb>;
 //? /Custom Helpers
 
 
 
 //* Template
-/**
- * Description: A set (not multiset!) with support for finding the $n$'th
-   * element, and finding the index of an element. Change \texttt{null\_type} to get a map.
- * Time: O(\log N)
- * Source: KACTL
-   * https://codeforces.com/blog/entry/11080
- * Verification: many
- */
-
-#include <ext/pb_ds/assoc_container.hpp>
-using namespace __gnu_pbds;
-tcT> using Tree = tree<T, null_type, less<T>,
-	rb_tree_tag, tree_order_statistics_node_update>;
-#define ook order_of_key
-#define fbo find_by_order
-
-void treeExample() {
-	Tree<int> t, t2; t.insert(8);
-	auto it = t.insert(10).f; assert(it == t.lb(9));
-	assert(t.ook(10) == 1 && t.ook(11) == 2 && *t.fbo(0) == 8);
-	t.join(t2); // assuming T < T2 or T > T2, merge t2 into t
-}
-
-/**
-int atMost(Tree<pi>& T, int r) {
-	return T.ook({r,MOD}); }
-int getSum(Tree<pi>& T, int l, int r) {
-	return atMost(T,r)-atMost(T,l-1); }
-*/
-
-long long count_inv(vl a) {
-    const int n = sz(a);
-    assert(n == sz(a));
-
-    Tree<pl> st;
-
-    long long ans = 0;
-    for(int i = 0; i < n; i++) {
-        ans += ll(i - st.ook(mp(a[i], n + 79)));
-
-        st.insert(mp(a[i], i));
-    }
-    return ans;
-}
 //* /Template
 
-long long brute(int n, vl a) {
-    assert(sz(a) == n);
+void solve() {
+    def(ll, n, m);
+    vpl edges(m); re(edges);
+    def(ll, from, to);
+    dbg(n, m);
+    dbg(edges);
+    dbg(from, to);
 
-    long long result = 0;
-    for(int i = 0; i < n; i++) {
-        for(int j = 0; j < n - 1; j++) {
-            if(a[j] > a[j + 1]) {
-                swap(a[j], a[j + 1]);
-
-                result++;
-            }
-        }
+    map<pl, pl> which;
+    vvl adj(n + 5);
+    for(auto& [u, v]: edges) {
+        which[mp(u, v)] = which[mp(v, u)] = mp(u, v);
+        adj[u].eb(v);
+        adj[v].eb(u);
     }
 
-    return result;
+    using E = pair<ll, pl>;
+    map<pl, bool> vis;
+    map<pl, ll> guarda;
+    const int NONE = 2;
+    const int ARRIBA = 0;
+    const int ABAJO = 1;
+    multiset<E> ms; ms.emplace(0, mp(from, NONE));
+    while(!ms.empty()) {
+        auto it = *ms.begin(); safeErase(ms, it);
+        auto [currentDist, currentState] = it;
+        auto [currentNode, currentGearMode] = currentState;
+
+        if(vis[currentState]) continue;
+        vis[currentState] = true;
+        guarda[currentState] = currentDist;
+
+        each(v, adj[currentNode]) {
+            auto [abajo, arriba] = which[mp(currentNode, v)];
+            pl newState;
+            if(abajo == currentNode && arriba == v) {
+                newState = mp(v, ARRIBA);
+            } else {
+                newState = mp(v, ABAJO);
+            }
+            ms.emplace(mp(currentDist + (currentGearMode != newState.s), newState));
+        }
+    }
+    ll ans = BIG;
+    if(vis[mp(to, ARRIBA)]) ckmin(ans, guarda[mp(to, ARRIBA)]);
+    if(vis[mp(to, ABAJO)]) ckmin(ans, guarda[mp(to, ABAJO)]);
+    assert(ans != BIG);
+    ans--;
+    dbg(ans);
+    ps(ans);
 }
+
 
 //? Generator
 int rng_int(int L, int R) { assert(L <= R);
@@ -367,43 +362,12 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    const int mx_n = 1000;
-    const long long mx_val = 1e9;
-
-    const bool xd = false;
-
-    while(1) {
-        RAYA;
-        int n = rng_int(1, mx_n);
-        vl a(n); each(x, a) x = rng_ll(-mx_val, mx_val);
-
-        if(xd) {
-            n = 7;
-            a = {4, 3, 2, 3, 1, -1, 3};
-        }
-
-        dbg(n);
-        dbg(a);
-
-        ll ans = brute(n, a);
-        ll greedy = count_inv(n, a);
-
-        dbg(ans, greedy);
-        if(ans != greedy) {
-            dbg("jaaa");
-            exit(0);
-        } else dbg("go");
-
-        if(xd) {
-            break;
-        }
-    }
-
     ll t = 1; //? re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;
         RAYA;
+        solve();
     }
     RAYA;
     RAYA;

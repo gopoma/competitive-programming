@@ -1,7 +1,7 @@
 //* sometimes pragmas don't work, if so, just comment it!
 #pragma GCC optimize ("Ofast")
-#pragma GCC target ("avx,avx2")
-//! #pragma GCC optimize ("trapv")
+//? #pragma GCC target ("avx,avx2")
+#pragma GCC optimize ("trapv")
 
 #undef _GLIBCXX_DEBUG //? for Stress Testing
 
@@ -15,9 +15,9 @@ using db  = long double; // or double, if TL is tight
 using str = string;      // yay python!
 
 //? priority_queue for minimum
-//? template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
+template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
 
-//? using ull  = unsigned long long;
+using ull  = unsigned long long;
 //? using i64  = long long;
 //? using u64  = uint64_t;
 //? using i128 = __int128;
@@ -89,7 +89,7 @@ const int MX = (int)2e5 + 5;
 const ll BIG = 1e18;  //? not too close to LLONG_MAX
 const db PI = acos((db)-1);
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
-mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
+mt19937 rng(0);
 
 
 
@@ -288,73 +288,70 @@ long long binpow(long long a, long long b) {
 const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
 const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
+using vvi = V<vi>;
+using vvl = V<vl>;
+using vvb = V<vb>;
 //? /Custom Helpers
 
 
 
 //* Template
-/**
- * Description: A set (not multiset!) with support for finding the $n$'th
-   * element, and finding the index of an element. Change \texttt{null\_type} to get a map.
- * Time: O(\log N)
- * Source: KACTL
-   * https://codeforces.com/blog/entry/11080
- * Verification: many
- */
-
-#include <ext/pb_ds/assoc_container.hpp>
-using namespace __gnu_pbds;
-tcT> using Tree = tree<T, null_type, less<T>,
-	rb_tree_tag, tree_order_statistics_node_update>;
-#define ook order_of_key
-#define fbo find_by_order
-
-void treeExample() {
-	Tree<int> t, t2; t.insert(8);
-	auto it = t.insert(10).f; assert(it == t.lb(9));
-	assert(t.ook(10) == 1 && t.ook(11) == 2 && *t.fbo(0) == 8);
-	t.join(t2); // assuming T < T2 or T > T2, merge t2 into t
-}
-
-/**
-int atMost(Tree<pi>& T, int r) {
-	return T.ook({r,MOD}); }
-int getSum(Tree<pi>& T, int l, int r) {
-	return atMost(T,r)-atMost(T,l-1); }
-*/
-
-long long count_inv(vl a) {
-    const int n = sz(a);
-    assert(n == sz(a));
-
-    Tree<pl> st;
-
-    long long ans = 0;
-    for(int i = 0; i < n; i++) {
-        ans += ll(i - st.ook(mp(a[i], n + 79)));
-
-        st.insert(mp(a[i], i));
-    }
-    return ans;
-}
 //* /Template
 
-long long brute(int n, vl a) {
-    assert(sz(a) == n);
+ll brute(ll n, ll k, vl a) {
+    auto check = [&](ll speak_all) -> bool {
+        vl current = a;
+        each(x, current) x = max(0LL, x - speak_all);
 
-    long long result = 0;
-    for(int i = 0; i < n; i++) {
-        for(int j = 0; j < n - 1; j++) {
-            if(a[j] > a[j + 1]) {
-                swap(a[j], a[j + 1]);
-
-                result++;
+        ll need = speak_all;
+        while(true) {
+            sort(rall(current));
+            if(current.ft == 0) break;
+            ll mn = BIG;
+            for(int i = 0; i < k - 1 && current[i] != 0; i++) {
+                ckmin(mn, current[i]);
             }
+            for(int i = 0; i < k - 1 && current[i] != 0; i++) {
+                current[i] -= mn;
+            }
+            need += mn;
         }
-    }
 
-    return result;
+        bool ok = (need <= n);
+        //? dbg(speak_all, ok, need, current);
+        return ok;
+    };
+
+    ll left = -1; //? always bad
+    ll right = n; //? always good
+
+    while(left + 1 < right) {
+        ll middle = fdiv(left + right, 2LL);
+        if(check(middle)) right = middle;
+        else left = middle;
+    }
+    ll ans = right;
+    return ans;
 }
+
+ll slv(ll n, ll k, vl a) {
+    ll xd = n * k - accumulate(all(a), 0LL);
+    ll ans = max(0LL, n - xd);
+    dbg(xd, ans);
+    return ans;
+}
+
+void solve() {
+    def(ll, n, k);
+    vl a(k); re(a);
+    dbg(n, k);
+    dbg(a);
+
+    ll ans = slv(n, k, a);
+    dbg(ans);
+    ps(ans);
+}
+
 
 //? Generator
 int rng_int(int L, int R) { assert(L <= R);
@@ -367,36 +364,22 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    const int mx_n = 1000;
-    const long long mx_val = 1e9;
-
-    const bool xd = false;
-
-    while(1) {
+    while(0) {
         RAYA;
-        int n = rng_int(1, mx_n);
-        vl a(n); each(x, a) x = rng_ll(-mx_val, mx_val);
-
-        if(xd) {
-            n = 7;
-            a = {4, 3, 2, 3, 1, -1, 3};
-        }
-
-        dbg(n);
+        ll n = rng_ll(1, 5);
+        ll k = rng_ll(3, 3);
+        vl a(k); each(x, a) x = rng_ll(1, n);
+        dbg(n, k);
         dbg(a);
-
-        ll ans = brute(n, a);
-        ll greedy = count_inv(n, a);
-
-        dbg(ans, greedy);
-        if(ans != greedy) {
-            dbg("jaaa");
-            exit(0);
-        } else dbg("go");
-
-        if(xd) {
-            break;
-        }
+        dbg("Brute");
+        ll ans = brute(n, k, a);
+        dbg("/Brute");
+        dbg("Greedy");
+        ll greedy = slv(n, k, a);
+        dbg("/Greedy");
+        dbg(ans);
+        dbg(greedy);
+        chk(ans == greedy);
     }
 
     ll t = 1; //? re(t);
@@ -404,6 +387,7 @@ signed main() {
     FOR(i, 1, t + 1) {
         RAYA;
         RAYA;
+        solve();
     }
     RAYA;
     RAYA;

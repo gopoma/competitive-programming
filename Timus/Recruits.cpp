@@ -1,9 +1,9 @@
 //* sometimes pragmas don't work, if so, just comment it!
-#pragma GCC optimize ("Ofast")
-#pragma GCC target ("avx,avx2")
+//? #pragma GCC optimize ("Ofast")
+//? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-#undef _GLIBCXX_DEBUG //? for Stress Testing
+//! #undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
@@ -15,9 +15,9 @@ using db  = long double; // or double, if TL is tight
 using str = string;      // yay python!
 
 //? priority_queue for minimum
-//? template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
+template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
 
-//? using ull  = unsigned long long;
+using ull  = unsigned long long;
 //? using i64  = long long;
 //? using u64  = uint64_t;
 //? using i128 = __int128;
@@ -261,7 +261,7 @@ void setIO(str s = "") {
 	cin.tie(0)->sync_with_stdio(0);  // unsync C / C++ I/O streams
 	//? cout << fixed << setprecision(12);
     //? cerr << fixed << setprecision(12);
-	cin.exceptions(cin.failbit);
+	//? cin.exceptions(cin.failbit);
 	// throws exception when do smth illegal
 	// ex. try to read letter into int
 	if (sz(s)) setIn(s + ".in"), setOut(s + ".out");  // for old USACO
@@ -288,6 +288,9 @@ long long binpow(long long a, long long b) {
 const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
 const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
+using vvi = V<vi>;
+using vvl = V<vl>;
+using vvb = V<vb>;
 //? /Custom Helpers
 
 
@@ -339,22 +342,52 @@ long long count_inv(vl a) {
 }
 //* /Template
 
-long long brute(int n, vl a) {
-    assert(sz(a) == n);
+void solve() {
+    def(int, N);
+    cin.ignore();
 
-    long long result = 0;
-    for(int i = 0; i < n; i++) {
-        for(int j = 0; j < n - 1; j++) {
-            if(a[j] > a[j + 1]) {
-                swap(a[j], a[j + 1]);
-
-                result++;
-            }
-        }
+    str tot;
+    str __S;
+    while(getline(cin, __S)) {
+        each(c, __S) tot.pb(c);
     }
 
-    return result;
+    vl current;
+    each(c, tot) {
+        if(c == '<') current.eb(0);
+        else current.eb(1);
+    }
+
+    ll ans = count_inv(current);
+    dbg(ans);
+    ps(ans);
+
+
+//?    ll ans = 0;
+//?    deque<char> d;
+//?    each(c, tot) d.eb(c);
+//?    while(!d.empty() && d.ft == '<') d.pop_front();
+//?    while(!d.empty() && d.bk == '>') d.pop_back();
+//?    str S;
+//?    each(c, d) S.pb(c);
+//?    dbg(S);
+//?
+//?    const int M = sz(S);
+//?    ll left = 0;
+//?    ll contrib = 0;
+//?    for(int i = 0; i < M; i++) {
+//?        if(S[i] == '>') left++;
+//?        else {
+//?            contrib += left;
+//?        }
+//?    }
+//?    dbg(S, contrib);
+//?    ans += contrib;
+//?
+//?    dbg(ans);
+//?    ps(ans);
 }
+
 
 //? Generator
 int rng_int(int L, int R) { assert(L <= R);
@@ -367,43 +400,12 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    const int mx_n = 1000;
-    const long long mx_val = 1e9;
-
-    const bool xd = false;
-
-    while(1) {
-        RAYA;
-        int n = rng_int(1, mx_n);
-        vl a(n); each(x, a) x = rng_ll(-mx_val, mx_val);
-
-        if(xd) {
-            n = 7;
-            a = {4, 3, 2, 3, 1, -1, 3};
-        }
-
-        dbg(n);
-        dbg(a);
-
-        ll ans = brute(n, a);
-        ll greedy = count_inv(n, a);
-
-        dbg(ans, greedy);
-        if(ans != greedy) {
-            dbg("jaaa");
-            exit(0);
-        } else dbg("go");
-
-        if(xd) {
-            break;
-        }
-    }
-
     ll t = 1; //? re(t);
 
     FOR(i, 1, t + 1) {
         RAYA;
         RAYA;
+        solve();
     }
     RAYA;
     RAYA;
