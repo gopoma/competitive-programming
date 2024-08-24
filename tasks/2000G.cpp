@@ -298,36 +298,68 @@ using vvb = V<vb>;
 //* Template
 //* /Template
 
+using E = tuple<ll, ll, ll, ll>;
+using F = tuple<ll, ll, ll>;
 void solve() {
-    def(ll, n, k);
-    vpl rectangles(n); re(rectangles);
+    def(ll, n, m);
+    def(ll, t0, t1, t2);
+    chk(t1 < t2 && t2 < t0);
+    V<E> edges(m); re(edges);
+    dbg(n, m);
+    dbg(t0, t1, t2);
+    dbg(edges);
 
-    vector<vector<ll>> memo(n + 5, vector<ll>(k + 5, -1));
-    function<ll(ll, ll)> dp = [&](ll idx, ll lleva) -> ll {
-        if(lleva >= k) return 0;
-        if(idx == n) return BIG;
-        if(memo[idx][lleva] != -1) return memo[idx][lleva];
-        ll ans = dp(idx + 1, lleva);
-        auto [w, h] = rectangles[idx];
-        ll current_contrib = 0;
-        ll current_w = w, current_h = h;
-        for(ll add = 1; add <= w + h; add++) {
-            if(add == w + h - 1) continue;
-            if(current_w < current_h) {
-                current_contrib += current_w;
-                current_h--;
-            } else {
-                current_contrib += current_h;
-                current_w--;
+    vector<vector<F>> adj(n + 5);
+    for(auto& [u, v, l1, l2]: edges) {
+        u--; v--;
+        adj[u].eb(v, l1, l2);
+        adj[v].eb(u, l1, l2);
+    }
+    vb vis(n + 5);
+    vl dist(n + 5);
+
+    auto check = [&](ll start) -> bool {
+        for(int u = 0; u < n; u++)
+            vis[u] = false;
+
+        //? if(start > t1) return false;
+
+        multiset<pl> ms; ms.emplace(start, 0);
+
+        while(!ms.empty()) {
+            auto it = *ms.begin(); safeErase(ms, it);
+            auto [mn_dist, current_node] = it;
+
+            if(vis[current_node]) continue;
+            vis[current_node] = true;
+            dist[current_node] = mn_dist;
+
+            for(auto& [v, l1, l2]: adj[current_node]) {
+                if((mn_dist <= t1 && mn_dist + l1 <= t1) || (t2 <= mn_dist)) {
+                    ms.emplace(mn_dist + l1, v);
+                } else {
+                    assert(mn_dist < t2);
+                    ms.emplace(min(t2 + l1, mn_dist + l2), v);
+                }
             }
-            ckmin(ans, dp(idx + 1, lleva + add) + current_contrib);
         }
-        return memo[idx][lleva] = ans;
+
+        bool ok = (dist[n - 1] <= t0);
+        //? for(int u = 0; u < n; u++) dbg(u + 1, dist[u]);
+        dbg(start, dist[n - 1], t0, ok);
+        return ok;
     };
-    ll ans = dp(0, 0);
-    dbg(ans);
-    if(ans == BIG) ps("-1");
-    else ps(ans);
+
+    ll left = -1; //? always good
+    ll right = t0 + 100; //? always bad
+    while(left + 1 < right) {
+        ll middle = fdiv(left + right, 2LL);
+        if(check(middle)) left = middle;
+        else right = middle;
+    }
+
+    ll ans = left;
+    ps(ans);
 }
 
 

@@ -1,9 +1,9 @@
 //* sometimes pragmas don't work, if so, just comment it!
-//? #pragma GCC optimize ("Ofast")
+#pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-//! #undef _GLIBCXX_DEBUG //? for Stress Testing
+#undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h> //? if you don't want IntelliSense
 
@@ -298,36 +298,50 @@ using vvb = V<vb>;
 //* Template
 //* /Template
 
-void solve() {
-    def(ll, n, k);
-    vpl rectangles(n); re(rectangles);
+bool vis[1010][1010];
+ll dist[1010][1010];
 
-    vector<vector<ll>> memo(n + 5, vector<ll>(k + 5, -1));
-    function<ll(ll, ll)> dp = [&](ll idx, ll lleva) -> ll {
-        if(lleva >= k) return 0;
-        if(idx == n) return BIG;
-        if(memo[idx][lleva] != -1) return memo[idx][lleva];
-        ll ans = dp(idx + 1, lleva);
-        auto [w, h] = rectangles[idx];
-        ll current_contrib = 0;
-        ll current_w = w, current_h = h;
-        for(ll add = 1; add <= w + h; add++) {
-            if(add == w + h - 1) continue;
-            if(current_w < current_h) {
-                current_contrib += current_w;
-                current_h--;
-            } else {
-                current_contrib += current_h;
-                current_w--;
-            }
-            ckmin(ans, dp(idx + 1, lleva + add) + current_contrib);
+using E = tuple<ll, ll, ll>;
+void solve() {
+    def(ll, n, m);
+    V<E> edges(m); re(edges);
+    vl S(n); re(S);
+    dbg(n, m);
+    dbg(edges);
+    dbg(S);
+
+    const int MAXN = n + 5;
+    const int MAXS = *max_element(all(S)) + 5;
+    {
+        for(int i = 0; i < MAXN; i++) for(int j = 0; j < MAXS; j++) vis[i][j] = false;
+    }
+
+    vector<vector<pair<ll, ll>>> adj(n);
+    for(auto& [u, v, w]: edges) {
+        u--; v--;
+        adj[u].eb(v, w);
+        adj[v].eb(u, w);
+    }
+
+    multiset<E> ms; ms.emplace(0, 0, S[0]);
+    while(!ms.empty()) {
+        auto it = *ms.begin(); safeErase(ms, it);
+        auto [mn_dist, current_node, current_slowness] = it;
+
+        if(vis[current_node][current_slowness]) continue;
+
+        vis[current_node][current_slowness] = true;
+        dist[current_node][current_slowness] = mn_dist;
+
+        for(auto& [v, w]: adj[current_node]) {
+            ms.emplace(mn_dist + current_slowness * w, v, min(S[v], current_slowness));
         }
-        return memo[idx][lleva] = ans;
-    };
-    ll ans = dp(0, 0);
+    }
+
+    ll ans = BIG;
+    for(int sf = 0; sf < MAXS; sf++) if(vis[n - 1][sf]) ckmin(ans, dist[n - 1][sf]);
     dbg(ans);
-    if(ans == BIG) ps("-1");
-    else ps(ans);
+    ps(ans);
 }
 
 
