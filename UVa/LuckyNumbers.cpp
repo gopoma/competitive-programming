@@ -26,7 +26,27 @@ double time_elapsed() {
 using ll = long long;
 using db = long double;
 
+ll sqr(ll x) { return x * x; }
+
 void solve() {
+    ll T; cin >> T;
+    ll caso = 0;
+    while(T--) {
+        caso++;
+        ll N; cin >> N;
+        vector<ll> ans;
+        for(ll factor = 1; factor <= 32000; factor++) {
+            //? factor * factor = N - X
+            //? X = N - factor * factor
+            ll X = N - factor * factor;
+            if(X <= 0) break;
+            if(X % factor == 0LL) ans.emplace_back(X);
+        }
+        reverse(all(ans));
+        cout << "Case " << caso << ": ";
+        const int M = int(ans.size());
+        for(int i = 0; i < M; i++) cout << ans[i] << " \n"[i == M - 1];
+    }
 }
 
 int main() {

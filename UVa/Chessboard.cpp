@@ -1,3 +1,6 @@
+#pragma GCC optimize ("Ofast")
+#undef _GLIBCXX_DEBUG //? for Stress Testing
+
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -26,15 +29,32 @@ double time_elapsed() {
 using ll = long long;
 using db = long double;
 
+ll sqr(ll x) { return x * x; }
+
 void solve() {
+    ll T; cin >> T;
+    vector<db> ans;
+    while(T--) {
+        ll N; cin >> N;
+        if(N == 1) ans.emplace_back(db(0));
+        else {
+            ll take = sqr(N - 2LL);
+            ans.emplace_back(db(sqr(N)) - db(take) + db(take) * sqrtl(db(2)));
+        }
+    }
+    const int M = int(ans.size());
+    for(int i = 0; i < M; i++) {
+        cout << ans[i] << "\n";
+        if(i < M - 1) cout << "\n";
+    }
 }
 
 int main() {
 	ios::sync_with_stdio(false);
 	cin.tie(nullptr);
 
-    //? cout << fixed << setprecision(12);
-    //? cerr << fixed << setprecision(12);
+    cout << fixed << setprecision(12);
+    cerr << fixed << setprecision(12);
 
     int t = 1;
     //? cin >> t;

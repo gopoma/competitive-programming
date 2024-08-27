@@ -215,14 +215,13 @@ void solve() {
 
         //? Template
         // TODO: here :v
-        auto convert = [&](ull num, ull base = 62ULL) {
-            V<int> res;
-
+        auto convert = [&](ll num, ll base = 62ULL) {
+            if(num == 0) return vector<int>{0};
+            vector<int> res;
             while(num > 0) {
-                res.eb(num % base);
+                res.emplace_back(num % base);
                 num /= base;
             }
-
             reverse(all(res));
             return res;
         };

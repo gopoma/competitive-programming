@@ -26,7 +26,45 @@ double time_elapsed() {
 using ll = long long;
 using db = long double;
 
+ll cdiv(ll a, ll b) {
+	return a / b + ((a ^ b) > 0 && a % b);
+}  // divide a by b rounded up
+ll fdiv(ll a, ll b) {
+	return a / b - ((a ^ b) < 0 && a % b);
+}  // divide a by b rounded down
+
 void solve() {
+    RAYA;
+    ll n, m, c;
+    while(true) {
+        cin >> n >> m >> c;
+        if(!n && !m && !c) return;
+        dbg(n, m, c);
+        ll color_8_8;
+        if((n + m) % 2LL == (8LL + 8LL) % 2LL) color_8_8 = c;
+        else color_8_8 = !c;
+        dbg(color_8_8);
+
+        ll cols = m - 8LL + 1LL;
+        ll rows = n - 8LL + 1LL;
+        ll complete_blocks = fdiv(rows, 2LL);
+        ll rem = rows % 2LL;
+        ll ans = 0;
+        if(color_8_8) { //? 1
+            ll odd_block_contrib = cdiv(cols, 2LL);
+            ll even_block_contrib = fdiv(cols, 2LL);
+            ans += complete_blocks * (odd_block_contrib + even_block_contrib);
+            if(rem) ans += odd_block_contrib;
+        } else { //? 0
+            ll odd_block_contrib = fdiv(cols, 2LL);
+            ll even_block_contrib = cdiv(cols, 2LL);
+            ans += complete_blocks * (odd_block_contrib + even_block_contrib);
+            if(rem) ans += odd_block_contrib;
+        }
+        cout << ans << "\n";
+
+        RAYA;
+    }
 }
 
 int main() {

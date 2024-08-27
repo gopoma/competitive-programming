@@ -27,6 +27,21 @@ using ll = long long;
 using db = long double;
 
 void solve() {
+    ll I;
+    while(true) {
+        cin >> I;
+        if(!I) return;
+
+        string ans;
+        for(ll bit = 40; bit >= 0; bit--) {
+            if(I & (1LL << bit)) ans.push_back('1');
+            else ans.push_back('0');
+        }
+        reverse(all(ans));
+        while(ans.back() == '0') ans.pop_back();
+        reverse(all(ans));
+        cout << "The parity of " << ans << " is " << __builtin_popcountll(I) << " (mod 2).\n";
+    }
 }
 
 int main() {

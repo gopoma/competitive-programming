@@ -27,6 +27,19 @@ using ll = long long;
 using db = long double;
 
 void solve() {
+    string n;
+    while(true) {
+        cin >> n;
+        if(n == "0") return;
+        reverse(all(n));
+        ll ans = 0;
+        ll pot = 2LL;
+        for(auto& c: n) {
+            ans += ll(c - '0') * (pot - 1LL);
+            pot <<= 1LL;
+        }
+        cout << ans << "\n";
+    }
 }
 
 int main() {

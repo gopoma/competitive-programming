@@ -15,6 +15,36 @@ using namespace std;
 template<class T> using V = vector<T>;
 #define all(x) begin(x), end(x)
 
+long long H(int n){
+    long long res = 0;
+    for( int i = 1; i <= n; i=i+1 ){
+        res = (res + n/i);
+    }
+    return res;
+}
+
+using ll = long long;
+
+ll slv(ll N) {
+    if(N == 0) return 0;
+    ll ans = 0;
+    ll L = 1;
+    while(L <= N) {
+        ll current_val = N / L;
+        ll R = N / current_val;
+        ans += (R - L + 1LL) * current_val;
+        L = R + 1LL;
+    }
+    return ans;
+}
+
+void solve() {
+    ll N; cin >> N;
+    ll ans = slv(N);
+    dbg(ans);
+    cout << ans << "\n";
+}
+
 const auto beg_time = std::chrono::high_resolution_clock::now();
 // https://stackoverflow.com/questions/47980498/accurate-c-c-clock-on-a-multi-core-processor-with-auto-overclock?noredirect=1&lq=1
 double time_elapsed() {
@@ -23,30 +53,20 @@ double time_elapsed() {
 	    .count();
 }
 
-using ll = long long;
-using db = long double;
-
-void solve() {
-}
-
 int main() {
 	ios::sync_with_stdio(false);
 	cin.tie(nullptr);
 
-    //? cout << fixed << setprecision(12);
-    //? cerr << fixed << setprecision(12);
+//?    for(ll x = 0; x < 1000; x++) slv(ll(1e9));
+//?
+//?    for(ll x = 0; x <= 10000; x++) {
+//?        assert(H(x) == slv(x));
+//?    }
 
     int t = 1;
-    //? cin >> t;
+    cin >> t;
 
     for(int idx = 0; idx < t; idx++) {
         solve();
     }
-
-    #ifdef LOCAL
-        cerr << fixed << setprecision(5);
-        cerr << "\033[42m++++++++++++++++++++\033[0m\n";
-        cerr << "\033[42mtime = " << time_elapsed() << "ms\033[0m\n";
-        cerr << "\033[42m++++++++++++++++++++\033[0m";
-    #endif
 }

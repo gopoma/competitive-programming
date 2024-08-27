@@ -27,6 +27,54 @@ using ll = long long;
 using db = long double;
 
 void solve() {
+    ll x;
+    RAYA;
+    while(cin >> x) {
+        cin.ignore();
+
+        string S;
+        getline(cin, S);
+
+        dbg(x);
+        dbg(S);
+
+        vector<string> tokens;
+        {
+            string current;
+            for(auto& c: S) {
+                if(c == ' ') {
+                    tokens.emplace_back(current);
+                    current.clear();
+                } else {
+                    current.push_back(c);
+                }
+            }
+            tokens.emplace_back(current);
+            for(auto& x: tokens) while(!x.empty() && x.back() == ' ') x.pop_back();
+            vector<string> new_tokens;
+            for(auto& x: tokens) if(!x.empty()) new_tokens.emplace_back(x);
+            swap(tokens, new_tokens);
+        }
+        dbg(tokens);
+        vector<ll> a;
+        for(auto& e: tokens) a.emplace_back(stoll(e));
+        dbg(a);
+
+        if(!a.empty())
+            a.pop_back();
+        reverse(all(a));
+        for(ll i = 0; i < int(a.size()); i++) {
+            a[i] *= (i + 1LL);
+        }
+        ll ans = 0;
+        ll pot = 1;
+        for(int i = 0; i < int(a.size()); i++) {
+            ans += pot * a[i];
+            pot *= x;
+        }
+        dbg(ans);
+        cout << ans << "\n";
+    }
 }
 
 int main() {

@@ -1,3 +1,5 @@
+//? #pragma GCC optimize ("trapv")
+
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -24,17 +26,20 @@ double time_elapsed() {
 }
 
 using ll = long long;
-using db = long double;
+
+ll sqr(ll x) { return x * x; }
 
 void solve() {
+    ll x;
+    while(cin >> x) {
+        ll ans = sqr((x * (x + 1LL)) >> 1LL);
+        cout << ans << "\n";
+    }
 }
 
 int main() {
 	ios::sync_with_stdio(false);
 	cin.tie(nullptr);
-
-    //? cout << fixed << setprecision(12);
-    //? cerr << fixed << setprecision(12);
 
     int t = 1;
     //? cin >> t;
