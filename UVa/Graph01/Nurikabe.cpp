@@ -9,15 +9,24 @@
 
 using namespace std;
 
+#ifdef LOCAL
+    #include "helpers/debug.h"
+#else
+    #define dbg(...)     0
+    #define chk(...)     0
+
+    #define RAYA         0
+#endif
+
 // building blocks
 using ll  = long long;
 using db  = long double; // or double, if TL is tight
 using str = string;      // yay python!
 
 //? priority_queue for minimum
-template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
+//? template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
 
-using ull  = unsigned long long;
+//? using ull  = unsigned long long;
 //? using i64  = long long;
 //? using u64  = uint64_t;
 //? using i128 = __int128;
@@ -149,100 +158,6 @@ tcTU > void safeErase(T &t, const U &u) {
 
 #define tcTUU tcT, class ...U
 
-inline namespace IO {
-#define SFINAE(x, ...)                                                         \
-	template <class, class = void> struct x : std::false_type {};              \
-	template <class T> struct x<T, std::void_t<__VA_ARGS__>> : std::true_type {}
-
-SFINAE(DefaultI, decltype(std::cin >> std::declval<T &>()));
-SFINAE(DefaultO, decltype(std::cout << std::declval<T &>()));
-SFINAE(IsTuple, typename std::tuple_size<T>::type);
-SFINAE(Iterable, decltype(std::begin(std::declval<T>())));
-
-template <auto &is> struct Reader {
-	template <class T> void Impl(T &t) {
-		if constexpr (DefaultI<T>::value) is >> t;
-		else if constexpr (Iterable<T>::value) {
-			for (auto &x : t) Impl(x);
-		} else if constexpr (IsTuple<T>::value) {
-			std::apply([this](auto &...args) { (Impl(args), ...); }, t);
-		} else static_assert(IsTuple<T>::value, "No matching type for read");
-	}
-	template <class... Ts> void read(Ts &...ts) { ((Impl(ts)), ...); }
-};
-
-template <class... Ts> void re(Ts &...ts) { Reader<cin>{}.read(ts...); }
-#define def(t, args...)                                                        \
-	t args;                                                                    \
-	re(args);
-
-template <auto &os, bool debug, bool print_nd> struct Writer {
-	string comma() const { return debug ? "," : ""; }
-	template <class T> constexpr char Space(const T &) const {
-		return print_nd && (Iterable<T>::value or IsTuple<T>::value) ? '\n'
-		                                                             : ' ';
-	}
-	template <class T> void Impl(T const &t) const {
-		if constexpr (DefaultO<T>::value) os << t;
-		else if constexpr (Iterable<T>::value) {
-			if (debug) os << '{';
-			int i = 0;
-			for (auto &&x : t)
-				((i++) ? (os << comma() << Space(x), Impl(x)) : Impl(x));
-			if (debug) os << '}';
-		} else if constexpr (IsTuple<T>::value) {
-			if (debug) os << '(';
-			std::apply(
-			    [this](auto const &...args) {
-				    int i = 0;
-				    (((i++) ? (os << comma() << " ", Impl(args)) : Impl(args)),
-				     ...);
-			    },
-			    t);
-			if (debug) os << ')';
-		} else static_assert(IsTuple<T>::value, "No matching type for print");
-	}
-	template <class T> void ImplWrapper(T const &t) const {
-		if (debug) os << "\033[0;31m";
-		Impl(t);
-		if (debug) os << "\033[0m";
-	}
-	template <class... Ts> void print(Ts const &...ts) const {
-		((Impl(ts)), ...);
-	}
-	template <class F, class... Ts>
-	void print_with_sep(const std::string &sep, F const &f,
-	                    Ts const &...ts) const {
-		ImplWrapper(f), ((os << sep, ImplWrapper(ts)), ...), os << '\n';
-	}
-	void print_with_sep(const std::string &) const { os << '\n'; }
-};
-
-template <class... Ts> void pr(Ts const &...ts) {
-	Writer<cout, false, true>{}.print(ts...);
-}
-template <class... Ts> void ps(Ts const &...ts) {
-	Writer<cout, false, true>{}.print_with_sep(" ", ts...);
-}
-}  // namespace IO
-
-inline namespace Debug {
-
-#ifdef LOCAL
-#include "helpers/debug.h"
-
-#define chk(...) if (!(__VA_ARGS__)) cerr << "\033[41m" << "Line(" << __LINE__ << ") -> function(" \
-	 << __FUNCTION__  << ") -> CHK FAILED: (" << #__VA_ARGS__ << ")" << "\033[0m" << "\n", exit(0);
-
-#define MACRO(code) do {code} while (false)
-#define RAYA MACRO(cerr << "\033[101m" << "================================" << "\033[0m" << endl;)
-#else
-#define dbg(...)
-
-#define chk(...)
-#define RAYA
-#endif
-
 const auto beg_time = std::chrono::high_resolution_clock::now();
 // https://stackoverflow.com/questions/47980498/accurate-c-c-clock-on-a-multi-core-processor-with-auto-overclock?noredirect=1&lq=1
 double time_elapsed() {
@@ -250,9 +165,6 @@ double time_elapsed() {
 	                                beg_time)
 	    .count();
 }
-}  // namespace Debug
-
-
 
 inline namespace FileIO {
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }
@@ -288,9 +200,6 @@ long long binpow(long long a, long long b) {
 const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
 const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
-using vvi = V<vi>;
-using vvl = V<vl>;
-using vvb = V<vb>;
 //? /Custom Helpers
 
 
@@ -300,7 +209,152 @@ using vvb = V<vb>;
 
 void solve() {
     //? <>
+    ll r, c, d; cin >> r >> c >> d;
+    map<ll, map<ll, bool>> hasNumber;
+    map<ll, map<ll, ll>> num;
+    vpi xd;
+    rep(d) {
+        ll xx, yy, n; cin >> xx >> yy >> n;
+        hasNumber[xx][yy] = true;
+        num[xx][yy] = n;
+        xd.eb(xx, yy);
+    }
+    vs board(r); for(auto& x: board) cin >> x;
+    dbg(r, c, d);
+    dbg(num);
+    each(x, board) dbg(x);
 
+    int shaded = 0;
+    int unshaded = 0;
+    for(int i = 0; i < r; i++) for(int j = 0; j < c; j++) {
+        if(board[i][j] == '.') unshaded++;
+        else shaded++;
+    }
+    dbg(shaded, unshaded);
+
+    auto check = [&](int xx, int yy) -> bool {
+        return (0 <= xx && xx < r) && (0 <= yy && yy < c);
+    };
+
+    {
+        for(auto& [xx, yy]: xd) {
+            if(board[xx][yy] == '#') {
+                cout << "not solved\n";
+                return;
+            }
+        }
+    }
+    { //?
+        int counter_shaded = 0;
+        for(int i = 0; i < r; i++) for(int j = 0; j < c; j++) if(board[i][j] == '#') {
+            vector<vector<bool>> vis(r, vector<bool>(c)); vis[i][j] = true;
+            deque<pi> q; q.eb(i, j);
+            while(!q.empty()) {
+                auto [xx, yy] = q.ft; q.pop_front();
+                counter_shaded++;
+                for(int k = 0; k < 4; k++) {
+                    int new_x = xx + dx[k];
+                    int new_y = yy + dy[k];
+                    if(check(new_x, new_y) && !vis[new_x][new_y] && board[new_x][new_y] == '#') {
+                        vis[new_x][new_y] = true;
+                        q.eb(new_x, new_y);
+                    }
+                }
+            }
+            goto rage;
+        }
+        rage:
+        dbg(counter_shaded);
+        if(counter_shaded != shaded) {
+            dbg("1st");
+            cout << "not solved\n";
+            return;
+        }
+    }
+    {
+        vector<vector<bool>> vis(r, vector<bool>(c));
+        deque<pi> q;
+        for(int i = 0; i < r; i++) for(int j = 0; j < c; j++) if(!vis[i][j] && board[i][j] == '.') {
+            vis[i][j] = true;
+            q.eb(i, j);
+            vpi numbers;
+            int counter_component = 0;
+            while(!q.empty()) {
+                auto [xx, yy] = q.ft; q.pop_front();
+                counter_component++;
+                if(hasNumber[xx][yy]) {
+                    numbers.eb(xx, yy);
+                }
+                for(int k = 0; k < 4; k++) {
+                    int new_x = xx + dx[k];
+                    int new_y = yy + dy[k];
+                    if(check(new_x,  new_y) && !vis[new_x][new_y] && board[new_x][new_y] == '.') {
+                        vis[new_x][new_y] = true;
+                        q.eb(new_x, new_y);
+                    }
+                }
+            }
+            if(sz(numbers) != 1) {
+                dbg("2nd");
+                cout << "not solved\n";
+                return;
+            }
+            if(num[numbers.ft.f][numbers.ft.s] != counter_component) {
+                dbg("2nd");
+                cout << "not solved\n";
+                return;
+            }
+        }
+    }
+    {
+        for(int i = 0; i < r - 1; i++) for(int j = 0; j < c - 1; j++) {
+            int counter_unshaded = 0;
+            for(int xx = 0; xx < 2; xx++) for(int yy = 0; yy < 2; yy++) {
+                counter_unshaded += (board[i + xx][j + yy] == '.');
+            }
+            if(counter_unshaded == 0) {
+                dbg("3rd");
+                cout << "not solved\n";
+                return;
+            }
+        }
+    }
+    {
+        vector<vector<bool>> vis(r, vector<bool>(c));
+        deque<pi> q;
+        int counter = 0;
+        auto work = [&](int cx, int cy) -> void {
+            if(vis[cx][cy] || board[cx][cy] != '.') return;
+            vis[cx][cy] = true;
+            q.eb(cx, cy);
+            while(!q.empty()) {
+                auto [xx, yy] = q.ft; q.pop_front();
+                counter++;
+                for(int k = 0; k < 8; k++) {
+                    int new_x = xx + dddx[k];
+                    int new_y = yy + dddy[k];
+                    if(check(new_x, new_y) && !vis[new_x][new_y] && board[new_x][new_y] == '.') {
+                        vis[new_x][new_y] = true;
+                        q.eb(new_x, new_y);
+                    }
+                }
+            }
+        };
+        for(int row = 0; row < r; row++) {
+            work(row, 0);
+            work(row, c - 1);
+        }
+        for(int col = 0; col < c; col++) {
+            work(0, col);
+            work(r - 1, col);
+        }
+        if(counter != unshaded) {
+            dbg("4th");
+            cout << "not solved\n";
+            return;
+        }
+    }
+    cout << "solved\n";
 }
 
 
@@ -315,7 +369,8 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 signed main() {
     setIO();
 
-    ll t = 1; re(t);
+    ll t = 1;
+    cin >> t;
 
     FOR(i, 1, t + 1) {
         RAYA;
