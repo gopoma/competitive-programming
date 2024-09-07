@@ -298,8 +298,36 @@ using vvb = V<vb>;
 //* Template
 //* /Template
 
+using E = tuple<ll, ll, ll>;
 void solve() {
-    //? <>
+    def(ll, N);
+    V<E> students(N); re(students);
+    dbg(N);
+    each(x, students) dbg(x);
+    sort(all(students), [](E& A, E& B) {
+        return (make_pair(get<0>(A), get<2>(A)) < make_pair(get<0>(B), get<0>(B)));
+    });
+    RAYA;
+    each(x, students) dbg(x);
+    auto check = [&](ll offset) -> bool {
+        ll current = 0;
+        for(auto& [T1, T2, T3]: students) {
+            ckmax(current, T1);
+            current += T2;
+            if(current > T3 + offset) return false;
+        }
+        return true;
+    };
+    ll left = -1; //? always bad
+    ll right = ll(1e9); //? always good
+    while(left + 1 < right) {
+        ll middle = (left + right) / 2LL;
+        if(check(middle)) right = middle;
+        else left = middle;
+    }
+    ll ans = right;
+    dbg(ans);
+    ps(ans);
 }
 
 

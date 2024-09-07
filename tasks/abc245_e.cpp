@@ -89,7 +89,7 @@ const int MX = (int)2e5 + 5;
 const ll BIG = 1e18;  //? not too close to LLONG_MAX
 const db PI = acos((db)-1);
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
-mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
+mt19937 rng(0);
 
 
 
@@ -298,8 +298,57 @@ using vvb = V<vb>;
 //* Template
 //* /Template
 
-void solve() {
+bool brute(ll N, ll M, vl A, vl B, vl C, vl D) {
+    vb vis(M + 5);
+    bool ok = false;
+    function<void(int)> solve = [&](int idx) {
+        if(idx == N) {
+            ok = true;
+            return;
+        }
+        for(int i = 0; i < M; i++) {
+            if(!vis[i] && A[idx] <= C[i] && B[idx] <= D[i]) {
+                vis[i] = true;
+                solve(idx + 1);
+                vis[i] = false;
+            }
+        }
+    }; solve(0);
+    return ok;
+}
+
+using E = tuple<ll, ll, ll>;
+bool slv(ll N, ll M, vl A, vl B, vl C, vl D) {
     //? <>
+    vpl chocolates; for(int i = 0; i < N; i++) chocolates.eb(A[i], B[i]);
+    vpl boxes; for(int i = 0; i < M; i++) boxes.eb(C[i], D[i]);
+    dbg(chocolates);
+    dbg(boxes);
+    vector<E> tasks;
+    for(auto& [xx, yy]: chocolates) tasks.eb(xx, yy, -1);
+    for(auto& [xx, yy]: boxes) tasks.eb(xx, yy, +1);
+    sort(all(tasks), [&](E& AA, E& BB) {
+        auto [xx, yy, zz] = AA;
+        auto [xx2, yy2, zz2] = BB;
+        if(xx != xx2) return xx < xx2;
+        return zz < zz2;
+    });
+    const int MAXN = sz(tasks);
+    multiset<int> heights;
+    for(int i = MAXN - 1; i >= 0; i--) {
+        auto [xx, yy, zz] = tasks[i];
+        bool isChocolate = (zz == -1);
+        //? RAYA;
+        //? dbg(xx, yy, isChocolate, heights);
+        if(isChocolate) {
+            auto it = heights.lower_bound(yy);
+            if(it == heights.end()) return false;
+            safeErase(heights, *it);
+        } else {
+            heights.emplace(yy);
+        }
+    }
+    return true;
 }
 
 
@@ -316,10 +365,44 @@ signed main() {
 
     ll t = 1; //? re(t);
 
+
+    auto work = [&](ll N, ll L, ll R) {
+        vl arr(N);
+        each(x, arr) x = rng_ll(L, R);
+        return arr;
+    };
+    while(0) {
+        RAYA;
+        ll N = rng_ll(1, 5);
+        ll M = rng_ll(N, 6);
+        vl A = work(N, 1, 10);
+        vl B = work(N, 1, 10);
+        vl C = work(M, 1, 10);
+        vl D = work(M, 1, 10);
+        dbg(N, M);
+        dbg(A);
+        dbg(B);
+        dbg(C);
+        dbg(D);
+        dbg("Brute");
+        bool ans = brute(N, M, A, B, C, D);
+        dbg("/Brute");
+        dbg("Greedy");
+        bool greedy = slv(N, M, A, B, C, D);
+        dbg("/Greedy");
+        dbg(ans);
+        dbg(greedy);
+        chk(ans == greedy);
+    }
+
     FOR(i, 1, t + 1) {
         RAYA;
         RAYA;
-        solve();
+        def(ll, N, M);
+        vl A(N), B(N); re(A, B);
+        vl C(M), D(M); re(C, D);
+        bool ans = slv(N, M, A, B, C, D);
+        ps(ans?"Yes":"No");
     }
     RAYA;
     RAYA;

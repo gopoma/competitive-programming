@@ -298,8 +298,98 @@ using vvb = V<vb>;
 //* Template
 //* /Template
 
+using E = tuple<ll, ll, ll, ll>;
 void solve() {
-    //? <>
+    def(ll, M);
+    assert(0 <= M);
+    vpl segments;
+    while(true) {
+        def(ll, L, R);
+        if(L == 0 && R == 0) break;
+        segments.eb(L, R);
+    }
+    dbg(M);
+    each(x, segments) dbg(x);
+    RAYA;
+    ll L_tar = 0, R_tar = M;
+    assert(L_tar < R_tar);
+    vector<E> xd;
+    {
+        for(auto& [L, R]: segments) {
+            assert(L < R);
+            if(R < L_tar) continue;
+            if(L > R_tar) continue;
+            xd.eb(max(L, L_tar), min(R, R_tar), L, R);
+        }
+    }
+    sort(all(xd), [](E& A, E& B) {
+        auto [L, R, _, __] = A;
+        auto [L2, R2, _2, __2] = B;
+        if(L == L2) return R > R2;
+        return L < L2;
+    });
+    segments.clear();
+    vpl real_segments;
+    for(auto& [L_norm, R_norm, L, R]: xd) {
+        segments.eb(L_norm, R_norm);
+        real_segments.eb(L, R);
+    }
+    if(segments.empty()) {
+        ps("No solution");
+        return;
+    }
+    if(segments.ft.f > L_tar) {
+        ps("No solution");
+        return;
+    }
+    ll current_L = segments.ft.f;
+    ll current_R = segments.ft.s;
+    vpl ans{segments.ft};
+    vl idxs{0};
+    vpl history{segments.ft};
+    for(int i = 1; i < sz(segments); i++) {
+        auto [L, R] = segments[i];
+        if(current_R >= R_tar) break;
+        if(current_L <= L && R <= current_R) continue;
+        if(current_R < L) {
+            ps("No solution");
+            return;
+        }
+        if(sz(history) >= 2) {
+            auto [prv_L, prv_R] = history[sz(history) - 2];
+            if(prv_R >= L) {
+                if(prv_L <= ans.bk.f && ans.bk.s <= R) {
+                    ans.pop_back();
+                    history.pop_back();
+                    idxs.pop_back();
+
+                    current_R = R;
+                    ans.eb(segments[i]);
+                    history.eb(current_L, current_R);
+                    idxs.eb(i);
+                }
+            } else {
+                ans.eb(segments[i]);
+                current_R = R;
+                history.eb(current_L, current_R);
+                idxs.eb(i);
+            }
+        } else {
+            ans.eb(segments[i]);
+            current_R = R;
+            history.eb(current_L, current_R);
+            idxs.eb(i);
+        }
+    }
+    if(current_R < R_tar) {
+        ps("No solution");
+        return;
+    }
+    vpl response;
+    each(x, idxs) response.eb(real_segments[x]);
+    dbg(response);
+    ps(sz(response));
+    each(x, response) ps(x);
 }
 
 

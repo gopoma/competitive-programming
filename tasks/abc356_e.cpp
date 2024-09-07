@@ -298,8 +298,57 @@ using vvb = V<vb>;
 //* Template
 //* /Template
 
+ll brute(ll N, vl A) {
+    ll ans = 0;
+    for(int i = 0; i < N; i++)
+        for(int j = i + 1; j < N; j++)
+            ans += fdiv(max(A[i], A[j]), min(A[i], A[j]));
+    return ans;
+}
+
+ll slv(ll N, vl A) {
+    ll MAXN = *max_element(all(A)) + 25;
+
+    vl cnt(MAXN + 25);
+    each(x, A) cnt[x]++;
+
+    vl pref = cnt;
+    for(int i = 1; i < sz(pref); i++) pref[i] += pref[i - 1];
+    auto query = [&](int L, int R) -> ll {
+        ll sum = pref[R];
+        if(0 <= L - 1) sum -= pref[L - 1];
+        return sum;
+    };
+    ll ans = 0;
+    for(ll i = 1; i < MAXN; i++) {
+        if(!cnt[i]) continue;
+        for(ll j = i; j < MAXN; j += i) {
+            ll left = j;
+            ll right = min(j + i - 1LL, MAXN + 1);
+            ll val = j / i;
+            //? if(query(left, right))
+                //? dbg(i, j, left, right, contrib, query(left, right));
+            if(j == i) {
+                ll tot = query(left, right);
+                ll tar = cnt[i];
+                ll other = tot - tar;
+                ll ways = (fdiv((tot - 1LL) * (tot), 2LL) - fdiv((other - 1LL) * other, 2LL));
+                ans += ways * val;
+            } else ans += cnt[i] * val * query(left, right);
+        }
+    }
+    return ans;
+}
+
 void solve() {
     //? <>
+    def(ll, N);
+    vl A(N); re(A);
+    dbg(N);
+    dbg(A);
+    ll ans = slv(N, A);
+    dbg(ans);
+    ps(ans);
 }
 
 
@@ -310,9 +359,63 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 	return uniform_int_distribution<ll>(L,R)(rng);  }
 //? /Generator
 
+ll floor_div(ll x, ll y) {
+	assert(y != 0);
+	if (y < 0) {
+		y = -y;
+		x = -x;
+	}
+	if (x >= 0) return x / y;
+	return (x + 1) / y - 1;
+}
+ll ceil_div(ll x, ll y) {
+	assert(y != 0);
+	if (y < 0) {
+		y = -y;
+		x = -x;
+	}
+	if (x <= 0) return x / y;
+	return (x - 1) / y + 1;
+}
 
 signed main() {
     setIO();
+
+    while(1) {
+        RAYA;
+        ll x = rng_ll(-BIG, BIG);
+        ll y = rng_ll(-BIG, BIG);
+        dbg(x, y);
+        {
+            ll ans = floor_div(x, y);
+            ll greedy = fdiv(x, y);
+            dbg("floor", ans, greedy);
+            chk(ans == greedy);
+        }
+        {
+            ll ans = ceil_div(x, y);
+            ll greedy = cdiv(x, y);
+            dbg("ceil", ans, greedy);
+            chk(ans == greedy);
+        }
+    }
+
+    while(0) {
+        RAYA;
+        ll N = rng_ll(1, 100);
+        vl A(N); each(x, A) x = rng_ll(1, 100);
+        dbg(N);
+        dbg(A);
+        dbg("Brute");
+        ll ans = brute(N, A);
+        dbg("/Brute");
+        dbg("Greedy");
+        ll greedy = slv(N, A);
+        dbg("/Greedy");
+        dbg(ans);
+        dbg(greedy);
+        chk(ans == greedy);
+    }
 
     ll t = 1; //? re(t);
 
