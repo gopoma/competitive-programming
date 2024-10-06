@@ -113,6 +113,7 @@
         "typeindex": "cpp",
         "valarray": "cpp",
         "variant": "cpp",
-        "rope": "cpp"
+        "rope": "cpp",
+        "slist": "cpp"
     }
 }
