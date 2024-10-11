@@ -89,7 +89,7 @@ const int MX = (int)2e5 + 5;
 const ll BIG = 1e18;  //? not too close to LLONG_MAX
 const db PI = acos((db)-1);
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
-mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
+mt19937 rng(0);
 
 
 
@@ -237,10 +237,10 @@ inline namespace Debug {
 #define MACRO(code) do {code} while (false)
 #define RAYA MACRO(cerr << "\033[101m" << "================================" << "\033[0m" << endl;)
 #else
-//? #define dbg(...)
+#define dbg(...)
 
 #define chk(...)
-//? #define RAYA
+#define RAYA
 #endif
 
 const auto beg_time = std::chrono::high_resolution_clock::now();
@@ -293,51 +293,104 @@ using vvl = V<vl>;
 using vvb = V<vb>;
 //? /Custom Helpers
 
-#define RAYA ps("================================")
 
-const string PAIR_LEFT = "(";
-const string PAIR_RIGHT = ")";
-const string IT_LEFT = "[";
-const string IT_RIGHT = "]";
-const string PAIR_SEP = ", ";
-const string IT_SEP = ", ";
- 
-// const string PAIR_LEFT = "(";
-// const string PAIR_RIGHT = ")";
-// const string IT_LEFT = "[";
-// const string IT_RIGHT = "]";
-// const string PAIR_SEP = " ";
-// const string IT_SEP = " ";
- 
-// const string PAIR_LEFT = "{";
-// const string PAIR_RIGHT = "}";
-// const string IT_LEFT = "{";
-// const string IT_RIGHT = "}";
-// const string PAIR_SEP = ", ";
-// const string IT_SEP = ", ";
- 
-// benq - print any container + pair
-template<typename T, typename = void> struct is_iterable : false_type {};
-template<typename T> struct is_iterable<T, void_t<decltype(begin(declval<T>())),decltype(end(declval<T>()))>> : true_type {};
-template<typename T> typename enable_if<is_iterable<T>::value&&!is_same<T, string>::value,ostream&>::type operator<<(ostream &cout, T const &v);
-template<typename A, typename B> ostream& operator<<(ostream &cout, pair<A, B> const &p) { return cout << PAIR_LEFT << p.f << PAIR_SEP << p.s << PAIR_RIGHT; }
-template<typename T> typename enable_if<is_iterable<T>::value&&!is_same<T, string>::value,ostream&>::type operator<<(ostream &cout, T const &v) {
-    cout << IT_LEFT; 
-    for (auto it = v.begin(); it != v.end();) {
-        cout << *it;
-        if (++it != v.end()) cout << IT_SEP;
-    }
-    return cout << IT_RIGHT;
-}
-template<typename A, typename B> istream& operator>>(istream& cin, pair<A, B> &p) {
-    cin >> p.first;
-    return cin >> p.second;
-}
- 
-void dbg_out() { cout << endl; }
-template<typename Head, typename... Tail> 
-void dbg_out(Head H, Tail... T) { cout << ' ' << H; dbg_out(T...); }
-#define dbg(...) cout << "(" << #__VA_ARGS__ << "): ", dbg_out(__VA_ARGS__)
 
 //* Template
 //* /Template
+
+void solve() {
+    //? <>
+}
+
+
+//? Generator
+int rng_int(int L, int R) { assert(L <= R);
+	return uniform_int_distribution<int>(L,R)(rng);  }
+ll rng_ll(ll L, ll R) { assert(L <= R);
+	return uniform_int_distribution<ll>(L,R)(rng);  }
+//? /Generator
+
+vl brute(ll n, vl a) {
+    vl dp(*max_element(all(a)) + 5);
+    for(int i = 0; i < n; i++) for(int j = i + 1; j < n; j++) {
+        dp[gcd(a[i], a[j])]++;
+    }
+    return dp;
+}
+
+vl slv(ll n, vl a) {
+    ll mx = *max_element(all(a));
+    
+    vl cnt(mx + 5);
+    each(x, a) cnt[x]++;
+
+    vl dp(mx + 5);
+    vl ways(mx + 5);
+    for(ll g = mx; g >= 1; g--) {
+        ll count = cnt[g];
+
+        for(ll i = g + g; i <= mx; i += g) {
+            dp[g] -= dp[i];
+            count += cnt[i];
+        }
+        dp[g] += count * count;
+        ways[g] = fdiv(dp[g] - cnt[g], 2LL);
+    }
+    return ways;
+}
+
+signed main() {
+    setIO();
+
+    while(1) {
+        RAYA;
+        
+        ll n = rng_ll(2, 100);
+        vl a(n); each(x, a) x = rng_ll(1, 20);
+        dbg(n);
+        dbg(a);
+
+        //? {
+        //?     a = vl{2, 2, 4, 4, 4, 6, 6, 6, 8};
+        //?     n = sz(a);
+        //? }
+
+        dbg("Brute");
+        vl dp = brute(n, a);
+        dbg(dp);
+        dbg("/Brute");
+
+        dbg("Greedy");
+        sor(a);
+        vl dp2 = slv(n, a);
+        dbg(dp2);
+        dbg("/Greedy");
+
+        chk(dp == dp2);
+    }
+
+    ll t = 1; //? re(t);
+
+    FOR(i, 1, t + 1) {
+        RAYA;
+        RAYA;
+        solve();
+    }
+    RAYA;
+    RAYA;
+
+    #ifdef LOCAL
+        cerr << fixed << setprecision(5);
+        cerr << "\033[42m++++++++++++++++++++\033[0m\n";
+        cerr << "\033[42mtime = " << time_elapsed() << "ms\033[0m\n";
+        cerr << "\033[42m++++++++++++++++++++\033[0m";
+    #endif
+}
+
+/* stuff you should look for
+ * int overflow, array bounds
+ * special cases (n=1?)
+ * do smth instead of nothing and stay organized
+ * WRITE STUFF DOWN
+ * DON'T GET STUCK ON ONE APPROACH
+ */
