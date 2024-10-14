@@ -89,3 +89,5 @@ for (i = 1; i <= n; i++)
 $dp[idx][current] = \sum_{x = l}^{r} dp[idx + 1][x]$? (note the `contiguous` range (`subarray`)) try to store `prefix sum` in each `dp[i][j]` and now: $dp[idx][current] = dp[idx + 1][r] - dp[idx + 1][l - 1] + dp[idx][current - 1]$ (just be aware of indexing), **Refer to:** https://leetcode.com/submissions/detail/1352504065/
 
 * `always` use `long long` >:v
+
+* `hash_map` doesn't preserve order
