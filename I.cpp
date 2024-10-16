@@ -98,14 +98,79 @@ using vvb = V<vb>;
 //? Template
 //? /Template
 
+ll tot_casos;
+ll caso = 1;
 void solve() {
+    //? <>
+    vs words;
+    while(true) {
+        str S; cin >> S; if(S == "*") break;
+        words.eb(S);
+    }    
+    cin.ignore();
+    dbg(words);
+
+    V<pair<str, str>> queries;
+    while(true) {
+        str line;
+        while(getline(cin, line)) {
+            while(!line.empty() && line.bk == ' ') line.pop_back();
+            if(line.empty()) break;
+
+            int idxSpace = -1;
+            const int N = sz(line);
+            for(int i = 0; i < N; i++) if(line[i] == ' ') idxSpace = i;
+
+            str from = line.substr(0, idxSpace);
+            str to = line.substr(idxSpace + 1, (sz(line) - 1) - (idxSpace + 1) + 1);
+            queries.eb(from, to);
+        }
+        if(line == "") break;
+    }
+    dbg(queries);
+    //? V<pair<str, str>> edges;
+    const int N = sz(words);
+    map<str, vs> adj;
+    for(int i = 0; i < N; i++) for(int j = i + 1; j < N; j++) {
+        if(sz(words[i]) != sz(words[j])) continue;
+        int diff = 0;
+        const int M = sz(words[i]);
+        for(int k = 0; k < M; k++) diff += (words[i][k] != words[j][k]);
+        //? if(diff == 1) edges.eb(words[i], words[j]);
+        if(diff == 1) {
+            adj[words[i]].eb(words[j]);
+            adj[words[j]].eb(words[i]);
+        }
+    }
+    //? dbg(edges);
+    //? for(auto& [u, v]: edges) cout << u << " " << v << "\n"; 
+    for(auto& [from, to]: queries) {
+        map<str, bool> vis; vis[from] = true;
+        map<str, int> dist; dist[from] = 0;
+        deque<str> q; q.eb(from);
+        while(!q.empty()) {
+            str x = q.ft; q.pop_front();
+            each(nxt, adj[x]) {
+                if(!vis[nxt]) {
+                    vis[nxt] = true;
+                    dist[nxt] = dist[x] + 1;
+                    q.eb(nxt);
+                }
+            } 
+        }
+        cout << from << " " << to << " " << dist[to] << "\n";
+    }
+    if(caso == tot_casos) return;
+    cout << "\n";
+    caso++;
 }
 
 int main() {
 	ios::sync_with_stdio(false);
 	cin.tie(nullptr);
 
-    int t = 1; //! cin >> t;
+    int t = 1; cin >> t;
+    tot_casos = t;
     for(int i = 0; i < t; i++) {
         RAYA;
         RAYA;

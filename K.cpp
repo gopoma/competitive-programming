@@ -99,6 +99,37 @@ using vvb = V<vb>;
 //? /Template
 
 void solve() {
+    int caso = 0;
+    while(true) {
+        caso++;
+        int L, U, R; cin >> L >> U >> R;
+        if(L == 0 && U == 0 && R == 0) break;
+        
+        vi transitions(R); each(x, transitions) cin >> x;
+        dbg(L, U, R);
+        dbg(transitions);
+
+        int MAXN = 9999;
+        vb vis(MAXN + 5); vis[L] = true;
+        vi dist(MAXN + 5); dist[L] = 0;
+        deque<int> q; q.eb(L);
+        while(!q.empty()) {
+            int current = q.ft; q.pop_front();
+            for(auto& x: transitions) {
+                int new_x = (current + x) % 10000;
+                if(!vis[new_x]) {
+                    vis[new_x] = true;
+                    dist[new_x] = dist[current] + 1;
+                    q.eb(new_x);
+                }
+            }
+        }
+        cout << "Case " << caso << ": ";
+        if(!vis[U]) cout << "Permanently Locked";
+        else cout << dist[U];
+        cout << "\n";
+        RAYA;
+    }
 }
 
 int main() {

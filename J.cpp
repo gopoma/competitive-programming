@@ -96,9 +96,47 @@ using vvb = V<vb>;
 
 
 //? Template
+const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
 //? /Template
 
 void solve() {
+    //? <>
+    while(true) {
+        ll R, C; cin >> R >> C; if(R == 0 && C == 0) break;
+        vvb hasBomb(R, vb(C));
+        ll rows; cin >> rows;
+        rep(rows) {
+            ll idRow; cin >> idRow;
+            ll howMany; cin >> howMany;
+            rep(howMany) {
+                ll idCol; cin >> idCol;
+                hasBomb[idRow][idCol] = true;
+            }
+        }
+        ll sx, sy; cin >> sx >> sy;
+        ll tx, ty; cin >> tx >> ty;
+
+        auto check = [&](int xx, int yy) -> bool {
+            return (0 <= xx && xx < R) && (0 <= yy && yy < C);
+        };
+
+        vvb vis(R, vb(C)); vis[sx][sy] = true;
+        vvl dist(R, vl(C)); dist[sx][sy] = 0;
+        deque<pl> q; q.eb(sx, sy);
+        while(!q.empty()) {
+            auto [cx, cy] = q.ft; q.pop_front();
+            for(int k = 0; k < 4; k++) {
+                int new_x = cx + dx[k];
+                int new_y = cy + dy[k];
+                if(check(new_x, new_y) && !vis[new_x][new_y] && !hasBomb[new_x][new_y]) {
+                    vis[new_x][new_y] = true;
+                    dist[new_x][new_y] = dist[cx][cy] + 1;
+                    q.eb(new_x, new_y);
+                }
+            }
+        }
+        cout << dist[tx][ty] << "\n";
+    }
 }
 
 int main() {

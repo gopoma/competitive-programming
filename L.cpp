@@ -96,9 +96,44 @@ using vvb = V<vb>;
 
 
 //? Template
+const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
 //? /Template
 
 void solve() {
+    while(true) {
+        int N; cin >> N; if(N == 0) break;
+        vpi starts(N); each(x, starts) { cin >> x.f >> x.s; }
+        int M; cin >> M;
+        vpi ends(M); each(x, ends) { cin >> x.f >> x.s; }
+
+        const int MAXN = 2001;
+        vvb vis(MAXN, vb(MAXN));
+        vvi dist(MAXN, vi(MAXN));
+        deque<pi> q;
+        for(auto& [xx, yy]: starts) {
+            vis[xx][yy] = true;
+            dist[xx][yy] = 0;
+            q.eb(xx, yy);
+        }
+        auto check = [&](int xx, int yy) -> bool {
+            return (0 <= xx && xx < MAXN) && (0 <= yy && yy < MAXN);
+        };
+        while(!q.empty()) {
+            auto [cx, cy] = q.ft; q.pop_front();
+            for(int k = 0; k < 4; k++) {
+                int nx = cx + dx[k];
+                int ny = cy + dy[k];
+                if(check(nx, ny) && !vis[nx][ny]) {
+                    vis[nx][ny] = true;
+                    dist[nx][ny] = dist[cx][cy] + 1;
+                    q.eb(nx, ny);
+                }
+            }
+        }
+        int ans = int(1e9);
+        for(auto& [xx, yy]: ends) ans = min(ans, dist[xx][yy]);
+        cout << ans << "\n";
+    }
 }
 
 int main() {

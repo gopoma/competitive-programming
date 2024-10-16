@@ -96,16 +96,94 @@ using vvb = V<vb>;
 
 
 //? Template
+const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
+tcT > void remDup(vector<T> &v) {  // sort and remove duplicates
+	sort(all(v));
+	v.erase(unique(all(v)), end(v));
+}
 //? /Template
 
 void solve() {
+    vpi directionsKnight{
+        mp(+1, +2),
+        mp(+2, +1),
+        mp(-1, -2),
+        mp(-2, -1),
+        mp(+1, -2),
+        mp(+2, -1),
+        mp(-1, +2),
+        mp(-2, +1),
+    };
+    remDup(directionsKnight);
+    chk(sz(directionsKnight) == 8);
+    vpi directionsKing{
+        mp(+1, +1),
+        mp(-1, -1),
+        mp(+1, -1),
+        mp(-1, +1),
+    };
+    for(int k = 0; k < 4; k++) directionsKing.eb(dx[k], dy[k]);
+
+
+    int N, M; cin >> N >> M;
+    auto check = [&](int x, int y) -> bool {
+        return (0 <= x && x < N) && (0 <= y && y < M);
+    };
+
+    vs board(N); each(x, board) cin >> x;
+    vvb blocked(N, vb(M));
+
+    int sx, sy, tx, ty;
+    for(int i = 0; i < N; i++) for(int j = 0; j < M; j++) {
+        if(board[i][j] == 'A') {
+            sx = i;
+            sy = j;
+        } else if(board[i][j] == 'B') {
+            tx = i;
+            ty = j;
+        }
+    }
+
+    for(int i = 0; i < N; i++) for(int j = 0; j < M; j++) {
+        if(board[i][j] == 'Z') {
+            for(int k = 0; k < 8; k++) {
+                int nx = i + directionsKnight[k].f;
+                int ny = j + directionsKnight[k].s;
+                if(check(nx, ny) && board[nx][ny] != 'A' && board[nx][ny] != 'B') {
+                    blocked[nx][ny] = true;
+                }
+            }
+        }
+    }
+
+    vvb vis(N, vb(M)); vis[sx][sy] = true;
+    vvi dist(N, vi(M)); dist[sx][sy] = 0;
+    deque<pi> q; q.eb(sx, sy);
+
+    dbg(sx, sy, tx, ty);
+    while(!q.empty()) {
+        auto [cx, cy] = q.ft; q.pop_front();
+        for(int k = 0; k < 8; k++) {
+            int nx = cx + directionsKing[k].f;
+            int ny = cy + directionsKing[k].s;
+            if(check(nx, ny) && !blocked[nx][ny] && (board[nx][ny] == '.' || board[nx][ny] == 'B') && !vis[nx][ny]) {
+                vis[nx][ny] = true;
+                dist[nx][ny] = dist[cx][cy] + 1;
+                q.eb(nx, ny);
+            }
+        }
+    }
+
+    if(!vis[tx][ty]) cout << "King Peter, you can't go now!";
+    else cout << "Minimal possible length of a trip is " << dist[tx][ty];
+    cout << "\n";
 }
 
 int main() {
 	ios::sync_with_stdio(false);
 	cin.tie(nullptr);
 
-    int t = 1; //! cin >> t;
+    int t = 1; cin >> t;
     for(int i = 0; i < t; i++) {
         RAYA;
         RAYA;
