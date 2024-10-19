@@ -61,6 +61,10 @@ using vpi = V<pi>;
 using vpl = V<pl>;
 using vpd = V<pd>;
 
+using vvi = V<vi>;
+using vvl = V<vl>;
+using vvb = V<vb>;
+
 // vectors
 // oops size(x), rbegin(x), rend(x) need C++17
 #define sz(x) int((x).size())
@@ -88,24 +92,6 @@ using vpd = V<pd>;
 #define R0F(i, a) ROF(i, 0, a)
 #define rep(a) F0R(_, a)
 #define each(a, x) for (auto &a : x)
-
-
-
-// Pocochuk Adapter
-using vvi = V<vi>;
-using vvl = V<vl>;
-using vvb = V<vb>;
-
-typedef long long ll;
-typedef long double ld;
-typedef pair<int, int> pi;
-typedef pair<ll, ll> pll;
-typedef vector<int> vi;
-typedef vector<vi> vvi;
-typedef vector<ll> vll;
-typedef vector<vll> vvll;
-typedef vector<bool> vb;
-typedef vector<vb> vvb;
 
 
 
@@ -139,26 +125,72 @@ struct DSU {
 }*/
 //? /Template
 
-using E = tuple<ll, ll, ll>;
 void solve() {
-    while(true) {
-        ll amountNodes, amountEdges; cin >> amountNodes >> amountEdges;
-        if(amountNodes == 0 && amountEdges == 0) break;
-        V<E> edges;
-        ll sum = 0;
-        rep(amountEdges) {
-            ll x, y, z; cin >> x >> y >> z;
-            edges.eb(z, x, y);
-            sum += z;
-        }
-        DSU dsu; dsu.init(amountNodes);
-        sor(edges);
-        for(auto& [C, u, v]: edges) {
-            if(dsu.unite(u, v)) {
-                sum -= C;
+    ll n, q; cin >> n >> q;
+    vl p(n); each(x, p) { cin >> x; x--; }
+    str S; cin >> S;
+    vl queries(q); each(x, queries) { cin >> x; x--; }
+    dbg(n, q);
+    dbg(p);
+    dbg(S);
+    dbg(queries);
+
+    vl where(n);
+    for(int i = 0; i < n; i++) where[p[i]] = i;
+
+    DSU dsu; dsu.init(n);
+    for(int i = 0; i < n; i++) {
+        if(i < where[i]) {
+            int right = where[i];
+            while(!dsu.sameSet(i, right)) {
+                dsu.unite(right, right - 1);
+                right--;
             }
         }
-        cout << sum << "\n";
+        if(i < where[p[i]]) {
+            int right = where[p[i]];
+            while(!dsu.sameSet(i, right)) {
+                dsu.unite(right, right - 1);
+                right--;
+            }
+        }
+    }
+    for(int u = 0; u < n; u++) dbg(u, dsu.get(u));
+
+    int bads = 0;
+    for(int i = 0; i + 1 < n; i++) {
+        if(S[i] == 'L' && S[i + 1] == 'R' && dsu.sameSet(i, i + 1)) {
+            bads++;
+        }
+    }
+
+    for(auto& x: queries) {
+        if(S[x] == 'L') {
+            if(S[x - 1] == 'L')  {
+                if(dsu.sameSet(x, x - 1)) {
+                    bads++;
+                }
+            }
+            if(x + 1 < n && S[x + 1] == 'R') {
+                if(dsu.sameSet(x, x + 1)) {
+                    bads--;
+                }
+            }
+        } else {
+            if(S[x + 1] == 'R') {
+                if(dsu.sameSet(x, x + 1)) {
+                    bads++;
+                }
+            }
+            if(x - 1 >= 0 && S[x - 1] == 'L') {
+                if(dsu.sameSet(x, x - 1)) {
+                    bads--;
+                }
+            }
+        }
+        S[x] = (S[x] == 'L')? 'R' : 'L';
+        bool ok = (bads == 0);
+        cout << (ok?"YES":"NO") << "\n";
     }
 }
 
@@ -166,7 +198,7 @@ int main() {
 	ios::sync_with_stdio(false);
 	cin.tie(nullptr);
 
-    int t = 1; //! cin >> t;
+    int t = 1; cin >> t;
     for(int i = 0; i < t; i++) {
         RAYA;
         RAYA;

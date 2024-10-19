@@ -96,54 +96,81 @@ using vvb = V<vb>;
 
 
 //? Template
-const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
 //? /Template
 
-void solve() {
-    //? <>
-    while(true) {
-        ll R, C; cin >> R >> C; if(R == 0 && C == 0) break;
-        vvb hasBomb(R, vb(C));
-        ll rows; cin >> rows;
-        rep(rows) {
-            ll idRow; cin >> idRow;
-            ll howMany; cin >> howMany;
-            rep(howMany) {
-                ll idCol; cin >> idCol;
-                hasBomb[idRow][idCol] = true;
-            }
-        }
-        ll sx, sy; cin >> sx >> sy;
-        ll tx, ty; cin >> tx >> ty;
+str slv(ll n) {
+    str ans = "1";
+    rep(n - 1) ans.pb('0');
+    return ans;
+}
 
-        auto check = [&](int xx, int yy) -> bool {
-            return (0 <= xx && xx < R) && (0 <= yy && yy < C);
-        };
-
-        vvb vis(R, vb(C)); vis[sx][sy] = true;
-        vvl dist(R, vl(C)); dist[sx][sy] = 0;
-        deque<pl> q; q.eb(sx, sy);
-        while(!q.empty()) {
-            auto [cx, cy] = q.ft; q.pop_front();
-            for(int k = 0; k < 4; k++) {
-                int new_x = cx + dx[k];
-                int new_y = cy + dy[k];
-                if(check(new_x, new_y) && !vis[new_x][new_y] && !hasBomb[new_x][new_y]) {
-                    vis[new_x][new_y] = true;
-                    dist[new_x][new_y] = dist[cx][cy] + 1;
-                    q.eb(new_x, new_y);
+ll get(str S) {
+    const int N = sz(S);
+    ll val = 0;
+    ll val2 = 0;
+    for(int i = 0; i < (1 << N); i++) {
+        bool hasZero = false;
+        bool hasOne = false;
+        for(int j = 0; j < N; j++) {
+            if(i & (1 << j)) {
+                if(S[j] == '0') {
+                    hasZero = true;
+                } else {
+                    hasOne = true;
                 }
             }
         }
-        cout << dist[tx][ty] << "\n";
+        if(hasZero && !hasOne) {
+            val++;
+        }
+        if(hasOne) {
+            val2++;
+        }
     }
+    return abs(val - val2);
+}
+
+void brute(ll n) {
+    ll ans = ll(1e18);
+    for(ll i = 0; i < (1LL << n); i++) {
+        str C;
+        for(int j = 0; j < n; j++) {
+            if(i & (1LL << j)) {
+                C.pb('1');
+            } else {
+                C.pb('0');
+            }
+        }
+        ans = min(ans, get(C));
+    }
+    for(ll i = 0; i < (1LL << n); i++) {
+        str C;
+        for(int j = 0; j < n; j++) {
+            if(i & (1LL << j)) {
+                C.pb('1');
+            } else {
+                C.pb('0');
+            }
+        }
+        if(get(C) == ans) {
+            dbg(C);
+        }
+    }
+    dbg(ans);
+}
+
+void solve() {
+    ll n; cin >> n;
+    str ans = slv(n);
+    dbg(ans);
+    cout << ans << "\n";
 }
 
 int main() {
 	ios::sync_with_stdio(false);
 	cin.tie(nullptr);
 
-    int t = 1; //! cin >> t;
+    int t = 1; cin >> t;
     for(int i = 0; i < t; i++) {
         RAYA;
         RAYA;
