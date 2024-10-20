@@ -96,6 +96,28 @@ using vvb = V<vb>;
 
 
 //? Template
+const int MOD = 1e9 + 7;
+const int MX = (int)2e5 + 5;
+const ll BIG = 1e18;  //? not too close to LLONG_MAX
+const db PI = acos((db)-1);
+const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
+mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
+
+
+
+ll cdiv(ll a, ll b) {
+	return a / b + ((a ^ b) > 0 && a % b);
+}  // divide a by b rounded up
+ll fdiv(ll a, ll b) {
+	return a / b - ((a ^ b) < 0 && a % b);
+}  // divide a by b rounded down
+
+tcT > bool ckmin(T &a, const T &b) {
+	return b < a ? a = b, 1 : 0;
+}  // set a = min(a,b)
+tcT > bool ckmax(T &a, const T &b) {
+	return a < b ? a = b, 1 : 0;
+}  // set a = max(a,b)
 //? /Template
 
 void solve() {
