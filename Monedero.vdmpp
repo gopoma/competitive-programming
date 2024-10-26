@@ -1,0 +1,30 @@
+class Monedero
+instance variables
+private pin: seq of nat := [0,0,0,0];
+inv
+    pin <> [] and len pin = 4 and
+    (forall pii in set inds pin & pin(pii)>= 0 and pin(pii) <= 9);
+
+private balance: real;
+private credto: real := 0;
+
+operations
+public Retirar: real ==> real
+Retirar(monto) ==
+if monto > balance
+    then Credito_OP(monto, [1,2,3,4])
+else (balance := balance - monto;
+    return balance;);
+
+public Monedero: real * seq of nat ==> Monedero
+Monedero(bal, clave) ==
+(balance := bal;
+    pin := clave);
+
+public Credito_OP: real * seq of nat ==> real
+Credito_OP(monto, clave) ==
+(balance := balance - monto;
+    return abs(balance);)
+pre pin = clave and balance < monto and monto > 0;
+
+end Monedero
