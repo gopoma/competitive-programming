@@ -1,3 +1,9 @@
+// TODO: Remind to call this.gen()
+// TODO: Remind to call this.gen()
+// TODO: Remind to call this.gen()
+// TODO: Remind to call this.gen()
+// TODO: Remind to call this.gen()
+// TODO: Remind to call this.gen()
 /**
  * Description: Euler Tour LCA. Compress takes a subset $S$ of nodes
  	* and computes the minimal subtree that contains all the nodes
