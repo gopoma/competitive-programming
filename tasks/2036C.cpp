@@ -1,3 +1,10 @@
+//* sometimes pragmas don't work, if so, just comment it!
+//? #pragma GCC optimize ("Ofast")
+//? #pragma GCC target ("avx,avx2")
+//! #pragma GCC optimize ("trapv")
+
+//! #undef _GLIBCXX_DEBUG //? for Stress Testing
+
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -65,6 +72,8 @@ using vvi = V<vi>;
 using vvl = V<vl>;
 using vvb = V<vb>;
 
+
+
 // vectors
 // oops size(x), rbegin(x), rend(x) need C++17
 #define sz(x) int((x).size())
@@ -95,16 +104,6 @@ using vvb = V<vb>;
 
 
 
-//? Template
-const int MOD = 1e9 + 7;
-const int MX = (int)2e5 + 5;
-const ll BIG = 1e18;  //? not too close to LLONG_MAX
-const db PI = acos((db)-1);
-const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
-mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
-
-
-
 ll cdiv(ll a, ll b) {
 	return a / b + ((a ^ b) > 0 && a % b);
 }  // divide a by b rounded up
@@ -118,16 +117,96 @@ tcT > bool ckmin(T &a, const T &b) {
 tcT > bool ckmax(T &a, const T &b) {
 	return a < b ? a = b, 1 : 0;
 }  // set a = max(a,b)
+
+tcT > void remDup(vector<T> &v) {  // sort and remove duplicates
+	sort(all(v));
+	v.erase(unique(all(v)), end(v));
+}
+tcTU > void safeErase(T &t, const U &u) {
+	auto it = t.find(u);
+	assert(it != end(t));
+	t.erase(it);
+}
+
+
+
+const int MOD = 1e9 + 7;
+const int MX = (int)2e5 + 5;
+const ll BIG = 1e18;  //? not too close to LLONG_MAX
+const db PI = acos((db)-1);
+const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
+mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
+
+
+
+//? Template
 //? /Template
 
 void solve() {
+    str S; cin >> S;
+    ll q; cin >> q;
+    vpl queries(q); each(x, queries) { cin >> x.f >> x.s; }
+    const ll n = sz(S);
+
+    ll good = 0;
+    const str tar = "1100";
+    for(int i = 0; i < n; i++) {
+        const int L = i;
+        const int R = L + 4 - 1;
+        if(R >= n) break;
+        if(S.substr(L, R - L + 1) == tar) {
+            good++;
+        }
+    }
+    dbg(good);
+
+    auto check = [&](int i) -> bool {
+        return (0 <= i && i < n);
+    };
+
+    for(auto& [i, v]: queries) {
+        i--;
+        dbg(S, good);
+        for(int offset = 0; offset <= 3; offset++) {
+            const int L = i - offset;
+            const int R = L + 4 - 1;
+            if(!check(L) || !check(R)) continue;
+            if(S.substr(L, R - L + 1) == tar) {
+                good--;
+            }
+        }
+
+        dbg(S, good);
+        if(v == 0) S[i] = '0';
+        else S[i] = '1';
+
+        for(int offset = 0; offset <= 3; offset++) {
+            const int L = i - offset;
+            const int R = L + 4 - 1;
+            if(!check(L) || !check(R)) continue;
+            if(S.substr(L, R - L + 1) == tar) {
+                good++;
+            }
+        }
+
+        cout << ((good>0)?"YES":"NO") << "\n";
+    }
 }
+
+
+
+void setIn(str s) { freopen(s.c_str(), "r", stdin); }
 
 int main() {
 	ios::sync_with_stdio(false);
 	cin.tie(nullptr);
 
-    int t = 1; //! cin >> t;
+    //? Stress Testing
+    while(0) {
+        RAYA;
+    }
+
+    int t = 1; cin >> t;
     for(int i = 0; i < t; i++) {
         RAYA;
         RAYA;
