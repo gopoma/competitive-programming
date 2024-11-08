@@ -130,6 +130,33 @@ tcTU > void safeErase(T &t, const U &u) {
 
 
 
+//? Custom Helpers
+template <typename T>
+inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
+
+long long binpow(long long a, long long b) {
+    long long res = 1;
+    while (b > 0) {
+        if (b & 1)
+            res = res * a;
+        a = a * a;
+        b >>= 1;
+    }
+    return res;
+}
+
+//? __builtin_popcountll
+ll GetBit(ll mask, ll bit) { return (mask >> bit) & 1LL; }
+void TurnOn(ll& mask, ll bit) { mask = mask | (1LL << bit); }
+void TurnOff(ll& mask, ll bit) { mask = mask & (~(1LL << bit)); }
+
+const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
+const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
+
+using vvi = V<vi>;
+using vvl = V<vl>;
+using vvb = V<vb>;
+
 const int MOD = 1e9 + 7;
 const int MX = (int)2e5 + 5;
 const ll BIG = 1e18;  //? not too close to LLONG_MAX
@@ -137,17 +164,23 @@ const db PI = acos((db)-1);
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
 mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
 
-
+int rng_int(int L, int R) { assert(L <= R);
+	return uniform_int_distribution<int>(L,R)(rng);  }
+ll rng_ll(ll L, ll R) { assert(L <= R);
+	return uniform_int_distribution<ll>(L,R)(rng);  }
+//? /Custom Helpers
 
 //? Template
 //? /Template
 
+
+
 void solve() {
+    dbg("xd");
 }
 
-
-
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }
+void setOut(str s) { freopen(s.c_str(), "w", stdout); }
 
 int main() {
 	ios::sync_with_stdio(false);

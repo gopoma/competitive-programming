@@ -8,18 +8,11 @@
 
 using namespace std;
 
-//? building blocks
 using ll = long long;
 using ull = unsigned long long;
-using db = long double; // or double, if TL is tight
-using str = string; // yay python!
-//? using i64 = long long; //? for Number Theory related
-//? using u64 = uint64_t; //? for Number Theory related
-//? using i128 = __int128; //? for Number Theory related
-//? using u128 = __uint128_t; //? for Number Theory related
-//? template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>; // minima
+using db = long double;
+using str = string;
 
-//? pairs
 using pi = pair<int,int>;
 using pl = pair<ll,ll>;
 using pd = pair<db,db>;
@@ -28,7 +21,6 @@ using pd = pair<db,db>;
 #define f first
 #define s second
 
-//? Source: https://stackoverflow.com/a/31116392/12128483
 template<typename Type, unsigned N, unsigned Last>
 struct TuplePrinter {
     static void print(std::ostream& out, const Type& value) {
@@ -53,7 +45,6 @@ std::ostream& operator<<(std::ostream& out, const std::tuple<Types...>& value) {
 
 
 
-// benq - print any container + pair
 template<typename T, typename = void> struct is_iterable : false_type {};
 template<typename T> struct is_iterable<T, void_t<decltype(begin(declval<T>())),decltype(end(declval<T>()))>> : true_type {};
 template<typename T> typename enable_if<is_iterable<T>::value&&!is_same<T, string>::value,ostream&>::type operator<<(ostream &cout, T const &v);
@@ -84,5 +75,4 @@ template<typename T, typename... Args> void debug(string s, T x, Args... args) {
 
 
 
-// for debugging!
 #define RAYA MACRO(cerr << "\033[101m" << "================================" << "\033[0m" << endl;)
