@@ -177,7 +177,16 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
-    dbg("xd");
+    ll N, K; cin >> N >> K;
+    vl D(K); each(x, D) cin >> x;
+    set<ll> bads; each(x, D) bads.emplace(x);
+    auto good = [&](ll x) {
+        bool ok = true;
+        each(d, ts(x)) ok &= (!bads.count(ll(d - '0')));
+        return ok;
+    };
+    while(!good(N)) { N++; }
+    cout << N << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

@@ -177,7 +177,34 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
+    ll H, W; cin >> H >> W;
+    ll N; cin >> N;
+    vl A(N); each(x, A) cin >> x;
+    vpl blocks;
+    for(int i = 0; i < H; i++) {
+        if(i % 2 == 0) {
+            for(int j = 0; j < W; j++) {
+                blocks.eb(i, j);
+            }
+        } else {
+            for(int j = W - 1; j >= 0; j--) {
+                blocks.eb(i, j);
+            }
+        }
+    }
+    vl colors;
+    for(int i = 0; i < N; i++) {
+        rep(A[i]) colors.eb(i + 1);
+    }
     dbg("xd");
+    vvl ans(H, vl(W));
+    for(int i = 0; i < H * W; i++) ans[blocks[i].f][blocks[i].s] = colors[i];
+    for(int i = 0; i < H; i++) {
+        for(int j = 0; j < W; j++) {
+            cout << ans[i][j] << " ";
+        }
+        cout << "\n";
+    }
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

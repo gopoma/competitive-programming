@@ -177,7 +177,32 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
-    dbg("xd");
+    ll N, x; cin >> N >> x;
+    vl A(N); each(e, A) cin >> e;
+    vl A_guarda = A;
+    for(int i = 1; i < N; i++) {
+        ll a = A[i - 1];
+        ll b = A[i];
+        if(a + b <= x) continue;
+        ll excess = a + b - x;
+        if(excess > b) {
+            excess -= b;
+            b = 0;
+        } else {
+            b -= excess;
+            excess = 0;
+        }
+        a -= excess;
+        A[i - 1] = a;
+        A[i] = b;
+    }
+    dbg(A);
+    dbg(A_guarda);
+    ll ans = 0;
+    for(int i = 0; i < N; i++) {
+        ans += A_guarda[i] - A[i];
+    }
+    cout << ans << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

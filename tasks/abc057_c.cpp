@@ -177,7 +177,15 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
-    dbg("xd");
+    ll N; cin >> N;
+    ll ans = BIG;
+    for(ll x = 1; x * x <= N; x++) {
+        if(N % x == 0) {
+            ll other = N / x;
+            ckmin(ans, max(ll(sz(ts(x))), ll(sz(ts(other)))));
+        }
+    }
+    cout << ans << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

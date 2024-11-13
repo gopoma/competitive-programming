@@ -177,7 +177,25 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
-    dbg("xd");
+    str S; cin >> S;
+    const int N = sz(S);
+    const vs words{"dream", "dreamer", "erase", "eraser"};
+    vb vis(N + 5);
+    vb memo(N + 5);
+    auto dp = [&](const auto& dp, int i) -> bool {
+        if(i == N) return true;
+        if(vis[i]) return memo[i];
+        vis[i] = true;
+        bool ans = false;
+        each(w, words) {
+            if(S.substr(i, sz(w)) == w) {
+                ans |= dp(dp, i + sz(w));
+            }
+        }
+        return memo[i] = ans;
+    };
+    bool ans = dp(dp, 0);
+    cout << (ans?"YES":"NO") << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

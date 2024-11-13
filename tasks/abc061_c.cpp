@@ -177,7 +177,19 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
-    dbg("xd");
+    ll N, K; cin >> N >> K;
+    vpl items(N); each(x, items) cin >> x.f >> x.s;
+    sor(items);
+    vl values(N);
+    vl count(N);
+    for(int i = 0; i < N; i++) {
+        auto [a, b] = items[i];
+        values[i] = a;
+        count[i] = b;
+        if(0 <= i - 1) count[i] += count[i - 1];
+    }
+    ll i = lower_bound(all(count), K) - count.begin();
+    cout << values[i] << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

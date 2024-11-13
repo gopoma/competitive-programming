@@ -171,13 +171,132 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 //? /Custom Helpers
 
 //? Template
+
+/**
+ * Description: modular arithmetic operations
+ * Source:
+ * KACTL
+ * https://codeforces.com/blog/entry/63903
+ * https://codeforces.com/contest/1261/submission/65632855 (tourist)
+ * https://codeforces.com/contest/1264/submission/66344993 (ksun)
+ * also see https://github.com/ecnerwala/cp-book/blob/master/src/modnum.hpp
+ * (ecnerwal) Verification: https://open.kattis.com/problems/modulararithmetic
+ */
+
+template <int MOD, int RT> struct mint {
+	static const int mod = MOD;
+	static constexpr mint rt() { return RT; }  // primitive root for FFT
+	int v;
+	explicit operator int() const {
+		return v;
+	}  // explicit -> don't silently convert to int
+	mint() : v(0) {}
+	mint(ll _v) {
+		v = int((-MOD < _v && _v < MOD) ? _v : _v % MOD);
+		if (v < 0) v += MOD;
+	}
+	bool operator==(const mint &o) const { return v == o.v; }
+	friend bool operator!=(const mint &a, const mint &b) { return !(a == b); }
+	friend bool operator<(const mint &a, const mint &b) { return a.v < b.v; }
+	friend istream &operator>>(istream &is, mint &a) {
+		ll x;
+		is >> x;
+		a = mint(x);
+		return is;
+	}
+	friend ostream &operator<<(ostream &os, mint a) {
+		os << int(a);
+		return os;
+	}
+
+	mint &operator+=(const mint &o) {
+		if ((v += o.v) >= MOD) v -= MOD;
+		return *this;
+	}
+	mint &operator-=(const mint &o) {
+		if ((v -= o.v) < 0) v += MOD;
+		return *this;
+	}
+	mint &operator*=(const mint &o) {
+		v = int((ll)v * o.v % MOD);
+		return *this;
+	}
+	mint &operator/=(const mint &o) { return (*this) *= inv(o); }
+	friend mint pow(mint a, ll p) {
+		mint ans = 1;
+		assert(p >= 0);
+		for (; p; p /= 2, a *= a)
+			if (p & 1) ans *= a;
+		return ans;
+	}
+	friend mint inv(const mint &a) {
+		assert(a.v != 0);
+		return pow(a, MOD - 2);
+	}
+
+	mint operator-() const { return mint(-v); }
+	mint &operator++() { return *this += 1; }
+	mint &operator--() { return *this -= 1; }
+	friend mint operator+(mint a, const mint &b) { return a += b; }
+	friend mint operator-(mint a, const mint &b) { return a -= b; }
+	friend mint operator*(mint a, const mint &b) { return a *= b; }
+	friend mint operator/(mint a, const mint &b) { return a /= b; }
+};
+
+using mi = mint<MOD, 5>;  // 5 is primitive root for both common mods
+using vmi = V<mi>;
+using pmi = pair<mi, mi>;
+using vpmi = V<pmi>;
 //? /Template
 
 
 
 void solve() {
     //? <>
-    dbg("xd");
+    ll N; cin >> N;
+    vs S(2); each(x, S) cin >> x;
+    dbg(N);
+    each(x, S) dbg(x);
+    const vector<char> colors = {'R', 'G', 'B'};
+    map<int, map<char, map<char, map<char, map<char, bool>>>>> vis;
+    map<int, map<char, map<char, map<char, map<char, mi>>>>> memo;
+    const auto dp = [&](const auto& dp, int i, char lup, char cup, char ldown, char cdown) -> mi {
+        if(i == N) return mi(1);
+        if(vis[i][lup][cup][ldown][cdown]) return memo[i][lup][cup][ldown][cdown];
+        vis[i][lup][cup][ldown][cdown] = true;
+        
+        char nup   = S[0][i];
+        char ndown = S[1][i];
+        vector<char> canup, candown;
+        
+        if(lup == nup) canup.eb(cup);
+        else each(c, colors) if(c != cup) canup.eb(c);
+        if(ldown == ndown) candown.eb(cdown);
+        else each(c, colors) if(c != cdown) candown.eb(c);
+
+        mi ans = 0;
+        if(nup == ndown) {
+            each(c, canup) {
+                each(c2, candown) {
+                    if(c == c2) {
+                        ans += dp(dp, i + 1, nup, c, ndown, c2);
+                    }
+                }
+            }
+        } else {
+            each(c, canup) {
+                each(c2, candown) {
+                    if(c != c2) {
+                        ans += dp(dp, i + 1, nup, c, ndown, c2);
+                    }
+                }
+            }
+        }
+        return memo[i][lup][cup][ldown][cdown] = ans;
+    };
+    mi ans = dp(dp, 0, '$', '$', '$', '$');
+    dbg(ans);
+    cout << ans << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

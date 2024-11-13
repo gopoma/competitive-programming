@@ -177,7 +177,14 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
-    dbg("xd");
+    ll N, A, B; cin >> N >> A >> B;
+    vl X(N); each(x, X) cin >> x;
+    ll ans = 0;
+    for(int i = 1; i < N; i++) {
+        ll d = X[i] - X[i - 1];
+        ans += min(d * A, B);
+    }
+    cout << ans << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

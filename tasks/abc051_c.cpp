@@ -177,7 +177,24 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
-    dbg("xd");
+    ll sx, sy, tx, ty; cin >> sx >> sy >> tx >> ty;
+    ll xd = tx - sx;
+    ll yd = ty - sy;
+
+    str ans;
+    rep(yd) ans.pb('U');
+    rep(xd) ans.pb('R');
+    rep(yd) ans.pb('D');
+    rep(xd) ans.pb('L');
+    ans.pb('L');
+    rep(yd + 1) ans.pb('U');
+    rep(xd + 1) ans.pb('R');
+    ans.pb('D');
+    ans.pb('R');
+    rep(yd + 1) ans.pb('D');
+    rep(xd + 1) ans.pb('L');
+    ans.pb('U');
+    cout << ans << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

@@ -177,7 +177,21 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
-    dbg("xd");
+    ll N; cin >> N;
+    vl A(N); each(x, A) cin >> x;
+    map<ll, ll> hist;
+    each(x, A) hist[x]++;
+    vl freq;
+    for(auto& [val, cnt]: hist) freq.eb(cnt);
+    each(x, freq) while(x > 2) x -= 2;
+    ll ones = 0, twos = 0; 
+    each(x, freq) {
+        ones += (x == 1);
+        twos += (x == 2);
+    }
+    ll ans = ones + twos;
+    if(twos & 1) ans--;
+    cout << ans << "\n";    
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

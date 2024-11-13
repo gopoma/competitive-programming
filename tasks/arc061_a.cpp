@@ -177,7 +177,28 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
-    dbg("xd");
+    str S; cin >> S;
+    const int N = sz(S);
+    ll tot = 0;
+    for(int mask = 0; mask < (1 << N); mask++) {
+        if(!(mask & 1)) continue;
+        vb on(N);
+        for(int i = 0; i < N; i++) {
+            if(mask & (1 << i)) on[i] = true;
+        }
+        reverse(all(on));
+        ll sum = 0;
+        str current;
+        for(int i = 0; i < N; i++) {
+            current.pb(S[i]);
+            if(on[i]) { //? +
+                sum += stoll(current);
+                current.clear();
+            }
+        }
+        tot += sum;
+    }
+    cout << tot << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

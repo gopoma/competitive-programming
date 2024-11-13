@@ -176,8 +176,12 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 
 void solve() {
-    //? <>
-    dbg("xd");
+    ll a, b, x; cin >> a >> b >> x;
+    const ll L = cdiv(a, x);
+    const ll R = fdiv(b, x);
+    ll ans = 0;
+    if(L <= R) ans = R - L + 1LL;
+    cout << ans << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }
