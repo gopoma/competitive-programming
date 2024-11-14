@@ -177,6 +177,33 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
+    ll N; cin >> N;
+    vl coins{1};
+    auto extend = [&](ll base) -> void {
+        ll x = base;
+        while(x <= N) {
+            coins.eb(x);
+            x *= base;
+        }
+    };
+    extend(6);
+    extend(9);
+    remDup(coins);
+    vl memo(N + 5, -1);
+    auto dp = [&](const auto& dp, int i) -> ll {
+        if(i == 0) return 0;
+        if(memo[i] != -1) return memo[i];
+        ll ans = BIG;
+        each(c, coins) {
+            if(i - c >= 0) {
+                ckmin(ans, dp(dp, i - c) + 1);
+            }
+        }
+        return memo[i] = ans;
+    };
+    ll ans = dp(dp, N);
+    dbg(ans);
+    cout << ans << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

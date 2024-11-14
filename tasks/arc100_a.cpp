@@ -177,6 +177,16 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
+    ll N; cin >> N;
+    vl A(N); each(x, A) cin >> x;
+    vl B(N);
+    for(ll i = 0; i < N; i++) B[i] = A[i] - (i + 1LL);
+    sor(B);
+    ll b = B[sz(B) / 2];
+    ll ans = 0;
+    for(ll i = 0; i < N; i++) ans += abs(A[i] - (b + i + 1LL));
+    dbg(ans);
+    cout << ans << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

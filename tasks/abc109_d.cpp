@@ -173,10 +173,34 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 //? Template
 //? /Template
 
-
-
+using Info = tuple<ll, ll, ll, ll>;
 void solve() {
     //? <>
+    ll H, W; cin >> H >> W;
+    vvl A(H, vl(W));
+    for(int i = 0; i < H; i++) for(int j = 0; j < W; j++) cin >> A[i][j];
+    V<Info> ans;
+    for(int i = 0; i < H; i++) {
+        for(int j = 0; j + 1 < W; j++) {
+            if(bool(A[i][j] & 1)) {
+                A[i][j]--;
+                A[i][j + 1]++;
+                ans.eb(i + 1, j + 1, i + 1, j + 2);
+            }
+        }
+    }
+    for(int i = 0; i + 1 < H; i++) {
+        if(bool(A[i][W - 1] & 1)) {
+            A[i][W - 1]--;
+            A[i + 1][W - 1]++;
+            ans.eb(i + 1, W, i + 2, W);
+        }
+    }
+    each(x, A) dbg(x);
+    cout << sz(ans) << "\n";
+    for(auto& [a, b, c, d]: ans) {
+        cout << a << " " << b << " " << c << " " << d << "\n";
+    }
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

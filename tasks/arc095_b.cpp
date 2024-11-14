@@ -173,10 +173,27 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 //? Template
 //? /Template
 
-
+long long C(long long n, long long k) {
+    long double res = 1;
+    for (long long i = 1; i <= k; ++i)
+        res = res * (n - k + i) / i;
+    return (long long)(res + 0.01);
+}
 
 void solve() {
     //? <>
+    //? for(int n = 1; n <= 6; n++) {
+    //?     RAYA;
+    //?     dbg(n);
+    //?     for(int i = 0; i <= n; i++) dbg(i, C(n, i));
+    //? }
+    ll n; cin >> n;
+    vl a(n); each(x, a) cin >> x;
+    sor(a);
+    ll mx = a.bk; a.pop_back();
+    pair<db, ll> mn = mp(1e18, BIG);
+    each(x, a) ckmin(mn, mp(abs(db(mx) / db(2) - db(x)), x));
+    cout << mx << " " << mn.s << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

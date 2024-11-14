@@ -177,6 +177,28 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
+    str S, T; cin >> S >> T;
+    const int N = sz(S);
+    auto work = [](str& s) {
+        set<char> R;
+        map<char, char> g;
+        for(char c = 'a'; c <= 'z'; c++) {
+            R.emplace(c);
+            g[c] = '$';
+        }
+        each(c, s) {
+            if(g[c] == '$') {
+                g[c] = *R.begin();
+                safeErase(R, *R.begin());
+            }
+            c = g[c];
+        }
+    };
+    work(S);
+    work(T);
+    dbg(S);
+    dbg(T);
+    cout << ((S==T)?"Yes":"No") << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

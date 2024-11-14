@@ -177,6 +177,30 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
+    ll N, M; cin >> N >> M;
+    vpl items(M); each(x, items) cin >> x.f >> x.s;
+    map<ll, vpl> xd;
+    for(int i = 0; i < M; i++) {
+        auto [P, Y] = items[i];
+        xd[P].eb(Y, i);
+    }
+    auto get = [&](ll x) -> str {
+        str ans = ts(x);
+        reverse(all(ans));
+        while(sz(ans) < 6) ans.pb('0');
+        reverse(all(ans));
+        return ans;
+    };
+    vs ans(M);
+    for(auto& [P, block]: xd) {
+        sor(block);
+        ll order = 0;
+        for(auto& [Y, i]: block) {
+            order++;
+            ans[i] = get(P) + get(order);
+        }
+    }
+    for(int i = 0; i < M; i++) cout << ans[i] << " \n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

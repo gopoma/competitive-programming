@@ -177,6 +177,34 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
+    ll N, K; cin >> N >> K;
+    vl X(N); each(x, X) cin >> x;
+    vl left;
+    vl right;
+    each(x, X) {
+        if(x < 0) left.eb(x);
+        else      right.eb(x);
+    }
+    sort(rall(left));
+    sor(right);
+    ll ans = BIG;
+    dbg(left, right);
+    for(int takeRight = 0; takeRight <= sz(right); takeRight++) {
+        int takeLeft = K - takeRight;
+        if(takeLeft < 0) continue;
+        if(takeLeft > sz(left)) continue;
+
+        ll A = 0;
+        if(takeRight > 0) A = right[takeRight - 1];
+        ll B = 0;
+        if(takeLeft > 0) B = -left[takeLeft - 1];
+        ll mn = min(A, B);
+        ll mx = max(A, B);
+        dbg(takeRight, takeLeft, A, B, mn, mx);
+        ckmin(ans, 2LL * mn + mx);
+    }
+    dbg(ans);
+    cout << ans << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

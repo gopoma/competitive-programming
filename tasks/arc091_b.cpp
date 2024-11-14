@@ -177,6 +177,22 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
+    ll N, K; cin >> N >> K;
+    ll ans = 0;
+    for(ll b = 1; b <= N; b++) {
+        ll tot = N + 1LL;
+        ll blocks = fdiv(tot, b);
+        ll rem = tot % b;
+        ll adi_per_block = 0;
+        if(b - 1LL >= K) adi_per_block = (b - 1LL) - K + 1LL;
+        ll contrib = 0;
+        contrib += blocks * adi_per_block;
+        if(rem - 1LL >= K) contrib += (rem - 1LL) - K + 1LL;
+        if(K == 0) contrib--;
+        ans += contrib;
+    }
+    dbg(ans);
+    cout << ans << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

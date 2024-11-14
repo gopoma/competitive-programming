@@ -177,6 +177,19 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
+    str S; cin >> S;
+    ll K; cin >> K;
+    const int N = sz(S);
+    vs words;
+    for(int size = 1; size <= 5; size++) {
+        for(int L = 0; L < N; L++) {
+            const int R = L + size - 1;
+            if(R >= N) break;
+            words.eb(S.substr(L, size));
+        }
+    }
+    remDup(words);
+    cout << words[K - 1] << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

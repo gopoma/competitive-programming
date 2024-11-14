@@ -177,6 +177,34 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
+    ll H, W; cin >> H >> W;
+    vs board(H); each(x, board) cin >> x;
+    auto check = [&](int xx, int yy) -> bool {
+        return (0 <= xx && xx < H) && (0 <= yy && yy < W);
+    };
+    deque<pi> q; q.eb(0, 0);
+    vvb vis(H, vb(W)); vis[0][0] = true;
+    vvl dist(H, vl(W)); dist[0][0] = 0;
+    while(!q.empty()) {
+        auto [xx, yy] = q.ft; q.pop_front();
+        for(int k = 0; k < 4; k++) {
+            int nx = xx + dx[k];
+            int ny = yy + dy[k];
+            if(check(nx, ny) && !vis[nx][ny] && board[nx][ny] == '.') {
+                vis[nx][ny] = true;
+                dist[nx][ny] = dist[xx][yy] + 1;
+                q.eb(nx, ny);
+            }
+        }
+    }
+    if(!vis[H - 1][W - 1]) cout << "-1\n";
+    else {
+        ll ans = 0;
+        for(int i = 0; i < H; i++) for(int j = 0; j < W; j++) if(board[i][j] == '.') ans++;
+        dbg(dist[H - 1][W - 1]);
+        ans -= dist[H - 1][W - 1] + 1;
+        cout << ans << "\n";
+    }
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

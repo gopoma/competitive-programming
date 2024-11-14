@@ -177,6 +177,45 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
+    ll n; cin >> n;
+    vl A(n); each(x, A) cin >> x;
+    vl even, odd;
+    for(int i = 0; i < n; i++) {
+        if(i & 1) odd.eb(A[i]);
+        else     even.eb(A[i]);
+    }
+    auto get = [&](vl& arr) -> vl {
+        map<ll, ll> hist;
+        each(x, arr) hist[x]++;
+        vpl other;
+        for(auto& [val, cnt]: hist) other.eb(cnt, val);
+        sort(rall(other));
+        vl ans;
+        for(int i = 0; i < min(2, sz(other)); i++) {
+            ans.eb(other[i].s);
+        }
+        return ans;
+    };
+    vl tryeven = get(even);
+    vl tryodd = get(odd);
+    ll ans = BIG;
+    each(e, tryeven) {
+        each(o, tryodd) {
+            if(e == o) continue;
+            vl current;
+            rep(n / 2) {
+                current.eb(e);
+                current.eb(o);
+            }
+            ll local_ans = 0;
+            for(int i = 0; i < n; i++) {
+                local_ans += (current[i] != A[i]);
+            }
+            ckmin(ans, local_ans);
+        }
+    }
+    if(ans == BIG) ans = n / 2;
+    cout << ans << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

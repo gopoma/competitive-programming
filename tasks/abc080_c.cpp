@@ -174,9 +174,48 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 //? /Template
 
 
-
+bool F[105][10][5];
+ll   P[105][15];
 void solve() {
     //? <>
+    ll N; cin >> N;
+    for(int i = 0; i < N; i++) {
+        for(int j = 0; j < 5; j++) {
+            for(int k = 0; k < 2; k++) {
+                cin >> F[i][j][k];
+            }
+        }
+    }
+    for(int i = 0; i < N; i++) {
+        for(int j = 0; j <= 10; j++) {
+            cin >> P[i][j];
+        }
+    }
+    ll ans = -BIG;
+    for(int mask = 0; mask < (1 << 10); mask++) {
+        if(mask==0)continue;
+        vb on(10);
+        for(int i = 0; i < 10; i++) {
+            if(mask & (1 << i)) on[i] = true;
+        }
+        vvb current(5, vb(2));
+        for(int i = 0; i < 5; i++)  current[i][0] = on[i];
+        for(int i = 5; i < 10; i++) current[i % 5][1] = on[i];
+
+        ll local_ans = 0;
+        for(int i = 0; i < N; i++) {
+            ll how = 0;
+            for(int j = 0; j < 5; j++) {
+                for(int k = 0; k < 2; k++) {
+                    how += (F[i][j][k] && current[j][k]);
+                }
+            }
+            local_ans += P[i][how];
+        }
+        ckmax(ans, local_ans);
+    }
+    dbg(ans);
+    cout << ans << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

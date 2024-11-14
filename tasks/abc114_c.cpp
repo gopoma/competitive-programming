@@ -173,10 +173,52 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 //? Template
 //? /Template
 
-
-
+bool vis[15][2][2][2][2][2][2];
+ll  memo[15][2][2][2][2][2][2];
 void solve() {
     //? <>
+    ll N; cin >> N;
+    str Nstr = ts(N);
+    vi digits;
+    each(c, Nstr) digits.eb(c - '0');
+    const int tot_digits = sz(digits);
+    set<int> good; 
+    good.emplace(3);
+    good.emplace(5);
+    good.emplace(7);
+    auto dp = [&](const auto& dp, int i, bool lastDefined, bool alreadyLower, bool has3, bool has5, bool has7, bool hasOther) -> ll {
+        if(i == tot_digits) return (lastDefined && has3 && has5 && has7 && !hasOther);
+        if(vis[i][lastDefined][alreadyLower][has3][has5][has7][hasOther]) return memo[i][lastDefined][alreadyLower][has3][has5][has7][hasOther];
+        vis[i][lastDefined][alreadyLower][has3][has5][has7][hasOther] = true;
+
+        ll ans = 0;
+        if(!lastDefined) {
+            ans += dp(dp, i + 1, false, false, false, false, false, false);
+            if(i == 0) {
+                for(int d = 1; d <= digits.ft; d++) {
+                    ans += dp(dp, i + 1, true, d < digits.ft, has3 || d == 3, has5 || d == 5, has7 || d == 7, hasOther || !good.count(d));
+                }
+            } else {
+                for(int d = 0; d <= 9; d++) {
+                    ans += dp(dp, i + 1, true, true, has3 || d == 3, has5 || d == 5, has7 || d == 7, hasOther || !good.count(d));
+                }
+            }
+        } else {
+            if(alreadyLower) {
+                for(int d = 0; d <= 9; d++) {
+                    ans += dp(dp, i + 1, true, true, has3 || d == 3, has5 || d == 5, has7 || d == 7, hasOther || !good.count(d));
+                }
+            } else {
+                for(int d = 0; d <= digits[i]; d++) {
+                    ans += dp(dp, i + 1, true, d < digits[i], has3 || d == 3, has5 || d == 5, has7 || d == 7, hasOther || !good.count(d));
+                }
+            }
+        }
+        return memo[i][lastDefined][alreadyLower][has3][has5][has7][hasOther] = ans;
+    };
+    ll ans = dp(dp, 0, false, false, false, false, false, false);
+    dbg(ans);
+    cout << ans << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

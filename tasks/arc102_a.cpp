@@ -162,7 +162,7 @@ const int MX = (int)2e5 + 5;
 const ll BIG = 1e18;  //? not too close to LLONG_MAX
 const db PI = acos((db)-1);
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
-mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
+mt19937 rng(0);
 
 int rng_int(int L, int R) { assert(L <= R);
 	return uniform_int_distribution<int>(L,R)(rng);  }
@@ -173,10 +173,43 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 //? Template
 //? /Template
 
+ll brute(ll N, ll K) {
+    auto ok = [&](ll a, ll b) { return (a + b) % K == 0; };
+    ll ans = 0;
+    for(ll a = 1; a <= N; a++) {
+        for(ll b = 1; b <= N; b++) {
+            for(ll c = 1; c <= N; c++) {
+                if(ok(a, b) && ok(b, c) && ok(a, c)) {
+                    ans++;
+                }
+            }
+        }
+    }
+    return ans;
+}
 
+ll slv(ll N, ll K) {
+    ll ans = 0;
+    if(N >= K) {
+        ll x = fdiv(N, K);
+        dbg("normal", x);
+        ans += x * x * x;
+    }
+    ll d = K / 2LL;
+    if(K % 2 == 0 && N >= d) {
+        ll x = fdiv(N - d, K) + 1LL;
+        dbg("other", x);
+        ans += x * x * x;
+    }
+    return ans;
+}
 
 void solve() {
     //? <>
+    ll N, K; cin >> N >> K;
+    ll ans = slv(N, K);
+    dbg(ans);
+    cout << ans << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }
@@ -189,6 +222,13 @@ int main() {
     //? Stress Testing
     while(0) {
         RAYA;
+        ll N = rng_ll(1, 100);
+        ll K = rng_ll(1, 100);
+        dbg(N, K);
+        ll ans = brute(N, K);
+        ll greedy = slv(N, K);
+        dbg(ans, greedy);
+        chk(ans == greedy);
     }
 
     int t = 1; //! cin >> t;

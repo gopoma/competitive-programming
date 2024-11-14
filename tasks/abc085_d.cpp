@@ -177,6 +177,27 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
+    ll N, H; cin >> N >> H;
+    vpl swords(N); each(x, swords) cin >> x.f >> x.s;
+    ll ans = 0;
+    auto Try = [&](ll x) -> void {
+        if(H > 0) {
+            ans++;
+        }
+        H = max(0LL, H - x);
+    };
+    ll maxa = -BIG;
+    for(auto& [a, b]: swords) {
+        ckmax(maxa, a);
+    }
+    vl good;
+    for(auto& [a, b]: swords) {
+        if(b > maxa) good.eb(b);
+    }
+    sort(rall(good));
+    each(x, good) Try(x);
+    ans += cdiv(H, maxa);
+    cout << ans << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

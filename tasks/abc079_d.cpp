@@ -171,12 +171,49 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 //? /Custom Helpers
 
 //? Template
+/**
+ * Description: All-Pairs Shortest Path
+ * Source: KACTL
+ * Verification:
+    * https://open.kattis.com/problems/allpairspath
+    * https://cses.fi/problemset/task/1672/
+ */
+
+void floydWarshall(V<vl>& m) {
+    int n = sz(m);
+    F0R(i,n) ckmin(m[i][i], 0LL);
+    F0R(k,n) F0R(i,n) F0R(j,n)
+        if (m[i][k] != BIG && m[k][j] != BIG) {
+            auto newDist = max(m[i][k]+m[k][j],-BIG);
+            ckmin(m[i][j],newDist);
+        }
+    F0R(k,n) if (m[k][k] < 0) F0R(i,n) F0R(j,n)
+        if (m[i][k] != BIG && m[k][j] != BIG) m[i][j] = -BIG;
+}
 //? /Template
 
 
 
 void solve() {
     //? <>
+    ll H, W; cin >> H >> W;
+    vvl dist(10, vl(10));
+    for(int i = 0; i < 10; i++) {
+        for(int j = 0; j < 10; j++) {
+            cin >> dist[i][j];
+        }
+    }
+    floydWarshall(dist);
+    vvl A(H, vl(W));
+    for(int i = 0; i < H; i++) for(int j = 0; j < W; j++) cin >> A[i][j];
+    ll ans = 0;
+    for(int i = 0; i < H; i++) for(int j = 0; j < W; j++) {
+        if(A[i][j] != -1 && A[i][j] != 1) {
+            ans += dist[A[i][j]][1];
+        }
+    }
+    dbg(ans);
+    cout << ans << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }
