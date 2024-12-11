@@ -561,6 +561,7 @@ struct AngelBeats {
     }
 };
 
+// TODO [l, r[
 /**
  * @brief Range Chmin Chmax Add Update Range Min Max Sum Segment Tree Beats!
  * @docs docs/segment-tree/segment-tree-beats.md
@@ -569,7 +570,7 @@ struct AngelBeats {
 int main() {
     INT(n, Q);
     VEC(ll, a, n);
-    AngelBeats seg(a);
+    AngelBeats seg(a); // TODO [l, r[
     while(Q--) {
         INT(t, l, r);
         switch(t) {
