@@ -1,5 +1,5 @@
 //* sometimes pragmas don't work, if so, just comment it!
-#pragma GCC optimize ("Ofast")
+//? #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
@@ -177,6 +177,42 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
+    ll N, T; cin >> N >> T;
+    vl A(N); for(auto& x: A) cin >> x;
+    dbg(N, T);
+    dbg(A);
+
+    ll dmax = 0;
+    ll mx = -BIG;
+    for(int i = N - 1; i >= 0; i--) {
+        ckmax(dmax, mx - A[i]);
+        ckmax(mx, A[i]);
+    }
+    dbg(dmax);
+
+    if(dmax == 0) {
+        cout << "0\n";
+    } else {
+        map<ll, vl> where;
+        for(int i = 0; i < N; i++) where[A[i]].eb(i);
+
+        ll ans = 0;
+        map<ll, ll> hist;
+        for(auto& x: A) hist[x]++;
+        set<ll> S;
+
+        for(int i = N - 1; i >= 0; i--) {
+            if(!S.empty() && ((*S.rbegin()) - A[i] == dmax) && i == where[A[i]].ft) {
+                ans += min(hist[A[i]], hist[*S.rbegin()]);
+                safeErase(S, *S.rbegin());
+            } else {
+                S.emplace(A[i]);
+            }
+        }
+
+        dbg(ans);
+        cout << ans << "\n";
+    }
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

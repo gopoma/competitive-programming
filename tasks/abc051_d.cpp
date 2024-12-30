@@ -171,12 +171,50 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 //? /Custom Helpers
 
 //? Template
+/**
+ * Description: All-Pairs Shortest Path
+ * Source: KACTL
+ * Verification:
+    * https://open.kattis.com/problems/allpairspath
+    * https://cses.fi/problemset/task/1672/
+ */
+
+void floydWarshall(V<vl>& m) {
+    int n = sz(m);
+    F0R(i,n) ckmin(m[i][i], 0LL);
+    F0R(k,n) F0R(i,n) F0R(j,n)
+        if (m[i][k] != BIG && m[k][j] != BIG) {
+            auto newDist = max(m[i][k]+m[k][j],-BIG);
+            ckmin(m[i][j],newDist);
+        }
+    F0R(k,n) if (m[k][k] < 0) F0R(i,n) F0R(j,n)
+        if (m[i][k] != BIG && m[k][j] != BIG) m[i][j] = -BIG;
+}
 //? /Template
 
 
-
+using Edge = tuple<ll, ll, ll>;
 void solve() {
     //? <>
+    ll N, M; cin >> N >> M;
+    V<Edge> edges(M);
+    for(auto& [a, b, c]: edges) {
+        cin >> a >> b >> c;
+        a--; b--;
+    }
+
+    vvl dist(N, vl(N, BIG));
+    for(auto& [a, b, c]: edges) {
+        dist[a][b] = dist[b][a] = c;
+    }
+
+    floydWarshall(dist);
+
+    ll ans = 0;
+    for(auto& [a, b, c]: edges) {
+        ans += (dist[a][b] != c);
+    }
+    cout << ans << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

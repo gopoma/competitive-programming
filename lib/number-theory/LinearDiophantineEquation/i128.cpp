@@ -1,9 +1,9 @@
 //* sometimes pragmas don't work, if so, just comment it!
 #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
-//! #pragma GCC optimize ("trapv")
+// #pragma GCC optimize ("trapv")
 
-//! #undef _GLIBCXX_DEBUG //? for Stress Testing
+// #undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h>
 using namespace std;
@@ -37,7 +37,7 @@ template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
 using ull  = unsigned long long;
 //? using i64  = long long;
 //? using u64  = uint64_t;
-//? using i128 = __int128;
+using i128 = __int128;
 //? using u128 = __uint128_t;
 //? using f128 = __float128;
 
@@ -173,15 +173,106 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 //? Template
 //? /Template
 
+i128 __abs(i128 x) {
+    if(x < i128(0)) return -x;
+    return x;
+}
 
+i128 gcd(i128 a, i128 b, i128& x, i128& y) {
+    if (b == 0) {
+        x = 1;
+        y = 0;
+        return a;
+    }
+    i128 x1, y1;
+    i128 d = gcd(b, a % b, x1, y1);
+    x = y1;
+    y = x1 - y1 * (a / b);
+    return d;
+}
+
+bool find_any_solution(i128 a, i128 b, i128 c, i128 &x0, i128 &y0, i128 &g) {
+    g = gcd(__abs(a), __abs(b), x0, y0);
+    if (c % g) {
+        return false;
+    }
+
+    x0 *= c / g;
+    y0 *= c / g;
+    if (a < 0) x0 = -x0;
+    if (b < 0) y0 = -y0;
+    return true;
+}
+
+void shift_solution(i128 & x, i128 & y, i128 a, i128 b, i128 cnt) {
+    x += cnt * b;
+    y -= cnt * a;
+}
+
+using Info = tuple<bool, i128, i128>;
+Info find_all_solutions(i128 a, i128 b, i128 c, i128 minx, i128 miny) {
+    i128 x, y, g;
+    if (!find_any_solution(a, b, c, x, y, g)) {}
+    a /= g;
+    b /= g;
+
+    i128 sign_a = a > 0 ? +1 : -1;
+    i128 sign_b = b > 0 ? +1 : -1;
+
+    shift_solution(x, y, a, b, (minx - x) / b);
+    if (x < minx)
+        shift_solution(x, y, a, b, sign_b);
+    i128 lx1 = x;
+
+    shift_solution(x, y, a, b, -(miny - y) / a);
+    if (y < miny)
+        shift_solution(x, y, a, b, -sign_a);
+    i128 lx2 = x;
+
+    i128 lx = max(lx1, lx2);
+
+    return make_tuple(true, lx, i128(BIG));
+}
 
 void solve() {
     //? <>
+    ll N; cin >> N;
+    i128 x = 1;
+    i128 y = 1;
+    rep(N) {
+        RAYA;
+        ll __T, __A; cin >> __T >> __A;
+        i128 T = __T;
+        i128 A = __A;
+        // (x + a) / T = (y + b) / A
+        // A * (x + a) = T * (y + b)
+        // A * x + A * a = T * y + T * b
+        // A * a - T * b = T * y - A * x
+        // dbg(T, A, x, y);
+        // dbg("a:", A);
+        // dbg("b:", -T);
+        // dbg("c:", T * y - A * x);
+
+        auto [ok, lx, rx] = find_all_solutions(A, -T, T * y - A * x, 0, 0);
+        assert(ok);
+        dbg(ll(lx), ll(rx));
+        i128 x0 = lx;
+        i128 y0 = ((T * y - A * x) - A * x0) / -T;
+        dbg(ll(x0), ll(y0));
+
+        x += x0;
+        y += y0;
+    }
+    ll __x = x;
+    ll __y = y;
+    dbg(__x, __y);
+    cout << (__x + __y) << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }
 void setOut(str s) { freopen(s.c_str(), "w", stdout); }
 
+//! https://atcoder.jp/contests/abc046/tasks/arc062_a
 int main() {
 	ios::sync_with_stdio(false);
 	cin.tie(nullptr);
@@ -191,7 +282,7 @@ int main() {
         RAYA;
     }
 
-    int t = 1; //! cin >> t;
+    int t = 1; // cin >> t;
     for(int i = 0; i < t; i++) {
         RAYA;
         RAYA;

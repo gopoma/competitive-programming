@@ -1,5 +1,5 @@
 //* sometimes pragmas don't work, if so, just comment it!
-#pragma GCC optimize ("Ofast")
+//? #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
@@ -174,9 +174,22 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 //? /Template
 
 
-
+ll  memo[55][2505][55];
 void solve() {
     //? <>
+    int N, A; cin >> N >> A;
+    vi X(N); for(auto& x: X) cin >> x;
+
+    memset(memo, -1, sizeof(memo));
+    auto dp = [&](const auto& dp, int i, int sum, int count) -> ll {
+        if(i == N) return (count > 0 && sum == A * count);
+        if(memo[i][sum][count] != -1) return memo[i][sum][count];
+
+        ll ans = dp(dp, i + 1, sum, count) + dp(dp, i + 1, sum + X[i], count + 1);
+        return memo[i][sum][count] = ans;
+    };
+    ll ans = dp(dp, 0, 0, 0);
+    cout << ans << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

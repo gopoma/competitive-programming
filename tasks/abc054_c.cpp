@@ -177,6 +177,25 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
+    int N, M; cin >> N >> M;
+    vvb has(N, vb(N));
+    rep(M) {
+        int a, b; cin >> a >> b;
+        a--; b--;
+        has[a][b] = has[b][a] = true;
+    }
+
+    dbg(N, M);
+
+    vi p(N); iota(all(p), 0);
+    ll response = 0;
+    do {
+        if(p.ft != 0) break;
+        bool ok = true;
+        for(int i = 0; i + 1 < sz(p); i++) if(!has[p[i]][p[i + 1]]) { ok = false; break; }
+        response += ok;
+    } while(next_permutation(all(p)));
+    cout << response << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

@@ -1,5 +1,5 @@
 //* sometimes pragmas don't work, if so, just comment it!
-#pragma GCC optimize ("Ofast")
+//? #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
@@ -177,6 +177,29 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
+    str S; cin >> S;
+    for(auto& c: S) if(c == 'g') c = 'r';
+
+    int wins = 0;
+    int loses = 0;
+    int rocks = 0;
+    int papers = 0;
+    for(auto& c: S) {
+        if(papers == rocks) {
+            rocks++;
+            if(c == 'r') continue;
+            else loses++;
+        } else {
+            if(c == 'r') {
+                wins++;
+                papers++;
+            } else {
+                papers++;
+            }
+        }
+    }
+    int ans = wins - loses;
+    cout << ans << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }
