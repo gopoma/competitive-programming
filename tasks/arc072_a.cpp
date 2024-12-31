@@ -173,117 +173,48 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 //? Template
 //? /Template
 
-int p[110000];
-ll brute(int a, int b, vl arr){
-    set<int>S;
-    set<int>T;
-// 	int a,b;scanf("%d%d",&a,&b);
-	for(int i=0;i<a;i++) p[i] = arr[i];
-	int M=0;
-	int ke=0;
-	long long pat=0;
-	int best=0;
-	for(int i=a-1;i>=0;i--){
-		int t=M-p[i];
-	//	printf("%d %d\n",M,t);
-		if(best<t){
-			pat=ke;
-			best=t;
-		}else if(best==t){
-			pat+=ke;
-		}
 
-		if(M==p[i])ke++;
-		if(M<p[i]){
-			ke=1;
-			M=p[i];
-		}
-	}
-//	printf("%d\n",best);
-	int A=0;
-	int B=0;
-	for(int i=0;i<a;i++){
-		if(S.count(p[i]-best))A++;
-		S.insert(p[i]);
-	}
-	for(int i=a-1;i>=0;i--){
-		if(T.count(p[i]+best))B++;
-		T.insert(p[i]);
-	}
-    return min(A,B);
-}
-
-ll slv(ll N, ll T, vl A) {
-    ll dmax = 0;
-    ll mx   = -BIG;
-    for(int i = N - 1; i >= 0; i--) {
-        ckmax(mx, A[i]);
-        ckmax(dmax, mx - A[i]);
-    }
-
-    if(dmax == 0) {
-        return 0;
-    }
-
-    map<ll, vl> where;
-    for(int i = 0; i < N; i++) where[A[i]].eb(i);
-
-    ll ans = 0;
-    set<ll> S;
-    for(int i = N - 1; i >= 0; i--) {
-        S.emplace(A[i]);
-        if(!S.empty() && (*S.rbegin() - A[i] == dmax) && where[A[i]].ft == i) {
-            map<ll, ll> hist;
-            for(int j = i; j <= where[*S.rbegin()].bk; j++) {
-                hist[A[j]]++;
-            }
-            ans += min(hist[A[i]], hist[*S.rbegin()]);
-            safeErase(S, *S.rbegin());
-        }
-    }
-    return ans;
-}
-
-ll slv2(ll N, ll T, vl A) {
-    //? <>
-    ll dmax = 0;
-    ll mx = -BIG;
-    for(int i = N - 1; i >= 0; i--) {
-        ckmax(dmax, mx - A[i]);
-        ckmax(mx, A[i]);
-    }
-
-    if(dmax == 0) {
-        return 0;
-    } else {
-        map<ll, vl> where;
-        for(int i = 0; i < N; i++) where[A[i]].eb(i);
-
-        ll ans = 0;
-        map<ll, ll> hist;
-        for(auto& x: A) hist[x]++;
-        set<ll> S;
-
-        for(int i = N - 1; i >= 0; i--) {
-            if(!S.empty() && ((*S.rbegin()) - A[i] == dmax) && i == where[A[i]].ft) {
-                ans += min(hist[A[i]], hist[*S.rbegin()]);
-                safeErase(S, *S.rbegin());
-            } else {
-                S.emplace(A[i]);
-            }
-        }
-
-        return ans;
-    }
-}
 
 void solve() {
     //? <>
-    ll N, T; cin >> N >> T;
-    vl A(N); for(auto& x: A) cin >> x;
-    ll ans = slv(N, T, A);
-    dbg(ans);
-    cout << ans << "\n";
+    int N; cin >> N;
+    str S; cin >> S;
+
+    auto get_nxt = [&](str& C, int k) -> char {
+        int current = k;
+        int prv = k - 1; if(prv < 0) prv += N;
+        if(C[current] == 'S') {
+            if(S[current] == 'o') return C[prv];
+            else return (C[prv] == 'S')? 'W' : 'S';
+        } else {
+            // W
+            if(S[current] == 'x') return C[prv];
+            else return (C[prv] == 'S')? 'W' : 'S';
+        }
+
+    };
+
+    str opts = "SW";
+    for(int i = 0; i < 2; i++) {
+        for(int j = 0; j < 2; j++) {
+            str C = str(N, '$');
+            C[0] = opts[i];
+            C[1] = opts[j];
+
+            for(int k = 1; k + 1 < N; k++) {
+                C[k + 1] = get_nxt(C, k);
+            }
+
+            dbg(C);
+            char nxt  = get_nxt(C, N - 1);
+            char nxt2 = get_nxt(C, 0);
+            if(nxt == C.ft && nxt2 == C[1]) {
+                cout << C << "\n";
+                return;
+            }
+        }
+    }
+    cout << "-1\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }
@@ -294,24 +225,8 @@ int main() {
 	cin.tie(nullptr);
 
     //? Stress Testing
-    while(1) {
+    while(0) {
         RAYA;
-        ll N = rng_ll(1, ll(1e1));
-        ll T = rng_ll(2, ll(1e1));
-        vl A;
-        {
-            set<ll> temp;
-            while(sz(temp) < N) {
-                temp.emplace(rng_ll(1, ll(1e2)));
-            }
-            for(auto& x: temp) A.eb(x);
-        }
-        dbg(N, T);
-        dbg(A);
-        ll ans = brute(N, T, A);
-        ll greedy = slv2(N, T, A);
-        dbg(ans, greedy);
-        chk(ans == greedy);
     }
 
     int t = 1; //! cin >> t;
