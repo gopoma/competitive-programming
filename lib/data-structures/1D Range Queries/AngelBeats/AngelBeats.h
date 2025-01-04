@@ -567,6 +567,7 @@ struct AngelBeats {
  * @docs docs/segment-tree/segment-tree-beats.md
  */
 
+// https://judge.yosupo.jp/submission/204887
 int main() {
     INT(n, Q);
     VEC(ll, a, n);
