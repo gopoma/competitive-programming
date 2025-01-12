@@ -226,166 +226,98 @@ void slv(ll n, ll k, vl a) {
     vl u = a; remDup(u);
     const int N = sz(u);
 
-    auto checkRange = [&](ll x, ll y) {
-        vl b(n);
+    using Info = tuple<ll, ll, ll>;
+    Info ans = make_tuple(BIG, BIG, BIG);
+
+    const int MAXN = *max_element(all(a)) + 5;
+    vi arr(MAXN); for(auto& x: a) arr[x]++;
+    for(int i = 1; i < MAXN; i++) arr[i] += arr[i - 1];
+    auto query = [&](int L, int R) -> int {
+        if(L < 0 || R >= MAXN || L > R) return 0;
+        int sum = arr[R];
+        if(0 <= L - 1) sum -= arr[L - 1];
+        return sum;
+    };
+
+    for(int L = 0; L < N; L++) {
+        auto check = [&](int middle) -> bool {
+            chk(u[L] <= u[middle]);
+            // [x, y]
+            // +[0, y] -[0, x - 1] -[y + 1, MAXN - 1]
+            int sum = query(u[L], u[middle]) - query(0, u[L] - 1) - query(u[middle] + 1, MAXN - 1);
+            return (sum >= k);
+        };
+
+        int left = L - 1; // always bad
+        int right = N; // always good
+
+        while(left + 1 < right) {
+            int middle = (left + right) >> 1;
+            if(check(middle)) right = middle;
+            else left = middle;
+        }
+
+        if(right == N) continue;
+        ckmin(ans, make_tuple(u[right] - u[L], u[L], u[right]));
+    }
+    auto [dmin, x, y] = ans;
+    greedy = dmin;
+
+    {
+        vi b(n);
         for(int i = 0; i < n; i++) {
             if(x <= a[i] && a[i] <= y) b[i] = +1;
             else b[i] = -1;
         }
 
-        ll pref = 0;
-        ll cnt = 0;
-        for(int i = 0; i < n; i++) {
+        vpi partitions;
+        int left = 0;
+        int cnt = 0;
+        int pref = 0;
+        for(int right = 0; right < n; right++) {
             if(cnt == k - 1) {
-                for(int j = i; j < n; j++) {
-                    pref += b[j];
-                }
-                return (pref > 0);
+                partitions.eb(left, n - 1);
+                break;
             }
-            pref += b[i];
-            if(pref > 0) {
+            pref += b[right];
+            if(pref >= 1) {
+                // dbg(left, right);
                 cnt++;
+                partitions.eb(left, right);
+                left = right + 1;
                 pref = 0;
             }
         }
-        return false;
-    };
-    auto getLeftmost = [&](ll p) -> ll {
-        chk(checkRange(u[p], u[N - 1]));
 
-        ll left = -1;     // always bad
-        ll right = N - 1; // always good
-        while(left + 1 < right) {
-            ll middle = fdiv(left + right, 2LL);
-            if(checkRange(u[p], u[middle])) right = middle;
-            else left = middle;
+        if(true) {
+            chk(sz(partitions) == k);
+            for(int i = 0; i < k; i++) {
+                if(i > 0) {
+                    auto [l, r] = partitions[i - 1];
+                    auto [l2, r2] = partitions[i];
+                    chk(r + 1 == l2);
+                }
+            }
+            bool ok = true;
+            for(auto& [i, j]: partitions) {
+                vl temp;
+                for(int id = i; id <= j; id++) temp.eb(a[id]);
+                int pf = 0;
+                for(auto& it: temp) {
+                    pf += (x <= it && it <= y);
+                }
+                ok &= (pf > 0);
+            }
+            chk(ok);
         }
 
-        return right;
-    };
-    auto getRightmost = [&](ll p) -> ll {
-        chk(checkRange(u[0], u[p]));
 
-        ll left = 0; // always good
-        ll right = N; // always bad
-        while(left + 1 < right) {
-            ll middle = fdiv(left + right, 2LL);
-            if(checkRange(u[middle], u[p])) left = middle;
-            else right = middle;
-        }
-
-        return left;
-    };
-
-    ll x1 = getLeftmost(0);
-    ll x2 = getRightmost(N - 1);
-    // [0, x1]
-    // [x2, N - 1]
-    chk(checkRange(u[0], u[x1]));
-    chk(checkRange(u[x2], u[N - 1]));
-
-    ll x3 = getRightmost(x1);
-    ll x4 = getLeftmost(x2);
-    chk(checkRange(u[x3], u[x1]));
-    chk(checkRange(u[x2], u[x4]));
-    // [x3, x1]
-    // [x2, x4]
-
-    vpl options{
-        mp(x3, x1),
-        mp(x2, x4),
-    };
-
-    for(int delta = 1; delta < 100; delta++) {
-        if(delta < N && checkRange(u[delta], u[N - 1])) {
-            ll x1 = getLeftmost(delta);
-            ll x3 = getRightmost(x1);
-            options.eb(x3, x1);
-        }
-        if((N - 1) - delta >= 0 && checkRange(u[0], u[(N - 1) - delta])) {
-            ll x2 = getRightmost((N - 1) - delta);
-            ll x4 = getLeftmost(x2);
-            options.eb(x2, x4);
-        }
-        if(x1 + delta < N) {
-            ll x6 = x1 + delta;
-            ll x5 = getRightmost(x6);
-            options.eb(x5, x6);
-            chk(checkRange(u[x5], u[x6]));
-        }
-        if(0 <= x2 - delta) {
-            ll x7 = x2 - delta;
-            ll x8 = getLeftmost(x7);
-            options.eb(x7, x8);
-            chk(checkRange(u[x7], u[x8]));
+        cout << x << " " << y << "\n";
+        for(auto& [i, j]: partitions) {
+            cout << (i + 1) << " " << (j + 1) << "\n";
         }
     }
 
-
-    using Info = tuple<ll, ll, ll>;
-    Info ans = make_tuple(BIG, BIG, BIG);
-    for(auto& [i, j]: options) {
-        chk(u[i] <= u[j]);
-        ckmin(ans, make_tuple(u[j] - u[i], u[i], u[j]));
-    }
-    auto [dmin, x, y] = ans;
-    greedy = dmin;
-
-    chk(checkRange(x, y));
-
-    vi b(n);
-    for(int i = 0; i < n; i++) {
-        if(x <= a[i] && a[i] <= y) b[i] = +1;
-        else b[i] = -1;
-    }
-
-    vpi partitions;
-    int left = 0;
-    int cnt = 0;
-    int pref = 0;
-    for(int right = 0; right < n; right++) {
-        if(cnt == k - 1) {
-            partitions.eb(left, n - 1);
-            break;
-        }
-        pref += b[right];
-        if(pref >= 1) {
-            // dbg(left, right);
-            cnt++;
-            partitions.eb(left, right);
-            left = right + 1;
-            pref = 0;
-        }
-    }
-    // dbg(b);
-    // dbg(partitions);
-
-
-    chk(sz(partitions) == k);
-    for(int i = 0; i < k; i++) {
-        if(i > 0) {
-            auto [l, r] = partitions[i - 1];
-            auto [l2, r2] = partitions[i];
-            chk(r + 1 == l2);
-        }
-    }
-    bool ok = true;
-    for(auto& [i, j]: partitions) {
-        vl temp;
-        for(int id = i; id <= j; id++) temp.eb(a[id]);
-        int pf = 0;
-        for(auto& it: temp) {
-            pf += (x <= it && it <= y);
-        }
-        ok &= (pf > 0);
-    }
-    chk(ok);
-
-
-    // cout << x << " " << y << "\n";
-    // for(auto& [i, j]: partitions) {
-    //     cout << (i + 1) << " " << (j + 1) << "\n";
-    // }
 }
 
 void solve() {
@@ -405,9 +337,9 @@ int main() {
 	cin.tie(nullptr);
 
     //? Stress Testing
-    while(1) {
+    while(0) {
         RAYA;
-        ll n = rng_ll(1, 2000);
+        ll n = rng_ll(1, 1000);
         ll k = rng_ll(1, n);
         vl a(n); for(auto& x: a) x = rng_ll(1, n);
 
@@ -417,12 +349,12 @@ int main() {
 
         vl gA = a; remDup(gA);
         // dbg(gA);
-        // dbg("Brute");
+        dbg("Brute");
         ll ans = brute(n, k, a);
-        // dbg("/Brute");
-        // dbg("Greedy");
+        dbg("/Brute");
+        dbg("Greedy");
         slv(n, k, a);
-        // dbg("/Greedy");
+        dbg("/Greedy");
         if(ans != greedy) {
             dbg(n, k);
             dbg(a);
