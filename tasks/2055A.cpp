@@ -177,6 +177,10 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
+    ll n, a, b; cin >> n >> a >> b;
+    ll d = abs(a - b);
+    if(d & 1) cout << "NO\n";
+    else cout << "YES\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

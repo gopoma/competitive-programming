@@ -177,6 +177,41 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 
 void solve() {
     //? <>
+    ll n; cin >> n;
+    vl a(n), b(n);
+    for(auto& x: a) cin >> x;
+    for(auto& x: b) cin >> x;
+    vl bad;
+    for(int i = 0; i < n; i++) {
+        if(a[i] < b[i]) {
+            bad.eb(i);
+        }
+    }
+    if(bad.empty()) cout << "YES\n";
+    else {
+        if(sz(bad) >= 2) {
+            cout << "NO\n";
+            return;
+        }
+        auto j = bad.ft;
+        dbg(j);
+
+        if(sz(a) == 1) {
+            cout << "NO\n";
+            return;
+        }
+
+        ll oo = BIG;
+        for(int i = 0; i < n; i++) {
+            if(i == j) continue;
+            else ckmin(oo, a[i] - b[i]);
+        }
+        assert(oo >= 0);
+
+        if(a[j] + oo >= b[j]) {
+            cout << "YES\n";
+        } else cout << "NO\n";
+    }
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

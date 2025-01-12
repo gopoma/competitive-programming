@@ -162,7 +162,7 @@ const int MX = (int)2e5 + 5;
 const ll BIG = 1e18;  //? not too close to LLONG_MAX
 const db PI = acos((db)-1);
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
-mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
+mt19937 rng(0);
 
 int rng_int(int L, int R) { assert(L <= R);
 	return uniform_int_distribution<int>(L,R)(rng);  }
@@ -173,15 +173,113 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 //? Template
 //? /Template
 
+void slv(ll n, ll m, str S, vvl a) {
+    vvl aGuarda = a;
 
+    // dbg(n, m, S);
+    // for(auto& x: a) dbg(x);
+
+    vpl nodes{mp(0, 0)};
+    {
+        ll x = 0;
+        ll y = 0;
+        for(auto& c: S) {
+            if(c == 'D') {
+                x++;
+            } else {
+                assert(c == 'R');
+                y++;
+            }
+            nodes.eb(x, y);
+        }
+    }
+    // dbg(nodes);
+
+    auto get = [&](vvl& arr) -> pair<vl, vl> {
+        vl srow(n);
+        vl scol(m);
+        for(int row = 0; row < n; row++) {
+            ll sum = 0;
+            for(int col = 0; col < m; col++) {
+                sum += arr[row][col];
+            }
+            srow[row] = sum;
+        }
+        for(int col = 0; col < m; col++) {
+            ll sum = 0;
+            for(int row = 0; row < n; row++) {
+                sum += arr[row][col];
+            }
+            scol[col] = sum;
+        }
+        return mp(srow, scol);
+    };
+
+    auto Try = [&](ll tar) -> pair<vl, vl> {
+        auto [srow, scol] = get(aGuarda);
+        // dbg(srow, scol);
+
+        for(int i = 0; i + 1 < sz(nodes); i++) {
+            auto [x, y] = nodes[i];
+            ll val = -BIG;
+            if(S[i] == 'D') { // work with srow
+                val = tar - srow[x];
+            } else { // work with scol
+                val = tar - scol[y];
+            }
+            a[x][y] = val;
+            srow[x] += val;
+            scol[y] += val;
+        }
+
+        return mp(srow, scol);
+    };
+    auto [srow, scol] = Try(0);
+    // dbg(srow, scol);
+
+    ll d = 0;
+    if(S.bk == 'D') {
+        d = scol.bk - srow.bk;
+    } else {
+        d = srow.bk - scol.bk;
+    }
+    // dbg(d);
+
+    auto [srow2, scol2] = Try(d);
+    // dbg(srow2, scol2);
+    chk(srow2.bk == scol2.bk);
+    a[n - 1][m - 1] = -d - srow2.bk;
+    // for(auto& x: a) dbg(x);
+
+    if(false) {
+        auto [srow3, scol3] = get(a);
+        // dbg(srow3, scol3);
+        set<ll> u;
+        for(auto& x: srow3) u.emplace(x);
+        for(auto& x: scol3) u.emplace(x);
+        // dbg(u);
+        chk(sz(u) == 1);
+    }
+
+    for(auto& vec: a) {
+        for(auto& x: vec) cout << x << " ";
+        cout << "\n";
+    }
+}
 
 void solve() {
     //? <>
+    ll n, m; cin >> n >> m;
+    str S; cin >> S;
+    vvl a(n, vl(m)); for(auto& vec: a) for(auto& x: vec) cin >> x;
+    slv(n, m, S, a);
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }
 void setOut(str s) { freopen(s.c_str(), "w", stdout); }
 
+// shuffle a vector
+template<class T> void shuf(vector<T>& v) { shuffle(all(v),rng); }
 int main() {
 	ios::sync_with_stdio(false);
 	cin.tie(nullptr);
@@ -189,6 +287,33 @@ int main() {
     //? Stress Testing
     while(0) {
         RAYA;
+        const int MAXN = 1000;
+        ll n = rng_ll(2, MAXN);
+        ll m = rng_ll(2, MAXN);
+        vector<char> _S;
+        rep(n - 1) _S.eb('D');
+        rep(m - 1) _S.eb('R');
+        shuf(_S);
+        str S; for(auto& c: _S) S.pb(c);
+
+        vvl a(n, vl(m));
+        for(int i = 0; i < n; i++) for(int j = 0; j < m; j++) {
+            a[i][j] = rng_ll(-ll(1e6), ll(1e6));
+        }
+
+        a[0][0] = 0;
+        ll x = 0;
+        ll y = 0;
+        for(auto& c: S) {
+            if(c == 'D') {
+                x++;
+            } else {
+                assert(c == 'R');
+                y++;
+            }
+            a[x][y] = 0;
+        }
+        slv(n, m, S, a);
     }
 
     int t = 1; cin >> t;
