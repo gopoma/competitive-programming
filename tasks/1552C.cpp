@@ -3,7 +3,7 @@
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-#undef _GLIBCXX_DEBUG //? for Stress Testing
+//! #undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h>
 using namespace std;
@@ -171,109 +171,78 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 //? /Custom Helpers
 
 //? Template
-// TODO: Remind to call this.gen()
-// TODO: Remind to call this.gen()
-// TODO: Remind to call this.gen()
-// TODO: Remind to call this.gen()
-// TODO: Remind to call this.gen()
-// TODO: Remind to call this.gen()
-/**
- * Description: Euler Tour LCA. Compress takes a subset $S$ of nodes
- 	* and computes the minimal subtree that contains all the nodes
-	* pairwise LCAs and compressing edges. Returns a list of
-	* \texttt{(par, orig\_index)} representing a tree rooted at 0.
-	* The root points to itself.
- * Time: O(N\log N) build, O(1) LCA, O(|S|\log |S|) compress
- * Source: USACO, Simon Lindholm (KACTL)
- * Verification: USACO Debug the Bugs
- 	* https://codeforces.com/contest/1320/problem/E
- */
-
-//? #include "../../data-structures/Static Range Queries (9.1)/RMQ (9.1).h"
-
-/**
- * Description: 1D range minimum query. If TL is an issue, use
-	* arrays instead of vectors and store values instead of indices.
- * Source: KACTL
- * Verification:
-	* https://cses.fi/problemset/stats/1647/
-	* http://wcipeg.com/problem/ioi1223
-	* https://pastebin.com/ChpniVZL
- * Memory: O(N\log N)
- * Time: O(1)
- */
-
-tcT> struct RMQ { // floor(log_2(x))
-	int level(int x) { return 31-__builtin_clz(x); }
-	V<T> v; V<vi> jmp;
-	int cmb(int a, int b) {
-		return v[a]==v[b]?min(a,b):(v[a]<v[b]?a:b); }
-	void init(const V<T>& _v) {
-		v = _v; jmp = {vi(sz(v))};
-		iota(all(jmp[0]),0);
-		for (int j = 1; 1<<j <= sz(v); ++j) {
-			jmp.pb(vi(sz(v)-(1<<j)+1));
-			F0R(i,sz(jmp[j])) jmp[j][i] = cmb(jmp[j-1][i],
-				jmp[j-1][i+(1<<(j-1))]);
-		}
-	}
-	int index(int l, int r) {
-		assert(l <= r); int d = level(r-l+1);
-		return cmb(jmp[d][l],jmp[d][r-(1<<d)+1]); }
-	T query(int l, int r) { return v[index(l,r)]; }
-};
-
-struct LCA {
-	int N; V<vi> adj;
-	vi depth, pos, par, rev; // rev is for compress
-	vpi tmp; RMQ<pi> r;
-	void init(int _N) { N = _N; adj.rsz(N);
-		depth = pos = par = rev = vi(N); }
-	void ae(int x, int y) { adj[x].pb(y), adj[y].pb(x); }
-	void dfs(int x) {
-		pos[x] = sz(tmp); tmp.eb(depth[x],x);
-		each(y,adj[x]) if (y != par[x]) {
-			depth[y] = depth[par[y]=x]+1, dfs(y);
-			tmp.eb(depth[x],x); }
-	}
-	void gen(int R = 0) { par[R] = R; dfs(R); r.init(tmp); }
-	int lca(int u, int v){
-		u = pos[u], v = pos[v]; if (u > v) swap(u,v);
-		return r.query(u,v).s; }
-	int dist(int u, int v) {
-		return depth[u]+depth[v]-2*depth[lca(u,v)]; }
-	vpi compress(vi S) {
-		auto cmp = [&](int a, int b) { return pos[a] < pos[b]; };
-		sort(all(S),cmp); R0F(i,sz(S)-1) S.pb(lca(S[i],S[i+1]));
-		sort(all(S),cmp); S.erase(unique(all(S)),end(S));
-		vpi ret{{0,S[0]}}; F0R(i,sz(S)) rev[S[i]] = i;
-		FOR(i,1,sz(S)) ret.eb(rev[lca(S[i-1],S[i])],S[i]);
-		return ret;
-	}
-};
-
 //? /Template
 
-int slv(int n, int k, vpi edges) {
-    LCA st; st.init(n);
-    for(auto& [u, v]: edges) st.ae(u, v);
-    st.gen();
-    int ans = 0;
-    for(int i = 0; i < n; i++) for(int j = i + 1; j < n; j++) {
-        ans += (st.dist(i, j) == k);
+ll calc(vpl chords) {
+    const int N = sz(chords);
+    for(auto& [x, y]: chords) {
+        if(x > y) swap(x, y);
     }
+
+    auto check = [&](ll x, ll y, ll a, ll b) -> bool {
+        if(x > a) {
+            swap(x, a);
+            swap(y, b);
+        }
+        return (x < a && a < y && y < b);
+    };
+
+    ll ans = 0;
+    for(auto& [x, y]: chords) {
+        ll contrib = 0;
+        for(auto& [a, b]: chords) {
+            contrib += check(x, y, a, b);
+        }
+        ans += contrib;
+    }
+    return (ans >> 1LL);
+}
+
+ll brute(ll n, ll k, vpl chords) {
+    set<ll> already;
+    for(auto& [x, y]: chords) {
+        already.emplace(x);
+        already.emplace(y);
+    }
+    ll ans = calc(chords);
+
+    vl p;
+    for(ll x = 1; x <= 2 * n; x++) if(!already.count(x)) p.eb(x);
+
+    do {
+        vpl adi;
+        for(int i = 0; i + 1 < sz(p); i += 2) {
+            adi.eb(p[i], p[i + 1]);
+        }
+        vpl temp = chords;
+        for(auto& it: adi) temp.eb(it);
+        ckmax(ans, calc(temp));
+    } while(next_permutation(all(p)));
+
+    return ans;
+}
+
+ll slv(ll n, ll k, vpl chords) {
+    set<ll> already; for(auto& [x, y]: chords) {
+        already.emplace(x);
+        already.emplace(y);
+    }
+    vl b; for(ll x = 1; x <= 2 * n; x++) if(!already.count(x)) b.eb(x);
+    for(int i = 0; i < sz(b) / 2; i++) {
+        chords.eb(b[i], b[i + sz(b) / 2]);
+    }
+    ll ans = calc(chords);
     return ans;
 }
 
 void solve() {
     //? <>
-    int n, k; cin >> n >> k;
-    vpi edges(n - 1);
-    for(auto& [u, v]: edges) {
-        cin >> u >> v;
-        u--; v--;
+    ll n, k; cin >> n >> k;
+    vpl chords(k);
+    for(auto& [x, y]: chords) {
+        cin >> x >> y;
     }
-    int ans = slv(n, k, edges);
+    ll ans = slv(n, k, chords);
     dbg(ans);
     cout << ans << "\n";
 }
@@ -281,35 +250,39 @@ void solve() {
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }
 void setOut(str s) { freopen(s.c_str(), "w", stdout); }
 
-// generate edges of tree with verts [0,N-1]
-// smaller back -> taller tree
-vpi treeRand(int N, int back) {
-	assert(N >= 1 && back >= 0); vpi ed;
-	FOR(i,1,N) ed.eb(i,i-1-rng_int(0,min(back,i-1)));
-	return ed; }
+// shuffle a vector
+template<class T> void shuf(vector<T>& v) { shuffle(all(v),rng); }
 
 int main() {
 	ios::sync_with_stdio(false);
 	cin.tie(nullptr);
 
     //? Stress Testing
-    while(1) {
+    while(0) {
         RAYA;
-        int n = 50000;
-        int k = 500;
-        vpi edges = treeRand(n, rng_int(0, n + 5));
-        dbg(n, k);
-        db last = time_elapsed();
-        int ans = slv(n, k, edges);
-        db current = time_elapsed();
-        db taken = current - last;
-        dbg(taken);
-        if(taken > db(3)) {
-            chk(false);
+        ll n = rng_ll(1, 4);
+        ll k = rng_ll(0, n);
+        vpl chords;
+        {
+            vl taken(2 * n);
+            for(int i = 0; i < 2 * k; i++) taken[i] = 1;
+            vl temp;
+            for(int i = 0; i < 2 * n; i++) if(taken[i]) temp.eb(i + 1);
+            taken = temp;
+            shuf(taken);
+            for(int i = 0; i + 1 < sz(taken); i += 2) {
+                chords.eb(taken[i], taken[i + 1]);
+            }
         }
+        dbg(n, k);
+        dbg(chords);
+        ll ans = brute(n, k, chords);
+        ll greedy = slv(n, k, chords);
+        dbg(ans, greedy);
+        chk(ans == greedy);
     }
 
-    int t = 1; //! cin >> t;
+    int t = 1; cin >> t;
     for(int i = 0; i < t; i++) {
         RAYA;
         RAYA;
