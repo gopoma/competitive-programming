@@ -169,7 +169,7 @@ int rng_int(int L, int R) { assert(L <= R);
 ll rng_ll(ll L, ll R) { assert(L <= R);
 	return uniform_int_distribution<ll>(L,R)(rng);  }
 
-long long ab(long long a){
+long long custom_abs(long long a){
     if(a < 0) a = -a;
     return a;
 }
