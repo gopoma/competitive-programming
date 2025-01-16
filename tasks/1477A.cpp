@@ -3,7 +3,7 @@
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-//! #undef _GLIBCXX_DEBUG //? for Stress Testing
+#undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h>
 using namespace std;
@@ -130,7 +130,7 @@ tcTU > void safeErase(T &t, const U &u) {
 
 
 
-// TODO: Custom Helpers
+//? Custom Helpers
 template <typename T>
 inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
@@ -162,26 +162,58 @@ const int MX = (int)2e5 + 5;
 const ll BIG = 1e18;  //? not too close to LLONG_MAX
 const db PI = acos((db)-1);
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
-mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
+mt19937 rng(0);
 
 int rng_int(int L, int R) { assert(L <= R);
 	return uniform_int_distribution<int>(L,R)(rng);  }
 ll rng_ll(ll L, ll R) { assert(L <= R);
 	return uniform_int_distribution<ll>(L,R)(rng);  }
-
-long long ab(long long a){
-    if(a < 0) a = -a;
-    return a;
-}
-// TODO: /Custom Helpers
+//? /Custom Helpers
 
 //? Template
 //? /Template
 
+bool brute(ll n, ll k, vl a) {
+    set<ll> U;
+    for(auto& x: a) U.emplace(x);
+    rep(5) {
+        dbg(sz(U));
+        vl arr;
+        for(auto& x: U) {
+            arr.eb(x);
+        }
+        const int N = sz(arr);
+        for(auto& x: arr) {
+            for(auto& y: arr) {
+                U.emplace(2LL * x - y);
+            }
+        }
+    }
+    dbg(U);
+    return U.count(k);
+}
 
+bool slv(ll n, ll k, vl a) {
+    sor(a);
+    ll g = 0;
+    for(int i = 1; i < n; i++) g = gcd(g, a[i] - a[i - 1]);
+    dbg(g);
+    bool ok = false;
+    for(auto& x: a) {
+        ok |= (x == k);
+        ok |= (abs(k - x) % g == 0);
+    }
+    return ok;
+}
 
 void solve() {
     //? <>
+    ll n, k; cin >> n >> k;
+    vl a(n); for(auto& x: a) cin >> x;
+    dbg(n, k);
+    dbg(a);
+    bool ans = slv(n, k, a);
+    cout << (ans?"YES":"NO") << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }
@@ -194,9 +226,20 @@ int main() {
     //? Stress Testing
     while(0) {
         RAYA;
+        ll n = rng_ll(2, 5);
+        ll k = rng_ll(-15, 15);
+        vl a(n); for(auto& x: a) x = rng_ll(-15, 15);
+        remDup(a);
+        n = sz(a);
+        dbg(n, k);
+        dbg(a);
+        bool ans = brute(n, k, a);
+        bool greedy = slv(n, k, a);
+        dbg(ans, greedy);
+        chk(ans == greedy);
     }
 
-    int t = 1; //! cin >> t;
+    int t = 1; cin >> t;
     for(int i = 0; i < t; i++) {
         RAYA;
         RAYA;

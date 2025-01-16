@@ -1,7 +1,7 @@
 //* sometimes pragmas don't work, if so, just comment it!
 #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
-//! #pragma GCC optimize ("trapv")
+// #pragma GCC optimize ("trapv")
 
 //! #undef _GLIBCXX_DEBUG //? for Stress Testing
 
@@ -130,7 +130,7 @@ tcTU > void safeErase(T &t, const U &u) {
 
 
 
-// TODO: Custom Helpers
+//? Custom Helpers
 template <typename T>
 inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
@@ -168,20 +168,89 @@ int rng_int(int L, int R) { assert(L <= R);
 	return uniform_int_distribution<int>(L,R)(rng);  }
 ll rng_ll(ll L, ll R) { assert(L <= R);
 	return uniform_int_distribution<ll>(L,R)(rng);  }
-
-long long ab(long long a){
-    if(a < 0) a = -a;
-    return a;
-}
-// TODO: /Custom Helpers
+//? /Custom Helpers
 
 //? Template
 //? /Template
 
 
+vl slv(ll n, ll k) {
+    k--;
+    if(!(logl(db(k)) < db(n - 1) * logl(db(2)))) {
+        return vl{-1};
+    }
+
+    if(n == 1) {
+        return vl{1};
+    } else if(n == 2) {
+        if(k == 0) return vl{1, 2};
+        else return vl{2, 1};
+    }
+
+    // 0 right
+    // 1 left
+    vb on;
+    for(ll bit = min(60LL, n - 2LL); bit >= 0; bit--) {
+        if(k & (1LL << bit)) on.eb(true);
+        else on.eb(false);
+    }
+    reverse(all(on));
+    while(sz(on) < n - 1) on.eb(false);
+    reverse(all(on));
+
+    vl response;
+    deque<ll> cur{0};
+    for(int i = 0; i < sz(on); i++) {
+        if(on[i]) { // 1
+            cur.emplace_front(i + 1);
+        } else { // 0
+            for(auto& x: cur) response.eb(x + 1);
+            cur.clear();
+            cur.eb(i + 1);
+        }
+    }
+    if(!cur.empty()) for(auto& x: cur) response.eb(x + 1);
+    return response;
+}
+
+bool brute() {
+    auto check = [](vl a) -> bool {
+        const int n = sz(a);
+        bool ok = true;
+        for(int i = 0; i + 1 < n; i++) {
+            ok &= (a[i] - 1 <= a[i + 1]);
+        }
+        return ok;
+    };
+
+    for(ll n = 1; n <= 10; n++) {
+        dbg(n);
+        vl p(n); iota(all(p), 1);
+        vvl response;
+        do {
+            if(check(p)) {
+                response.eb(p);
+            }
+        } while(next_permutation(all(p)));
+
+        for(int k = 0; k < sz(response); k++) {
+            chk(response[k] == slv(n, k + 1));
+        }
+        for(int k = sz(response); k < sz(response) + 100; k++) {
+            chk(vl{-1} == slv(n, k + 1));
+        }
+    }
+    return true;
+}
 
 void solve() {
     //? <>
+    ll n, k; cin >> n >> k;
+    dbg(n, k);
+    vl ans = slv(n, k);
+    // dbg(ans);
+    for(auto& x: ans) cout << x << " ";
+    cout << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }
@@ -191,12 +260,18 @@ int main() {
 	ios::sync_with_stdio(false);
 	cin.tie(nullptr);
 
+    chk(brute());
+
     //? Stress Testing
     while(0) {
         RAYA;
+        ll n = rng_ll(1, ll(1e5));
+        ll k = rng_ll(1, ll(1e18));
+        dbg(n, k);
+        slv(n, k);
     }
 
-    int t = 1; //! cin >> t;
+    int t = 1; cin >> t;
     for(int i = 0; i < t; i++) {
         RAYA;
         RAYA;

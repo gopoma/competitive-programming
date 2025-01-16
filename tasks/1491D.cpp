@@ -130,7 +130,7 @@ tcTU > void safeErase(T &t, const U &u) {
 
 
 
-// TODO: Custom Helpers
+//? Custom Helpers
 template <typename T>
 inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
@@ -162,26 +162,96 @@ const int MX = (int)2e5 + 5;
 const ll BIG = 1e18;  //? not too close to LLONG_MAX
 const db PI = acos((db)-1);
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
-mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
+mt19937 rng(0);
 
 int rng_int(int L, int R) { assert(L <= R);
 	return uniform_int_distribution<int>(L,R)(rng);  }
 ll rng_ll(ll L, ll R) { assert(L <= R);
 	return uniform_int_distribution<ll>(L,R)(rng);  }
-
-long long ab(long long a){
-    if(a < 0) a = -a;
-    return a;
-}
-// TODO: /Custom Helpers
+//? /Custom Helpers
 
 //? Template
 //? /Template
 
+bool brute() {
+    for(ll u = 1; u < 12; u++) {
+        for(ll v = 1; v < 12; v++) {
+            if((u & v) == v) {
+                // cout << u << " " << (u + v) << "\n";
+            }
+        }
+    }
+    return true;
+}
 
+bool brute2(ll start, ll should) {
+    deque<ll> q; q.eb(start);
+    // map<ll, ll> dist; dist[start] = 0;
+    map<ll, ll> vis; vis[start] = true;
+
+    while(!q.empty()) {
+        auto u = q.ft; q.pop_front();
+        if(u > should) continue;
+
+        if(u == should) return true;
+        // if(dist[u] > 100) continue;
+
+        for(ll v = 1; v <= u; v++) {
+            if((u & v) == v && !vis[u + v]) {
+                vis[u + v] = true;
+                // dist[u + v] = dist[u] + 1;
+                q.eb(u + v);
+            }
+        }
+    }
+    return false;
+}
+
+bool slv(ll u, ll v) {
+    if(u > v) return false;
+    auto get = [&](ll x) -> vl {
+        vl ans;
+        for(ll bit = 0; bit <= 60LL; bit++) {
+            ans.eb(bool(x & (1LL << bit)));
+        }
+        while(ans.bk == 0) ans.pop_back();
+        return ans;
+    };
+    vl U = get(u);
+    vl V = get(v);
+    while(sz(U) < sz(V)) U.eb(0);
+    reverse(all(U));
+    reverse(all(V));
+    const ll MAXN = sz(V);
+    dbg(MAXN);
+
+    dbg(U);
+    dbg(V);
+    vl pref_U = U;
+    vl pref_V = V;
+    for(int i = 1; i < MAXN; i++) {
+        pref_U[i] += pref_U[i - 1];
+        pref_V[i] += pref_V[i - 1];
+    }
+    auto query = [&](vl& pref, ll L, ll R) -> ll {
+        ll sum = pref[R];
+        if(0 <= L - 1) sum -= pref[L - 1];
+        return sum;
+    };
+    bool ok = true;
+    for(int i = 0; i < MAXN; i++) {
+        if(V[i]) ok &= (query(pref_V, i, MAXN - 1) <= query(pref_U, i, MAXN - 1));
+    }
+    return ok;
+}
 
 void solve() {
     //? <>
+    ll u, v; cin >> u >> v;
+    dbg(u, v);
+    bool ans = slv(u, v);
+    dbg(ans);
+    cout <<(ans?"YES":"NO") << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }
@@ -191,12 +261,21 @@ int main() {
 	ios::sync_with_stdio(false);
 	cin.tie(nullptr);
 
+    // chk(brute());
+
     //? Stress Testing
     while(0) {
         RAYA;
+        ll u = rng_ll(1, 1000);
+        ll v = rng_ll(1, 1000);
+        dbg(u, v);
+        bool ans = brute2(u, v);
+        bool greedy = slv(u, v);
+        dbg(ans, greedy);
+        chk(ans == greedy);
     }
 
-    int t = 1; //! cin >> t;
+    int t = 1; cin >> t;
     for(int i = 0; i < t; i++) {
         RAYA;
         RAYA;

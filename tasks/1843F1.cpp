@@ -130,7 +130,7 @@ tcTU > void safeErase(T &t, const U &u) {
 
 
 
-// TODO: Custom Helpers
+//? Custom Helpers
 template <typename T>
 inline T gcd(T a, T b) { while (b != 0) swap(b, a %= b); return a; }
 
@@ -168,12 +168,7 @@ int rng_int(int L, int R) { assert(L <= R);
 	return uniform_int_distribution<int>(L,R)(rng);  }
 ll rng_ll(ll L, ll R) { assert(L <= R);
 	return uniform_int_distribution<ll>(L,R)(rng);  }
-
-long long ab(long long a){
-    if(a < 0) a = -a;
-    return a;
-}
-// TODO: /Custom Helpers
+//? /Custom Helpers
 
 //? Template
 //? /Template
@@ -182,6 +177,63 @@ long long ab(long long a){
 
 void solve() {
     //? <>
+    ll n; cin >> n;
+    vpl edges;
+    vl values(n + 5); values[0] = +1;
+
+    vpl queries;
+    map<ll, vl> query;
+
+    ll tot = 1;
+    rep(n) {
+        char type; cin >> type;
+        if(type == '+') {
+            ll v, x; cin >> v >> x; v--;
+            values[tot] = x;
+            edges.eb(v, tot);
+            tot++;
+        } else {
+            chk(type == '?');
+            ll u, v, k; cin >> u >> v >> k; u--; v--;
+            queries.eb(v, k);
+            query[v].eb(k);
+        }
+    }
+
+    vvl adj(n + 5);
+    for(auto& [u, v]: edges) {
+        adj[u].eb(v);
+        adj[v].eb(u);
+    }
+    // for(int u = 0; u < n; u++) dbg(u, values[u], adj[u]);
+    // dbg(queries);
+    // dbg(query);
+
+    multiset<ll> pref; pref.emplace(0);
+    map<pl, bool> response;
+    auto dfs = [&](const auto& dfs, int u, int par, ll cur_pref, ll mn, ll mx) -> void {
+        ll new_cur_pref = cur_pref + values[u];
+        ll new_mn = min(mn, new_cur_pref - (*pref.rbegin()));
+        ll new_mx = max(mx, new_cur_pref - (*pref.begin()));
+
+        for(auto& k: query[u]) {
+            if(new_mn <= k && k <= new_mx) response[mp(u, k)] = true;
+            else response[mp(u, k)] = false;
+        }
+
+        pref.emplace(new_cur_pref);
+
+        for(auto& nxt: adj[u]) {
+            if(nxt == par) continue;
+            dfs(dfs, nxt, u, new_cur_pref, new_mn, new_mx);
+        }
+
+        safeErase(pref, new_cur_pref);
+    }; dfs(dfs, 0, -1, 0LL, 0LL, 0LL);
+
+    for(auto& [k, v]: queries) {
+        cout << (response[mp(k, v)]?"YES":"NO") << "\n";
+    }
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }
@@ -196,7 +248,7 @@ int main() {
         RAYA;
     }
 
-    int t = 1; //! cin >> t;
+    int t = 1; cin >> t;
     for(int i = 0; i < t; i++) {
         RAYA;
         RAYA;
