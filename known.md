@@ -91,3 +91,7 @@ $dp[idx][current] = \sum_{x = l}^{r} dp[idx + 1][x]$? (note the `contiguous` ran
 * `always` use `long long` >:v
 
 * `hash_map` doesn't preserve order
+
+* sometimes pragmas don't work, if so, just comment it!
+
+* sometimes `#undef _GLIBCXX_DEBUG` doesn't work, if so, just comment it!
