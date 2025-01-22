@@ -156,7 +156,67 @@ tcT> bool ckmax(T& a, const T& b) {
 
 
 void solve() {
+    ll n; cin >> n;
+    vl a(n); for(auto& x: a) cin >> x;
+    vpl edges(n - 1);
+    for(auto& [u, v]: edges) {
+        cin >> u >> v;
+        u--; v--;
+    }
+    dbg(n);
+    dbg(a);
+    dbg(edges);
 
+    vvl adj(n);
+    for(auto& [u, v]: edges) {
+        adj[u].eb(v);
+        adj[v].eb(u);
+    }
+
+    auto get = [&](ll x) -> ll {
+        if(x == 1) return +1;
+        else return -1;
+    };
+
+    vl dp(n, -BIG);
+    auto dfs = [&](const auto& dfs, int src, int par) -> void {
+        ll ans = get(a[src]);
+        for(auto& nxt: adj[src]) {
+            if(nxt == par) continue;
+            dfs(dfs, nxt, src);
+            if(dp[nxt] > 0) {
+                ans += dp[nxt];
+            }
+        }
+        dp[src] = ans;
+    }; dfs(dfs, 0, -1);
+    dbg(dp);
+
+    vl response(n);
+    auto dfs2 = [&](const auto& dfs2, int src, int par) -> void {
+        // src is root
+        response[src] = dp[src];
+
+        for(auto& nxt: adj[src]) {
+            if(nxt == par) continue;
+
+            // nxt will be root
+            // do
+            ll temp = dp[src];
+            ll temp2 = dp[nxt];
+
+            if(dp[nxt] > 0) dp[src] -= dp[nxt];
+            if(dp[src] > 0) dp[nxt] += dp[src];
+
+            dfs2(dfs2, nxt, src);
+
+            dp[src] = temp;
+            dp[nxt] = temp2;
+        }
+    }; dfs2(dfs2, 0, -1);
+
+    for(auto& x: response) cout << x << " ";
+    cout << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }

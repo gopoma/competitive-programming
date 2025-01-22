@@ -156,7 +156,59 @@ tcT> bool ckmax(T& a, const T& b) {
 
 
 void solve() {
+    ll n, m; cin >> n >> m;
+    vl a(m); for(auto& x: a) cin >> x;
+    dbg(n, m);
+    dbg(a);
 
+    ll S = accumulate(all(a), 0LL);
+    if(S < n) {
+        cout << "-1\n";
+        return;
+    }
+
+    ll d = S - n;
+    dbg(d);
+
+
+    vl pref = a;
+    for(int i = 1; i < m; i++) {
+        pref[i] += pref[i - 1];
+    }
+
+    vl response(m);
+    for(int i = 0; i < m; i++) {
+        ll lst = -1;
+        if(0 <= i - 1) lst = pref[i - 1] - 1;
+        response[i] = lst + 1;
+    }
+    dbg(response);
+    ll adi = 0;
+    for(int i = 1; i < m; i++) {
+        RAYA;
+        ll take = min(d, a[i - 1] - 1LL);
+        // dbg(i, take, a[i - 1], d, adi);
+        adi += take;
+        d -= take;
+        response[i] -= adi;
+    }
+    dbg(response);
+
+    for(int i = 0; i < m; i++) {
+        if(response[i] + a[i] - 1 >= n) {
+            cout << "-1\n";
+            return;
+        }
+    }
+
+    if(d > 0) {
+        cout << "-1\n";
+        return;
+    }
+
+    for(auto& x: response) x++;
+    for(auto& x: response) cout << x << " ";
+    cout << "\n";
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }
@@ -171,7 +223,7 @@ int main() {
         RAYA;
     }
 
-    int t = 1; //! cin >> t;
+    int t = 1; // cin >> t;
     for(int i = 0; i < t; i++) {
         RAYA;
         RAYA;

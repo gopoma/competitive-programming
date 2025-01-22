@@ -151,12 +151,67 @@ tcT> bool ckmax(T& a, const T& b) {
 
 
 //* Template
+tcT > void remDup(vector<T> &v) {  // sort and remove duplicates
+	sort(all(v));
+	v.erase(unique(all(v)), end(v));
+}
 //* /Template
 
 
 
 void solve() {
+    ll n; cin >> n;
+    vl a(n); for(auto& x: a) cin >> x;
+    vpl edges;
+    for(ll i = 0; i < n; i++) {
+        ll nxt = (i + 1) % n;
 
+        ll u = i;
+        ll v = nxt;
+        if(u > v) swap(u, v);
+        if(a[u] != a[v]) {
+            edges.eb(u, v);
+        }
+    }
+    remDup(edges);
+
+    vvl adj(n);
+    for(auto& [u, v]: edges) {
+        adj[u].eb(v);
+        adj[v].eb(u);
+    }
+
+    map<ll, ll> vis;
+    deque<ll> q;
+    map<ll, ll> color;
+    for(int u = 0; u < n; u++) {
+        if(!vis[u]) {
+            vis[u] = true;
+            q.eb(u);
+            while(!q.empty()) {
+                auto node = q.ft; q.pop_front();
+                set<ll> S; for(auto& nxt: adj[node]) S.emplace(color[nxt]);
+                ll cur_color = 1;
+                while(S.count(cur_color)) cur_color++;
+                color[node] = cur_color;
+                for(auto& nxt: adj[node]) if(!vis[nxt]) {
+                    vis[nxt] = true;
+                    q.eb(nxt);
+                }
+            }
+        }
+    }
+    vl response(n);
+    for(int i = 0; i < n; i++) response[i] = color[i];
+    set<ll> S; for(auto& x: response) S.emplace(x);
+    cout << sz(S) << "\n";
+    for(auto& x: response) cout << x << " ";
+    cout << "\n";
+    for(int i = 0; i < n; i++) {
+        int nxt = (i + 1) % n;
+        if(a[i] != a[nxt]) assert(color[i] != color[nxt]);
+        assert(1 <= color[i] && color[i] <= sz(S));
+    }
 }
 
 void setIn(str s) { freopen(s.c_str(), "r", stdin); }
@@ -171,7 +226,7 @@ int main() {
         RAYA;
     }
 
-    int t = 1; //! cin >> t;
+    int t = 1; cin >> t;
     for(int i = 0; i < t; i++) {
         RAYA;
         RAYA;
