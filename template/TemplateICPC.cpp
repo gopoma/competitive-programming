@@ -177,8 +177,8 @@ void debug(string s, T x, Args... args) {
 
     #define MACRO(code) do {code} while (false)
     #define dbg(...) MACRO(cerr << "Line(" << __LINE__ << "): "; debug(#__VA_ARGS__, __VA_ARGS__);)
-    #define chk(...) MACRO(if (!(__VA_ARGS__)) cerr << "\033[41m" << "Line(" << __LINE__ << ") -> function(" \
-	 << __FUNCTION__  << ") -> CHK FAILED: (" << #__VA_ARGS__ << ")" << "\033[0m" << "\n", exit(0);)
+    #define chk(...) if (!(__VA_ARGS__)) cerr << "\033[41m" << "Line(" << __LINE__ << ") -> function(" \
+	 << __FUNCTION__  << ") -> CHK FAILED: (" << #__VA_ARGS__ << ")" << "\033[0m" << "\n", exit(0);
     #define RAYA MACRO(cerr << "\033[101m" << "================================" << "\033[0m" << endl;)
 #else
     const bool isDebugging = false;
