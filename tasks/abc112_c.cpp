@@ -271,9 +271,35 @@ mt19937 rng(0); // or mt19937_64
 //* /Template
 
 
-
+using Info = tuple<ll, ll, ll>;
 void solve() {
+    ll N; cin >> N;
+    V<Info> info(N);
+    for(auto& [x, y, h]: info) {
+        cin >> x >> y >> h;
+    }
+    dbg(N);
+    for(auto& [x, y, h]: info) dbg(x, y, h);
 
+    for(ll cx = 0; cx <= 100; cx++) {
+        for(ll cy = 0; cy <= 100; cy++) {
+            ll upper_bound = BIG;
+            for(auto& [x, y, h]: info) {
+                ll local_H = h + abs(x - cx) + abs(y - cy);
+                ckmin(upper_bound, local_H);
+            }
+            const ll H = upper_bound;
+            bool ok = true;
+            for(auto& [x, y, h]: info) {
+                ok &= (max(H - abs(x - cx) - abs(y - cy), 0LL) == h);
+            }
+            if(ok) {
+                assert(H > 0);
+                cout << cx << " " << cy << " " << H << "\n";
+                return;
+            }
+        }
+    }
 }
 
 

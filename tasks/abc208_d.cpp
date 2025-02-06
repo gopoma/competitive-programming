@@ -273,7 +273,29 @@ mt19937 rng(0); // or mt19937_64
 
 
 void solve() {
-
+    int N, M; cin >> N >> M;
+    vvl dist(N, vl(N, BIG));
+    rep(M) {
+        ll A, B, C; cin >> A >> B >> C;
+        A--; B--;
+        ckmin(dist[A][B], C);
+    }
+    ll response = 0;
+    for(int k = 0; k < N; k++) {
+        for(int i = 0; i < N; i++) {
+            for(int j = 0; j < N; j++) {
+                ckmin(dist[i][j], dist[i][k] + dist[k][j]);
+            }
+        }
+        for(int i = 0; i < N; i++) {
+            for(int j = 0; j < N; j++) {
+                if(dist[i][j] >= BIG || i == j) continue;
+                response += dist[i][j];
+            }
+        }
+    }
+    dbg(response);
+    cout << response << "\n";
 }
 
 

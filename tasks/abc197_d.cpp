@@ -270,10 +270,42 @@ mt19937 rng(0); // or mt19937_64
 //* Template
 //* /Template
 
-
+typedef long double C;
+typedef complex<C> P;
+#define X real()
+#define Y imag()
 
 void solve() {
+    auto torad = [&](db S) -> db {
+        db R = (S * PI) / db(180);
+        return R;
+    };
 
+    int N; cin >> N;
+    db p0_x, p0_y; cin >> p0_x >> p0_y;
+    db pm_x, pm_y; cin >> pm_x >> pm_y;
+    P p0 = {p0_x, p0_y};
+    P pm = {pm_x, pm_y};
+
+    dbg(N);
+    dbg(p0);
+    dbg(pm);
+
+    P pc = {(p0.X+pm.X)/db(2), (p0.Y+pm.Y)/db(2)};
+    dbg(pc);
+
+    P p1 = {p0.X - pc.X, p0.Y - pc.Y};
+    dbg(p1);
+
+    db internal = db(360) / db(N);
+    dbg(internal, torad(internal));
+    dbg(p1, arg(p1));
+    p1 *= polar(db(1.0), torad(internal));
+    dbg(p1, arg(p1));
+
+    P response = {p1.X + pc.X, p1.Y + pc.Y};
+    dbg(response);
+    cout << response.X << " " << response.Y << "\n";
 }
 
 
@@ -299,8 +331,8 @@ void setOut(str s) { freopen(s.c_str(), "w", stdout); }
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);  // unsync C / C++ I/O streams
-	//? cout << fixed << setprecision(12);
-    //? cerr << fixed << setprecision(12);
+	cout << fixed << setprecision(12);
+    cerr << fixed << setprecision(12);
 	cin.exceptions(cin.failbit);
 	// throws exception when do smth illegal
 	// ex. try to read letter into int

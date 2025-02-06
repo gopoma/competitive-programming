@@ -273,7 +273,24 @@ mt19937 rng(0); // or mt19937_64
 
 
 void solve() {
-
+    int H, W; cin >> H >> W;
+    vs S(H); for(auto& x: S) cin >> x;
+    int response = 0;
+    for(int row = 0; row < H; row++) {
+        for(int col = 0; col < W; col++) {
+            int hrow = row + 1;
+            int hcol = col + 1;
+            if(hrow >= H || hcol >= W) continue;
+            int cnt = 0;
+            for(int i = row; i <= hrow; i++) {
+                for(int j = col; j <= hcol; j++) {
+                    cnt += (S[i][j] == '#');
+                }
+            }
+            response += (cnt == 1 || cnt == 3);
+        }
+    }
+    cout << response << "\n";
 }
 
 
