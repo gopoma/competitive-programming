@@ -273,30 +273,66 @@ mt19937 rng(0); // or mt19937_64
 
 
 void solve() {
-    auto work = [&](vl a, bool shouldBePositive) -> ll {
-        ll ans = 0;
-        ll tot = 0;
-        for(auto& x: a) {
-            tot += x;
-            if(shouldBePositive) {
-                if(tot <= 0) {
-                    ans += abs(tot - (1LL));
-                    tot = 1LL;
-                }
-            } else {
-                if(tot >= 0) {
-                    ans += abs(tot - (-1LL));
-                    tot = -1LL;
-                }
+    ll N; cin >> N;
+    vpl edges(N - 1);
+    for(auto& [u, v]: edges) {
+        cin >> u >> v; u--; v--;
+    }
+
+    dbg(N);
+    dbg(edges);
+
+    vvl adj(N);
+    for(auto& [u, v]: edges) {
+        adj[u].eb(v);
+        adj[v].eb(u);
+    }
+
+    ll root = 0;
+    ll to = N - 1;
+    vl subtree_size(N);
+    {
+        auto dfs = [&](auto&& self, int src, int par) -> void {
+            subtree_size[src] = 1;
+            for(auto& nxt: adj[src]) {
+                if(nxt == par) continue;
+                self(self, nxt, src);
+                subtree_size[src] += subtree_size[nxt];
             }
-            shouldBePositive = !shouldBePositive;
-        }
-        return ans;
-    };
-    ll n; cin >> n;
-    vl a(n); for(auto& x: a) cin >> x;
-    ll ans = min(work(a, true), work(a, false));
-    cout << ans << "\n";
+        }; dfs(dfs, root, -1);
+    }
+
+    vl stk;
+    {
+        bool got = false;
+        auto dfs = [&](auto&& self, int src, int par) -> void {
+            if(got) return;
+            stk.eb(src);
+            if(src == to) {
+                got = true;
+                return;
+            }
+            if(got) return;
+            for(auto& nxt: adj[src]) {
+                if(nxt == par) continue;
+                if(got) return;
+                self(self, nxt, src);
+                if(got) return;
+            }
+            if(got) return;
+            stk.pop_back();
+            if(got) return;
+        }; dfs(dfs, root, -1);
+    }
+    dbg(stk);
+    reverse(all(stk));
+    int mid = stk[fdiv(ll(sz(stk)), 2LL) - 1LL];
+    ll S = subtree_size[mid];
+    ll F = N - S;
+    dbg(F, S);
+    if(F > S) cout << "Fennec";
+    else cout << "Snuke";
+    cout << "\n";
 }
 
 

@@ -273,29 +273,49 @@ mt19937 rng(0); // or mt19937_64
 
 
 void solve() {
-    auto work = [&](vl a, bool shouldBePositive) -> ll {
-        ll ans = 0;
-        ll tot = 0;
-        for(auto& x: a) {
-            tot += x;
-            if(shouldBePositive) {
-                if(tot <= 0) {
-                    ans += abs(tot - (1LL));
-                    tot = 1LL;
-                }
-            } else {
-                if(tot >= 0) {
-                    ans += abs(tot - (-1LL));
-                    tot = -1LL;
-                }
-            }
-            shouldBePositive = !shouldBePositive;
+    int N, K; cin >> N >> K;
+    vpi points(N);
+    for(auto& [x, y]: points) {
+        cin >> x >> y;
+    }
+    dbg(N, K, points);
+
+    vpi candidates;
+    {
+        vi xx, yy;
+        for(auto& [x, y]: points) {
+            xx.eb(x);
+            yy.eb(y);
         }
-        return ans;
+        remDup(xx);
+        remDup(yy);
+        dbg(xx, yy);
+
+        for(auto& x: xx) for(auto& y: yy) candidates.eb(x, y);
+        remDup(candidates);
+    }
+
+    auto work = [&](ll x, ll y, ll x2, ll y2) -> ll {
+        if(x > x2) swap(x, x2);
+        if(y > y2) swap(y, y2);
+        ll cnt = 0;
+        for(auto& [xx, yy]: points) {
+            if(x <= xx && xx <= x2 && y <= yy && yy <= y2) {
+                cnt++;
+            }
+        }
+        if(cnt >= K) return (x2 - x) * (y2 - y);
+        else return LLONG_MAX;
     };
-    ll n; cin >> n;
-    vl a(n); for(auto& x: a) cin >> x;
-    ll ans = min(work(a, true), work(a, false));
+
+    ll ans = LLONG_MAX;
+    for(int i = 0; i < sz(candidates); i++) {
+        for(int j = i + 1; j < sz(candidates); j++) {
+            auto [x, y] = candidates[i];
+            auto [x2, y2] = candidates[j];
+            ckmin(ans, work(x, y, x2, y2));
+        }
+    }
     cout << ans << "\n";
 }
 

@@ -1,4 +1,4 @@
-//* #pragma GCC optimize ("Ofast")
+#pragma GCC optimize ("Ofast")
 //* #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
@@ -273,29 +273,31 @@ mt19937 rng(0); // or mt19937_64
 
 
 void solve() {
-    auto work = [&](vl a, bool shouldBePositive) -> ll {
-        ll ans = 0;
-        ll tot = 0;
-        for(auto& x: a) {
-            tot += x;
-            if(shouldBePositive) {
-                if(tot <= 0) {
-                    ans += abs(tot - (1LL));
-                    tot = 1LL;
-                }
-            } else {
-                if(tot >= 0) {
-                    ans += abs(tot - (-1LL));
-                    tot = -1LL;
+    ll N, W; cin >> N >> W;
+    vpl items(N);
+    for(auto& [w, v]: items) cin >> w >> v;
+    vvl A(4);
+    ll w1 = items.ft.f;
+    for(auto& [w, v]: items) {
+        A[w - w1].eb(v);
+    }
+    for(auto& vec: A) {
+        sort(rall(vec));
+        vec.insert(vec.begin(), 0);
+        for(int i = 1; i < sz(vec); i++) vec[i] += vec[i - 1];
+    }
+    ll ans = -BIG;
+    for(int a = 0; a < sz(A[0]); a++) {
+        for(int b = 0; b < sz(A[1]); b++) {
+            for(int c = 0; c < sz(A[2]); c++) {
+                for(int d = 0; d < sz(A[3]); d++) {
+                    if(w1 * a + (w1 + 1LL) * b + (w1 + 2LL) * c + (w1 + 3LL) * d <= W) {
+                        ckmax(ans, A[0][a] + A[1][b] + A[2][c] + A[3][d]);
+                    }
                 }
             }
-            shouldBePositive = !shouldBePositive;
         }
-        return ans;
-    };
-    ll n; cin >> n;
-    vl a(n); for(auto& x: a) cin >> x;
-    ll ans = min(work(a, true), work(a, false));
+    }
     cout << ans << "\n";
 }
 

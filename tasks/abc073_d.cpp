@@ -273,29 +273,33 @@ mt19937 rng(0); // or mt19937_64
 
 
 void solve() {
-    auto work = [&](vl a, bool shouldBePositive) -> ll {
-        ll ans = 0;
-        ll tot = 0;
-        for(auto& x: a) {
-            tot += x;
-            if(shouldBePositive) {
-                if(tot <= 0) {
-                    ans += abs(tot - (1LL));
-                    tot = 1LL;
-                }
-            } else {
-                if(tot >= 0) {
-                    ans += abs(tot - (-1LL));
-                    tot = -1LL;
-                }
+    ll N, M, R; cin >> N >> M >> R;
+    vl r(R); for(auto& x: r) { cin >> x; x--; }
+    vvl adj(N, vl(N, BIG));
+    rep(M) {
+        ll A, B, C; cin >> A >> B >> C; A--; B--;
+        ckmin(adj[A][B], C);
+        ckmin(adj[B][A], C);
+    }
+    vvl dist(N, vl(N, BIG));
+    for(int i = 0; i < N; i++) for(int j = 0; j < N; j++) ckmin(dist[i][j], adj[i][j]);
+    for(int k = 0; k < N; k++) {
+        for(int i = 0; i < N; i++) {
+            for(int j = 0; j < N; j++) {
+                ckmin(dist[i][j], dist[i][k] + dist[k][j]);
             }
-            shouldBePositive = !shouldBePositive;
         }
-        return ans;
-    };
-    ll n; cin >> n;
-    vl a(n); for(auto& x: a) cin >> x;
-    ll ans = min(work(a, true), work(a, false));
+    }
+    ll ans = BIG;
+    sor(r);
+    do {
+        ll local_ans = 0;
+        for(int i = 0; i + 1 < sz(r); i++) {
+            local_ans += dist[r[i]][r[i + 1]];
+        }
+        ckmin(ans, local_ans);
+    } while(next_permutation(all(r)));
+    dbg(ans);
     cout << ans << "\n";
 }
 

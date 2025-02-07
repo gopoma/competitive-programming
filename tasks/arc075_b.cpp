@@ -273,30 +273,30 @@ mt19937 rng(0); // or mt19937_64
 
 
 void solve() {
-    auto work = [&](vl a, bool shouldBePositive) -> ll {
-        ll ans = 0;
-        ll tot = 0;
+    ll N, A, B; cin >> N >> A >> B;
+    vl H(N); for(auto& x: H) cin >> x;
+    ll left = 0; // always bad
+    ll right = ll(1e9); // always good
+
+    auto check = [&](ll middle) -> bool {
+        vl a = H;
+        ll taken = 0;
         for(auto& x: a) {
-            tot += x;
-            if(shouldBePositive) {
-                if(tot <= 0) {
-                    ans += abs(tot - (1LL));
-                    tot = 1LL;
-                }
-            } else {
-                if(tot >= 0) {
-                    ans += abs(tot - (-1LL));
-                    tot = -1LL;
-                }
+            x = max(0LL, x - B * middle);
+            if(x > 0) {
+                ll adi = cdiv(x, A - B);
+                taken += adi;
             }
-            shouldBePositive = !shouldBePositive;
         }
-        return ans;
+        return taken <= middle;
     };
-    ll n; cin >> n;
-    vl a(n); for(auto& x: a) cin >> x;
-    ll ans = min(work(a, true), work(a, false));
-    cout << ans << "\n";
+    while(left + 1LL < right) {
+        ll middle = fdiv(left + right, 2LL);
+        if(check(middle)) right = middle;
+        else left = middle;
+    }
+    dbg(right);
+    cout << right << "\n";
 }
 
 

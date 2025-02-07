@@ -273,29 +273,29 @@ mt19937 rng(0); // or mt19937_64
 
 
 void solve() {
-    auto work = [&](vl a, bool shouldBePositive) -> ll {
-        ll ans = 0;
-        ll tot = 0;
-        for(auto& x: a) {
-            tot += x;
-            if(shouldBePositive) {
-                if(tot <= 0) {
-                    ans += abs(tot - (1LL));
-                    tot = 1LL;
-                }
-            } else {
-                if(tot >= 0) {
-                    ans += abs(tot - (-1LL));
-                    tot = -1LL;
-                }
+    auto get = [&](ll a, ll b, ll c) -> ll {
+        return max({a, b, c}) - min({a, b, c});
+    };
+    auto work = [&](ll H, ll W) -> ll {
+        ll ans = BIG;
+        for(ll w = 1; w < W; w++) {
+            // horizontal cut
+            {
+                ll up = cdiv(H, 2LL);
+                ll down = fdiv(H, 2LL);
+                ckmin(ans, get(H * w, up * (W - w), down * (W - w)));
             }
-            shouldBePositive = !shouldBePositive;
+            // vertical cut
+            if(W - w >= 2) {
+                ll up = cdiv(W - w, 2LL);
+                ll down = fdiv(W - w, 2LL);
+                ckmin(ans, get(H * w, up * H, down * H));
+            }
         }
         return ans;
     };
-    ll n; cin >> n;
-    vl a(n); for(auto& x: a) cin >> x;
-    ll ans = min(work(a, true), work(a, false));
+    ll H, W; cin >> H >> W;
+    ll ans = min(work(H, W), work(W, H));
     cout << ans << "\n";
 }
 
