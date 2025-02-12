@@ -273,10 +273,41 @@ mt19937 rng(0); // or mt19937_64
 
 
 void solve() {
-    int x, y; cin >> x >> y;
-    if((x - y + 1) >= 0 && (x - y + 1) % 9 == 0) cout << "YES";
-    else cout << "NO";
-    cout << "\n";
+    int n; cin >> n;
+    vi a(n); for(auto& x: a) cin >> x;
+    auto query = [&](int i, int j) -> int {
+        cout << "? " << (i + 1) << " " << (j + 1) << endl;
+        int ans; cin >> ans;
+        return ans;
+    };
+    auto answer = [&](char ans) -> void {
+        cout << "! " << ans << endl;
+    };
+    vb in(n); for(auto& x: a) in[x - 1] = true;
+    for(int i = 0; i < n; i++) if(!in[i]) {
+        int j = 0;
+        while(j == i) j++;
+        int d = query(i, j);
+        if(d == 0) {
+            answer('A');
+            return;
+        } else {
+            answer('B');
+            return;
+        }
+    }
+
+    vi where(n);
+    for(int i = 0; i < n; i++) where[a[i] - 1] = i;
+    int d = query(where[0], where[n - 1]);
+    int d2 = query(where[n - 1], where[0]);
+    if(d == 0 || d2 == 0) {
+        answer('A');
+        return;
+    }
+
+    if(d + d2 > n) answer('B');
+    else answer('A');
 }
 
 
@@ -301,7 +332,7 @@ void setIn(str s) { freopen(s.c_str(), "r", stdin); }
 void setOut(str s) { freopen(s.c_str(), "w", stdout); }
 
 int main() {
-    cin.tie(0)->sync_with_stdio(0);  // unsync C / C++ I/O streams
+    // cin.tie(0)->sync_with_stdio(0);  // unsync C / C++ I/O streams
 	//? cout << fixed << setprecision(12);
     //? cerr << fixed << setprecision(12);
 	cin.exceptions(cin.failbit);
