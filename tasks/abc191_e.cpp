@@ -298,9 +298,39 @@ mt19937 rng(0); // or mt19937_64
 //* /Template
 
 
-
+using Edge = tuple<ll, ll, ll>;
 void solve() {
-
+    int N, M; cin >> N >> M;
+    dbg(N, M);
+    V<Edge> edges(M);
+    for(auto& [A, B, C]: edges) {
+        cin >> A >> B >> C;
+        A--; B--;
+        dbg(A, B, C);
+    }
+    V<vpl> adj(N);
+    for(auto& [A, B, C]: edges) {
+        adj[A].eb(B, C);
+    }
+    vl response;
+    for(int u = 0; u < N; u++) {
+        multiset<pl> ms; ms.emplace(0, u);
+        vb vis(N);
+        ll res = BIG;
+        while(!ms.empty()) {
+            auto it = *ms.begin();
+            auto [dist, node] = it; safeErase(ms, it);
+            if(vis[node]) continue;
+            vis[node] = true;
+            for(auto& [nxt, C]: adj[node]) {
+                if(nxt == u) ckmin(res, dist + C);
+                ms.emplace(dist + C, nxt);
+            }
+        }
+        if(res >= BIG) res = -1;
+        response.eb(res);
+    }
+    for(auto& x: response) cout << x << "\n";
 }
 
 

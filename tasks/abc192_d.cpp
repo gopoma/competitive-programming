@@ -22,7 +22,7 @@ using str = string;
 //* using ull  = unsigned long long;
 //* using i64  = long long;
 //* using u64  = uint64_t;
-//* using i128 = __int128;
+using i128 = __int128;
 //* using u128 = __uint128_t;
 //* using f128 = __float128;
 
@@ -300,7 +300,47 @@ mt19937 rng(0); // or mt19937_64
 
 
 void solve() {
+    str X; cin >> X;
+    ll M; cin >> M;
+    if(sz(X) == 1) {
+        if(stoll(X) <= M) cout << "1\n";
+        else cout << "0\n";
+        return;
+    }
 
+    ll d = 0;
+    for(auto& c: X) ckmax(d, ll(c - '0'));
+    reverse(all(X));
+    auto check = [&](ll middle) -> bool {
+        ll base = middle;
+
+        if((db(sz(X) - 1) * logl(db(base))) > logl(db(M))) {
+            dbg(middle, false);
+            return false;
+        }
+
+        i128 sum = 0;
+        i128 pot = 1;
+        for(int i = 0; i < sz(X); i++) {
+            sum += i128(X[i] - '0') * pot;
+            if(sum > i128(M)) return false;
+            pot *= i128(base);
+        }
+        dbg(middle, sum, M, true);
+        return true;
+    };
+
+    ll left = d; // always good
+    ll right = M + 1LL; // always bad
+    while(left + 1LL < right) {
+        ll middle = fdiv(left + right, 2LL);
+        if(check(middle)) left = middle;
+        else right = middle;
+    }
+
+    ll response = left - d;
+    dbg(response);
+    cout << response << "\n";
 }
 
 
