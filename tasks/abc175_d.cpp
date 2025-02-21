@@ -1,6 +1,6 @@
 //* #pragma GCC optimize ("Ofast")
 //* #pragma GCC target ("avx,avx2")
-//! #pragma GCC optimize ("trapv")
+//* #pragma GCC optimize ("trapv")
 
 //! #undef _GLIBCXX_DEBUG //* for Stress Testing
 
@@ -300,6 +300,40 @@ mt19937 rng(0); // or mt19937_64
 
 
 void solve() {
+    ll N, K; cin >> N >> K;
+    vi nxt(N);
+    for(auto& x: nxt) {
+        cin >> x; x--;
+    }
+    vl C(N);
+    for(auto& x: C) {
+        cin >> x;
+    }
+
+    ll response = -BIG;
+    for(int id = 0; id < N; id++) {
+        ll cycle_sum  = 0;
+        ll cycle_size = 0;
+        int cur = id;
+        vb vis(N);
+        while(!vis[cur]) {
+            cycle_sum += C[cur];
+            cycle_size++;
+            vis[cur] = true;
+            cur = nxt[cur];
+        }
+        dbg(id, cycle_sum, cycle_size, cur);
+
+        ll sum = 0;
+        for(ll i = 0, j = id; i < min(cycle_size, K); i++, j = nxt[j]) {
+            sum += C[j];
+            if((i + 1) <= K) {
+                ckmax(response, sum);
+                ckmax(response, sum + fdiv(K - ll(i + 1), cycle_size) * cycle_sum);
+            }
+        }
+    }
+    cout << response << "\n";
 }
 
 
