@@ -15,6 +15,7 @@ struct DSU {
 	bool unite(int x, int y) { // union by size
 		x = get(x), y = get(y); if (x == y) return 0;
 		if (e[x] > e[y]) swap(x,y);
+        //* Small-To-Large Merging
 		e[x] += e[y]; e[y] = x; return 1;
 	}
 };
