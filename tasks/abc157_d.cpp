@@ -296,12 +296,73 @@ mt19937 rng(0); // or mt19937_64
 
 
 //* Template
+/**
+ * Description: Disjoint Set Union with path compression
+ 	* and union by size. Add edges and test connectivity.
+ 	* Use for Kruskal's or Boruvka's minimum spanning tree.
+ * Time: O(\alpha(N))
+ * Source: CSAcademy, KACTL
+ * Verification: *
+ */
+
+ struct DSU {
+	vi e; void init(int N) { e = vi(N,-1); }
+	int get(int x) { return e[x] < 0 ? x : e[x] = get(e[x]); }
+	bool sameSet(int a, int b) { return get(a) == get(b); }
+	int size(int x) { return -e[get(x)]; }
+	bool unite(int x, int y) { // union by size
+		x = get(x), y = get(y); if (x == y) return 0;
+		if (e[x] > e[y]) swap(x,y);
+        //* Small-To-Large Merging
+		e[x] += e[y]; e[y] = x; return 1;
+	}
+};
+
+/**tcT> T kruskal(int N, vector<pair<T,pi>> ed) {
+	sort(all(ed));
+	T ans = 0; DSU D; D.init(N); // edges that unite are in MST
+	each(a,ed) if (D.unite(a.s.f,a.s.s)) ans += a.f;
+	return ans;
+}*/
+
 //* /Template
 
 
 
 void solve() {
-
+    int n, m, k; cin >> n >> m >> k;
+    vvi friends(n);
+    DSU dsu; dsu.init(n);
+    rep(m) {
+        int A, B; cin >> A >> B; A--; B--;
+        friends[A].eb(B);
+        friends[B].eb(A);
+        dsu.unite(A, B);
+    }
+    vvi blocks(n);
+    rep(k) {
+        int C, D; cin >> C >> D; C--; D--;
+        blocks[C].eb(D);
+        blocks[D].eb(C);
+    }
+    vi response(n);
+    for(int u = 0; u < n; u++) {
+        int tot = dsu.size(u);
+        tot -= 1;
+        for(auto& nxt: friends[u]) {
+            if(dsu.get(u) == dsu.get(nxt)) {
+                tot--;
+            }
+        }
+        for(auto& nxt: blocks[u]) {
+            if(dsu.get(u) == dsu.get(nxt)) {
+                tot--;
+            }
+        }
+        response[u] = tot;
+    }
+    for(auto& x: response) cout << x << " ";
+    cout << "\n";
 }
 
 

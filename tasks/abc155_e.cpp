@@ -298,10 +298,37 @@ mt19937 rng(0); // or mt19937_64
 //* Template
 //* /Template
 
-
+bool vis[int(1e6) + 15][5];
+ll  memo[int(1e6) + 15][5];
 
 void solve() {
+    str S; cin >> S;
+    reverse(all(S));
 
+    vi digits;
+    for(auto& c: S)
+        digits.eb(int(c - '0'));
+    rep(3)
+        digits.eb(0);
+    dbg(digits);
+
+    const int n = sz(digits);
+    for(int i = 0; i <= n; i++)
+        for(int j = 0; j < 5; j++)
+            vis[i][j] = false;
+    auto dp = [&](auto&& self, int i, int carry) -> ll {
+        if(i == n) return carry;
+        if(vis[i][carry]) return memo[i][carry];
+        vis[i][carry] = true;
+        ll ans = BIG;
+        ll d = digits[i] + carry;
+        for(int adi = 0; adi < 10; adi++) {
+            ckmin(ans, self(self, i + 1, int(d + adi) / 10) + ll((d + adi) % 10) + ll(adi));
+        }
+        return memo[i][carry] = ans;
+    };
+    ll response = dp(dp, 0, 0);
+    cout << response << "\n";
 }
 
 

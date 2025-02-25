@@ -1,4 +1,4 @@
-//* #pragma GCC optimize ("Ofast")
+#pragma GCC optimize ("Ofast")
 //* #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
@@ -282,7 +282,6 @@ long long binpow(long long a, long long b) {
 
 const int MOD = 1e9 + 7;
 const ll BIG = 1e18;  //? not too close to LLONG_MAX
-const int INF = int(1e9) + 5;
 const db PI = acos((db)-1);
 
 const int dx[4]{1, 0, -1, 0};  //? for every grid problem!!
@@ -299,9 +298,73 @@ mt19937 rng(0); // or mt19937_64
 //* /Template
 
 
-
+const int INF = int(1e9) + 5;
 void solve() {
+    int n; cin >> n;
+    vs S(n); for(auto& x: S) cin >> x;
+    dbg(n);
+    for(auto& x: S) dbg(x);
 
+    using Info = pair<char, int>; // c - nxt
+    V<V<Info>> adj(n);
+    V<V<Info>> adj_rev(n);
+
+    for(int from = 0; from < n; from++) {
+        for(int to = 0; to < n; to++) {
+            if(S[from][to] != '-') {
+                adj[from].eb(S[from][to], to);
+                adj_rev[to].eb(S[from][to], from);
+            }
+        }
+    }
+
+    vvi dist(n, vi(n, INF));
+    deque<pi> q;
+    auto bfs = [&]() -> void {
+        RAYA;
+        dbg(q);
+        for(auto& [from, to]: q) dbg(from + 1, to + 1, dist[from][to]);
+        while(!q.empty()) {
+            auto [from, to] = q.ft; q.pop_front();
+            dbg("bfs", from + 1, to + 1, dist[from][to]);
+            for(auto& [c, nxt]: adj_rev[from]) {
+                for(auto& [c2, nxt2]: adj[to]) {
+                    if(c == c2 && dist[from][to] + 2 < dist[nxt][nxt2]) {
+                        dist[nxt][nxt2] = dist[from][to] + 2;
+                        q.eb(nxt, nxt2);
+                    }
+                }
+            }
+        }
+    };
+
+    for(int i = 0; i < n; i++) {
+        if(0 < dist[i][i]) {
+            dist[i][i] = 0;
+            q.eb(i, i);
+        }
+    }
+    bfs();
+    for(int u = 0; u < n; u++) {
+        for(auto& [_, nxt]: adj[u]) {
+            if(1 < dist[u][nxt]) {
+                dist[u][nxt] = 1;
+                q.eb(u, nxt);
+            }
+        }
+    }
+    bfs();
+
+    for(int i = 0; i < n; i++)
+        for(int j = 0; j < n; j++)
+            if(dist[i][j] >= INF)
+                dist[i][j] = -1;
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < n; j++) {
+            cout << dist[i][j] << " ";
+        }
+        cout << "\n";
+    }
 }
 
 

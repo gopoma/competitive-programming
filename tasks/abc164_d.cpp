@@ -282,7 +282,6 @@ long long binpow(long long a, long long b) {
 
 const int MOD = 1e9 + 7;
 const ll BIG = 1e18;  //? not too close to LLONG_MAX
-const int INF = int(1e9) + 5;
 const db PI = acos((db)-1);
 
 const int dx[4]{1, 0, -1, 0};  //? for every grid problem!!
@@ -301,7 +300,44 @@ mt19937 rng(0); // or mt19937_64
 
 
 void solve() {
+    if(isDebugging) {
+        set<int> S;
+        const ll mod = 2019;
+        ll cur = 1;
+        while(!S.count(cur)) {
+            S.emplace(cur);
+            cur *= 10;
+            cur %= mod;
+        }
+        dbg(S);
+        dbg(sz(S));
+        dbg(S.count(3), S.count(673));
+    }
+    str S; cin >> S;
+    const int n = sz(S);
+    reverse(all(S));
 
+    ll ans = 0;
+    vl a(n);
+    ll p10 = 1;
+    for(int i = 0; i < n; i++) {
+        ll d = S[i] - '0';
+
+        a[i] = d * p10;
+
+        p10 *= 10LL;
+        p10 %= 2019LL;
+    }
+    for(int i = 1; i < n; i++) {
+        a[i] += a[i - 1];
+        a[i] %= 2019;
+    }
+    vl hist(2020); hist[0]++;
+    for(int i = 0; i < n; i++) {
+        ans += hist[a[i]];
+        hist[a[i]]++;
+    }
+    cout << ans << "\n";
 }
 
 

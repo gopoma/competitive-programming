@@ -301,7 +301,74 @@ mt19937 rng(0); // or mt19937_64
 
 
 void solve() {
+    int n, m, k; cin >> n >> m >> k;
+    vs S(n); for(auto& x: S) cin >> x;
 
+    int response = INF;
+    for(int mask = 0; mask < (1 << n); mask++) {
+        RAYA;
+        vb mark(n);
+        for(int i = 0; i < n; i++) {
+            if(mask & (1 << i)) {
+                mark[i] = true;
+            }
+        }
+
+        vi id(n);
+        for(int i = 1; i < n; i++) {
+            id[i] = id[i - 1];
+            if(mark[i] != mark[i - 1])
+                id[i]++;
+        }
+        //* dbg(mask, bitset<4>(mask), mark, id);
+
+        int local_response = 0;
+        for(int i = 1; i < n; i++)
+            local_response += (mark[i] != mark[i - 1]);
+        //* dbg(local_response);
+
+        const int N = id.bk + 1;
+        vi cnt(N);
+        auto get = [&](int col) -> vi {
+            vi adi(N);
+            for(int i = 0; i < n; i++) {
+                adi[id[i]] += (S[i][col] == '1');
+            }
+            return adi;
+        };
+        auto check = [&]() -> bool {
+            bool good = true;
+            for(auto& x: cnt) good &= (x <= k);
+            return good;
+        };
+        bool ok = true;
+        bool should = true;
+        for(int col = 0; ok && col < m;) {
+            vi adi = get(col);
+            //* dbg(col, should, ok, cnt, adi);
+            for(int i = 0; i < N; i++)
+                cnt[i] += adi[i];
+
+            if(should) {
+                if(check()) {
+                    should = false;
+                } else ok = false;
+                col++;
+            } else {
+                if(check()) {
+                    col++;
+                } else {
+                    local_response++;
+                    should = true;
+                    for(auto& x: cnt) x = 0;
+                }
+            }
+        }
+        //* dbg(ok);
+        if(!ok) continue;
+        ckmin(response, local_response);
+    }
+    cout << response << "\n";
 }
 
 

@@ -301,7 +301,29 @@ mt19937 rng(0); // or mt19937_64
 
 
 void solve() {
-
+    int n, m; cin >> n >> m;
+    str S; cin >> S;
+    vi response;
+    int i = n;
+    while(i != 0) {
+        assert(S[i] == '0');
+        bool ok = false;
+        for(int d = m; d > 0; d--) {
+            if(i - d < 0) continue;
+            if(S[i - d] == '0') {
+                i -= d;
+                response.eb(d);
+                ok = true;
+                break;
+            }
+        }
+        if(ok) continue;
+        cout << "-1\n";
+        return;
+    }
+    reverse(all(response));
+    for(auto& x: response) cout << x << " ";
+    cout << "\n";
 }
 
 

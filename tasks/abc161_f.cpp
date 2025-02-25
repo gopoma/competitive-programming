@@ -1,4 +1,4 @@
-//* #pragma GCC optimize ("Ofast")
+#pragma GCC optimize ("Ofast")
 //* #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
@@ -282,7 +282,6 @@ long long binpow(long long a, long long b) {
 
 const int MOD = 1e9 + 7;
 const ll BIG = 1e18;  //? not too close to LLONG_MAX
-const int INF = int(1e9) + 5;
 const db PI = acos((db)-1);
 
 const int dx[4]{1, 0, -1, 0};  //? for every grid problem!!
@@ -301,7 +300,52 @@ mt19937 rng(0); // or mt19937_64
 
 
 void solve() {
+    auto get_divisors = [&](ll N) -> vl {
+        vl divisors;
+        for(ll x = 1; x * x <= N; x++) {
+            if(N % x == 0) {
+                divisors.eb(x);
+                if(x != N / x)
+                    divisors.eb(N / x);
+            }
+        }
+        return divisors;
+    };
 
+    ll N; cin >> N;
+
+    set<ll> response;
+    {
+        auto divs = get_divisors(N - 1);
+        for(auto& d: divs)
+            if(d != 1)
+                response.emplace(d);
+    }
+    dbg(response);
+    {
+        auto divs = get_divisors(N);
+        for(auto& K: divs) {
+            if(K == 1) continue;
+            RAYA;
+            dbg(K);
+            ll cur = N;
+            while(cur >= K) {
+                dbg(cur);
+                if(cur % K == 0) {
+                    cur /= K;
+                } else {
+                    if(cur % K == 1) {
+                        response.emplace(K);
+                    }
+                    break;
+                }
+            }
+            if(cur == 1)
+                response.emplace(K);
+        }
+    }
+    dbg(response);
+    cout << sz(response) << "\n";
 }
 
 
