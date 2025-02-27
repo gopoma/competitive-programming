@@ -296,112 +296,87 @@ mt19937 rng(0); // or mt19937_64
 
 
 //* Template
-
 /**
- * Description: modular arithmetic operations
+ * Description: 1D point update and range query where \texttt{cmb} is
+ 	* any associative operation. \texttt{seg[1]==query(0,N-1)}.
+ * Time: O(\log N)
  * Source:
- * KACTL
- * https://codeforces.com/blog/entry/63903
- * https://codeforces.com/contest/1261/submission/65632855 (tourist)
- * https://codeforces.com/contest/1264/submission/66344993 (ksun)
- * also see https://github.com/ecnerwala/cp-book/blob/master/src/modnum.hpp
- * (ecnerwal) Verification: https://open.kattis.com/problems/modulararithmetic
+	* http://codeforces.com/blog/entry/18051
+	* KACTL
+ * Verification: SPOJ Fenwick
+ * API: SegTree<node> tree; tree.init(int(n));
  */
 
- template <int MOD, int RT> struct mint {
-	static const int mod = MOD;
-	static constexpr mint rt() { return RT; }  // primitive root for FFT
-	int v;
-	explicit operator int() const {
-		return v;
-	}  // explicit -> don't silently convert to int
-	mint() : v(0) {}
-	mint(ll _v) {
-		v = int((-MOD < _v && _v < MOD) ? _v : _v % MOD);
-		if (v < 0) v += MOD;
+ tcT> struct SegTree { // cmb(ID,b) = b
+	// const T ID{}; T cmb(T a, T b) { return a+b; }
+    T ID{0}; T cmb(T a, T b) { return max(a, b); }
+	int n; V<T> seg;
+	void init(int _n) { // upd, query also work if n = _n
+		for (n = 1; n < _n; ) n *= 2;
+		seg.assign(2*n,ID); }
+	void pull(int p) { seg[p] = cmb(seg[2*p],seg[2*p+1]); }
+	void upd(int p, T val) { // set val at position p
+		seg[p += n] = val; for (p /= 2; p; p /= 2) pull(p); }
+	T query(int l, int r) {	// zero-indexed, inclusive
+		T ra = ID, rb = ID;
+		for (l += n, r += n+1; l < r; l /= 2, r /= 2) {
+			if (l&1) ra = cmb(ra,seg[l++]);
+			if (r&1) rb = cmb(seg[--r],rb);
+		}
+		return cmb(ra,rb);
 	}
-	bool operator==(const mint &o) const { return v == o.v; }
-	friend bool operator!=(const mint &a, const mint &b) { return !(a == b); }
-	friend bool operator<(const mint &a, const mint &b) { return a.v < b.v; }
-	friend istream &operator>>(istream &is, mint &a) {
-		ll x;
-		is >> x;
-		a = mint(x);
-		return is;
-	}
-	friend ostream &operator<<(ostream &os, mint a) {
-		os << int(a);
-		return os;
-	}
-
-	mint &operator+=(const mint &o) {
-		if ((v += o.v) >= MOD) v -= MOD;
-		return *this;
-	}
-	mint &operator-=(const mint &o) {
-		if ((v -= o.v) < 0) v += MOD;
-		return *this;
-	}
-	mint &operator*=(const mint &o) {
-		v = int((ll)v * o.v % MOD);
-		return *this;
-	}
-	mint &operator/=(const mint &o) { return (*this) *= inv(o); }
-	friend mint pow(mint a, ll p) {
-		mint ans = 1;
-		assert(p >= 0);
-		for (; p; p /= 2, a *= a)
-			if (p & 1) ans *= a;
-		return ans;
-	}
-	friend mint inv(const mint &a) {
-		assert(a.v != 0);
-		return pow(a, MOD - 2);
-	}
-
-	mint operator-() const { return mint(-v); }
-	mint &operator++() { return *this += 1; }
-	mint &operator--() { return *this -= 1; }
-	friend mint operator+(mint a, const mint &b) { return a += b; }
-	friend mint operator-(mint a, const mint &b) { return a -= b; }
-	friend mint operator*(mint a, const mint &b) { return a *= b; }
-	friend mint operator/(mint a, const mint &b) { return a /= b; }
+	/// int first_at_least(int lo, int val, int ind, int l, int r) { // if seg stores max across range
+	/// 	if (r < lo || val > seg[ind]) return -1;
+	/// 	if (l == r) return l;
+	/// 	int m = (l+r)/2;
+	/// 	int res = first_at_least(lo,val,2*ind,l,m); if (res != -1) return res;
+	/// 	return first_at_least(lo,val,2*ind+1,m+1,r);
+	/// }
 };
+// /here goes the template!
 
-using mi = mint<MOD, 5>;  // 5 is primitive root for both common mods
-using vmi = V<mi>;
-using pmi = pair<mi, mi>;
-using vpmi = V<pmi>;
+struct node {
+    static long long Mod;
 
-/**
- * Description: Combinations modulo a prime $MOD$. Assumes $2\le N \le MOD$.
- * Time: O(N)
- * Source: KACTL
- * Verification: https://dmoj.ca/problem/tle17c4p5
- * Usage: F.init(10); F.C(6, 4); // 15
- */
+	long long val;
 
- struct {
-     vmi invs, fac, ifac;
-     void init(int N) { // idempotent
-         invs.rsz(N), fac.rsz(N), ifac.rsz(N);
-         invs[1] = fac[0] = ifac[0] = 1;
-         FOR(i,2,N) invs[i] = mi(-(ll)MOD/i*(int)invs[MOD%i]);
-         FOR(i,1,N) fac[i] = fac[i-1]*i, ifac[i] = ifac[i-1]*invs[i];
-     }
-     mi C(int a, int b) {
-         if (a < b || b < 0) return 0;
-         return fac[a]*ifac[b]*ifac[a-b];
-     }
- } F;
+	node(): val(1LL) {}
+
+	node(long long _val) : val(_val) {}
+
+	node operator + (const node &rhs) const {
+		return node((val * rhs.val) % Mod);
+	}
+};
 
 //* /Template
 
 
 
 void solve() {
-    int n, k; cin >> n >> k;
-    mi response = 0;
+    int n; cin >> n;
+    vi a(n); for(auto& x: a) cin >> x;
+
+    int MAXN = -1;
+    {
+        vi temp = a;
+        remDup(temp);
+        MAXN = sz(temp) + 5;
+        map<int, int> forwards;
+        for(int i = 0; i < sz(temp); i++) {
+            forwards[temp[i]] = i;
+        }
+        for(auto& x: a) x = forwards[x];
+    }
+    assert(MAXN != -1);
+
+    reverse(all(a));
+    SegTree<int> dp; dp.init(MAXN + 5);
+    for(int i = 0; i < n; i++) {
+        int cur = dp.query(0, a[i]);
+        dp.upd(a[i], cur + 1);
+    }
+    int response = dp.query(0, MAXN);
     cout << response << "\n";
 }
 
@@ -435,7 +410,7 @@ int main() {
 	// ex. try to read letter into int
     dbg(isDebugging);
 
-    F.init(int(1e6) + 5);
+
 
     //? Stress Testing
     while(0) {
