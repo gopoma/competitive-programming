@@ -6,3 +6,5 @@ dx:
 	g++ -std=c++17 -DLOCAL -o ./bin/${F}.out ${F} && ./bin/${F}.out
 xd:
 	g++ -std=c++17 -o ./bin/${F}.out ${F} && ./bin/${F}.out
+icpc:
+	g++ -std=c++11 -o ./bin/${F}.out ${F} && ./bin/${F}.out
