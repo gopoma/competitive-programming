@@ -102,3 +102,5 @@ $dp[idx][current] = \sum_{x = l}^{r} dp[idx + 1][x]$? (note the `contiguous` ran
 -   **Description**: This problem asks to find the `length of the common segment` of $[L_{1}, R_{1}]$ and $[L_{2}, R_{2}]$.
 -   **Solution**: https://atcoder.jp/contests/abc261/editorial/4493
 -   **Solution** $\max(0, \min(R_{1}, R_{2}) - \max(L_{1}, L_{2}))$
+
+* `vector dp(5000, vector(5000, vector<long long>(2)))` works in 265 ms with `swap` and 406 ms without it.
