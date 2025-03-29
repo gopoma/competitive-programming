@@ -1,8 +1,8 @@
-//* #pragma GCC optimize ("Ofast")
+#pragma GCC optimize ("Ofast")
 //* #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-//! #undef _GLIBCXX_DEBUG //* for Stress Testing
+#undef _GLIBCXX_DEBUG //* for Stress Testing
 
 
 
@@ -298,10 +298,81 @@ mt19937 rng(0); // or mt19937_64
 //* Template
 //* /Template
 
-
+int dp[5000 + 5][5000 + 5][2];
 
 void solve() {
+    int n, m; cin >> n >> m;
+    str A, B; cin >> A >> B;
+    dbg(n, m);
+    dbg(A);
+    dbg(B);
 
+    for(int i = n; i >= 0; i--) {
+        for(int j = m; j >= 0; j--) {
+            for(int started = 0; started < 2; started++) {
+                //* dp[i][j][started]
+                if(i == n || j == m) {
+                    dp[i][j][started] = 0;
+                } else {
+                    dp[i][j][started] = -INF;
+
+                    if(started) {
+                        //* rage finish
+                        ckmax(dp[i][j][started], dp[n][m][true]);
+
+                        //* take
+                        if(A[i] == B[j]) {
+                            ckmax(dp[i][j][started], dp[i + 1][j + 1][true] + 2);
+                        }
+
+                        ckmax(dp[i][j][started], dp[i + 1][j][true] - 1);
+                        ckmax(dp[i][j][started], dp[i][j + 1][true] - 1);
+                    } else {
+                        if(A[i] == B[j]) {
+                            //* take
+                            ckmax(dp[i][j][started], dp[i + 1][j + 1][true] + 2);
+                        }
+                        //* skip
+                        ckmax(dp[i][j][started], dp[i + 1][j][false]);
+                        ckmax(dp[i][j][started], dp[i][j + 1][false]);
+                    }
+                }
+            }
+        }
+    }
+
+    int response = dp[0][0][false];
+    cout << response << "\n";
+
+//*    auto dp = [&](auto&& self, int i, int j, bool started) -> int {
+//*        if(i == n || j == m) return 0;
+//*
+//*        int res = -INF;
+//*        if(started) {
+//*            //* rage finish
+//*            ckmax(res, self(self, n, m, true));
+//*
+//*            //* take
+//*            if(A[i] == B[j]) {
+//*                ckmax(res, self(self, i + 1, j + 1, true) + 2);
+//*            }
+//*
+//*            ckmax(res, self(self, i + 1, j, true) - 1);
+//*            ckmax(res, self(self, i, j + 1, true) - 1);
+//*        } else {
+//*            if(A[i] == B[j]) {
+//*                //* take
+//*                ckmax(res, self(self, i + 1, j + 1, true) + 2);
+//*            }
+//*            //* skip
+//*            ckmax(res, self(self, i + 1, j, false));
+//*            ckmax(res, self(self, i, j + 1, false));
+//*        }
+//*        return res;
+//*    };
+//*
+//*    int response = dp(dp, 0, 0, false);
+//*    cout << response << "\n";
 }
 
 
@@ -339,10 +410,6 @@ int main() {
     //? Stress Testing
     while(0) {
         RAYA;
-        dbg("Brute");
-        dbg("/Brute");
-        dbg("Greedy");
-        dbg("/Greedy");
     }
 
 

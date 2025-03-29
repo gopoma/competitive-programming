@@ -2,7 +2,7 @@
 //* #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-//! #undef _GLIBCXX_DEBUG //* for Stress Testing
+//* #undef _GLIBCXX_DEBUG //* for Stress Testing
 
 
 
@@ -298,10 +298,158 @@ mt19937 rng(0); // or mt19937_64
 //* Template
 //* /Template
 
+ll brute(ll n, ll mx, vl a) {
+    ll k = 0;
+    for(int mask = 0; mask < (1 << n); mask++) {
+        vi on(n);
+        for(int i = 0; i < n; i++) {
+            if(mask & (1 << i)) on[i] = 1;
+            else on[i] = 0;
+        }
 
+        vvi intervals;
+        vi cur_vec;
+        int cur = on[0];
+        for(int i = 0; i < n; i++) {
+            if(on[i] == cur) {
+                cur_vec.eb(a[i]);
+            } else {
+                intervals.eb(cur_vec);
+                cur_vec.clear();
+                cur_vec.eb(a[i]);
+                cur = on[i];
+            }
+        }
+        intervals.eb(cur_vec);
+
+        ll tot_or = 0;
+        for(auto& vec: intervals) {
+            ll partial_xor = 0;
+            for(auto& x: vec) partial_xor ^= x;
+            tot_or |= partial_xor;
+        }
+
+        if(tot_or <= mx) {
+            ckmax(k, ll(sz(intervals)));
+        }
+    }
+
+    for(int mask = 0; mask < (1 << n); mask++) {
+        vi on(n);
+        for(int i = 0; i < n; i++) {
+            if(mask & (1 << i)) on[i] = 1;
+            else on[i] = 0;
+        }
+
+        vvi intervals;
+        vi cur_vec;
+        int cur = on[0];
+        for(int i = 0; i < n; i++) {
+            if(on[i] == cur) {
+                cur_vec.eb(a[i]);
+            } else {
+                intervals.eb(cur_vec);
+                cur_vec.clear();
+                cur_vec.eb(a[i]);
+                cur = on[i];
+            }
+        }
+        intervals.eb(cur_vec);
+
+        ll tot_or = 0;
+        for(auto& vec: intervals) {
+            ll partial_xor = 0;
+            for(auto& x: vec) partial_xor ^= x;
+            tot_or |= partial_xor;
+        }
+
+        if(tot_or <= mx && sz(intervals) == k) {
+            //* dbg(sz(intervals), on);
+            //* dbg(intervals);
+        }
+    }
+
+    if(k == 0) return -1;
+    else return k;
+}
+
+const ll MXBIT = 34;
+ll slv(ll n, ll mx, vl a) {
+    vl cnt(MXBIT);
+    for(int i = 0; i < n; i++) {
+        for(ll bit = 0; bit < MXBIT; bit++) {
+            if(a[i] & (1LL << bit)) {
+                cnt[bit]++;
+            }
+        }
+    }
+
+
+
+    vl pref = a;
+    for(int i = 1; i < n; i++) {
+        pref[i] ^= pref[i - 1];
+    }
+    auto query = [&](int L, int R) -> ll {
+        ll S = pref[R];
+        if(0 <= L - 1) S ^= pref[L - 1];
+        return S;
+    };
+
+
+
+    ll should_or = 0;
+    for(ll bit = 0; bit < MXBIT; bit++) {
+        if(cnt[bit] & 1) should_or |= (1LL << bit);
+    }
+    if(should_or > mx) {
+        return -1;
+    }
+
+
+
+    vl candidates{0, mx};
+    for(ll bit = MXBIT - 1; bit >= 0; bit--) {
+        ll should_mx = mx;
+        should_mx ^= (1LL << bit);
+        should_mx |= ((1LL << bit) - 1LL);
+
+        ll new_mx = should_or | should_mx;
+        if(new_mx <= mx) {
+            candidates.eb(new_mx);
+        }
+    }
+
+    auto work = [&](ll new_mx) -> ll {
+        ll k = 1;
+        ll tot_or_left = 0;
+        ll cur_xor = 0;
+        for(int i = 0; i + 1 < n; i++) {
+            cur_xor ^= a[i];
+            if((tot_or_left | new_mx | cur_xor | query(i + 1, n - 1)) <= mx) {
+                k++;
+                tot_or_left |= cur_xor;
+                cur_xor = 0;
+            }
+        }
+        return k;
+    };
+
+    ll k = -1;
+    for(auto& new_mx: candidates) {
+        dbg(new_mx);
+        ckmax(k, work(new_mx));
+    }
+    return k;
+}
 
 void solve() {
-
+    ll n, mx; cin >> n >> mx;
+    vl a(n); for(auto& x: a) cin >> x;
+    dbg(n, mx);
+    dbg(a);
+    ll res = slv(n, mx, a);
+    cout << res << "\n";
 }
 
 
@@ -339,15 +487,25 @@ int main() {
     //? Stress Testing
     while(0) {
         RAYA;
+        ll n = rng_ll(1, 12);
+        ll mx = rng_ll(1, (1LL << 28LL));
+        vl a(n); for(auto& x: a) x = rng_ll(0,(1LL << 27));
+        //* dbg(n, mx);
+        //* dbg(a);
+        //* for(auto& x: a) dbg(bitset<10>(x));
         dbg("Brute");
+        ll ans = brute(n, mx, a);
         dbg("/Brute");
         dbg("Greedy");
+        ll greedy = slv(n, mx, a);
         dbg("/Greedy");
+        dbg(ans, greedy);
+        chk(ans == greedy);
     }
 
 
 
-    int t = 1; //! cin >> t;
+    int t = 1; cin >> t;
     for(int i = 0; i < t; i++) {
         RAYA;
         RAYA;
