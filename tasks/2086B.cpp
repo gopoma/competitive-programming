@@ -301,82 +301,53 @@ mt19937 rng(0); // or mt19937_64
 
 
 void solve() {
-    int n; cin >> n;
-    vi parent(n, -1);
-    for(int u = 1; u < n; u++) {
-        int p; cin >> p; p--;
-        parent[u] = p;
+    ll n, k, mn; cin >> n >> k >> mn;
+    vl a(n);
+    for(auto& x: a) cin >> x;
+
+    vl suff = a;
+    for(int i = n - 2; i >= 0; i--) {
+        suff[i] += suff[i + 1];
     }
 
-    vvi adj(n);
-    for(int u = 1; u < n; u++) {
-        adj[u].eb(parent[u]);
-        adj[parent[u]].eb(u);
+    ll sum = accumulate(all(a), 0LL);
+    if(sum * k < mn) {
+        cout << "0\n";
+        return;
     }
 
-    vl subtree_size(n);
-    {
-        auto dfs = [&](auto&& self, int src, int par) -> void {
-            subtree_size[src] = 1;
-            for(auto& nxt: adj[src]) {
-                if(nxt == par) continue;
-                self(self, nxt, src);
-                subtree_size[src] += subtree_size[nxt];
-            }
-        }; dfs(dfs, 0, -1);
-    }
+    const ll mx_id = fdiv(n * k - 1LL, n);
+    auto check = [&](ll middle) -> bool {
+        RAYA;
+        dbg(middle, mx_id);
+        ll id = fdiv(middle, n);
+        ll nxt_id = id + 1LL;
+        dbg(id, nxt_id);
 
-    //* maximum amount of achievable teams in subtree rooted at src
-    auto dfs = [&](auto&& self, int src, int par) -> ll {
-        ll res = 0;
-
-        vl children_subtree;
-        vl children_values;
-        pl taken_from_biggest_subtree = mp(-BIG, -BIG);
-
-        for(auto& nxt: adj[src]) {
-            if(nxt == par) continue;
-            ll child_value = self(self, nxt, src);
-            children_subtree.eb(subtree_size[nxt]);
-            children_values.eb(child_value);
-            ckmax(taken_from_biggest_subtree, mp(subtree_size[nxt], child_value));
+        ll tot = 0;
+        if(nxt_id <= mx_id) {
+            tot += sum * (mx_id - nxt_id + 1LL);
         }
+        dbg(tot);
 
-        if(children_subtree.empty())
-            return 0;
+        ll cid = middle % n;
+        dbg(cid, suff, suff[cid]);
+        tot += suff[cid];
 
-        const ll K = 2;
-        ll cres = 0;
-        {
-            ll left = 0; // always bad
-            ll right = n + 5; // always good
-            while(left + 1 < right) {
-                ll middle = fdiv(left + right, 2LL);
-                const ll P = middle;
-                ll sum = 0;
-                for(auto& x: children_subtree) {
-                    sum += min(x, P);
-                }
-                if(K * P <= sum) left = middle;
-                else right = middle;
-            }
-            cres = left;
-        }
-
-        ll sum = accumulate(all(children_subtree), 0LL);
-        auto [_, mx] = taken_from_biggest_subtree;
-
-        ckmax(res, cres);
-        ckmax(res, mx);
-        ckmax(res, *max_element(all(children_values)));
-
-        ll mx_could = fdiv(sum, 2LL);
-        ll ores = min(mx_could, cres + mx);
-        ckmax(res, ores);
-
-        return res;
+        dbg(tot, mn);
+        return (tot >= mn);
     };
-    ll res = dfs(dfs, 0, -1);
+
+    ll left = 0; // always good
+    ll right = n * k; // always bad
+    while(left + 1 < right) {
+        ll middle = fdiv(left + right, 2LL);
+        if(check(middle)) left = middle;
+        else right = middle;
+    }
+
+    ll res = left - 0LL + 1LL;
+    dbg(res);
     cout << res << "\n";
 }
 

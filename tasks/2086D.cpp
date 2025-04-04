@@ -280,7 +280,7 @@ long long binpow(long long a, long long b) {
 
 
 
-const int MOD = 1e9 + 7;
+const int MOD = 998244353;
 const ll BIG = 1e18;  //? not too close to LLONG_MAX
 const int INF = int(1e9) + 5;
 const db PI = acos((db)-1);
@@ -296,87 +296,170 @@ mt19937 rng(0); // or mt19937_64
 
 
 //* Template
+
+/**
+ * Description: modular arithmetic operations
+ * Source:
+ * KACTL
+ * https://codeforces.com/blog/entry/63903
+ * https://codeforces.com/contest/1261/submission/65632855 (tourist)
+ * https://codeforces.com/contest/1264/submission/66344993 (ksun)
+ * also see https://github.com/ecnerwala/cp-book/blob/master/src/modnum.hpp
+ * (ecnerwal) Verification: https://open.kattis.com/problems/modulararithmetic
+ */
+
+ template <int MOD, int RT> struct mint {
+	static const int mod = MOD;
+	static constexpr mint rt() { return RT; }  // primitive root for FFT
+	int v;
+	explicit operator int() const {
+		return v;
+	}  // explicit -> don't silently convert to int
+	mint() : v(0) {}
+	mint(ll _v) {
+		v = int((-MOD < _v && _v < MOD) ? _v : _v % MOD);
+		if (v < 0) v += MOD;
+	}
+	bool operator==(const mint &o) const { return v == o.v; }
+	friend bool operator!=(const mint &a, const mint &b) { return !(a == b); }
+	friend bool operator<(const mint &a, const mint &b) { return a.v < b.v; }
+	friend istream &operator>>(istream &is, mint &a) {
+		ll x;
+		is >> x;
+		a = mint(x);
+		return is;
+	}
+	friend ostream &operator<<(ostream &os, mint a) {
+		os << int(a);
+		return os;
+	}
+
+	mint &operator+=(const mint &o) {
+		if ((v += o.v) >= MOD) v -= MOD;
+		return *this;
+	}
+	mint &operator-=(const mint &o) {
+		if ((v -= o.v) < 0) v += MOD;
+		return *this;
+	}
+	mint &operator*=(const mint &o) {
+		v = int((ll)v * o.v % MOD);
+		return *this;
+	}
+	mint &operator/=(const mint &o) { return (*this) *= inv(o); }
+	friend mint pow(mint a, ll p) {
+		mint ans = 1;
+		assert(p >= 0);
+		for (; p; p /= 2, a *= a)
+			if (p & 1) ans *= a;
+		return ans;
+	}
+	friend mint inv(const mint &a) {
+		assert(a.v != 0);
+		return pow(a, MOD - 2);
+	}
+
+	mint operator-() const { return mint(-v); }
+	mint &operator++() { return *this += 1; }
+	mint &operator--() { return *this -= 1; }
+	friend mint operator+(mint a, const mint &b) { return a += b; }
+	friend mint operator-(mint a, const mint &b) { return a -= b; }
+	friend mint operator*(mint a, const mint &b) { return a *= b; }
+	friend mint operator/(mint a, const mint &b) { return a /= b; }
+};
+
+using mi = mint<MOD, 5>;  // 5 is primitive root for both common mods
+using vmi = V<mi>;
+using pmi = pair<mi, mi>;
+using vpmi = V<pmi>;
+
+/**
+ * Description: Combinations modulo a prime $MOD$. Assumes $2\le N \le MOD$.
+ * Time: O(N)
+ * Source: KACTL
+ * Verification: https://dmoj.ca/problem/tle17c4p5
+ * Usage: F.init(10); F.C(6, 4); // 15
+ */
+
+ struct {
+     vmi invs, fac, ifac;
+     void init(int N) { // idempotent
+         invs.rsz(N), fac.rsz(N), ifac.rsz(N);
+         invs[1] = fac[0] = ifac[0] = 1;
+         FOR(i,2,N) invs[i] = mi(-(ll)MOD/i*(int)invs[MOD%i]);
+         FOR(i,1,N) fac[i] = fac[i-1]*i, ifac[i] = ifac[i-1]*invs[i];
+     }
+     mi C(int a, int b) {
+         if (a < b || b < 0) return 0;
+         return fac[a]*ifac[b]*ifac[a-b];
+     }
+ } F;
+
+
 //* /Template
 
 
-
+bool vis[26 + 5][int(5e5) + 5];
+mi  memo[26 + 5][int(5e5) + 5];
 void solve() {
-    int n; cin >> n;
-    vi parent(n, -1);
-    for(int u = 1; u < n; u++) {
-        int p; cin >> p; p--;
-        parent[u] = p;
+    const int MAXN = 26;
+    vl cnt(MAXN);
+    for(int i = 0; i < MAXN; i++) {
+        cin >> cnt[i];
+    }
+    dbg(cnt);
+
+
+
+    vl pref = cnt;
+    for(int i = 1; i < MAXN; i++) {
+        pref[i] += pref[i - 1];
     }
 
-    vvi adj(n);
-    for(int u = 1; u < n; u++) {
-        adj[u].eb(parent[u]);
-        adj[parent[u]].eb(u);
+
+
+    ll sum = accumulate(all(cnt), 0LL);
+    dbg(sum);
+
+    const ll p = cdiv(sum, 2LL);
+    const ll p2 = fdiv(sum, 2LL);
+    dbg(p, p2, F.fac[p], F.fac[p2]);
+
+    for(int i = 0; i <= MAXN; i++) {
+        for(int j = 0; j <= sum + 1; j++) {
+            vis[i][j] = false;
+        }
     }
 
-    vl subtree_size(n);
-    {
-        auto dfs = [&](auto&& self, int src, int par) -> void {
-            subtree_size[src] = 1;
-            for(auto& nxt: adj[src]) {
-                if(nxt == par) continue;
-                self(self, nxt, src);
-                subtree_size[src] += subtree_size[nxt];
-            }
-        }; dfs(dfs, 0, -1);
-    }
-
-    //* maximum amount of achievable teams in subtree rooted at src
-    auto dfs = [&](auto&& self, int src, int par) -> ll {
-        ll res = 0;
-
-        vl children_subtree;
-        vl children_values;
-        pl taken_from_biggest_subtree = mp(-BIG, -BIG);
-
-        for(auto& nxt: adj[src]) {
-            if(nxt == par) continue;
-            ll child_value = self(self, nxt, src);
-            children_subtree.eb(subtree_size[nxt]);
-            children_values.eb(child_value);
-            ckmax(taken_from_biggest_subtree, mp(subtree_size[nxt], child_value));
+    auto dp = [&](auto&& self, int i, int taken_p) -> mi {
+        ll lst = (0 <= i - 1)? pref[i - 1] : 0LL;
+        ll taken_p2 = lst - taken_p;
+        if(i == MAXN) {
+            if(taken_p == p && taken_p2 == p2) return F.fac[p] * F.fac[p2];
+            else return 0;
         }
 
-        if(children_subtree.empty())
-            return 0;
+        if(vis[i][taken_p]) return memo[i][taken_p];
+        vis[i][taken_p] = true;
 
-        const ll K = 2;
-        ll cres = 0;
-        {
-            ll left = 0; // always bad
-            ll right = n + 5; // always good
-            while(left + 1 < right) {
-                ll middle = fdiv(left + right, 2LL);
-                const ll P = middle;
-                ll sum = 0;
-                for(auto& x: children_subtree) {
-                    sum += min(x, P);
-                }
-                if(K * P <= sum) left = middle;
-                else right = middle;
-            }
-            cres = left;
+        if(cnt[i] == 0) {
+            mi res = self(self, i + 1, taken_p);
+            return memo[i][taken_p] = res;
         }
 
-        ll sum = accumulate(all(children_subtree), 0LL);
-        auto [_, mx] = taken_from_biggest_subtree;
-
-        ckmax(res, cres);
-        ckmax(res, mx);
-        ckmax(res, *max_element(all(children_values)));
-
-        ll mx_could = fdiv(sum, 2LL);
-        ll ores = min(mx_could, cres + mx);
-        ckmax(res, ores);
-
-        return res;
+        mi res = 0;
+        //* left
+        if(taken_p + cnt[i] <= p) {
+            res += self(self, i + 1, taken_p + cnt[i]) * F.ifac[cnt[i]];
+        }
+        //* right
+        if(taken_p2 + cnt[i] <= p2) {
+            res += self(self, i + 1, taken_p) * F.ifac[cnt[i]];
+        }
+        return memo[i][taken_p] = res;
     };
-    ll res = dfs(dfs, 0, -1);
+    mi res = dp(dp, 0, 0);
+    dbg(res);
     cout << res << "\n";
 }
 
@@ -410,7 +493,7 @@ int main() {
 	// ex. try to read letter into int
     dbg(isDebugging);
 
-
+    F.init(int(1e6));
 
     //? Stress Testing
     while(0) {

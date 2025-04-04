@@ -301,83 +301,55 @@ mt19937 rng(0); // or mt19937_64
 
 
 void solve() {
-    int n; cin >> n;
-    vi parent(n, -1);
-    for(int u = 1; u < n; u++) {
-        int p; cin >> p; p--;
-        parent[u] = p;
+    ll n; cin >> n;
+    vl p(n); for(auto& x: p) {
+        cin >> x; x--;
     }
+    vl d(n); for(auto& x: d) {
+        cin >> x; x--;
+    }
+    dbg(n);
+    dbg(p);
+    dbg(d);
 
     vvi adj(n);
-    for(int u = 1; u < n; u++) {
-        adj[u].eb(parent[u]);
-        adj[parent[u]].eb(u);
+    for(int i = 0; i < n; i++) {
+        adj[i].eb(p[i]);
     }
 
-    vl subtree_size(n);
-    {
-        auto dfs = [&](auto&& self, int src, int par) -> void {
-            subtree_size[src] = 1;
+    vb vis(n);
+    vi cycle_id(n);
+    vi tam;
+    int cur_id = -1;
+    for(int u = 0; u < n; u++) {
+        if(vis[u]) continue;
+        cur_id++;
+        tam.eb(0);
+        auto dfs = [&](auto&& self, int src) -> void {
+            if(vis[src]) return;
+            vis[src] = true;
+            cycle_id[src] = cur_id;
+            tam.bk++;
             for(auto& nxt: adj[src]) {
-                if(nxt == par) continue;
-                self(self, nxt, src);
-                subtree_size[src] += subtree_size[nxt];
+                self(self, nxt);
             }
-        }; dfs(dfs, 0, -1);
+        }; dfs(dfs, u);
     }
 
-    //* maximum amount of achievable teams in subtree rooted at src
-    auto dfs = [&](auto&& self, int src, int par) -> ll {
-        ll res = 0;
+    vb already(cur_id + 1);
 
-        vl children_subtree;
-        vl children_values;
-        pl taken_from_biggest_subtree = mp(-BIG, -BIG);
-
-        for(auto& nxt: adj[src]) {
-            if(nxt == par) continue;
-            ll child_value = self(self, nxt, src);
-            children_subtree.eb(subtree_size[nxt]);
-            children_values.eb(child_value);
-            ckmax(taken_from_biggest_subtree, mp(subtree_size[nxt], child_value));
+    ll res = 0;
+    vl response;
+    for(auto& x: d) {
+        if(already[cycle_id[x]]) {
+        } else {
+            already[cycle_id[x]] = true;
+            res += tam[cycle_id[x]];
         }
-
-        if(children_subtree.empty())
-            return 0;
-
-        const ll K = 2;
-        ll cres = 0;
-        {
-            ll left = 0; // always bad
-            ll right = n + 5; // always good
-            while(left + 1 < right) {
-                ll middle = fdiv(left + right, 2LL);
-                const ll P = middle;
-                ll sum = 0;
-                for(auto& x: children_subtree) {
-                    sum += min(x, P);
-                }
-                if(K * P <= sum) left = middle;
-                else right = middle;
-            }
-            cres = left;
-        }
-
-        ll sum = accumulate(all(children_subtree), 0LL);
-        auto [_, mx] = taken_from_biggest_subtree;
-
-        ckmax(res, cres);
-        ckmax(res, mx);
-        ckmax(res, *max_element(all(children_values)));
-
-        ll mx_could = fdiv(sum, 2LL);
-        ll ores = min(mx_could, cres + mx);
-        ckmax(res, ores);
-
-        return res;
-    };
-    ll res = dfs(dfs, 0, -1);
-    cout << res << "\n";
+        response.eb(res);
+    }
+    for(auto& x: response) cout << x << " ";
+    cout << "\n";
 }
 
 

@@ -1,4 +1,4 @@
-#pragma GCC optimize ("Ofast")
+//* #pragma GCC optimize ("Ofast")
 //* #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
@@ -296,88 +296,201 @@ mt19937 rng(0); // or mt19937_64
 
 
 //* Template
+/**
+ * Description: Disjoint Set Union with path compression
+ 	* and union by size. Add edges and test connectivity.
+ 	* Use for Kruskal's or Boruvka's minimum spanning tree.
+ * Time: O(\alpha(N))
+ * Source: CSAcademy, KACTL
+ * Verification: *
+ */
+
+ struct DSU {
+	vi e; void init(int N) { e = vi(N,-1); }
+	int get(int x) { return e[x] < 0 ? x : e[x] = get(e[x]); }
+	bool sameSet(int a, int b) { return get(a) == get(b); }
+	int size(int x) { return -e[get(x)]; }
+	bool unite(int x, int y) { // union by size
+		x = get(x), y = get(y); if (x == y) return 0;
+		if (e[x] > e[y]) swap(x,y);
+        //* Small-To-Large Merging
+		e[x] += e[y]; e[y] = x; return 1;
+	}
+};
+
+/**tcT> T kruskal(int N, vector<pair<T,pi>> ed) {
+	sort(all(ed));
+	T ans = 0; DSU D; D.init(N); // edges that unite are in MST
+	each(a,ed) if (D.unite(a.s.f,a.s.s)) ans += a.f;
+	return ans;
+}*/
+
 //* /Template
 
+using Info = tuple<int, int, int>;
+void slv(int n, int m, vpi& edges) {
+    dbg(n, m, edges);
+    V<set<int>> adj(n);
+    for(auto& [u, v]: edges) {
+        adj[u].emplace(v);
+        adj[v].emplace(u);
+    }
 
+    V<Info> res;
+    vb vis(n);
+    for(int u = 0; u < n; u++) {
+        if(!vis[u]) {
+            auto dfs = [&](auto&& self, int src, int par) -> void {
+                vis[src] = true;
+
+                vi children;
+                for(auto& nxt: adj[src]) {
+                    if(nxt == par) continue;
+                    children.eb(nxt);
+                }
+                while(sz(children) >= 2) {
+                    int a = src;
+                    int b = children.bk; children.pop_back();
+                    int c = children.bk; children.pop_back();
+
+                    res.eb(a, b, c);
+                    safeErase(adj[a], b);
+                    safeErase(adj[b], a);
+
+                    safeErase(adj[a], c);
+                    safeErase(adj[c], a);
+
+                    if(adj[b].count(c)) {
+                        chk(adj[c].count(b));
+                        safeErase(adj[b], c);
+                        safeErase(adj[c], b);
+                    } else {
+                        adj[b].emplace(c);
+                        adj[c].emplace(b);
+                    }
+                }
+
+                for(auto& nxt: children) {
+                    self(self, nxt, src);
+                }
+            }; dfs(dfs, u, -1);
+        }
+    }
+
+    for(int u = 0; u < n; u++) {
+        dbg(u, adj[u]);
+    }
+
+    bool should_quit = true;
+    for(int u = 0; u < n; u++) {
+        should_quit &= adj[u].empty();
+    }
+
+    if(!should_quit) {
+        {
+            DSU dsu; dsu.init(n);
+            int a = -1, b = -1;
+            bool got = false;
+
+            for(int u = 0; u < n; u++) {
+                for(auto& nxt: adj[u]) {
+                    dsu.unite(u, nxt);
+
+                    if(!got && a == -1) {
+                        a = u;
+                        b = nxt;
+                        got = true;
+                    }
+                }
+            }
+
+            assert(a != -1 && b != -1);
+            assert(dsu.sameSet(a, b));
+
+            for(int c = 0; c < n; c++) {
+                if(!dsu.sameSet(a, c)) {
+                    res.eb(a, b, c);
+                    dsu.unite(a, c);
+                    b = c;
+                }
+            }
+
+            const int NONE = 0;
+            const int PROCESSING = 1;
+            const int ALREADY = 2;
+            vi status(n);
+            bool ok = true;
+            auto dfs2 = [&](auto&& self, int src, int par) -> void {
+                status[src] = PROCESSING;
+                for(auto& nxt: adj[src]) {
+                    if(nxt == par) continue;
+                    if(status[nxt] == NONE) {
+                        self(self, nxt, src);
+                    } else if(status[nxt] == PROCESSING) {
+                        ok = false;
+                    }
+                }
+                status[src] = ALREADY;
+            }; dfs2(dfs2, 0, -1);
+            chk(ok);
+        }
+
+        if(isDebugging) {
+            V<set<int>> G(n);
+            for(auto& [u, v]: edges) {
+                G[u].emplace(v);
+                G[v].emplace(u);
+            }
+
+            auto do_op = [&](int a, int b) -> void {
+                if(G[a].count(b)) {
+                    safeErase(G[a], b);
+                    safeErase(G[b], a);
+                } else {
+                    G[a].emplace(b);
+                    G[b].emplace(a);
+                }
+            };
+
+            for(auto& [a, b, c]: res) {
+                chk(a != b && a != c && b != c);
+                dbg(a, b, c);
+                do_op(a, b);
+                do_op(b, c);
+                do_op(c, a);
+            }
+
+            DSU dsu; dsu.init(n);
+            for(int u = 0; u < n; u++) {
+                for(auto& nxt: G[u]) {
+                    dsu.unite(u, nxt);
+                }
+            }
+            set<int> S;
+            for(int u = 0; u < n; u++) {
+                S.emplace(dsu.get(u));
+            }
+            chk(sz(S) == 1);
+        }
+    }
+
+
+    cout << sz(res) << "\n";
+    for(auto& [a, b, c]: res) {
+        a++; b++; c++;
+        cout << a << " " << b << " " << c << "\n";
+    }
+}
 
 void solve() {
-    int n; cin >> n;
-    vi parent(n, -1);
-    for(int u = 1; u < n; u++) {
-        int p; cin >> p; p--;
-        parent[u] = p;
+    int n, m; cin >> n >> m;
+    vpi edges;
+    rep(m) {
+        int u, v; cin >> u >> v;
+        u--; v--;
+        edges.eb(u, v);
     }
-
-    vvi adj(n);
-    for(int u = 1; u < n; u++) {
-        adj[u].eb(parent[u]);
-        adj[parent[u]].eb(u);
-    }
-
-    vl subtree_size(n);
-    {
-        auto dfs = [&](auto&& self, int src, int par) -> void {
-            subtree_size[src] = 1;
-            for(auto& nxt: adj[src]) {
-                if(nxt == par) continue;
-                self(self, nxt, src);
-                subtree_size[src] += subtree_size[nxt];
-            }
-        }; dfs(dfs, 0, -1);
-    }
-
-    //* maximum amount of achievable teams in subtree rooted at src
-    auto dfs = [&](auto&& self, int src, int par) -> ll {
-        ll res = 0;
-
-        vl children_subtree;
-        vl children_values;
-        pl taken_from_biggest_subtree = mp(-BIG, -BIG);
-
-        for(auto& nxt: adj[src]) {
-            if(nxt == par) continue;
-            ll child_value = self(self, nxt, src);
-            children_subtree.eb(subtree_size[nxt]);
-            children_values.eb(child_value);
-            ckmax(taken_from_biggest_subtree, mp(subtree_size[nxt], child_value));
-        }
-
-        if(children_subtree.empty())
-            return 0;
-
-        const ll K = 2;
-        ll cres = 0;
-        {
-            ll left = 0; // always bad
-            ll right = n + 5; // always good
-            while(left + 1 < right) {
-                ll middle = fdiv(left + right, 2LL);
-                const ll P = middle;
-                ll sum = 0;
-                for(auto& x: children_subtree) {
-                    sum += min(x, P);
-                }
-                if(K * P <= sum) left = middle;
-                else right = middle;
-            }
-            cres = left;
-        }
-
-        ll sum = accumulate(all(children_subtree), 0LL);
-        auto [_, mx] = taken_from_biggest_subtree;
-
-        ckmax(res, cres);
-        ckmax(res, mx);
-        ckmax(res, *max_element(all(children_values)));
-
-        ll mx_could = fdiv(sum, 2LL);
-        ll ores = min(mx_could, cres + mx);
-        ckmax(res, ores);
-
-        return res;
-    };
-    ll res = dfs(dfs, 0, -1);
-    cout << res << "\n";
+    slv(n, m, edges);
 }
 
 

@@ -1,4 +1,4 @@
-//* #pragma GCC optimize ("Ofast")
+#pragma GCC optimize ("Ofast")
 //* #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 

@@ -296,88 +296,138 @@ mt19937 rng(0); // or mt19937_64
 
 
 //* Template
+/**
+ * Description: 1D point update and range query where \texttt{cmb} is
+ 	* any associative operation. \texttt{seg[1]==query(0,N-1)}.
+ * Time: O(\log N)
+ * Source:
+	* http://codeforces.com/blog/entry/18051
+	* KACTL
+ * Verification: SPOJ Fenwick
+ * API: SegTree<node> tree; tree.init(int(n));
+ */
+
+ tcT> struct SegTree { // cmb(ID,b) = b
+	// const T ID{}; T cmb(T a, T b) { return a+b; }
+    T ID{INF}; T cmb(T a, T b) { return min(a, b); }
+	int n; V<T> seg;
+	void init(int _n) { // upd, query also work if n = _n
+		for (n = 1; n < _n; ) n *= 2;
+		seg.assign(2*n,ID); }
+	void pull(int p) { seg[p] = cmb(seg[2*p],seg[2*p+1]); }
+	void upd(int p, T val) { // set val at position p
+		seg[p += n] = val; for (p /= 2; p; p /= 2) pull(p); }
+	T query(int l, int r) {	// zero-indexed, inclusive
+		T ra = ID, rb = ID;
+		for (l += n, r += n+1; l < r; l /= 2, r /= 2) {
+			if (l&1) ra = cmb(ra,seg[l++]);
+			if (r&1) rb = cmb(seg[--r],rb);
+		}
+		return cmb(ra,rb);
+	}
+	/// int first_at_least(int lo, int val, int ind, int l, int r) { // if seg stores max across range
+	/// 	if (r < lo || val > seg[ind]) return -1;
+	/// 	if (l == r) return l;
+	/// 	int m = (l+r)/2;
+	/// 	int res = first_at_least(lo,val,2*ind,l,m); if (res != -1) return res;
+	/// 	return first_at_least(lo,val,2*ind+1,m+1,r);
+	/// }
+};
+// /here goes the template!
+
+struct node {
+    static long long Mod;
+
+	long long val;
+
+	node(): val(1LL) {}
+
+	node(long long _val) : val(_val) {}
+
+	node operator + (const node &rhs) const {
+		return node((val * rhs.val) % Mod);
+	}
+};
+
 //* /Template
 
 
 
 void solve() {
-    int n; cin >> n;
+    int n, m; cin >> n >> m;
+    using Edge = tuple<int, int, int>;
+    V<Edge> edges(m);
+    for(auto& [u, v, w]: edges) {
+        cin >> u >> v >> w;
+        u--; v--;
+    }
+
+    dbg(n, m);
+    V<vpi> adj(n);
+    for(auto& [u, v, w]: edges) {
+        dbg(u, v, w);
+        adj[u].eb(v, w);
+        adj[v].eb(u, w);
+    }
+
+    //* mn - start - steps
+    using Info = tuple<int, int, int>;
+    Info res = make_tuple(INF, INF, INF);
+
+    const int NONE = 0;
+    const int PROCESSING = 1;
+    const int ALREADY = 2;
+    vi status(n, NONE);
     vi parent(n, -1);
-    for(int u = 1; u < n; u++) {
-        int p; cin >> p; p--;
-        parent[u] = p;
-    }
+    vi depth(n, 0);
+    SegTree<int> st; st.init(n + 5);
+    int cur = 0;
+    for(int u = 0; u < n; u++) {
+        if(status[u] != NONE) continue;
+        auto dfs = [&](auto&& self, int src, int par, int dep) -> void {
+            status[src] = PROCESSING;
+            parent[src] = par;
+            depth[src] = dep;
 
-    vvi adj(n);
-    for(int u = 1; u < n; u++) {
-        adj[u].eb(parent[u]);
-        adj[parent[u]].eb(u);
-    }
-
-    vl subtree_size(n);
-    {
-        auto dfs = [&](auto&& self, int src, int par) -> void {
-            subtree_size[src] = 1;
-            for(auto& nxt: adj[src]) {
+            for(auto& [nxt, w]: adj[src]) {
                 if(nxt == par) continue;
-                self(self, nxt, src);
-                subtree_size[src] += subtree_size[nxt];
+
+                if(status[nxt] == NONE) {
+                    st.upd(cur, w);
+                    cur++;
+
+                    self(self, nxt, src, dep + 1);
+
+                    cur--;
+                    st.upd(cur, INF);
+                } else if(status[nxt] == PROCESSING) {
+                    int new_mn = st.query(depth[nxt], depth[src]);
+                    ckmin(new_mn, w);
+                    int new_start = src;
+                    int new_steps = depth[src] - depth[nxt];
+                    ckmin(res, make_tuple(new_mn, new_start, new_steps));
+                }
             }
-        }; dfs(dfs, 0, -1);
+            status[src] = ALREADY;
+        }; dfs(dfs, u, -1, 0);
     }
 
-    //* maximum amount of achievable teams in subtree rooted at src
-    auto dfs = [&](auto&& self, int src, int par) -> ll {
-        ll res = 0;
+    auto [mn, start, steps] = res;
 
-        vl children_subtree;
-        vl children_values;
-        pl taken_from_biggest_subtree = mp(-BIG, -BIG);
-
-        for(auto& nxt: adj[src]) {
-            if(nxt == par) continue;
-            ll child_value = self(self, nxt, src);
-            children_subtree.eb(subtree_size[nxt]);
-            children_values.eb(child_value);
-            ckmax(taken_from_biggest_subtree, mp(subtree_size[nxt], child_value));
+    dbg(mn, start, steps);
+    vi stk;
+    {
+        int x = start;
+        stk.eb(x);
+        rep(steps) {
+            x = parent[x];
+            stk.eb(x);
         }
+    }
 
-        if(children_subtree.empty())
-            return 0;
-
-        const ll K = 2;
-        ll cres = 0;
-        {
-            ll left = 0; // always bad
-            ll right = n + 5; // always good
-            while(left + 1 < right) {
-                ll middle = fdiv(left + right, 2LL);
-                const ll P = middle;
-                ll sum = 0;
-                for(auto& x: children_subtree) {
-                    sum += min(x, P);
-                }
-                if(K * P <= sum) left = middle;
-                else right = middle;
-            }
-            cres = left;
-        }
-
-        ll sum = accumulate(all(children_subtree), 0LL);
-        auto [_, mx] = taken_from_biggest_subtree;
-
-        ckmax(res, cres);
-        ckmax(res, mx);
-        ckmax(res, *max_element(all(children_values)));
-
-        ll mx_could = fdiv(sum, 2LL);
-        ll ores = min(mx_could, cres + mx);
-        ckmax(res, ores);
-
-        return res;
-    };
-    ll res = dfs(dfs, 0, -1);
-    cout << res << "\n";
+    cout << mn << " " << sz(stk) << "\n";
+    for(auto& x: stk) cout << (x + 1) << " ";
+    cout << "\n";
 }
 
 

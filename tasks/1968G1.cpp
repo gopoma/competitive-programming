@@ -1,4 +1,4 @@
-#pragma GCC optimize ("Ofast")
+//* #pragma GCC optimize ("Ofast")
 //* #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
@@ -296,88 +296,83 @@ mt19937 rng(0); // or mt19937_64
 
 
 //* Template
+/**
+ * Description: Polynomial hash for substrings with two bases.
+ * Source:
+	* KACTL
+	* https://codeforces.com/contest/1207/submission/59309672
+ * Verification:
+	* USACO Dec 17 Plat 1 (LCP :o)
+	* CF Check Transcription
+ */
+
+ using H = AR<int,2>; // bases not too close to ends
+ H makeH(char c) { return {c,c}; }
+ uniform_int_distribution<int> BDIST(0.1*MOD,0.9*MOD);
+ const H base{BDIST(rng),BDIST(rng)};
+ /// const T ibase = {(int)inv(mi(base[0])),(int)inv(mi(base[1]))};
+ H operator+(H l, H r) {
+     F0R(i,2) if ((l[i] += r[i]) >= MOD) l[i] -= MOD;
+     return l; }
+ H operator-(H l, H r) {
+     F0R(i,2) if ((l[i] -= r[i]) < 0) l[i] += MOD;
+     return l; }
+ H operator*(H l, H r) {
+     F0R(i,2) l[i] = (ll)l[i]*r[i]%MOD;
+     return l; }
+ /// H& operator+=(H& l, H r) { return l = l+r; }
+ /// H& operator-=(H& l, H r) { return l = l-r; }
+ /// H& operator*=(H& l, H r) { return l = l*r; }
+
+ V<H> pows{{1,1}};
+ struct HashRange {
+     str S; V<H> cum{{}};
+     void add(char c) { S += c; cum.pb(base*cum.bk+makeH(c)); }
+     void add(str s) { each(c,s) add(c); }
+     void extend(int len) { while (sz(pows) <= len)
+         pows.pb(base*pows.bk); }
+     H hash(int l, int r) { int len = r+1-l; extend(len);
+         return cum[r+1]-pows[len]*cum[l]; }
+     /**int lcp(HashRange& b) { return first_true([&](int x) {
+         return cum[x] != b.cum[x]; },0,min(sz(S),sz(b.S)))-1; }*/
+ };
+ /// HashRange HR; HR.add("ababab"); F0R(i,6) FOR(j,i,6) ps(i,j,HR.hash(i,j));
 //* /Template
 
 
 
 void solve() {
-    int n; cin >> n;
-    vi parent(n, -1);
-    for(int u = 1; u < n; u++) {
-        int p; cin >> p; p--;
-        parent[u] = p;
-    }
+    int n, l, r; cin >> n >> l >> r;
+    const int should = l;
+    str S; cin >> S;
 
-    vvi adj(n);
-    for(int u = 1; u < n; u++) {
-        adj[u].eb(parent[u]);
-        adj[parent[u]].eb(u);
-    }
+    HashRange SH; SH.add(S);
 
-    vl subtree_size(n);
-    {
-        auto dfs = [&](auto&& self, int src, int par) -> void {
-            subtree_size[src] = 1;
-            for(auto& nxt: adj[src]) {
-                if(nxt == par) continue;
-                self(self, nxt, src);
-                subtree_size[src] += subtree_size[nxt];
+    auto check = [&](int middle) -> bool {
+        int cnt = 0;
+        int i = 0;
+        while(i < n) {
+            int j = i + middle - 1;
+            if(j >= n) break;
+
+            if(SH.hash(0, middle - 1) == SH.hash(i, j)) {
+                i = j + 1;
+                cnt++;
+            } else {
+                i++;
             }
-        }; dfs(dfs, 0, -1);
-    }
-
-    //* maximum amount of achievable teams in subtree rooted at src
-    auto dfs = [&](auto&& self, int src, int par) -> ll {
-        ll res = 0;
-
-        vl children_subtree;
-        vl children_values;
-        pl taken_from_biggest_subtree = mp(-BIG, -BIG);
-
-        for(auto& nxt: adj[src]) {
-            if(nxt == par) continue;
-            ll child_value = self(self, nxt, src);
-            children_subtree.eb(subtree_size[nxt]);
-            children_values.eb(child_value);
-            ckmax(taken_from_biggest_subtree, mp(subtree_size[nxt], child_value));
         }
-
-        if(children_subtree.empty())
-            return 0;
-
-        const ll K = 2;
-        ll cres = 0;
-        {
-            ll left = 0; // always bad
-            ll right = n + 5; // always good
-            while(left + 1 < right) {
-                ll middle = fdiv(left + right, 2LL);
-                const ll P = middle;
-                ll sum = 0;
-                for(auto& x: children_subtree) {
-                    sum += min(x, P);
-                }
-                if(K * P <= sum) left = middle;
-                else right = middle;
-            }
-            cres = left;
-        }
-
-        ll sum = accumulate(all(children_subtree), 0LL);
-        auto [_, mx] = taken_from_biggest_subtree;
-
-        ckmax(res, cres);
-        ckmax(res, mx);
-        ckmax(res, *max_element(all(children_values)));
-
-        ll mx_could = fdiv(sum, 2LL);
-        ll ores = min(mx_could, cres + mx);
-        ckmax(res, ores);
-
-        return res;
+        return cnt >= should;
     };
-    ll res = dfs(dfs, 0, -1);
-    cout << res << "\n";
+
+    int left = 0; // always good
+    int right = n + 1; // always bad
+    while(left + 1 < right) {
+        int middle = (left + right) >> 1;
+        if(check(middle)) left = middle;
+        else right = middle;
+    }
+    cout << left << "\n";
 }
 
 

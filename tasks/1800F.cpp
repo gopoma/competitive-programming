@@ -296,87 +296,94 @@ mt19937 rng(0); // or mt19937_64
 
 
 //* Template
+/**
+ * Description: Hash map with similar API as unordered\_map.
+ 	* Initial capacity must be a power of 2 if provided.
+ * Source: KACTL
+ * Memory: \tilde 1.5x unordered map
+ * Time: \tilde 3x faster than unordered map
+ * API: hash_map<ll, ll> go({},{},{},{}, {1 << 20});
+ */
+
+// #include<bits/extc++.h>
+#include <ext/pb_ds/assoc_container.hpp>
+
+//? For CodeForces, or other places where hacking might be a problem:
+
+const int RANDOM = chrono::high_resolution_clock::now().time_since_epoch().count();
+struct custom_hash {
+	static uint64_t splitmix64(uint64_t x) {
+		// http://xorshift.di.unimi.it/splitmix64.c
+		x += 0x9e3779b97f4a7c15;
+		x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9;
+		x = (x ^ (x >> 27)) * 0x94d049bb133111eb;
+		return x ^ (x >> 31);
+	}
+
+	size_t operator()(pair<uint64_t,uint64_t> x) const {
+		static const uint64_t FIXED_RANDOM = chrono::steady_clock::now().time_since_epoch().count();
+		return splitmix64(x.first + FIXED_RANDOM)^(splitmix64(x.second + FIXED_RANDOM) >> 1);
+	}
+};
+struct chash { // To use most bits rather than just the lowest ones:
+	const uint64_t C = ll(4e18 * acos(0)) | 71; // large odd number
+	ll operator()(ll x) const { return __builtin_bswap64((x^RANDOM)*C); }
+};
+//?__gnu_pbds::gp_hash_table<ll, int, chash> h({},{},{},{}, {1 << 16});
+
+template <typename K, typename V, typename Hash = chash>
+using hash_map = __gnu_pbds::gp_hash_table<K, V, Hash>;
+
+template <typename K, typename Hash = chash>
+using hash_set = hash_map<K, __gnu_pbds::null_type, Hash>;
+
 //* /Template
 
 
 
 void solve() {
     int n; cin >> n;
-    vi parent(n, -1);
-    for(int u = 1; u < n; u++) {
-        int p; cin >> p; p--;
-        parent[u] = p;
-    }
+    vs S(n); for(auto& x: S) cin >> x;
 
-    vvi adj(n);
-    for(int u = 1; u < n; u++) {
-        adj[u].eb(parent[u]);
-        adj[parent[u]].eb(u);
-    }
+    vector<hash_map<int, int>> hist(26);
+    ll res = 0;
+    vi cnt(26);
+    vb there(26);
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < 26; j++) {
+            cnt[j] = 0;
+            there[j] = false;
+        }
+        for(auto& c: S[i]) cnt[c - 'a']++;
 
-    vl subtree_size(n);
-    {
-        auto dfs = [&](auto&& self, int src, int par) -> void {
-            subtree_size[src] = 1;
-            for(auto& nxt: adj[src]) {
-                if(nxt == par) continue;
-                self(self, nxt, src);
-                subtree_size[src] += subtree_size[nxt];
-            }
-        }; dfs(dfs, 0, -1);
-    }
-
-    //* maximum amount of achievable teams in subtree rooted at src
-    auto dfs = [&](auto&& self, int src, int par) -> ll {
-        ll res = 0;
-
-        vl children_subtree;
-        vl children_values;
-        pl taken_from_biggest_subtree = mp(-BIG, -BIG);
-
-        for(auto& nxt: adj[src]) {
-            if(nxt == par) continue;
-            ll child_value = self(self, nxt, src);
-            children_subtree.eb(subtree_size[nxt]);
-            children_values.eb(child_value);
-            ckmax(taken_from_biggest_subtree, mp(subtree_size[nxt], child_value));
+        int mask = 0;
+        for(int j = 0; j < 26; j++) {
+            if(cnt[j] & 1) mask |= (1 << j);
         }
 
-        if(children_subtree.empty())
-            return 0;
 
-        const ll K = 2;
-        ll cres = 0;
-        {
-            ll left = 0; // always bad
-            ll right = n + 5; // always good
-            while(left + 1 < right) {
-                ll middle = fdiv(left + right, 2LL);
-                const ll P = middle;
-                ll sum = 0;
-                for(auto& x: children_subtree) {
-                    sum += min(x, P);
-                }
-                if(K * P <= sum) left = middle;
-                else right = middle;
-            }
-            cres = left;
+
+        for(auto& c: S[i]) there[c - 'a'] = true;
+
+
+
+        int base = 0;
+        for(int j = 0; j < 26; j++) {
+            if(mask & (1 << j))  {}
+            else base |= (1 << j);
         }
 
-        ll sum = accumulate(all(children_subtree), 0LL);
-        auto [_, mx] = taken_from_biggest_subtree;
+        for(int j = 0; j < 26; j++) {
+            if(!there[j]) {
+                int want = base;
+                if(want & (1 << j)) want ^= (1 << j);
 
-        ckmax(res, cres);
-        ckmax(res, mx);
-        ckmax(res, *max_element(all(children_values)));
+                res += ll(hist[j][want]);
 
-        ll mx_could = fdiv(sum, 2LL);
-        ll ores = min(mx_could, cres + mx);
-        ckmax(res, ores);
-
-        return res;
-    };
-    ll res = dfs(dfs, 0, -1);
+                hist[j][mask]++;
+            }
+        }
+    }
     cout << res << "\n";
 }
 
@@ -423,7 +430,7 @@ int main() {
 
 
 
-    int t = 1; cin >> t;
+    int t = 1; //! cin >> t;
     for(int i = 0; i < t; i++) {
         RAYA;
         RAYA;
