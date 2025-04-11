@@ -16,6 +16,7 @@ struct DSU {
 		x = get(x), y = get(y); if (x == y) return 0;
 		if (e[x] > e[y]) swap(x,y);
         //* Small-To-Large Merging
+        //* x has bigger set count
 		e[x] += e[y]; e[y] = x; return 1;
 	}
 };
