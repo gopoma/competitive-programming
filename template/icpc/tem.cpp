@@ -12,7 +12,7 @@ using vl = V<ll>;
 #define all(x) bg(x), end(x)
 
 #define dbg(x) cout << "Line(" << __LINE__ << "): " << #x << ": " << x << endl;
-#define GA debug(0)
+#define GA     debug(0)
 #define RAYA   cout << "================================" << endl;
 
 void setIn(string s) { freopen(s.c_str(), "r", stdin); }

@@ -40,6 +40,28 @@ string to_string(A v) {
     res += "]";
     return res;
 }
+
+void debug_out() { cerr << endl; }
+
+template <typename Head, typename... Tail>
+void debug_out(Head H, Tail... T) {
+  cerr << " " << to_string(H);
+  debug_out(T...);
+}
+
+#ifdef LOCAL
+#define MACRO(code) do {code} while (false)
+#define dbg(x)      {auto xd = x; cout << "Line(" << __LINE__ << "): " << "\033[1;34m" << #x << "\033[0;32m = \033[35m" << to_string(xd) << "\033[0m" << endl;}
+#define dbg(...)    MACRO(cout << "Line(" << __LINE__ << "): " << "\033[1;34m" << "[" << #__VA_ARGS__ << "]\033[35m:"; debug_out(__VA_ARGS__); cout << "\033[0m" << endl;)
+
+#define GA          dbg(0)
+#define RAYA        cout << "\033[101m" << "================================" << "\033[0m" << endl;
+#else
+#define dbg(x)
+#define dbg(...)
+#define GA
+#define RAYA
+#endif
 //* /Debugger
 
 using ll = long long;
@@ -52,13 +74,8 @@ using vl = V<ll>;
 #define sz(x) int((x).size())
 #define all(x) bg(x), end(x)
 
-#define dbg(x) {auto xd = x; cout << "Line(" << _LINE_ << "): " << "\033[1;34m" << #x << "\033[0;32m = \033[35m" << to_string(xd) << "\033[0m" << endl;}
-#define GA dbg(0)
-#define RAYA   dbg("================================");
-
 void setIn(string s) { freopen(s.c_str(), "r", stdin); }
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
-
 }

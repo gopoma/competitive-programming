@@ -40,6 +40,28 @@ string to_string(A v) {
     res += "]";
     return res;
 }
+
+void debug_out() { cerr << endl; }
+
+template <typename Head, typename... Tail>
+void debug_out(Head H, Tail... T) {
+  cerr << " " << to_string(H);
+  debug_out(T...);
+}
+
+#ifdef LOCAL
+#define MACRO(code) do {code} while (false)
+#define dbg(x)      {auto xd = x; cout << "Line(" << __LINE__ << "): " << "\033[1;34m" << #x << "\033[0;32m = \033[35m" << to_string(xd) << "\033[0m" << endl;}
+#define dbg(...)    MACRO(cout << "Line(" << __LINE__ << "): " << "\033[1;34m" << "[" << #__VA_ARGS__ << "]\033[35m:"; debug_out(__VA_ARGS__); cout << "\033[0m" << endl;)
+
+#define GA          dbg(0)
+#define RAYA        cout << "\033[101m" << "================================" << "\033[0m" << endl;
+#else
+#define dbg(x)
+#define dbg(...)
+#define GA
+#define RAYA
+#endif
 //* /Debugger
 
 using ll = long long;
@@ -78,15 +100,12 @@ using vpi = V<pi>;
 const int MOD = 1e9+7;
 const db PI = acos((db)-1);
 mt19937 rng(0); // or mt19937_64
+//* mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
 
 tcT> bool ckmin(T& a, const T& b) {
 	return b < a ? a = b, 1 : 0; } // set a = min(a,b)
 tcT> bool ckmax(T& a, const T& b) {
 	return a < b ? a = b, 1 : 0; } // set a = max(a,b)
-
-#define dbg(x) {auto xd = x; cout << "Line(" << _LINE_ << "): " << "\033[1;34m" << #x << "\033[0;32m = \033[35m" << to_string(xd) << "\033[0m" << endl;}
-#define GA dbg(0)
-#define RAYA   dbg("================================");
 
 void setIn(string s) { freopen(s.c_str(), "r", stdin); }
 
