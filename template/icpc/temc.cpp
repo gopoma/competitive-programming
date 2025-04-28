@@ -43,6 +43,7 @@ using db = long double; // or double if tight TL
 using str = string;
 
 using pi = pair<int,int>;
+using pl = pair<ll, ll>;
 #define mp make_pair
 #define f first
 #define s second
@@ -51,6 +52,7 @@ using pi = pair<int,int>;
 tcT> using V = vector<T>;
 tcT, size_t SZ> using AR = array<T,SZ>;
 using vi = V<int>;
+using vl = V<ll>;
 using vb = V<bool>;
 using vpi = V<pi>;
 
