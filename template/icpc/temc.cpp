@@ -10,6 +10,10 @@ string to_string(const char* s) {
     return to_string((string) s);
 }
 
+string to_string(char c) {
+    return string(1, c);
+}
+
 string to_string(bool b) {
     return (b ? "true" : "false");
 }
@@ -80,7 +84,7 @@ tcT> bool ckmin(T& a, const T& b) {
 tcT> bool ckmax(T& a, const T& b) {
 	return a < b ? a = b, 1 : 0; } // set a = max(a,b)
 
-#define dbg(x) cout << "Line(" << __LINE__ << "): " << "\033[1;34m" << #x << "\033[0;32m = \033[35m" << to_string(x) << "\033[0m" << endl;
+#define dbg(x) {auto xd = x; cout << "Line(" << _LINE_ << "): " << "\033[1;34m" << #x << "\033[0;32m = \033[35m" << to_string(xd) << "\033[0m" << endl;}
 #define GA dbg(0)
 #define RAYA   dbg("================================");
 
