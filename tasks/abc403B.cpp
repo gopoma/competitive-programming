@@ -52,7 +52,7 @@ void debug_out(Head H, Tail... T) {
 #ifdef LOCAL
 #define MACRO(code) do {code} while (false)
 #define dbg(x)      {auto xd = x; cout << "Line(" << __LINE__ << "): " << "\033[1;34m" << #x << "\033[0;32m = \033[35m" << to_string(xd) << "\033[0m" << endl;}
-#define dbg(...)    MACRO(cout << "Line(" << __LINE__ << "): " << "\033[1;34m" << "[" << #__VA_ARGS__ << "]\033[35m:"; debug_out(__VA_ARGS__); cout << "\033[0m";)
+#define dbg(...)    MACRO(cout << "Line(" << __LINE__ << "): " << "\033[1;34m" << "[" << #__VA_ARGS__ << "]\033[35m:"; debug_out(__VA_ARGS__); cout << "\033[0m" << endl;)
 
 #define GA          dbg(0)
 #define RAYA        cout << "\033[101m" << "================================" << "\033[0m" << endl;
@@ -65,50 +65,38 @@ void debug_out(Head H, Tail... T) {
 //* /Debugger
 
 using ll = long long;
-using db = long double; // or double if tight TL
-using str = string;
-
-using pi = pair<int,int>;
 using pl = pair<ll, ll>;
-#define mp make_pair
-#define f first
-#define s second
 
 #define tcT template<class T
 tcT> using V = vector<T>;
-tcT, size_t SZ> using AR = array<T,SZ>;
-using vi = V<int>;
 using vl = V<ll>;
-using vb = V<bool>;
-using vpi = V<pi>;
 
 #define sz(x) int((x).size())
-#define all(x) begin(x), end(x)
-#define sor(x) sort(all(x))
-#define rsz resize
-#define pb push_back
-#define ft front()
-#define bk back()
-
-#define FOR(i,a,b) for (int i = (a); i < (b); ++i)
-#define F0R(i,a) FOR(i,0,a)
-#define ROF(i,a,b) for (int i = (b)-1; i >= (a); --i)
-#define R0F(i,a) ROF(i,0,a)
-#define rep(a) F0R(_,a)
-#define each(a,x) for (auto& a: x)
-
-const int MOD = 1e9+7;
-const db PI = acos((db)-1);
-mt19937 rng(0); // or mt19937_64
-//* mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
-
-tcT> bool ckmin(T& a, const T& b) {
-	return b < a ? a = b, 1 : 0; } // set a = min(a,b)
-tcT> bool ckmax(T& a, const T& b) {
-	return a < b ? a = b, 1 : 0; } // set a = max(a,b)
+#define all(x) bg(x), end(x)
 
 void setIn(string s) { freopen(s.c_str(), "r", stdin); }
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
+
+    string S, T; cin >> S >> T;
+    const int n = sz(S);
+    const int m = sz(T);
+
+    for(int l = 0; l < n; l++) {
+        int r = l + m - 1;
+        if(r >= n) break;
+        string C = S.substr(l, m);
+        bool ok = true;
+        for(int i = 0; i < m; i++) {
+            if(C[i] == '?') continue;
+            else ok &= (T[i] == C[i]);
+        }
+        if(ok) {
+            cout << "Yes\n";
+            return 0;
+        }
+    }
+    cout << "No\n";
+    return 0;
 }

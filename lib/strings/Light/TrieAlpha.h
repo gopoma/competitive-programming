@@ -28,6 +28,8 @@ public:
                 cur->child[alphaNum] = new vertex(word[i]);
             cur = cur->child[alphaNum];
         }
+        assert(cur->alphabet == word.back());
+        //! DON'T forget to process cur at this stage
         cur->exist = true;
     }
 
