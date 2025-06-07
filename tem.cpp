@@ -28,11 +28,6 @@ string to_string(bool b) {
 template <typename A>
 string to_string(A v);
 
-template <typename A, typename B>
-string to_string(pair<A, B> p) {
-    return "(" + to_string(p.first) + ", " + to_string(p.second) + ")";
-}
-
 string to_string(vector<bool> v) {
     bool first = true;
     string res = "[";
@@ -46,6 +41,12 @@ string to_string(vector<bool> v) {
     res += "]";
     return res;
 }
+
+template <typename A, typename B>
+string to_string(pair<A, B> p) {
+    return "(" + to_string(p.first) + ", " + to_string(p.second) + ")";
+}
+
 
 template <typename A>
 string to_string(A v) {
@@ -142,8 +143,6 @@ double time_elapsed() {
 //* /Template
 
 void solve() {
-    V<vb> taken(10, vb(10));
-    dbg(taken);
 }
 
 int main() {
