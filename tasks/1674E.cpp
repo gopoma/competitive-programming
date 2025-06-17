@@ -1,5 +1,5 @@
 //* sometimes pragmas don't work, if so, just comment it!
-#pragma GCC optimize ("Ofast")
+//? #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
@@ -134,89 +134,84 @@ void setIn(string s) { freopen(s.c_str(), "r", stdin); }
 const auto beg_time = std::chrono::high_resolution_clock::now();
 // https://stackoverflow.com/questions/47980498/accurate-c-c-clock-on-a-multi-core-processor-with-auto-overclock?noredirect=1&lq=1
 double time_elapsed() {
-    return chrono::duration<double>(std::chrono::high_resolution_clock::now() -
-    beg_time)
-    .count();
+	return chrono::duration<double>(std::chrono::high_resolution_clock::now() -
+	                                beg_time)
+	    .count();
 }
 
 //* Template
+ll cdiv(ll a, ll b) {
+	return a / b + ((a ^ b) > 0 && a % b);
+}  // divide a by b rounded up
+ll fdiv(ll a, ll b) {
+	return a / b - ((a ^ b) < 0 && a % b);
+}  // divide a by b rounded down
+
 //* /Template
 
-tcT > void remDup(vector<T> &v) {  // sort and remove duplicates
-	sort(all(v));
-	v.erase(unique(all(v)), end(v));
-}
-
-using Edge = tuple<int, int, int>;
-using Info = tuple<int, int, int, int>;
-const int INF = int(1e9) + 5;
-
 void solve() {
-    int n, m; cin >> n >> m;
-    V<Edge> edges(m);
-    for(auto& [u, v, c]: edges) {
-        cin >> u >> v >> c;
-    }
-    int b, e; cin >> b >> e;
+    ll n; cin >> n;
+    vl a(n); for(auto& x: a) cin >> x;
 
-    V<vpi> adj(n + 5);
-    map<int, vpi> mp_edges;
-    for(auto& [u, v, c]: edges) {
-        adj[u].emplace_back(v, c);
-        adj[v].emplace_back(u, c);
-        mp_edges[c].emplace_back(u, v);
-    }
+    ll res = ll(1e18);
 
-    vi q; q.emplace_back(b);
-    vi C;
-    map<int, bool> already_colors;
-    vb already_nodes(n + 5);
-    vi dist(n + 5, -1);
-    int current_dist = -1;
-    while(!q.empty()) {
-        remDup(q);
-        current_dist++;
-        for(auto& node: q) {
-            already_nodes[node] = true;
-            dist[node] = current_dist;
+    {
+        vl b = a;
+        sort(b.begin(), b.end());
+        res = min(res, cdiv(b[0], 2LL) + cdiv(b[1], 2LL));
+    } dbg(res);
+
+    for(int i = 0; i + 1 < n; i++) {
+        auto check = [&](ll middle) -> bool {
+            ll x = a[i];
+            ll y = a[i + 1];
+
+            x -= middle;
+            y -= middle;
+            x = max(0LL, x);
+            y = max(0LL, y);
+
+            ll extra = x + y;
+            bool ok = extra <= middle;
+            return ok;
+        };
+
+        ll left = 0; // always bad
+        ll right = ll(1e9); // always good
+
+        while(left + 1 < right) {
+            ll middle = (left + right) >> 1LL;
+
+            if(check(middle)) right = middle;
+            else left = middle;
         }
 
-        C.clear();
-        for(auto& node: q) {
-            for(auto& [nxt, c]: adj[node]) {
-                if(!already_colors[c]) {
-                    C.emplace_back(c);
-                }
-            }
-        }
-        remDup(C);
+        res = min(res, right);
+    } dbg(res);
 
-        q.clear();
-        for(auto& c: C) {
-            already_colors[c] = true;
-            for(auto& [u, v]: mp_edges[c]) {
-                if(!already_nodes[u]) {
-                    q.emplace_back(u);
-                }
-                if(!already_nodes[v]) {
-                    q.emplace_back(v);
-                }
-            }
-        }
-    }
+    for(int i = 0; i + 2 < n; i++) {
+        ll x = a[i];
+        ll y = a[i + 2];
 
-    cout << dist[e] << "\n";
+
+        ll mn = min(x, y);
+        ll taken = mn;
+        x -= mn;
+        y -= mn;
+
+        taken += cdiv(x, 2LL) + cdiv(y, 2LL);
+
+        res = min(res, taken);
+    } dbg(res);
+
+    cout << res << "\n";
 }
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
-    int t = 1; cin >> t;
+    int t = 1; //* cin >> t;
     while(t--) {
-        RAYA;
-        RAYA;
-        RAYA;
-        RAYA;
         solve();
     }
 

@@ -1,5 +1,5 @@
 //* sometimes pragmas don't work, if so, just comment it!
-#pragma GCC optimize ("Ofast")
+//? #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
@@ -134,89 +134,137 @@ void setIn(string s) { freopen(s.c_str(), "r", stdin); }
 const auto beg_time = std::chrono::high_resolution_clock::now();
 // https://stackoverflow.com/questions/47980498/accurate-c-c-clock-on-a-multi-core-processor-with-auto-overclock?noredirect=1&lq=1
 double time_elapsed() {
-    return chrono::duration<double>(std::chrono::high_resolution_clock::now() -
-    beg_time)
-    .count();
+	return chrono::duration<double>(std::chrono::high_resolution_clock::now() -
+	                                beg_time)
+	    .count();
 }
 
 //* Template
 //* /Template
 
-tcT > void remDup(vector<T> &v) {  // sort and remove duplicates
-	sort(all(v));
-	v.erase(unique(all(v)), end(v));
+void norm(str& res) {
+    while(!res.empty() && res.bk == '0') res.pop_back();
 }
 
-using Edge = tuple<int, int, int>;
-using Info = tuple<int, int, int, int>;
-const int INF = int(1e9) + 5;
+str get(ll xx) {
+    str res;
+    for(ll bit = 0; bit <= 60; bit++) {
+        if(xx & (1LL << bit)) res.push_back('1');
+        else res.push_back('0');
+    }
+    norm(res);
+    reverse(all(res));
+    return res;
+}
+
+bool brute(ll x, ll y) {
+    deque<str> q; q.emplace_back(get(x));
+    map<str, bool> vis; vis[get(x)] = true;
+
+    while(!q.empty()) {
+        str cur = q.ft; q.pop_front();
+        if(sz(cur) > 60) continue;
+
+        if(cur == get(y)) return true;
+
+        {
+            str newCur = cur;
+            newCur.push_back('0');
+            norm(newCur);
+            reverse(all(newCur));
+
+            if(!vis[newCur]) {
+                vis[newCur] = true;
+                q.emplace_back(newCur);
+            }
+        }
+
+        {
+            str newCur = cur;
+            newCur.push_back('1');
+            norm(newCur);
+            reverse(all(newCur));
+
+            if(!vis[newCur]) {
+                vis[newCur] = true;
+                q.emplace_back(newCur);
+            }
+        }
+    }
+    return false;
+}
+
+bool slv(ll x, ll y) {
+    str X1 = get(x);
+    str X2 = get(2LL * x + 1LL); reverse(all(X2));
+    str X3 = X1; while(!X3.empty() && X3.back() == '0') X3.pop_back();
+    V<str> X{X1, X2, X3};
+    reverse(all(X1));
+    reverse(all(X2));
+    reverse(all(X3));
+    X.emplace_back(X1);
+    X.emplace_back(X2);
+    X.emplace_back(X3);
+
+    dbg(X);
+
+    str Y = get(y);
+    for(auto& base: X) {
+        if(base == Y) {
+            return true;
+        }
+        norm(base);
+        const int n = sz(base);
+        const int m = sz(Y);
+        for(int i = 0; i < m; i++) {
+            const int left = i;
+            const int right = left + n - 1;
+            if(right >= m) continue;
+
+            bool ok = true;
+            for(int j = 0; j < left; j++) ok &= (Y[j] == '1');
+            for(int j = right + 1; j < m; j++) ok &= (Y[j] == '1');
+            for(int j = left; j <= right; j++) ok &= (base[j - left] == Y[j]);
+
+            if(ok) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
 
 void solve() {
-    int n, m; cin >> n >> m;
-    V<Edge> edges(m);
-    for(auto& [u, v, c]: edges) {
-        cin >> u >> v >> c;
-    }
-    int b, e; cin >> b >> e;
-
-    V<vpi> adj(n + 5);
-    map<int, vpi> mp_edges;
-    for(auto& [u, v, c]: edges) {
-        adj[u].emplace_back(v, c);
-        adj[v].emplace_back(u, c);
-        mp_edges[c].emplace_back(u, v);
-    }
-
-    vi q; q.emplace_back(b);
-    vi C;
-    map<int, bool> already_colors;
-    vb already_nodes(n + 5);
-    vi dist(n + 5, -1);
-    int current_dist = -1;
-    while(!q.empty()) {
-        remDup(q);
-        current_dist++;
-        for(auto& node: q) {
-            already_nodes[node] = true;
-            dist[node] = current_dist;
-        }
-
-        C.clear();
-        for(auto& node: q) {
-            for(auto& [nxt, c]: adj[node]) {
-                if(!already_colors[c]) {
-                    C.emplace_back(c);
-                }
-            }
-        }
-        remDup(C);
-
-        q.clear();
-        for(auto& c: C) {
-            already_colors[c] = true;
-            for(auto& [u, v]: mp_edges[c]) {
-                if(!already_nodes[u]) {
-                    q.emplace_back(u);
-                }
-                if(!already_nodes[v]) {
-                    q.emplace_back(v);
-                }
-            }
-        }
-    }
-
-    cout << dist[e] << "\n";
+    ll x, y; cin >> x >> y;
+    dbg(x, y);
+    dbg(bitset<30>(x).to_string());
+    dbg(bitset<30>(y).to_string());
+    bool res = slv(x, y);
+    cout << (res?"YES":"NO") << "\n";
 }
+
+ll rng_ll(ll L, ll R) { assert(L <= R);
+	return uniform_int_distribution<ll>(L,R)(rng);  }
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
-    int t = 1; cin >> t;
+    while(0) {
+        RAYA;
+        ll x = rng_ll(1, 100);
+        ll y = rng_ll(1, 100);
+        dbg(x, y);
+        dbg(bitset<30>(x).to_string());
+        dbg(bitset<30>(y).to_string());
+        bool res = brute(x, y);
+        bool greedy = slv(x, y);
+        dbg(res, greedy);
+        assert(res == greedy);
+    }
+
+    int t = 1; //* cin >> t;
     while(t--) {
-        RAYA;
-        RAYA;
-        RAYA;
-        RAYA;
         solve();
     }
 

@@ -1,5 +1,5 @@
 //* sometimes pragmas don't work, if so, just comment it!
-#pragma GCC optimize ("Ofast")
+//? #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
@@ -134,89 +134,117 @@ void setIn(string s) { freopen(s.c_str(), "r", stdin); }
 const auto beg_time = std::chrono::high_resolution_clock::now();
 // https://stackoverflow.com/questions/47980498/accurate-c-c-clock-on-a-multi-core-processor-with-auto-overclock?noredirect=1&lq=1
 double time_elapsed() {
-    return chrono::duration<double>(std::chrono::high_resolution_clock::now() -
-    beg_time)
-    .count();
+	return chrono::duration<double>(std::chrono::high_resolution_clock::now() -
+	                                beg_time)
+	    .count();
 }
 
 //* Template
 //* /Template
 
-tcT > void remDup(vector<T> &v) {  // sort and remove duplicates
-	sort(all(v));
-	v.erase(unique(all(v)), end(v));
-}
-
-using Edge = tuple<int, int, int>;
-using Info = tuple<int, int, int, int>;
-const int INF = int(1e9) + 5;
-
+using vs = V<str>;
+const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
 void solve() {
-    int n, m; cin >> n >> m;
-    V<Edge> edges(m);
-    for(auto& [u, v, c]: edges) {
-        cin >> u >> v >> c;
-    }
-    int b, e; cin >> b >> e;
-
-    V<vpi> adj(n + 5);
-    map<int, vpi> mp_edges;
-    for(auto& [u, v, c]: edges) {
-        adj[u].emplace_back(v, c);
-        adj[v].emplace_back(u, c);
-        mp_edges[c].emplace_back(u, v);
+    int n, m, k; cin >> n >> m >> k;
+    V<vs> a;
+    for(int _ = 0; _ < k + 1; _++) {
+        vs tmp(n);
+        for(auto& x: tmp) cin >> x;
+        a.emplace_back(tmp);
     }
 
-    vi q; q.emplace_back(b);
-    vi C;
-    map<int, bool> already_colors;
-    vb already_nodes(n + 5);
-    vi dist(n + 5, -1);
-    int current_dist = -1;
-    while(!q.empty()) {
-        remDup(q);
-        current_dist++;
-        for(auto& node: q) {
-            already_nodes[node] = true;
-            dist[node] = current_dist;
+    dbg(n, m, k);
+    for(auto& vec: a) {
+        for(auto& x: vec) dbg(x);
+        RAYA;
+    }
+
+    auto check = [&](int i, int row, int col) -> bool {
+        set<char> E;
+        for(int id = 0; id < 4; id++) {
+            int nrow = row + dx[id];
+            int ncol = col + dy[id];
+
+            E.emplace(a[i][nrow][ncol]);
         }
 
-        C.clear();
-        for(auto& node: q) {
-            for(auto& [nxt, c]: adj[node]) {
-                if(!already_colors[c]) {
-                    C.emplace_back(c);
+        if(sz(E) != 1) return false;
+
+        char C = a[i][row][col];
+
+        if(C == (*E.begin())) return false;
+
+        return true;
+    };
+
+    auto ocheck = [&](int i, int row, int col) -> bool {
+        if(a[i][row][col] != a[i][row - 1][col]) return false;
+
+        set<char> E;
+        for(int id = 0; id < 4; id++) {
+            int nrow = row + dx[id];
+            int ncol = col + dy[id];
+
+            E.emplace(a[i][nrow][ncol]);
+        }
+
+        E.emplace(a[i][row][col]);
+
+        if(sz(E) != 1) return false;
+
+        return true;
+    };
+
+
+    vi ord(k + 1); iota(all(ord), 0);
+    vi cnt(k + 1);
+    for(int i = 0; i < k + 1; i++) {
+        for(int row = 1; row < n - 1; row++) {
+            for(int col = 1; col < m - 1; col++) {
+                cnt[i] += check(i, row, col);
+            }
+        }
+    }
+    dbg(cnt);
+
+    sort(all(ord), [&](int i, int j) {
+        return cnt[i] > cnt[j];
+    });
+
+
+    using Operation = tuple<int, int, int>;
+    V<Operation> response;
+
+    for(int i = 0; i + 1 < k + 1; i++) {
+
+        for(int row = 1; row < n - 1; row++) {
+            for(int col = 1; col < m - 1; col++) {
+                if(check(ord[i], row, col) && (a[ord[i]][row - 1][col] == a[ord[i + 1]][row - 1][col]) && ocheck(ord[i + 1], row, col)) {
+                    response.emplace_back(1, row + 1, col + 1);
                 }
             }
         }
-        remDup(C);
 
-        q.clear();
-        for(auto& c: C) {
-            already_colors[c] = true;
-            for(auto& [u, v]: mp_edges[c]) {
-                if(!already_nodes[u]) {
-                    q.emplace_back(u);
-                }
-                if(!already_nodes[v]) {
-                    q.emplace_back(v);
-                }
-            }
-        }
+        response.emplace_back(2, ord[i + 1] + 1, -1);
     }
 
-    cout << dist[e] << "\n";
+    dbg(ord);
+    cout << (ord.ft + 1) << "\n";
+    cout << sz(response) << "\n";
+    for(auto& [type, row, col]: response) {
+        if(type == 1) {
+            cout << type << " " << row << " " << col << "\n";
+        } else {
+            cout << "2 " << row << "\n";
+        }
+    }
 }
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
-    int t = 1; cin >> t;
+    int t = 1; //* cin >> t;
     while(t--) {
-        RAYA;
-        RAYA;
-        RAYA;
-        RAYA;
         solve();
     }
 

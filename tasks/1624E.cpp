@@ -134,78 +134,132 @@ void setIn(string s) { freopen(s.c_str(), "r", stdin); }
 const auto beg_time = std::chrono::high_resolution_clock::now();
 // https://stackoverflow.com/questions/47980498/accurate-c-c-clock-on-a-multi-core-processor-with-auto-overclock?noredirect=1&lq=1
 double time_elapsed() {
-    return chrono::duration<double>(std::chrono::high_resolution_clock::now() -
-    beg_time)
-    .count();
+	return chrono::duration<double>(std::chrono::high_resolution_clock::now() -
+	                                beg_time)
+	    .count();
 }
 
 //* Template
 //* /Template
 
-tcT > void remDup(vector<T> &v) {  // sort and remove duplicates
-	sort(all(v));
-	v.erase(unique(all(v)), end(v));
-}
+using vs = V<str>;
+using Info = tuple<int, int, int>;
+using Result = tuple<bool, Info, int>;
+using ResponseItem = tuple<int, int, int>;
 
-using Edge = tuple<int, int, int>;
-using Info = tuple<int, int, int, int>;
-const int INF = int(1e9) + 5;
-
+bool vis2D[10 + 1][10 + 1];
+bool vis3D[10 + 1][10 + 1][10 + 1];
 void solve() {
+    //* <>
     int n, m; cin >> n >> m;
-    V<Edge> edges(m);
-    for(auto& [u, v, c]: edges) {
-        cin >> u >> v >> c;
-    }
-    int b, e; cin >> b >> e;
+    vs a(n); for(auto& x: a) cin >> x;
+    str target; cin >> target;
+    dbg(n, m);
+    dbg(a);
+    dbg(target);
 
-    V<vpi> adj(n + 5);
-    map<int, vpi> mp_edges;
-    for(auto& [u, v, c]: edges) {
-        adj[u].emplace_back(v, c);
-        adj[v].emplace_back(u, c);
-        mp_edges[c].emplace_back(u, v);
-    }
+    memset(vis2D, false, sizeof(vis2D));
+    memset(vis3D, false, sizeof(vis3D));
 
-    vi q; q.emplace_back(b);
-    vi C;
-    map<int, bool> already_colors;
-    vb already_nodes(n + 5);
-    vi dist(n + 5, -1);
-    int current_dist = -1;
-    while(!q.empty()) {
-        remDup(q);
-        current_dist++;
-        for(auto& node: q) {
-            already_nodes[node] = true;
-            dist[node] = current_dist;
+    set<str> U;
+    V<Info> transitions;
+    auto add = [&](int i, int start, int length) -> void {
+        str current = a[i].substr(start, length);
+        if(length == 2) {
+            int x = current[0] - '0';
+            int y = current[1] - '0';
+            if(vis2D[x][y]) return;
+            vis2D[x][y] = true;
+            transitions.emplace_back(i, start, length);
+        } else if(length == 3) {
+            int x = current[0] - '0';
+            int y = current[1] - '0';
+            int z = current[2] - '0';
+            if(vis3D[x][y][z]) return;
+            vis3D[x][y][z] = true;
+            transitions.emplace_back(i, start, length);
+        } else assert(false);
+    };
+    for(int i = 0; i < sz(a); i++) {
+        const int k = sz(a[i]);
+        for(int l = 0; l < k; l++) {
+            const int r = l + 2 - 1;
+            if(r >= k) break;
+
+            add(i, l, r - l + 1);
         }
+        for(int l = 0; l < k; l++) {
+            const int r = l + 3 - 1;
+            if(r >= k) break;
+            add(i, l, r - l + 1);
+        }
+    }
 
-        C.clear();
-        for(auto& node: q) {
-            for(auto& [nxt, c]: adj[node]) {
-                if(!already_colors[c]) {
-                    C.emplace_back(c);
+    const Info   DefaultInfo   = make_tuple(-1, -1, -1);
+    const Result DefaultResult = make_tuple(false, DefaultInfo, -1);
+    const int N = sz(target);
+
+    V<Result> dp(N + 5, DefaultResult);
+    for(int i = N; i >= 0; i--) {
+        if(i == N) dp[i] = make_tuple(true, DefaultInfo, -1);
+        else {
+            for(auto& [id, start, length]: transitions) {
+                if(i + length - 1 >= N) continue;
+
+                if(target.substr(i, length) == a[id].substr(start, length)) {
+                    auto [okNxt, _, __] = dp[i + length];
+                    if(okNxt) {
+                        dp[i] = make_tuple(true, make_tuple(id, start, length), i + length);
+                    }
                 }
             }
         }
-        remDup(C);
+    }
 
-        q.clear();
-        for(auto& c: C) {
-            already_colors[c] = true;
-            for(auto& [u, v]: mp_edges[c]) {
-                if(!already_nodes[u]) {
-                    q.emplace_back(u);
-                }
-                if(!already_nodes[v]) {
-                    q.emplace_back(v);
-                }
-            }
+//*    auto dp = [&](auto&& dp, int i) -> Result {
+//*        if(i == N) return make_tuple(true, DefaultInfo, -1);
+//*        if(vis[i]) return memo[i];
+//*        vis[i] = true;
+//*
+//*        Result res = DefaultResult;
+//*        //* bool res = false;
+//*        for(auto& [id, start, length]: transitions) {
+//*            if(i + length - 1 >= N) continue;
+//*
+//*            if(target.substr(i, length) == a[id].substr(start, length)) {
+//*                auto [okNxt, _, __] = dp(dp, i + length);
+//*                if(okNxt) {
+//*                    res = make_tuple(true, make_tuple(id, start, length), i + length);
+//*                }
+//*            }
+//*        }
+//*
+//*        return memo[i] = res;
+//*    };
+
+    auto [globalOk, _, __] = dp[0];
+    dbg(globalOk);
+    if(!globalOk) {
+        cout << "-1\n";
+        return;
+    }
+
+    V<ResponseItem> response;
+    {
+        int i = 0;
+        while(true) {
+            auto [currentOk, currentInfo, currentNxt] = dp[i];
+            if(currentNxt == -1) break;
+            assert(currentOk);
+            auto [info_i, info_start, info_length] = currentInfo;
+            dbg(info_i, info_start, info_length);
+            response.emplace_back(info_start + 1, (info_start + info_length - 1) + 1, info_i + 1);
+            i = currentNxt;
         }
     }
 
-    cout << dist[e] << "\n";
+    cout << sz(response) << "\n";
+    for(auto& [l, r, i]: response) cout << l << " " << r << " " << i << "\n";
 }
 
 int main() {
