@@ -1,5 +1,5 @@
 //* sometimes pragmas don't work, if so, just comment it!
-//? #pragma GCC optimize ("Ofast")
+#pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
@@ -140,9 +140,64 @@ double time_elapsed() {
 }
 
 //* Template
+/**
+ * Author: Lukas Polacek
+ * Date: 2009-10-30
+ * License: CC0
+ * Source: folklore/TopCoder
+ * Description: Computes partial sums a[0] + a[1] + ... + a[pos - 1], and updates single elements a[i],
+ * taking the difference between the old and new value.
+ * Time: Both operations are $O(\log N)$.
+ * Status: Stress-tested
+ */
+
+tcT> struct BIT {
+	int N; V<T> data;
+	void init(int _N) { N = _N; data.rsz(N); }
+	void add(int p, T x) { for (++p;p<=N;p+=p&-p) data[p-1] += x; }
+	T sum(int l, int r) { return sum(r+1)-sum(l); }
+	T sum(int r) { T s = 0; for(;r;r-=r&-r)s+=data[r-1]; return s; }
+	int lower_bound(T sum) {
+		if (sum <= 0) return -1;
+		int pos = 0;
+		for (int pw = 1<<25; pw; pw >>= 1) {
+			int npos = pos+pw;
+			if (npos <= N && data[npos-1] < sum)
+				pos = npos, sum -= data[pos-1];
+		}
+		return pos;
+	}
+};
 //* /Template
 
 void solve() {
+    //* <>
+    int n; cin >> n;
+    vi a(n); for(auto& x: a) cin >> x;
+
+    map<int, int> where;
+    BIT<int> st; st.init(n);
+    ll res = 0;
+    for(int i = 0; i < n; i++) {
+        if(where.count(a[i])) {
+            st.add(where[a[i]], -1);
+            where[a[i]] = i;
+            st.add(i, +1);
+        } else {
+            where[a[i]] = i;
+            st.add(i, +1);
+        }
+
+        int left = -1; // always bad
+        int right = i; // always good
+        while(left + 1 < right) {
+            int middle = (left + right) >> 1;
+            if(st.sum(middle, i) == (i - middle + 1)) right = middle;
+            else left = middle;
+        }
+        res += ll(i) - ll(right) + 1;
+    }
+    cout << res << "\n";
 }
 
 int main() {

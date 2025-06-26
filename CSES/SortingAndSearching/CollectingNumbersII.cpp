@@ -1,5 +1,5 @@
 //* sometimes pragmas don't work, if so, just comment it!
-//? #pragma GCC optimize ("Ofast")
+#pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
@@ -143,6 +143,74 @@ double time_elapsed() {
 //* /Template
 
 void solve() {
+    //* <>
+    int n, m; cin >> n >> m;
+    vi p(n); for(auto& x: p) {
+        cin >> x;
+        x--;
+    }
+    V<pi> queries(m);
+    for(auto& [a, b]: queries) {
+        cin >> a >> b;
+        a--; b--;
+    }
+
+    vi where(n);
+    for(int i = 0; i < n; i++) {
+        where[p[i]] = i;
+    }
+
+    auto check = [&](int i) -> bool {
+        return (0 <= i && i < n);
+    };
+
+    int res = 0;
+    for(int i = 0; i < n; i++) {
+        if(check(i - 1)) {
+            res += !(where[i - 1] < where[i]);
+        } else {
+            res++;
+        }
+    }
+
+    dbg(res);
+    for(auto& [a, b]: queries) {
+        RAYA;
+        dbg(a, b);
+        set<int> temp;
+        for(int d = -1; d <= +1; d++) {
+            if(check(p[a] + d)) {
+                temp.emplace(p[a] + d);
+            }
+            if(check(p[b] + d)) {
+                temp.emplace(p[b] + d);
+            }
+        }
+        dbg(temp);
+
+        for(auto& x: temp) {
+            if(check(x - 1)) {
+                res -= !(where[x - 1] < where[x]);
+            } else {
+                res--;
+            }
+        }
+        dbg(res);
+
+        swap(p[a], p[b]);
+        swap(where[p[a]], where[p[b]]);
+
+        for(auto& x: temp) {
+            if(check(x - 1)) {
+                res += !(where[x - 1] < where[x]);
+            } else {
+                res++;
+            }
+        }
+        dbg(res);
+
+        cout << res << "\n";
+    }
 }
 
 int main() {
