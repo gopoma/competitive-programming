@@ -271,216 +271,65 @@ constexpr bool isprime(unsigned long long n){
 using isprime_impl::isprime;
 //* /Template
 
-//
-uint64_t Number(uint64_t a,uint64_t b){
-    mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
-    return (a+rng()%(b-a+1));
-}
-uint64_t stein(uint64_t x,uint64_t y){
-    if(x==y) return x;
-    uint64_t a=y-x;
-    uint64_t b=x-y;
-    int n=__builtin_ctzll(b);
-    uint64_t s=(x<y?a:b);
-    uint64_t t=(x<y?x:y);
-    return stein(s>>n,t);
-}
-uint64_t fastGCD(uint64_t x,uint64_t y){
-    if(x==0) return y;
-    if(y==0) return x;
-    int n=__builtin_ctzll(x);
-    int m=__builtin_ctzll(y);
-    return (stein(x>>n,y>>m)<<(n<m?n:m));
-}
-uint64_t limit=2147483648;
-vector<int> small={2,3,5,7};
-vector<int> large={2,3,5,7,11,13,17,19,23};
-uint64_t exp(uint64_t x,uint64_t y,uint64_t m){
-    uint64_t res=1;
-    while(y){
-        if(y&1) res=((__uint128_t)res*x)%m;
-        x=((__uint128_t)x*x)%m;
-        y>>=1;
-    }
-    return res;
-}
-bool isComposite(uint64_t a,uint64_t d,uint64_t n,uint64_t s){
-    uint64_t x=exp(a,d,n);
-    if(x==1) return false;
-    while(s--){
-        if(x==n-1) return false;
-        x=((__uint128_t)x*x)%n;
-    }
-    return true;
-}
-bool isPrime(uint64_t n){
-    if(n==1) return false;
-    vector<int> bases=(n<limit?small:large);
-    if(find(bases.begin(),bases.end(),n)!=bases.end()) return true;
-    for(int p:bases) if(n%p==0) return false;
-    uint64_t s=__builtin_ctzll(n-1);
-    uint64_t d=(n-1)>>s;
-    for(int base:bases){
-        if(isComposite(base,d,n,s)) return false;
-    }
-    return true;
-}
-class Montgomery{
-    uint64_t m;
-    uint64_t r;
-    public:
-    Montgomery(uint64_t n):m(n),r(n){
-        for(int i=0;i<5;i++){
-            r*=2-m*r;
-        }
-    }
-    uint64_t fma(uint64_t a,uint64_t b,uint64_t c) const{
-        __uint128_t d=__uint128_t(a)*b;
-        uint64_t e=c+m+(d>>64);
-        uint64_t f=uint64_t(d)*r;
-        uint64_t g=(__uint128_t(f)*m)>>64;
-        return (e-g);
-    }
-    uint64_t mul(uint64_t a,uint64_t b) const{
-        return fma(a,b,0);
-    }
+/**
+ * Description: Tests primality up to $SZ$. Runs faster if only
+ 	* odd indices are stored.
+ * Time: O(SZ\log\log SZ) or O(SZ)
+ * Source: KACTL
+ * Verification: https://open.kattis.com/problems/primesieve
+ */
+
+template<int SZ> struct Sieve {
+	bitset<SZ> is_prime; vi primes;
+	Sieve() {
+		is_prime.set(); is_prime[0] = is_prime[1] = 0;
+		for (int i = 4; i < SZ; i += 2) is_prime[i] = 0;
+		for (int i = 3; i*i < SZ; i += 2) if (is_prime[i])
+			for (int j = i*i; j < SZ; j += i*2) is_prime[j] = 0;
+		F0R(i,SZ) if (is_prime[i]) primes.pb(i);
+	}
+	// int sp[SZ]{}; // smallest prime that divides
+	// Sieve() { // above is faster
+	// 	FOR(i,2,SZ) {
+	// 		if (sp[i] == 0) sp[i] = i, primes.pb(i);
+	// 		for (int p: primes) {
+	// 			if (p > sp[i] || i*p >= SZ) break;
+	// 			sp[i*p] = p;
+	// 		}
+	// 	}
+	// }
 };
-// uint64_t pollard_rho( uint64_t n ) {
-//     if( n % 2 == 0 ) { return 2; }
-//     const Montgomery m( n );
 
-//     constexpr uint64_t C1 = 1;
-//     constexpr uint64_t C2 = 2;
-//     constexpr uint64_t M = 512;
-
-//     uint64_t Z1 = 1;
-//     uint64_t Z2 = 2;
-// retry:
-//     uint64_t z1 = Z1;
-//     uint64_t z2 = Z2;
-//     for( size_t k = M; ; k *= 2 ) {
-//         const uint64_t x1 = z1 + n;
-//         const uint64_t x2 = z2 + n;
-//         for( size_t j = 0; j < k; j += M ) {
-//             const uint64_t y1 = z1;
-//             const uint64_t y2 = z2;
-
-//             uint64_t q1 = 1;
-//             uint64_t q2 = 2;
-//             z1 = m.fma( z1, z1, C1 );
-//             z2 = m.fma( z2, z2, C2 );
-//             for( size_t i = 0; i < M; ++i ) {
-//                 const uint64_t t1 = x1 - z1;
-//                 const uint64_t t2 = x2 - z2;
-//                 z1 = m.fma( z1, z1, C1 );
-//                 z2 = m.fma( z2, z2, C2 );
-//                 q1 = m.mul( q1, t1 );
-//                 q2 = m.mul( q2, t2 );
-//             }
-//             q1 = m.mul( q1, x1 - z1 );
-//             q2 = m.mul( q2, x2 - z2 );
-
-//             const uint64_t q3 = m.mul( q1, q2 );
-//             const uint64_t g3 = fastGCD( n, q3 );
-//             if( g3 == 1 ) { continue; }
-//             if( g3 != n ) { return g3; }
-
-//             const uint64_t g1 = fastGCD( n, q1 );
-//             const uint64_t g2 = fastGCD( n, q2 );
-
-//             const uint64_t C = g1 != 1 ? C1 : C2;
-//             const uint64_t x = g1 != 1 ? x1 : x2;
-//             uint64_t       z = g1 != 1 ? y1 : y2;
-//             uint64_t       g = g1 != 1 ? g1 : g2;
-
-//             if( g == n ) {
-//                 do {
-//                     z = m.fma( z, z, C );
-//                     g = fastGCD( n, x - z );
-//                 } while( g == 1 );
-//             }
-//             if( g != n ) {
-//                 return g;
-//             }
-
-//             Z1 += 2;
-//             Z2 += 2;
-//             goto retry;
-//         }
-//     }
-// }
-uint64_t rho(uint64_t n){
-    if(n%2==0) return 2;
-    Montgomery m(n);
-    uint64_t c1=1;
-    uint64_t c2=2;
-    uint64_t M=512;
-    uint64_t w1=1;
-    uint64_t w2=2;
-    retry:
-    uint64_t z1=w1;
-    uint64_t z2=w2;
-    for(uint64_t k=M;;k<<=1){
-        uint64_t x1=z1+n;
-        uint64_t x2=z2+n;
-        for(uint64_t j=0;j<k;j+=M){
-            uint64_t y1=z1;
-            uint64_t y2=z2;
-            uint64_t q1=1;
-            uint64_t q2=2;
-            z1=m.fma(z1,z1,c1);
-            z2=m.fma(z2,z2,c2);
-            for(uint64_t i=0;i<M;i++){
-                uint64_t t1=x1-z1;
-                uint64_t t2=x2-z2;
-                z1=m.fma(z1,z1,c1);
-                z2=m.fma(z2,z2,c2);
-                q1=m.mul(q1,t1);
-                q2=m.mul(q2,t2);
-            }
-            q1=m.mul(q1,x1-z1);
-            q2=m.mul(q2,x2-z2);
-            uint64_t q3=m.mul(q1,q2);
-            uint64_t g3=fastGCD(n,q3);
-            if(g3==1) continue;
-            if(g3!=n) return g3;
-            uint64_t g1=fastGCD(n,q1);
-            uint64_t g2=fastGCD(n,q2);
-            uint64_t c=(g1!=1?c1:c2);
-            uint64_t x=(g1!=1?x1:x2);
-            uint64_t z=(g1!=1?y1:y2);
-            uint64_t g=(g1!=1?g1:g2);
-            if(g==n){
-                do{
-                    z=m.fma(z,z,c);
-                    g=fastGCD(n,x-z);
-                }while(g==1);
-            }
-            if(g!=n) return g;
-            w1+=2;
-            w2+=2;
-            goto retry;
-        }
-    }
-}
-//
+Sieve<int(1e7) + 1> st;
 
 void solve() {
     ll L, R; cin >> L >> R;
-    ll res = 0;
-    for(ll x = L; x <= R; x++) {
-        if(isprime(x)) {
-            res++;
-            continue;
-        }
 
-        ll p = rho(x);
-        ll cur = x;
-        while(cur > 1 && cur % p == 0) {
-            cur /= p;
+    ll res = 0;
+    bool L_already = false;
+    for(auto& x: st.primes) {
+        ll current = ll(x) * ll(x);
+        while(current <= R) {
+            L_already |= (L == current);
+            res += (L <= current);
+            //* if(L <= current) dbg(current);
+            current *= x;
         }
-        res += (cur == 1);
     }
+
+    for(ll x = L; x <= R; x++) {
+        if(x == L) {
+            if(isprime(x)) {
+                L_already = true;
+            }
+        }
+        if(isprime(x)) {
+            //* dbg(x);
+            res++;
+        }
+    }
+    dbg(res, L_already);
+    res += !L_already;
     cout << res << "\n";
 }
 

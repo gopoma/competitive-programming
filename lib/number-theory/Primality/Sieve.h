@@ -5,6 +5,7 @@
  * Source: KACTL
  * Verification: https://open.kattis.com/problems/primesieve
  */
+//! Be careful that every prime in primes are int
 
 template<int SZ> struct Sieve {
 	bitset<SZ> is_prime; vi primes;
