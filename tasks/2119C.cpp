@@ -143,6 +143,37 @@ double time_elapsed() {
 //* /Template
 
 void solve() {
+    ll n, L, R, k; cin >> n >> L >> R >> k;
+    dbg(n, L, R, k);
+
+    if(n & 1) {
+        cout << L << "\n";
+        return;
+    }
+
+    const ll MXBIT = 61;
+    ll oo = (1LL << (MXBIT + 1LL)) - 1LL;
+    for(ll bit = 0; bit <= MXBIT; bit++) {
+        if(L & (1LL << bit)) {
+            oo ^= (1LL << bit);
+        }
+    }
+
+    for(ll bit = MXBIT; bit >= 0; bit--) {
+        if(L & (1LL << bit)) continue;
+
+        ll tmp = oo ^ (1LL << bit);
+        if(tmp >= L) oo ^= (1LL << bit);
+    }
+
+    if(L <= oo && oo <= R) {
+        if(n == 2) {
+            cout << "-1\n";
+        } else {
+            if(n - 1 <= k && k <= n) cout << oo << "\n";
+            else cout << L << "\n";
+        }
+    } else cout << "-1\n";
 }
 
 ll rng_ll(ll L, ll R) { assert(L <= R);
@@ -151,7 +182,7 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
-    int t = 1; //* cin >> t;
+    int t = 1; cin >> t;
     while(t--) {
         RAYA;
         RAYA;

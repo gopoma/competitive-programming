@@ -142,16 +142,57 @@ double time_elapsed() {
 //* Template
 //* /Template
 
-void solve() {
+ll custom_abs(ll x) {
+    if(x < 0) return -x;
+    return x;
 }
 
-ll rng_ll(ll L, ll R) { assert(L <= R);
-	return uniform_int_distribution<ll>(L,R)(rng);  }
+void solve() {
+    ll n; cin >> n;
+    vector<ll> a(n); for(auto& x: a) cin >> x;
+
+    map<ll, ll> hist;
+    for(auto& x: a) hist[x]++;
+
+    if(sz(hist) == 1) {
+        cout << "Yes\n";
+        return;
+    }
+
+    for(auto& [val, cnt]: hist) {
+        if(
+            (hist[-val] > 0)
+            && (hist[val] + hist[-val] == n)
+            && (custom_abs(hist[val] - hist[-val]) <= 1)
+        ) {
+            cout << "Yes\n";
+            return;
+        }
+    }
+
+    vector<pair<ll, ll>> ord;
+    for(ll i = 0; i < n; i++) {
+        ord.emplace_back(custom_abs(a[i]), i);
+    }
+    sort(ord.begin(), ord.end());
+
+    ll a0 = a[ord[0].second];
+    ll a1 = a[ord[1].second];
+
+    for(int i = 0; i + 1 < n; i++) {
+        dbg(a[ord[i].second], a[ord[i + 1].second]);
+        if(a[ord[i].second] * a1 != a[ord[i + 1].second] * a0) {
+            cout << "No\n";
+            return;
+        }
+    }
+    cout << "Yes\n";
+}
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
-    int t = 1; //* cin >> t;
+    int t = 1; cin >> t;
     while(t--) {
         RAYA;
         RAYA;

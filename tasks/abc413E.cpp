@@ -143,15 +143,60 @@ double time_elapsed() {
 //* /Template
 
 void solve() {
-}
+    ll n; cin >> n;
+    vector<ll> a(1 << n); for(auto& x: a) cin >> x;
 
-ll rng_ll(ll L, ll R) { assert(L <= R);
-	return uniform_int_distribution<ll>(L,R)(rng);  }
+    auto rev = [&](int L, int R) -> void {
+        int left = L;
+        int right = R;
+        while(left < right) {
+            swap(a[left], a[right]);
+            left++;
+            right--;
+        }
+    };
+
+    auto work = [&](auto&& self, int L, int R) -> void {
+        ll tot_sz = R - L + 1;
+        if(tot_sz == 1) return;
+
+        ll mn = ll(1e18);
+        ll where_mn = -1;
+        for(int i = L; i <= R; i++) {
+            if(a[i] < mn) {
+                mn = a[i];
+                where_mn = i;
+            }
+        }
+
+        int mid = -1;
+        for(int i = L; i <= R; i++) {
+            int L_block = i - L + 1;
+            int R_block = tot_sz - L_block;
+            if(L_block == R_block) {
+                mid = i;
+                break;
+            }
+        }
+
+        if(where_mn <= mid) {
+
+        } else {
+            rev(L, R);
+        }
+
+        self(self, L, mid);
+        self(self, mid + 1, R);
+    }; work(work, 0, (1 << n) - 1);
+
+    for(auto& x: a) cout << x << " ";
+    cout << "\n";
+}
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
-    int t = 1; //* cin >> t;
+    int t = 1; cin >> t;
     while(t--) {
         RAYA;
         RAYA;

@@ -143,10 +143,18 @@ double time_elapsed() {
 //* /Template
 
 void solve() {
-}
+    int n; cin >> n;
+    vector<string> S(n); for(auto& x: S) cin >> x;
 
-ll rng_ll(ll L, ll R) { assert(L <= R);
-	return uniform_int_distribution<ll>(L,R)(rng);  }
+    set<string> aux;
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < n; j++) {
+            if(i == j) continue;
+            aux.emplace(S[i] + S[j]);
+        }
+    }
+    cout << sz(aux) << "\n";
+}
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);

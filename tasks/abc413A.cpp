@@ -143,10 +143,13 @@ double time_elapsed() {
 //* /Template
 
 void solve() {
+    ll n, m; cin >> n >> m;
+    vl a(n); for(auto& x: a) cin >> x;
+    ll sum = accumulate(all(a), 0LL);
+    if(sum <= m) cout << "Yes";
+    else cout << "No";
+    cout << "\n";
 }
-
-ll rng_ll(ll L, ll R) { assert(L <= R);
-	return uniform_int_distribution<ll>(L,R)(rng);  }
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);

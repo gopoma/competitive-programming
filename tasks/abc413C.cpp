@@ -143,10 +143,37 @@ double time_elapsed() {
 //* /Template
 
 void solve() {
-}
+    int Q; cin >> Q;
 
-ll rng_ll(ll L, ll R) { assert(L <= R);
-	return uniform_int_distribution<ll>(L,R)(rng);  }
+    deque<pair<ll, ll>> a;
+    for(int _ = 0; _ < Q; _++) {
+        int type; cin >> type;
+
+        if(type == 1) {
+            ll c, x; cin >> c >> x;
+
+            a.emplace_back(c, x);
+        } else {
+            ll k; cin >> k;
+
+            ll res = 0;
+            while(k > 0) {
+                auto [c, x] = a.front();
+
+                if(c <= k) {
+                    res += c * x;
+                    a.pop_front();
+                    k -= c;
+                } else {
+                    res += k * x;
+                    a.front().first -= k;
+                    k -= k;
+                }
+            }
+            cout << res << "\n";
+        }
+    }
+}
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);

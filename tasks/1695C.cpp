@@ -143,15 +143,56 @@ double time_elapsed() {
 //* /Template
 
 void solve() {
-}
+    int n, m; cin >> n >> m;
+    vector<vector<int>> a(n, vector<int>(m));
+    for(auto& vec: a) for(auto& x: vec) cin >> x;
+    dbg(a);
 
-ll rng_ll(ll L, ll R) { assert(L <= R);
-	return uniform_int_distribution<ll>(L,R)(rng);  }
+    int steps = n + m - 1;
+    if(steps & 1) {
+        cout << "NO\n";
+        return;
+    }
+
+    auto check = [&](int i, int j) -> bool {
+        return (0 <= i && i < n) && (0 <= j && j < m);
+    };
+
+    const int INF = int(1e9);
+
+    vector<vector<int>> dp_min(n, vector<int>(m, INF));
+    for(int i = n - 1; i >= 0; i--) {
+        for(int j = m - 1; j >= 0; j--) {
+            if(i == n - 1 && j == m - 1) dp_min[i][j] = 0;
+            else {
+                if(i + 1 < n) dp_min[i][j] = min(dp_min[i][j], dp_min[i + 1][j] + a[i + 1][j]);
+                if(j + 1 < m) dp_min[i][j] = min(dp_min[i][j], dp_min[i][j + 1] + a[i][j + 1]);
+            }
+        }
+    }
+
+    vector<vector<int>> dp_max(n, vector<int>(m, -INF));
+    for(int i = n - 1; i >= 0; i--) {
+        for(int j = m - 1; j >= 0; j--) {
+            if(i == n - 1 && j == m - 1) dp_max[i][j] = 0;
+            else {
+                if(i + 1 < n) dp_max[i][j] = max(dp_max[i][j], dp_max[i + 1][j] + a[i + 1][j]);
+                if(j + 1 < m) dp_max[i][j] = max(dp_max[i][j], dp_max[i][j + 1] + a[i][j + 1]);
+            }
+        }
+    }
+
+    dp_min[0][0] += a[0][0];
+    dp_max[0][0] += a[0][0];
+
+    if(dp_min[0][0] <= 0 && 0 <= dp_max[0][0]) cout << "YES\n";
+    else cout << "NO\n";
+}
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
-    int t = 1; //* cin >> t;
+    int t = 1; cin >> t;
     while(t--) {
         RAYA;
         RAYA;

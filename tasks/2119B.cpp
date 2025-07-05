@@ -142,7 +142,28 @@ double time_elapsed() {
 //* Template
 //* /Template
 
+ll custom_abs(ll x) {
+    if(x < 0) return -x;
+    return x;
+}
+
 void solve() {
+    ll n; cin >> n;
+    ll px, py, qx, qy; cin >> px >> py >> qx >> qy;
+    vl a(n); for(auto& x: a) cin >> x;
+
+    ll L = a[0];
+    ll R = a[0];
+    for(int i = 1; i < n; i++) {
+        if(L <= a[i] && a[i] <=  R) L = 0;
+        else L = min(custom_abs(L - a[i]), custom_abs(R - a[i]));
+        R = R + a[i];
+    }
+
+    ll sqr_dis = (qx - px) * (qx - px) + (qy - py) * (qy - py);
+    dbg(L, R, sqr_dis);
+    if(L * L <= sqr_dis && sqr_dis <= R * R) cout << "Yes\n";
+    else cout << "No\n";
 }
 
 ll rng_ll(ll L, ll R) { assert(L <= R);
@@ -151,7 +172,7 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
-    int t = 1; //* cin >> t;
+    int t = 1; cin >> t;
     while(t--) {
         RAYA;
         RAYA;

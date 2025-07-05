@@ -142,7 +142,38 @@ double time_elapsed() {
 //* Template
 //* /Template
 
+bool vis[100 + 5];
+ll  dist[100 + 5];
+
+const ll BIG = ll(1e18);
 void solve() {
+    ll a, b, x, y; cin >> a >> b >> x >> y;
+
+    for(int x = 0; x < 100 + 5; x++) {
+        vis[x] = false;
+        dist[x] = BIG;
+    }
+
+    multiset<pair<ll, ll>> ms; ms.emplace(0, a);
+    while(!ms.empty()) {
+        auto it = *ms.begin();
+        auto [dis, node] = it; ms.erase(it);
+        if(vis[node]) continue;
+        vis[node] = true;
+        dist[node] = dis;
+
+        if(node + 1 < 100 + 5) {
+            ms.emplace(dis + x, node + 1);
+        }
+
+        if((node ^ 1LL) < 100 + 5) {
+            ms.emplace(dis + y, node ^ 1LL);
+        }
+    }
+
+    ll res = dist[b];
+    if(res == BIG) res = -1;
+    cout << res << "\n";
 }
 
 ll rng_ll(ll L, ll R) { assert(L <= R);
@@ -151,7 +182,7 @@ ll rng_ll(ll L, ll R) { assert(L <= R);
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
-    int t = 1; //* cin >> t;
+    int t = 1; cin >> t;
     while(t--) {
         RAYA;
         RAYA;
