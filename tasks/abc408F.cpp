@@ -78,15 +78,11 @@ void debug_out(Head H, Tail... T) {
 
 #define GA          dbg(0)
 #define RAYA        cout << "\033[101m" << "================================" << "\033[0m" << endl;
-
-const bool isDebugging = true;
 #else
 #define dbg(x)
 #define dbg(...)
 #define GA
 #define RAYA
-
-const bool isDebugging = false;
 #endif
 //* /Debugger
 
@@ -124,8 +120,6 @@ using vpi = V<pi>;
 #define each(a,x) for (auto& a: x)
 
 const int MOD = 1e9+7;
-const int INF = int(1e9) + 5;
-const ll BIG = ll(1e18) + 5;
 const db PI = acos((db)-1);
 mt19937 rng(0); // or mt19937_64
 //* mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
@@ -145,21 +139,117 @@ double time_elapsed() {
 	    .count();
 }
 
-
 //* Template
+const ll BIG = ll(1e18) + 5;
+
+/**
+ * Description: 1D point update and range query where \texttt{cmb} is
+ 	* any associative operation. \texttt{seg[1]==query(0,N-1)}.
+ * Time: O(\log N)
+ * Source:
+	* http://codeforces.com/blog/entry/18051
+	* KACTL
+ * Verification: SPOJ Fenwick
+ * API: SegTree<node> tree; tree.init(int(n));
+ */
+
+tcT> struct SegTree { // cmb(ID,b) = b
+	// const T ID{}; T cmb(T a, T b) { return a+b; }
+    T ID{-BIG}; T cmb(T a, T b) { return max(a, b); }
+	int n; V<T> seg;
+	void init(int _n) { // upd, query also work if n = _n
+		for (n = 1; n < _n; ) n *= 2;
+		seg.assign(2*n,ID); }
+	void pull(int p) { seg[p] = cmb(seg[2*p],seg[2*p+1]); }
+	void upd(int p, T val) { // set val at position p
+		seg[p += n] = val; for (p /= 2; p; p /= 2) pull(p); }
+	T query(int l, int r) {	// zero-indexed, inclusive
+		T ra = ID, rb = ID;
+		for (l += n, r += n+1; l < r; l /= 2, r /= 2) {
+			if (l&1) ra = cmb(ra,seg[l++]);
+			if (r&1) rb = cmb(seg[--r],rb);
+		}
+		return cmb(ra,rb);
+	}
+	/// int first_at_least(int lo, int val, int ind, int l, int r) { // if seg stores max across range
+	/// 	if (r < lo || val > seg[ind]) return -1;
+	/// 	if (l == r) return l;
+	/// 	int m = (l+r)/2;
+	/// 	int res = first_at_least(lo,val,2*ind,l,m); if (res != -1) return res;
+	/// 	return first_at_least(lo,val,2*ind+1,m+1,r);
+	/// }
+};
+// /here goes the template!
+
+struct node {
+    static long long Mod;
+
+	long long val;
+
+	node(): val(1LL) {}
+
+	node(long long _val) : val(_val) {}
+
+	node operator + (const node &rhs) const {
+		return node((val * rhs.val) % Mod);
+	}
+};
 //* /Template
 
 void solve() {
-}
+    ll n, D, R; cin >> n >> D >> R;
+    vl a(n);
+    for(auto& x: a) {
+        cin >> x;
+        x--;
+    }
+    dbg(n, D, R);
+    dbg(a);
 
+
+    vl where(n);
+    for(int i = 0; i < n; i++) {
+        where[a[i]] = i;
+    }
+
+    SegTree<ll> st; st.init(n);
+
+    auto ddd = [&]() -> void {
+        if(false) {
+            vl temp;
+            for(int i = 0; i < n; i++) temp.emplace_back(st.query(i, i));
+            dbg(temp);
+        }
+    };
+
+    ll re = 0;
+    vl dp(n);
+    for(int i = D; i < n; i++) {
+        if(st.query(where[i - D], where[i - D]) < 0) {
+            st.upd(where[i - D], dp[i - D]);
+        }
+
+        const ll left = max(0LL, where[i] - R);
+        const ll right = min(n - 1, where[i] + R);
+
+        ll mx = st.query(left, right);
+        ll cur = max(0LL, mx + 1LL);
+        re = max(re, cur);
+
+        RAYA;
+        dbg(i, where[i], left, right, mx, cur);
+        ddd();
+
+        dp[i] = cur;
+    }
+    cout << re << "\n";
+}
 
 ll rng_ll(ll L, ll R) { assert(L <= R);
 	return uniform_int_distribution<ll>(L,R)(rng);  }
 
-
 int main() {
     cin.tie(0)->sync_with_stdio(0);
-
 
     int t = 1; //* cin >> t;
     while(t--) {
@@ -168,7 +258,6 @@ int main() {
         RAYA;
         solve();
     }
-
 
     #ifdef LOCAL
         cerr << fixed << setprecision(5);
