@@ -7,4 +7,4 @@ xd:
 xd-dbg:
 	g++ -std=c++17 -DLOCAL -o ./bin/${F}.out ${F} && ./bin/${F}.out
 icpc:
-	g++ -std=c++20 -DLOCAL -o ./bin/${F}.out ${F} && ./bin/${F}.out
+	g++ -std=c++11 -DLOCAL -o ./bin/${F}.out ${F} && ./bin/${F}.out
