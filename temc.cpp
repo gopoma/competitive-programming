@@ -150,13 +150,6 @@ double time_elapsed() {
 //* /Template
 
 void solve() {
-    const ll n = 5;
-    vl a(n); iota(all(a), 0);
-    if(isDebugging) {
-        dbg(a);
-    } else {
-        cout << "No debugging!";
-    }
 }
 
 
