@@ -1,9 +1,9 @@
 //* sometimes pragmas don't work, if so, just comment it!
-//? #pragma GCC optimize ("Ofast")
+#pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-//! #undef _GLIBCXX_DEBUG //? for Stress Testing
+#undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h>
 using namespace std;
@@ -147,34 +147,149 @@ double time_elapsed() {
 
 
 //* Template
+ll rng_ll(ll L, ll R) { assert(L <= R);
+    return uniform_int_distribution<ll>(L,R)(rng);  }
 //* /Template
 
-void solve() {
+ll MEX(vector<ll> a) {
+    const int n = sz(a);
+    set<ll> S;
+    for(auto& x: a) S.emplace(x);
+    ll mex = 0;
+    while(S.count(mex)) mex++;
+    return mex;
 }
 
-ll rng_ll(ll L, ll R) { assert(L <= R);
-	return uniform_int_distribution<ll>(L,R)(rng);  }
+ll work(vector<vector<ll>> a) {
+    const int n = sz(a);
+    const int m = sz(a.front());
 
-// shuffle a vector
-template<class T> void shuf(vector<T>& v) { shuffle(all(v),rng); }
+    ll re = 0;
+    for(int xl = 0; xl < n; xl++) {
+        for(int xr = xl; xr < n; xr++) {
+            for(int yl = 0; yl < n; yl++) {
+                for(int yr = yl; yr < n; yr++) {
+                    vl temp;
+                    for(int x = xl; x <= xr; x++) {
+                        for(int y = yl; y <= yr; y++) {
+                            temp.emplace_back(a[x][y]);
+                        }
+                    }
+                    re += MEX(temp);
+                }
+            }
+        }
+    }
+
+    return re;
+}
+
+void brute(ll n) {
+    vl p(n * n); iota(all(p), 0);
+
+    ll mx = -BIG;
+    vector<vector<ll>> re;
+    do {
+        vector<vector<ll>> a(n, vector<ll>(n));
+        int id = 0;
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < n; j++) {
+                a[i][j] = p[id++];
+            }
+        }
+        ll cnt = work(a);
+        if(cnt > mx) {
+            mx = cnt;
+            re = a;
+        }
+    } while(next_permutation(all(p)));
+
+    do {
+        vector<vector<ll>> a(n, vector<ll>(n));
+        int id = 0;
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < n; j++) {
+                a[i][j] = p[id++];
+            }
+        }
+        ll cnt = work(a);
+        if(cnt == mx) {
+            RAYA;
+            for(auto& vec: a) dbg(vec);
+        }
+    } while(next_permutation(all(p)));
+}
+
+vector<vector<int>> formSpiralMatrix(vi arr, int R, int C) {
+    vector<vector<int>> mat(R, vector<int>(C));
+
+    int top = 0,
+        bottom = R - 1,
+        left = 0,
+        right = C - 1;
+
+    int index = 0;
+
+    while (1) {
+
+        if (left > right)
+            break;
+
+        // print top row
+        for (int i = left; i <= right; i++)
+            mat[top][i] = arr[index++];
+        top++;
+
+        if (top > bottom)
+            break;
+
+        // print right column
+        for (int i = top; i <= bottom; i++)
+            mat[i][right] = arr[index++];
+        right--;
+
+        if (left > right)
+            break;
+
+        // print bottom row
+        for (int i = right; i >= left; i--)
+            mat[bottom][i] = arr[index++];
+        bottom--;
+
+        if (top > bottom)
+            break;
+
+        // print left column
+        for (int i = bottom; i >= top; i--)
+            mat[i][left] = arr[index++];
+        left++;
+    }
+
+    return mat;
+}
+
+void solve() {
+    ll n; cin >> n;
+    vi a(n * n); iota(all(a), 0);
+    vector<vector<int>> re = formSpiralMatrix(a, n, n);
+    for(auto& vec: re) for(auto& x: vec) x = (n * n) - x;
+    for(auto& vec: re) {
+        for(auto& x: vec) {
+            cout << (x - 1) << " ";
+        }
+        cout << "\n";
+    }
+}
 
 int main() {
-    cin.tie(0)->sync_with_stdio(0);
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
 
-    int t = 1;
-    //* cin >> t;
+    ll t; cin >> t;
     while(t--) {
-        RAYA;
-        RAYA;
         RAYA;
         solve();
     }
 
-
-    #ifdef LOCAL
-        cerr << fixed << setprecision(5);
-        cerr << "\033[42m++++++++++++++++++++\033[0m\n";
-        cerr << "\033[42mtime = " << time_elapsed() << "ms\033[0m\n";
-        cerr << "\033[42m++++++++++++++++++++\033[0m";
-    #endif
+    return 0;
 }

@@ -1,9 +1,9 @@
 //* sometimes pragmas don't work, if so, just comment it!
-//? #pragma GCC optimize ("Ofast")
+#pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-//! #undef _GLIBCXX_DEBUG //? for Stress Testing
+#undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h>
 using namespace std;
@@ -149,20 +149,109 @@ double time_elapsed() {
 //* Template
 //* /Template
 
-void solve() {
+int brute(int n, vector<int> a) {
+    int re = INF;
+    for(int mask = 0; mask < (1 << n); mask++) {
+        vector<int> b(n);
+        for(int i = 0; i < n; i++) {
+            if(mask & (1 << i)) {
+                b[i] = 2 * n - a[i];
+            } else {
+                b[i] = a[i];
+            }
+        }
+        int lre = 0;
+        for(int i = 0; i <  n; i++) {
+            for(int j = i + 1; j < n; j++) {
+                lre += (b[i] > b[j]);
+            }
+        }
+        re = min(re, lre);
+    }
+    for(int mask = 0; mask < (1 << n); mask++) {
+        vector<int> b(n);
+        for(int i = 0; i < n; i++) {
+            if(mask & (1 << i)) {
+                b[i] = 2 * n - a[i];
+            } else {
+                b[i] = a[i];
+            }
+        }
+        int lre = 0;
+        for(int i = 0; i <  n; i++) {
+            for(int j = i + 1; j < n; j++) {
+                lre += (b[i] > b[j]);
+            }
+        }
+    }
+    return re;
 }
+
+int slv(int n, vector<int> a) {
+    vector<int> where(n + 1);
+    for(int i = 0; i < n; i++) {
+        where[a[i]] = i;
+    }
+
+    int re = 0;
+    for(int i = 0; i < n; i++) {
+        for(int j = i + 1; j < n; j++) {
+            if(a[i] > a[j]) {
+                re++;
+            }
+        }
+    }
+
+    for(int x = 1; x <= n; x++) {
+        int profit = 0;
+        for(int i = 0; i < where[x]; i++) {
+            profit -= ((a[i] > x) && (a[i] <= (2 * n - x)));
+        }
+        for(int i = where[x] + 1; i < n; i++) {
+            profit += (((2 * n - x) > a[i]) && (x <= a[i]));
+        }
+        if(profit <= 0) {
+            re += profit;
+            a[where[x]] = 2 * n - x;
+        }
+    }
+    dbg("gre", a);
+
+    return re;
+}
+
+void solve() {
+    int n; cin >> n;
+    vector<int> a(n); for(auto& x: a) cin >> x;
+    int re = slv(n, a);
+    dbg(re);
+    cout << re << "\n";
+}
+
 
 ll rng_ll(ll L, ll R) { assert(L <= R);
 	return uniform_int_distribution<ll>(L,R)(rng);  }
 
-// shuffle a vector
 template<class T> void shuf(vector<T>& v) { shuffle(all(v),rng); }
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
-    int t = 1;
-    //* cin >> t;
+    while(0) {
+        RAYA;
+        int n = rng_ll(1, 20);
+        vector<int> p(n); iota(all(p), 1);
+        shuf(p);
+        dbg(n);
+        dbg(p);
+        int ans = brute(n, p);
+        int gre = slv(n, p);
+        dbg(ans, gre);
+        assert(ans == gre);
+    }
+
+
+    int t = 1; cin >> t;
     while(t--) {
         RAYA;
         RAYA;

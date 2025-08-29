@@ -1,9 +1,9 @@
 //* sometimes pragmas don't work, if so, just comment it!
-//? #pragma GCC optimize ("Ofast")
+#pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-//! #undef _GLIBCXX_DEBUG //? for Stress Testing
+#undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h>
 using namespace std;
@@ -149,20 +149,153 @@ double time_elapsed() {
 //* Template
 //* /Template
 
-void solve() {
+
+int n;
+int a[5000 + 5];
+int gtot;
+int    G[5000 + 5][5000 + 5];
+bool vis[5000 + 5][5000 + 5];
+int memo[5000 + 5][5000 + 5];
+
+int brute() {
+    vector<int> b;
+    for(int i = 0; i < n; i++) b.emplace_back(a[i]);
+    dbg(n);
+    dbg(b);
+
+    map<vector<int>, bool> vis;
+    map<vector<int>, int> dist;
+    deque<vector<int>> q;
+
+    vis[b] = true;
+    dist[b] = 0;
+    q.emplace_back(b);
+
+    while(!q.empty()) {
+        auto cur = q.front(); q.pop_front();
+
+        if((*min_element(all(cur))) == (*max_element(all(cur)))) {
+            return dist[cur];
+        }
+
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < n; j++) {
+                {
+                    vector<int> nxt = cur;
+                    nxt[i] = __gcd(nxt[i], nxt[j]);
+                    if(!vis[nxt]) {
+                        vis[nxt] = true;
+                        dist[nxt] = dist[cur] + 1;
+                        q.emplace_back(nxt);
+                    }
+                }
+                {
+                    vector<int> nxt = cur;
+                    nxt[j] = __gcd(nxt[i], nxt[j]);
+                    if(!vis[nxt]) {
+                        vis[nxt] = true;
+                        dist[nxt] = dist[cur] + 1;
+                        q.emplace_back(nxt);
+                    }
+                }
+            }
+        }
+    }
+    assert(false);
 }
+
+int dp(int i, int g) {
+    if(i == n) {
+        if(g == gtot) return 0;
+        return INF;
+    }
+
+    if(vis[i][g]) return memo[i][g];
+    vis[i][g] = true;
+
+    int re = INF;
+
+    re = min(re, dp(i + 1, g));
+
+    if(g == 5001) re = min(re, dp(i + 1, a[i]) + 1);
+    else re = min(re, dp(i + 1, G[g][a[i]]) + 1);
+
+    return memo[i][g] = re;
+}
+
+int slv() {
+    sort(a, a + n);
+
+    gtot = 0;
+    for(int i = 0; i < n; i++) {
+        gtot = __gcd(gtot, a[i]);
+    }
+
+    if(a[0] == gtot) {
+        int re = 0;
+        for(int i = 0; i < n; i++) {
+            re += (a[i] != gtot);
+        }
+
+        return re;
+    }
+
+    for(int i = 0; i <= n; i++) {
+        for(int g = 0; g <= 5001; g++) {
+            vis[i][g] = false;
+        }
+    }
+
+    int mn = dp(0, 5001);
+    dbg(n, mn);
+    assert(mn >= 1);
+    int re = (mn - 1) + (n - 1);
+
+    return re;
+}
+
+void solve() {
+    cin >> n;
+    for(int i = 0; i < n; i++) cin >> a[i];
+
+    int re = slv();
+
+    cout << re << "\n";
+}
+
 
 ll rng_ll(ll L, ll R) { assert(L <= R);
 	return uniform_int_distribution<ll>(L,R)(rng);  }
 
-// shuffle a vector
-template<class T> void shuf(vector<T>& v) { shuffle(all(v),rng); }
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
+    for(int x = 0; x <= 5000; x++) {
+        for(int y = 0; y <= 5000; y++) {
+            G[x][y] = __gcd(x, y);
+        }
+    }
+
+
+    while(0) {
+        RAYA;
+        n = rng_ll(1, 6);
+        vector<int> b;
+        for(int i = 0; i < n; i++) {
+            a[i] = rng_ll(1, 10);
+            b.emplace_back(a[i]);
+        }
+        dbg(n);
+        dbg(b);
+        int ans = brute();
+        int gre = slv();
+        dbg(ans, gre);
+        assert(ans == gre);
+    }
+
     int t = 1;
-    //* cin >> t;
+    cin >> t;
     while(t--) {
         RAYA;
         RAYA;

@@ -147,10 +147,120 @@ double time_elapsed() {
 
 
 //* Template
+/**
+ * Description: A set (not multiset!) with support for finding the $n$'th
+   * element, and finding the index of an element. Change \texttt{null\_type} to get a map.
+ * Time: O(\log N)
+ * Source: KACTL
+   * https://codeforces.com/blog/entry/11080
+ * Verification: many
+ */
+
+#include <ext/pb_ds/assoc_container.hpp>
+using namespace __gnu_pbds;
+tcT> using Tree = tree<T, null_type, less<T>,
+	rb_tree_tag, tree_order_statistics_node_update>;
+#define ook order_of_key
+#define fbo find_by_order
+
+
+/**
+int atMost(Tree<pi>& T, int r) {
+	return T.ook({r,MOD}); }
+int getSum(Tree<pi>& T, int l, int r) {
+	return atMost(T,r)-atMost(T,l-1); }
+*/
+
+long long count_inv(vl a) {
+    const int n = sz(a);
+    assert(n == sz(a));
+
+    Tree<pl> st;
+
+    long long ans = 0;
+    for(int i = 0; i < n; i++) {
+        ans += ll(i - st.ook(mp(a[i], n + 79)));
+
+        st.insert(mp(a[i], i));
+    }
+    return ans;
+}
 //* /Template
 
-void solve() {
+vl brute(ll n, vl a) {
+    map<vl, bool> vis;
+    deque<vl> q;
+
+    vis[a] = true;
+    q.emplace_back(a);
+
+    vl re(n, BIG);
+
+    while(!q.empty()) {
+        auto cur = q.front(); q.pop_front();
+        ckmin(re, cur);
+
+        for(int i = 0; i < n; i++) {
+            const int left = i;
+            const int right = left + 4 - 1;
+            if(right >= n) break;
+
+            vl nxt = cur;
+            swap(nxt[i], nxt[i + 2]);
+            swap(nxt[i + 1], nxt[i + 3]);
+
+            if(!vis[nxt]) {
+                vis[nxt] = true;
+                q.emplace_back(nxt);
+            }
+        }
+    }
+
+    return re;
 }
+
+vl slv(ll n, vl a) {
+    vl odd, even;
+    for(int i = 0; i < n; i++) {
+        if((i + 1) & 1) {
+            odd.emplace_back(a[i]);
+        } else {
+            even.emplace_back(a[i]);
+        }
+    }
+    ll A = count_inv(odd);
+    ll B = count_inv(even);
+
+    vl re(n);
+    sort(all(odd));
+    sort(all(even));
+
+    for(int i = 0, j = 0; i < n; i += 2, j++) {
+        re[i] = odd[j];
+    }
+    for(int i = 1, j = 0; i < n; i += 2, j++) {
+        re[i] = even[j];
+    }
+
+    if((A & 1) == (B & 1)) {
+        return re;
+    } else {
+        dbg(re);
+        swap(re[n - 3], re[n - 1]);
+        return re;
+    }
+}
+
+void solve() {
+    ll n; cin >> n;
+    vl a(n); for(auto& x: a) cin >> x;
+    dbg(n);
+    dbg(a);
+    vl re = slv(n, a);
+    for(auto& x: re) cout << x << " ";
+    cout << "\n";
+}
+
 
 ll rng_ll(ll L, ll R) { assert(L <= R);
 	return uniform_int_distribution<ll>(L,R)(rng);  }
@@ -161,8 +271,21 @@ template<class T> void shuf(vector<T>& v) { shuffle(all(v),rng); }
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
+    while(0) {
+        RAYA;
+        ll n = rng_ll(4, 10);
+        vl a(n); iota(all(a), 1);
+        shuf(a);
+        dbg(n, a);
+        auto ans = brute(n, a);
+        auto gre = slv(n, a);
+        dbg(ans, gre);
+        assert(ans == gre);
+    }
+
+
     int t = 1;
-    //* cin >> t;
+    cin >> t;
     while(t--) {
         RAYA;
         RAYA;
