@@ -1,0 +1,367 @@
+//* sometimes pragmas don't work, if so, just comment it!
+//? #pragma GCC optimize ("Ofast")
+//? #pragma GCC target ("avx,avx2")
+//! #pragma GCC optimize ("trapv")
+
+//! #undef _GLIBCXX_DEBUG //? for Stress Testing
+
+#include <bits/stdc++.h>
+using namespace std;
+
+//* Debugger
+string to_string(string s) {
+    return '"' + s + '"';
+}
+
+string to_string(const char* s) {
+    return to_string((string) s);
+}
+
+string to_string(char c) {
+    return string(1, c);
+}
+
+string to_string(bool b) {
+    return (b ? "true" : "false");
+}
+
+template <typename A>
+string to_string(A v);
+
+string to_string(vector<bool> v) {
+    bool first = true;
+    string res = "[";
+    for (auto x : v) {
+        if (!first) {
+            res += ", ";
+        }
+        first = false;
+        res += x ? "true" : "false";
+    }
+    res += "]";
+    return res;
+}
+
+template <typename A, typename B>
+string to_string(pair<A, B> p) {
+    return "(" + to_string(p.first) + ", " + to_string(p.second) + ")";
+}
+
+
+template <typename A>
+string to_string(A v) {
+    bool first = true;
+    string res = "[";
+    for (const auto &x : v) {
+        if (!first) {
+            res += ", ";
+        }
+        first = false;
+        res += to_string(x);
+    }
+    res += "]";
+    return res;
+}
+
+void debug_out() { cerr << endl; }
+
+template <typename Head, typename... Tail>
+void debug_out(Head H, Tail... T) {
+  cerr << " " << to_string(H);
+  debug_out(T...);
+}
+
+#ifdef LOCAL
+#define MACRO(code) do {code} while (false)
+#define dbg(x)      {auto xd = x; cout << "Line(" << __LINE__ << "): " << "\033[1;34m" << #x << "\033[0;32m = \033[35m" << to_string(xd) << "\033[0m" << endl;}
+#define dbg(...)    MACRO(cout << "Line(" << __LINE__ << "): " << "\033[1;34m" << "[" << #__VA_ARGS__ << "]\033[35m:"; debug_out(__VA_ARGS__); cout << "\033[0m";)
+
+#define GA          dbg(0)
+#define RAYA        cout << "\033[101m" << "================================" << "\033[0m" << endl;
+
+const bool isDebugging = true;
+#else
+#define dbg(x)
+#define dbg(...)
+#define GA
+#define RAYA
+
+const bool isDebugging = false;
+#endif
+//* /Debugger
+
+using ll = long long;
+using db = long double; // or double if tight TL
+using str = string;
+
+using pi = pair<int,int>;
+using pl = pair<ll, ll>;
+#define mp make_pair
+#define f first
+#define s second
+
+#define tcT template<class T
+tcT> using V = vector<T>;
+tcT, size_t SZ> using AR = array<T,SZ>;
+using vi = V<int>;
+using vl = V<ll>;
+using vb = V<bool>;
+using vpi = V<pi>;
+
+#define sz(x) int((x).size())
+#define all(x) begin(x), end(x)
+#define sor(x) sort(all(x))
+#define rsz resize
+#define pb push_back
+#define ft front()
+#define bk back()
+
+#define FOR(i,a,b) for (int i = (a); i < (b); ++i)
+#define F0R(i,a) FOR(i,0,a)
+#define ROF(i,a,b) for (int i = (b)-1; i >= (a); --i)
+#define R0F(i,a) ROF(i,0,a)
+#define rep(a) F0R(_,a)
+#define each(a,x) for (auto& a: x)
+
+const int MOD = 998244353;
+const int INF = int(1e9) + 5;
+const ll BIG = ll(1e18) + 5;
+const db PI = acos((db)-1);
+mt19937 rng(0); // or mt19937_64
+//* mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
+
+tcT> bool ckmin(T& a, const T& b) {
+	return b < a ? a = b, 1 : 0; } // set a = min(a,b)
+tcT> bool ckmax(T& a, const T& b) {
+	return a < b ? a = b, 1 : 0; } // set a = max(a,b)
+
+void setIn(string s) { freopen(s.c_str(), "r", stdin); }
+
+const auto beg_time = std::chrono::high_resolution_clock::now();
+// https://stackoverflow.com/questions/47980498/accurate-c-c-clock-on-a-multi-core-processor-with-auto-overclock?noredirect=1&lq=1
+double time_elapsed() {
+	return chrono::duration<double>(std::chrono::high_resolution_clock::now() -
+	                                beg_time)
+	    .count();
+}
+
+
+//* Template
+
+/**
+ * Description: modular arithmetic operations
+ * Source:
+ * KACTL
+ * https://codeforces.com/blog/entry/63903
+ * https://codeforces.com/contest/1261/submission/65632855 (tourist)
+ * https://codeforces.com/contest/1264/submission/66344993 (ksun)
+ * also see https://github.com/ecnerwala/cp-book/blob/master/src/modnum.hpp
+ * (ecnerwal) Verification: https://open.kattis.com/problems/modulararithmetic
+ */
+
+template <int MOD, int RT> struct mint {
+	static const int mod = MOD;
+	static constexpr mint rt() { return RT; }  // primitive root for FFT
+	int v;
+	explicit operator int() const {
+		return v;
+	}  // explicit -> don't silently convert to int
+	mint() : v(0) {}
+	mint(ll _v) {
+		v = int((-MOD < _v && _v < MOD) ? _v : _v % MOD);
+		if (v < 0) v += MOD;
+	}
+	bool operator==(const mint &o) const { return v == o.v; }
+	friend bool operator!=(const mint &a, const mint &b) { return !(a == b); }
+	friend bool operator<(const mint &a, const mint &b) { return a.v < b.v; }
+	friend istream &operator>>(istream &is, mint &a) {
+		ll x;
+		is >> x;
+		a = mint(x);
+		return is;
+	}
+	friend ostream &operator<<(ostream &os, mint a) {
+		os << int(a);
+		return os;
+	}
+
+	mint &operator+=(const mint &o) {
+		if ((v += o.v) >= MOD) v -= MOD;
+		return *this;
+	}
+	mint &operator-=(const mint &o) {
+		if ((v -= o.v) < 0) v += MOD;
+		return *this;
+	}
+	mint &operator*=(const mint &o) {
+		v = int((ll)v * o.v % MOD);
+		return *this;
+	}
+	mint &operator/=(const mint &o) { return (*this) *= inv(o); }
+	friend mint pow(mint a, ll p) {
+		mint ans = 1;
+		assert(p >= 0);
+		for (; p; p /= 2, a *= a)
+			if (p & 1) ans *= a;
+		return ans;
+	}
+	friend mint inv(const mint &a) {
+		assert(a.v != 0);
+		return pow(a, MOD - 2);
+	}
+
+	mint operator-() const { return mint(-v); }
+	mint &operator++() { return *this += 1; }
+	mint &operator--() { return *this -= 1; }
+	friend mint operator+(mint a, const mint &b) { return a += b; }
+	friend mint operator-(mint a, const mint &b) { return a -= b; }
+	friend mint operator*(mint a, const mint &b) { return a *= b; }
+	friend mint operator/(mint a, const mint &b) { return a /= b; }
+};
+
+using mi = mint<MOD, 5>;  // 5 is primitive root for both common mods
+using vmi = V<mi>;
+using pmi = pair<mi, mi>;
+using vpmi = V<pmi>;
+//* /Template
+
+void solve() {
+    int n; cin >> n;
+
+    vector<vector<int>> adj(n + 1);
+    vector<int> deg(n + 1);
+    for(int i = 0; i < n - 1; i++) {
+        int u, v; cin >> u >> v;
+
+        adj[u].emplace_back(v);
+        adj[v].emplace_back(u);
+
+        deg[u]++;
+        deg[v]++;
+    }
+
+    vector<bool> isLeaf(n + 1);
+    for(int u = 1; u <= n; u++) {
+        if(deg[u] == 1 && u != 1) {
+            isLeaf[u] = true;
+        }
+
+        dbg(u, adj[u], int(isLeaf[u]));
+    }
+    RAYA;
+
+    vb vis01(n + 1);
+    vmi memo01(n + 1);
+    {
+        auto dp01 = [&](auto&& dp01, int src, int par) -> mi {
+            if(vis01[src]) return memo01[src];
+            vis01[src] = true;
+
+            if(isLeaf[src]) {
+                return memo01[src] = mi(2);
+            }
+
+            // choose
+            mi A = 1;
+
+            // skip
+            mi B = 1;
+            for(auto& nxt: adj[src]) {
+                if(nxt == par) continue;
+
+                B *= dp01(dp01, nxt, src);
+            }
+            mi re = A + B;
+            return memo01[src] = re;
+        }; dp01(dp01, 1, -1);
+    }
+
+    vb vis2(n + 1);
+    vmi memo2(n + 1);
+    {
+        auto dp2 = [&](auto&& dp2, int src, int par) -> mi {
+            if(vis2[src]) return memo2[src];
+            vis2[src] = true;
+
+            mi A = 0;
+            // choose
+            {
+                for(auto& nxt: adj[src]) {
+                    if(nxt == par) continue;
+
+                    A += memo01[nxt] - mi(1);
+                }
+            }
+
+            mi B = 0;
+            for(auto& nxt: adj[src]) {
+                if(nxt == par) continue;
+
+                B += dp2(dp2, nxt, src);
+            }
+
+            mi re = A + B;
+            return memo2[src] = re;
+        }; dp2(dp2, 1, -1);
+    }
+
+
+    for(int u = 1; u <= n; u++) {
+        dbg(u, int(memo01[u]), int(memo2[u]));
+    }
+
+    mi response = 0;
+    { // skip and full 0-1
+        mi A = 1;
+        for(auto& nxt: adj[1]) {
+            A *= memo01[nxt];
+        }
+        dbg(int(A));
+        response += A;
+    }
+    { // skip and 2s
+        mi B = 0;
+        for(auto& nxt: adj[1]) {
+            B += memo2[nxt];
+        }
+        dbg(int(B));
+        response += B;
+    }
+    { // choose
+        mi C = 1;
+        for(auto& nxt: adj[1]) {
+            C += memo01[nxt] - mi(1);
+        }
+        dbg(int(C));
+        response += C;
+    }
+
+    cout << int(response) << "\n";
+}
+
+ll rng_ll(ll L, ll R) { assert(L <= R);
+	return uniform_int_distribution<ll>(L,R)(rng);  }
+
+// shuffle a vector
+template<class T> void shuf(vector<T>& v) { shuffle(all(v),rng); }
+
+int main() {
+    cin.tie(0)->sync_with_stdio(0);
+
+    int t = 1;
+    cin >> t;
+    while(t--) {
+        RAYA;
+        RAYA;
+        RAYA;
+        solve();
+    }
+
+
+    #ifdef LOCAL
+        cerr << fixed << setprecision(5);
+        cerr << "\033[42m++++++++++++++++++++\033[0m\n";
+        cerr << "\033[42mtime = " << time_elapsed() << "ms\033[0m\n";
+        cerr << "\033[42m++++++++++++++++++++\033[0m";
+    #endif
+}
