@@ -150,6 +150,13 @@ double time_elapsed() {
 //* /Template
 
 void solve() {
+    ll x; cin >> x;
+    ll y = 2LL * x;
+
+    // ll S = stoll(to_string(x) + to_string(y));
+    // assert(S % (x + y) == 0);
+
+    cout << y << "\n";
 }
 
 ll rng_ll(ll L, ll R) { assert(L <= R);
@@ -162,7 +169,7 @@ int main() {
     cin.tie(0)->sync_with_stdio(0);
 
     int t = 1;
-    //* cin >> t;
+    cin >> t;
     while(t--) {
         RAYA;
         RAYA;

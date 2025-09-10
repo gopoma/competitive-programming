@@ -150,6 +150,21 @@ double time_elapsed() {
 //* /Template
 
 void solve() {
+    int n; cin >> n;
+    str S; cin >> S;
+
+    int ones = 0;
+    for(auto& c: S) ones += (c == '1');
+
+    int cnt = 0;
+    for(int i = n - 1; i >= (n - 1) - ones + 1; i--) {
+        cnt += (S[i] != '1');
+    }
+    dbg(S);
+    dbg(cnt);
+
+    int re = cnt;
+    cout << re << "\n";
 }
 
 ll rng_ll(ll L, ll R) { assert(L <= R);
@@ -162,7 +177,7 @@ int main() {
     cin.tie(0)->sync_with_stdio(0);
 
     int t = 1;
-    //* cin >> t;
+    cin >> t;
     while(t--) {
         RAYA;
         RAYA;

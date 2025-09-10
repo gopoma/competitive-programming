@@ -150,6 +150,101 @@ double time_elapsed() {
 //* /Template
 
 void solve() {
+    auto work = [&](vl a) -> ll {
+        RAYA;
+        dbg("ga");
+        int n = sz(a); n--;
+        dbg(n, a);
+
+        deque<ll> b;
+        for(int i = 1; i <= n; i++) {
+            if(i % 2 == 1) {
+
+            } else {
+                b.emplace_back(2LL * a[i] + (i - 1));
+            }
+        }
+
+        multiset<ll> ms;
+        for(auto& x: b) ms.emplace(x);
+
+
+        ll re = 0;
+
+        ll cnt = 0;
+        for(int i = 1; i <= n; i += 2) {
+            if(b.empty()) break;
+
+            ll delta = ((*ms.rbegin()) - cnt) - 2LL * a[i];
+            re = max(re, delta);
+
+            ms.erase(ms.find(b.front()));
+            b.pop_front();
+            cnt += 2LL;
+        }
+
+        RAYA;
+        return re;
+    };
+
+    ll n; cin >> n;
+    vl a(n + 1); for(int i = 1; i <= n; i++) cin >> a[i];
+    dbg(n, a);
+
+
+
+
+    ll re = 0;
+    vl pos, negs;
+    for(int i = 1; i <= n; i++) {
+        if(i % 2 == 1) {
+            re += a[i];
+            pos.emplace_back(i);
+        } else {
+            re -= a[i];
+            negs.emplace_back(i);
+        }
+    }
+
+    ll adi = 0;
+    adi = max(adi, work(a));
+
+    if(n % 2 == 1) {
+        vl b;
+        for(int i = 1; i <= n; i++) {
+            b.emplace_back(a[i]);
+        }
+        reverse(all(b));
+        b.insert(b.begin(), 0LL);
+        adi = max(adi, work(b));
+    } else {
+        vl b;
+        for(int i = 1; i <= n; i++) {
+            b.emplace_back(a[i]);
+        }
+        b.pop_back();
+
+        reverse(all(b));
+        b.insert(b.begin(), 0LL);
+        adi = max(adi, work(b));
+    }
+
+
+
+    dbg(adi, pos, negs);
+    if(!pos.empty()) {
+        adi = max(adi, pos.back() - pos.front());
+    }
+    if(!negs.empty()) {
+        adi = max(adi, negs.back() - negs.front());
+    }
+
+
+
+    dbg(re, adi);
+    re += adi;
+    dbg(re);
+    cout << re << "\n";
 }
 
 ll rng_ll(ll L, ll R) { assert(L <= R);
@@ -162,7 +257,7 @@ int main() {
     cin.tie(0)->sync_with_stdio(0);
 
     int t = 1;
-    //* cin >> t;
+    cin >> t;
     while(t--) {
         RAYA;
         RAYA;
