@@ -321,6 +321,42 @@ ll brute2(ll n, vpl edges) {
     return re;
 }
 
+ll rng_ll(ll L, ll R) { assert(L <= R);
+	return uniform_int_distribution<ll>(L,R)(rng);  }
+
+ll rng_int(ll L, ll R) { assert(L <= R);
+	return int(rng_ll(L, R));  }
+
+/**
+ * Description: A set (not multiset!) with support for finding the $n$'th
+   * element, and finding the index of an element. Change \texttt{null\_type} to get a map.
+ * Time: O(\log N)
+ * Source: KACTL
+   * https://codeforces.com/blog/entry/11080
+ * Verification: many
+ */
+
+#include <ext/pb_ds/assoc_container.hpp>
+using namespace __gnu_pbds;
+tcT> using Tree = tree<T, null_type, less<T>,
+	rb_tree_tag, tree_order_statistics_node_update>;
+#define ook order_of_key
+#define fbo find_by_order
+
+void treeExample() {
+	// Tree<int> t, t2; t.insert(8);
+	// auto it = t.insert(10).f; assert(it == t.lb(9));
+	// assert(t.ook(10) == 1 && t.ook(11) == 2 && *t.fbo(0) == 8);
+	// t.join(t2); // assuming T < T2 or T > T2, merge t2 into t
+}
+
+/**
+int atMost(Tree<pi>& T, int r) {
+	return T.ook({r,MOD}); }
+int getSum(Tree<pi>& T, int l, int r) {
+	return atMost(T,r)-atMost(T,l-1); }
+*/
+
 ll slv(ll n, vpl edges) {
     LCA st; st.init(n);
     for(auto& [u, v]: edges) {
@@ -328,18 +364,93 @@ ll slv(ll n, vpl edges) {
     }
     st.gen();
 
-    ll re = 0;
-
-    vl p(n); iota(all(p), 0LL);
-    rep(32) {
-        shuffle(all(p), rng);
-
-        ll lre = 0;
-        for(int i = 0; i + 1 < n; i += 2) {
-            lre += st.dist(p[i], p[i + 1]);
-        }
-        re = max(re, lre);
+    V<vl> adj(n);
+    for(auto& [u, v]: edges) {
+        adj[u].emplace_back(v);
+        adj[v].emplace_back(u);
     }
+
+    auto get_dist = [&](int src) -> vl {
+        vl dist(n);
+        auto dfs = [&](auto&& dfs, int src, int par, int depth) -> void {
+            dist[src] = depth;
+            for(auto& nxt: adj[src]) {
+                if(nxt == par) continue;
+                dfs(dfs, nxt, src, depth + 1);
+            }
+        }; dfs(dfs, src, -1, 0);
+        return dist;
+    };
+
+    auto get_furthest = [&](int src) -> ll {
+        vl dist = get_dist(src);
+        ll mx = 0;
+        ll re = src;
+        for(int u = 0; u < n; u++) {
+            if(dist[u] > mx) {
+                mx = dist[u];
+                re = u;
+            }
+        }
+        return re;
+    };
+
+    ll A = get_furthest(0);
+    ll B = get_furthest(A);
+
+    vl dist = get_dist(B);
+    dbg(A + 1, B + 1);
+
+    vpl ms;
+    Tree<int> tree;
+    for(int u = 0; u < n; u++) {
+        ms.emplace_back(dist[u], u + 1);
+        tree.insert(u);
+    }
+    sort(all(ms));
+
+    vpl response;
+    int i = 0;
+    vb vis(n);
+
+    dbg(ms);
+    while(sz(tree) >= 2) {
+        dbg(i, ms[i], tree);
+        while(vis[i]) i++;
+        vis[i] = true;
+
+        tree.erase(i);
+        auto [_, u] = ms[i];
+
+
+        ll mx = -1;
+        ll id = 0;
+        rep(10) {
+            int nxt = rng_int(0, sz(tree) - 1);
+            int j = *tree.find_by_order(nxt);
+            auto [__, v] = ms[j];
+
+            if(mx < st.dist(u - 1, v - 1)) {
+                mx = st.dist(u - 1, v - 1);
+                id = j;
+            }
+        }
+
+
+        vis[id] = true;
+        tree.erase(id);
+
+        int v = ms[id].second;
+
+        dbg(u, v);
+        response.emplace_back(u, v);
+    }
+
+    ll re = 0;
+    for(auto& [u, v]: response) {
+        re += st.dist(u - 1, v - 1);
+    }
+
     return re;
 }
 
@@ -356,13 +467,6 @@ void solve() {
     ll re = brute(n, edges);
     dbg(re);
 }
-
-ll rng_ll(ll L, ll R) { assert(L <= R);
-	return uniform_int_distribution<ll>(L,R)(rng);  }
-
-ll rng_int(ll L, ll R) { assert(L <= R);
-	return int(rng_ll(L, R));  }
-
 
     // shuffle a vector
 template<class T> void shuf(vector<T>& v) { shuffle(all(v),rng); }
@@ -391,7 +495,7 @@ int main() {
         RAYA;
         RAYA;
         RAYA;
-        ll n = rng_ll(2, 5);
+        ll n = rng_ll(2, 10);
 
         vpl edges;
         {
