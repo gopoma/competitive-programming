@@ -195,47 +195,40 @@ long long binpow(long long a, long long b) {
 //* /Template
 
 void solve() {
-    vl  A = {1, -2, 3, -4, 5, -6};
-    V<long double>  B = {1.075, 2.75};
-    V<pl> C = {make_pair(-25, 75), make_pair(79, 13)};
-    map<ll, int> D; D[12]++; D[13] = ll(1e9) + 5;
-    unordered_map<ll, int> E; E[12] = ll(1e9) + 5; E[13]++;
-    set<ll> F; F.emplace(23); F.emplace(23); F.emplace(16);
-    unordered_set<ll> G; G.emplace(23); G.emplace(23); F.emplace(16);
-    multiset<ll> H; H.emplace(23); H.emplace(23); H.emplace(16);
-    string I = "xd";
+    // <>
+    ll n, k; cin >> n >> k;
+    vl a(n); for(auto& x: a) cin >> x;
 
-    dbg(C);
+    auto check = [&](ll middle) -> bool {
+        ll cnt = 0;
+        ll i = 0;
+        ll j = n - 1;
+        while(i <= j) {
+            if(i == j) {
+                cnt++;
+                break;
+            }
+            if(a[i] + a[j] <= middle) {
+                cnt++;
+                i++;
+                j--;
+            } else {
+                cnt++;
+                j--;
+            }
+        }
 
-    const int n = 3;
-    const int m = 4;
-    const int k = 5;
-    V<V<vl>> dp(n, V<vl>(m, vl(k)));
+        return (cnt <= k);
+    };
 
-    array<int, 4> ndp = {1, 2, 3, 4};
-
-    dbg(A);
-    dbg(B);
-    dbg(dp);
-    dbg(1);
-    dbg("dhuamanilu");
-    GA;
-    dbg(ndp);
-    RAYA;
-    set<int> xd;
-    for(int x = 1; x <= 10; x++) xd.emplace(x);
-    dbg(xd);
-
-    map<pair<int, int>, vector<int>> mp10;
-    mp10[make_pair(1, 2)].emplace_back(1);
-    mp10[make_pair(1, 2)].emplace_back(2);
-    mp10[make_pair(1, 2)].emplace_back(3);
-    mp10[make_pair(1, 2)].emplace_back(4);
-    pair<vector<int>, vector<int>> pm;
-    vector<int> tmp{1, 2, 3};
-    vector<int> tmp2{4, 5, 6};
-    pm = make_pair(tmp, tmp2);
-    dbg(mp10, pm);
+    ll left = (*max_element(all(a))) - 1LL; // always bad
+    ll right = ll(1e16); // always good
+    while(left + 1 < right) {
+        ll middle = (left + right) >> 1LL;
+        if(check(middle)) right = middle;
+        else left = middle;
+    }
+    cout << right << "\n";
 }
 
 ll rng_ll(ll L, ll R) { assert(L <= R);
@@ -248,7 +241,7 @@ int main() {
     cin.tie(0)->sync_with_stdio(0);
 
     int t = 1;
-    //* cin >> t;
+    // cin >> t;
     while(t--) {
         RAYA;
         RAYA;

@@ -195,47 +195,42 @@ long long binpow(long long a, long long b) {
 //* /Template
 
 void solve() {
-    vl  A = {1, -2, 3, -4, 5, -6};
-    V<long double>  B = {1.075, 2.75};
-    V<pl> C = {make_pair(-25, 75), make_pair(79, 13)};
-    map<ll, int> D; D[12]++; D[13] = ll(1e9) + 5;
-    unordered_map<ll, int> E; E[12] = ll(1e9) + 5; E[13]++;
-    set<ll> F; F.emplace(23); F.emplace(23); F.emplace(16);
-    unordered_set<ll> G; G.emplace(23); G.emplace(23); F.emplace(16);
-    multiset<ll> H; H.emplace(23); H.emplace(23); H.emplace(16);
-    string I = "xd";
+    // <>
+    ll n, q; cin >> n >> q;
+    vl a(n); for(auto& x: a) cin >> x;
+    vl que(q); for(auto& x: que) cin >> x;
+    sort(all(a));
 
-    dbg(C);
+    vl pref = a;
+    for(int i = 1; i < n; i++) {
+        pref[i] += pref[i - 1];
+    }
+    auto query = [&](int l, int r) -> ll {
+        ll sum = pref[r];
+        if(0 <= l - 1) sum -= pref[l - 1];
+        return sum;
+    };
 
-    const int n = 3;
-    const int m = 4;
-    const int k = 5;
-    V<V<vl>> dp(n, V<vl>(m, vl(k)));
+    vl temp;
+    auto work = [&](auto&& work, int l, int r) -> void {
+        if(l > r) return;
+        temp.eb(query(l, r));
 
-    array<int, 4> ndp = {1, 2, 3, 4};
+        if(a[l] == a[r]) return;
 
-    dbg(A);
-    dbg(B);
-    dbg(dp);
-    dbg(1);
-    dbg("dhuamanilu");
-    GA;
-    dbg(ndp);
-    RAYA;
-    set<int> xd;
-    for(int x = 1; x <= 10; x++) xd.emplace(x);
-    dbg(xd);
+        ll mid = (a[l] + a[r]) / 2LL;
+        ll nxt = upper_bound(a.begin() + l, a.begin() + r + 1, mid) - a.begin();
 
-    map<pair<int, int>, vector<int>> mp10;
-    mp10[make_pair(1, 2)].emplace_back(1);
-    mp10[make_pair(1, 2)].emplace_back(2);
-    mp10[make_pair(1, 2)].emplace_back(3);
-    mp10[make_pair(1, 2)].emplace_back(4);
-    pair<vector<int>, vector<int>> pm;
-    vector<int> tmp{1, 2, 3};
-    vector<int> tmp2{4, 5, 6};
-    pm = make_pair(tmp, tmp2);
-    dbg(mp10, pm);
+        work(work, l, nxt - 1);
+        work(work, nxt, r);
+    }; work(work, 0, n - 1);
+
+    sort(all(temp));
+    for(auto& x: que) {
+        auto it = lower_bound(all(temp), x);
+        bool ok = ((it != temp.end()) && ((*it) == x));
+        cout << (ok?"Yes":"No") << "\n";
+    }
 }
 
 ll rng_ll(ll L, ll R) { assert(L <= R);
@@ -248,7 +243,7 @@ int main() {
     cin.tie(0)->sync_with_stdio(0);
 
     int t = 1;
-    //* cin >> t;
+    cin >> t;
     while(t--) {
         RAYA;
         RAYA;

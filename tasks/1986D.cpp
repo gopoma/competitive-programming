@@ -195,47 +195,53 @@ long long binpow(long long a, long long b) {
 //* /Template
 
 void solve() {
-    vl  A = {1, -2, 3, -4, 5, -6};
-    V<long double>  B = {1.075, 2.75};
-    V<pl> C = {make_pair(-25, 75), make_pair(79, 13)};
-    map<ll, int> D; D[12]++; D[13] = ll(1e9) + 5;
-    unordered_map<ll, int> E; E[12] = ll(1e9) + 5; E[13]++;
-    set<ll> F; F.emplace(23); F.emplace(23); F.emplace(16);
-    unordered_set<ll> G; G.emplace(23); G.emplace(23); F.emplace(16);
-    multiset<ll> H; H.emplace(23); H.emplace(23); H.emplace(16);
-    string I = "xd";
+    // <>
+    int n; cin >> n;
+    str S; cin >> S;
 
-    dbg(C);
+    if(n == 2) {
+        cout << stoll(S) << "\n";
+        return;
+    }
+    if(n == 3) {
+        ll re = BIG;
+        vl a;
+        for(auto& c: S) a.emplace_back(c - '0');
+        ll left = stoll(S.substr(0, 2));
+        ll right = stoll(S.substr(1, 2));
+        re = min({
+            left * a[2],
+            left + a[2],
+            a[0] + right,
+            a[0] * right
+        });
+        cout << re << "\n";
+        return;
+    }
+    for(auto& c: S) {
+        if(c == '0') {
+            cout << "0\n";
+            return;
+        }
+    }
 
-    const int n = 3;
-    const int m = 4;
-    const int k = 5;
-    V<V<vl>> dp(n, V<vl>(m, vl(k)));
-
-    array<int, 4> ndp = {1, 2, 3, 4};
-
-    dbg(A);
-    dbg(B);
-    dbg(dp);
-    dbg(1);
-    dbg("dhuamanilu");
-    GA;
-    dbg(ndp);
-    RAYA;
-    set<int> xd;
-    for(int x = 1; x <= 10; x++) xd.emplace(x);
-    dbg(xd);
-
-    map<pair<int, int>, vector<int>> mp10;
-    mp10[make_pair(1, 2)].emplace_back(1);
-    mp10[make_pair(1, 2)].emplace_back(2);
-    mp10[make_pair(1, 2)].emplace_back(3);
-    mp10[make_pair(1, 2)].emplace_back(4);
-    pair<vector<int>, vector<int>> pm;
-    vector<int> tmp{1, 2, 3};
-    vector<int> tmp2{4, 5, 6};
-    pm = make_pair(tmp, tmp2);
-    dbg(mp10, pm);
+    ll re = BIG;
+    for(int i = 0; i + 1 < n; i++) {
+        str temp = S.substr(i, 2);
+        ll lre = stoll(temp);
+        for(int j = 0; j < i; j++) {
+            if(S[j] != '1') {
+                lre += S[j] - '0';
+            }
+        }
+        for(int j = i + 2; j < n; j++) {
+            if(S[j] != '1') {
+                lre += S[j] - '0';
+            }
+        }
+        re = min(re, lre);
+    }
+    cout << re << "\n";
 }
 
 ll rng_ll(ll L, ll R) { assert(L <= R);
@@ -248,7 +254,7 @@ int main() {
     cin.tie(0)->sync_with_stdio(0);
 
     int t = 1;
-    //* cin >> t;
+    cin >> t;
     while(t--) {
         RAYA;
         RAYA;
