@@ -233,34 +233,35 @@ struct HashRange {
 		return cum[x] != b.cum[x]; },0,min(sz(S),sz(b.S)))-1; }*/
 };
 /// HashRange HR; HR.add("ababab"); F0R(i,6) FOR(j,i,6) ps(i,j,HR.hash(i,j));
+
 //* /Template
 
 void solve() {
     str S; cin >> S;
-    str G; cin >> G;
-    int k; cin >> k;
-
-    vb good(26);
-    for(int i = 0; i < 26; i++) {
-        good[i] = bool(G[i] == '1');
-    }
-
     const int n = sz(S);
 
-    HashRange hS; hS.add(S);
+    str left, right; cin >> left >> right;
+
+    HashRange hS, hLeft, hRight;
+    hS.add(S);
+    hLeft.add(left);
+    hRight.add(right);
 
     V<H> st;
     for(int l = 0; l < n; l++) {
-        int bads = 0;
         for(int r = l; r < n; r++) {
-            bads += !good[S[r] - 'a'];
-            if(bads <= k) {
+            int len = r - l + 1;
+            if(
+                (len >= max(sz(left), sz(right)))
+                && (hS.hash(l, l + sz(left) - 1) == hLeft.hash(0, sz(left) - 1))
+                && (hS.hash(r - sz(right) + 1, r) == hRight.hash(0, sz(right) - 1))
+            ) {
                 st.eb(hS.hash(l, r));
-            } else break;
+            }
         }
     }
-    remDup(st);
 
+    remDup(st);
     cout << sz(st) << "\n";
 }
 

@@ -193,6 +193,46 @@ long long binpow(long long a, long long b) {
 
 //* Template
 /**
+ * Description: Hash map with similar API as unordered\_map.
+ 	* Initial capacity must be a power of 2 if provided.
+ * Source: KACTL
+ * Memory: \tilde 1.5x unordered map
+ * Time: \tilde 3x faster than unordered map
+ * API: hash_map<ll, ll> go({},{},{},{}, {1 << 20});
+ * hash_set<pair<int, int>> st;
+ * hash_set<pair<ll, ll>> st;
+ * hash_map<pair<ll, ll>, int> hist;
+ * hash_map<pair<int, int>, int> hist;
+ */
+
+// #include<bits/extc++.h>
+#include <ext/pb_ds/assoc_container.hpp>
+
+//? For CodeForces, or other places where hacking might be a problem:
+
+struct custom_hash {
+	static uint64_t splitmix64(uint64_t x) {
+		// http://xorshift.di.unimi.it/splitmix64.c
+		x += 0x9e3779b97f4a7c15;
+		x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9;
+		x = (x ^ (x >> 27)) * 0x94d049bb133111eb;
+		return x ^ (x >> 31);
+	}
+
+	size_t operator()(pair<uint64_t,uint64_t> x) const {
+		static const uint64_t FIXED_RANDOM = chrono::steady_clock::now().time_since_epoch().count();
+		return splitmix64(x.first + FIXED_RANDOM)^(splitmix64(x.second + FIXED_RANDOM) >> 1);
+	}
+};
+
+template <typename K, typename V, typename Hash = custom_hash>
+using hash_map = __gnu_pbds::gp_hash_table<K, V, Hash>;
+
+template <typename K, typename Hash = custom_hash>
+using hash_set = hash_map<K, __gnu_pbds::null_type, Hash>;
+
+
+/**
  * Description: Polynomial hash for substrings with two bases.
  * Source:
 	* KACTL
@@ -235,33 +275,40 @@ struct HashRange {
 /// HashRange HR; HR.add("ababab"); F0R(i,6) FOR(j,i,6) ps(i,j,HR.hash(i,j));
 //* /Template
 
+string a[int(1e5) + 5];
 void solve() {
-    str S; cin >> S;
-    str G; cin >> G;
+    string S; cin >> S;
+    const int n = sz(S);
     int k; cin >> k;
-
-    vb good(26);
-    for(int i = 0; i < 26; i++) {
-        good[i] = bool(G[i] == '1');
+    for(int i = 0; i < k; i++) {
+        cin >> a[i];
     }
 
-    const int n = sz(S);
+    hash_set<pair<int, int>> st;
+    for(int i = 0; i < k; i++) {
+        HashRange hX; hX.add(a[i]);
+        H cur = hX.hash(0, sz(a[i]) - 1);
+        st.insert({cur[0], cur[1]});
+    }
 
     HashRange hS; hS.add(S);
 
-    V<H> st;
-    for(int l = 0; l < n; l++) {
-        int bads = 0;
-        for(int r = l; r < n; r++) {
-            bads += !good[S[r] - 'a'];
-            if(bads <= k) {
-                st.eb(hS.hash(l, r));
-            } else break;
+    vi dp(n + 1);
+    for(int i = n; i >= 0; i--) {
+        if(i == n) {
+            dp[i] = 1;
+        } else {
+            for(int j = i; j < n; j++) {
+                H cur = hS.hash(i, j);
+                if(st.find({cur[0], cur[1]}) != st.end()) {
+                    dp[i] += dp[j + 1];
+                    dp[i] %= MOD;
+                }
+            }
         }
     }
-    remDup(st);
 
-    cout << sz(st) << "\n";
+    cout << dp[0] << "\n";
 }
 
 ll rng_ll(ll L, ll R) { assert(L <= R);
@@ -272,6 +319,23 @@ template<class T> void shuf(vector<T>& v) { shuffle(all(v),rng); }
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
+
+    if(isDebugging) {
+        hash_map<pair<ll, ll>, int> hist;
+        hist[{1, 2}]++;
+        hist[{1, 2}]++;
+        hist[{1, 2}]++;
+        hist[{2, 3}]++;
+        hist[{2, 3}]++;
+        hist[{4, 5}]++;
+        dbg(hist);
+
+        hash_set<pair<ll, ll>> st;
+        st.insert({1, 2});
+        st.insert({1, 2});
+        st.insert({2, 3});
+        dbg(st);
+    }
 
     int t = 1;
     //* cin >> t;
