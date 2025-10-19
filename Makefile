@@ -3,7 +3,7 @@ compile:
 run:
 	make compile && ./bin/${F}.out
 xd:
-	g++ -std=c++17 -o ./bin/${F}.out ${F} && ./bin/${F}.out
+	g++ -std=c++17 -Wl,--stack=26843545600 -o ./bin/${F}.out ${F} && ./bin/${F}.out
 xd-dbg:
 	g++ -std=c++17 -DLOCAL -o ./bin/${F}.out ${F} && ./bin/${F}.out
 icpc:
