@@ -8,6 +8,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+
+
 //* Debugger
 string to_string(string s) {
     return '"' + s + '"';
@@ -72,14 +74,26 @@ void debug_out(Head H, Tail... T) {
 }
 
 #ifdef LOCAL
-const vector<string> __C_DBG{"\033[1;34m", "\033[0;32m = \033[35m", "\033[0m", "]\033[35m:", "\033[101m", "\033[0m"};
+const vector<string> __C_DBG{
+    "\033[1;34m",
+    "\033[0;32m = \033[35m",
+    "\033[0m", "]\033[35m:",
+    "\033[101m", "\033[0m"
+};
 #define MACRO(code) do {code} while (false)
-#define dbg(x)      {auto xd = x; cout << "Line(" << __LINE__ << "): " << __C_DBG[0] << #x << __C_DBG[1] << to_string(xd) << __C_DBG[2] << endl;}
-#define dbg(...)    MACRO(cout << "Line(" << __LINE__ << "): " << __C_DBG[0] << "[" << #__VA_ARGS__ << __C_DBG[3]; debug_out(__VA_ARGS__); cout << __C_DBG[2];)
+#define dbg(x)      MACRO(  \
+    auto xd = x;    \
+    cerr << "Line(" << __LINE__ << "): " << __C_DBG[0] << #x << __C_DBG[1] << to_string(xd) << __C_DBG[2] << endl;  \
+)
+#define dbg(...)    MACRO(  \
+    cerr << "Line(" << __LINE__ << "): " << __C_DBG[0] << "[" << #__VA_ARGS__ << __C_DBG[3];    \
+    debug_out(__VA_ARGS__);     \
+    cerr << __C_DBG[2];     \
+)
 
 #define GA          dbg(0)
 // RAYA tiene 32 caracteres "="
-#define RAYA        cout << __C_DBG[4] << "================================" << __C_DBG[5] << endl;
+#define RAYA        cerr << __C_DBG[4] << "================================" << __C_DBG[5] << endl;
 
 const bool isDebugging = true;
 #else
@@ -92,6 +106,8 @@ const bool isDebugging = false;
 #endif
 
 //* /Debugger
+
+
 
 using ll = long long;
 using db = long double; // or double if tight TL
@@ -147,6 +163,7 @@ const int MOD = 1e9+7;
 const int INF = int(1e9) + 5;
 const ll BIG = ll(1e18) + 5;
 const db PI = acos((db)-1);
+const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
 mt19937 rng(0); // or mt19937_64
 //* mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
 
@@ -191,6 +208,15 @@ long long binpow(long long a, long long b) {
     return res;
 }
 
+const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
+const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
+
+using vvi = V<vi>;
+using vvl = V<vl>;
+using vvb = V<vb>;
+
+
+
 //* Template
 //* /Template
 
@@ -198,11 +224,31 @@ void solve() {
 
 }
 
-ll rng_ll(ll L, ll R) { assert(L <= R);
-	return uniform_int_distribution<ll>(L,R)(rng);  }
 
-// shuffle a vector
+
+// return int in [L,R] inclusive
+int rng_int(int L, int R) { assert(L <= R);
+	return uniform_int_distribution<int>(L,R)(rng);
+}
+
+ll rng_ll(ll L, ll R) { assert(L <= R);
+	return uniform_int_distribution<ll>(L,R)(rng);
+}
+
+// return double in [L,R] inclusive
+db rng_db(db L, db R) { assert(L <= R);
+	return uniform_real_distribution<db>(L,R)(rng);
+}
+
 template<class T> void shuf(vector<T>& v) { shuffle(all(v),rng); }
+
+// generate edges of tree with verts [0,N-1]
+// smaller back -> taller tree
+vpi treeRand(int N, int back) {
+	assert(N >= 1 && back >= 0); vpi ed;
+	FOR(i,1,N) ed.eb(i,i-1-rng_int(0,min(back,i-1)));
+	return ed;
+}
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
