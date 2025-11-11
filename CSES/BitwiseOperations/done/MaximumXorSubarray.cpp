@@ -296,6 +296,7 @@ ll slv(ll n, vl a) {
     return ans;
 }
 
+// Strategy: Prefix XOR + Greedy + Trie
 void solve() {
     ll n; cin >> n;
     vl a(n); each(x, a) cin >> x;
