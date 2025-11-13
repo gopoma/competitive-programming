@@ -104,3 +104,8 @@ $dp[idx][current] = \sum_{x = l}^{r} dp[idx + 1][x]$? (note the `contiguous` ran
 -   **Solution** $\max(0, \min(R_{1}, R_{2}) - \max(L_{1}, L_{2}))$
 
 * `vector dp(5000, vector(5000, vector<long long>(2)))` works in 265 ms with `swap` and 406 ms without it.
+
+* **Always** ignore nodes in wich `is_removed[node]` is set to `true` in Centroid Decomposition.
+
+* `std::vector` is by way faster than `std::set`.
+* `static array` is by way faster than `std::vector`.
