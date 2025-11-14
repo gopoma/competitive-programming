@@ -4,5 +4,5 @@ run:
 	make compile && ./bin/${F}.out
 xd:
 	g++ -std=c++20 -Wl,--stack=26843545600 -o ./bin/${F}.out ${F} && ./bin/${F}.out
-icpc:
+rpc:
 	g++ -std=c++11 -DLOCAL -o ./bin/${F}.out ${F} && ./bin/${F}.out
