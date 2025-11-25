@@ -109,3 +109,4 @@ $dp[idx][current] = \sum_{x = l}^{r} dp[idx + 1][x]$? (note the `contiguous` ran
 
 * `std::vector` is by way faster than `std::set`.
 * `static array` is by way faster than `std::vector`.
+* For SOS DP, we're working with MXBIT as the bit nxt to the MSB.
