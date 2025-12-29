@@ -86,7 +86,8 @@ tcT > int upb(V<T> &a, const T &b) { return int(ub(all(a), b) - bg(a)); }
 
 const int MOD = 1e9 + 7;
 const int MX = (int)2e5 + 5;
-const ll BIG = 1e18;  //? not too close to LLONG_MAX
+const ll BIG = ll(1e18) + 5;  //? not too close to LLONG_MAX
+const int INF = int(1e9) + 5;
 const db PI = acos((db)-1);
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
 mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
@@ -293,7 +294,6 @@ using vvl = V<vl>;
 using vvb = V<vb>;
 //? /Custom Helpers
 
-#define RAYA ps("================================")
 
 const string PAIR_LEFT = "(";
 const string PAIR_RIGHT = ")";
@@ -301,28 +301,28 @@ const string IT_LEFT = "[";
 const string IT_RIGHT = "]";
 const string PAIR_SEP = ", ";
 const string IT_SEP = ", ";
- 
+
 // const string PAIR_LEFT = "(";
 // const string PAIR_RIGHT = ")";
 // const string IT_LEFT = "[";
 // const string IT_RIGHT = "]";
 // const string PAIR_SEP = " ";
 // const string IT_SEP = " ";
- 
+
 // const string PAIR_LEFT = "{";
 // const string PAIR_RIGHT = "}";
 // const string IT_LEFT = "{";
 // const string IT_RIGHT = "}";
 // const string PAIR_SEP = ", ";
 // const string IT_SEP = ", ";
- 
+
 // benq - print any container + pair
 template<typename T, typename = void> struct is_iterable : false_type {};
 template<typename T> struct is_iterable<T, void_t<decltype(begin(declval<T>())),decltype(end(declval<T>()))>> : true_type {};
 template<typename T> typename enable_if<is_iterable<T>::value&&!is_same<T, string>::value,ostream&>::type operator<<(ostream &cout, T const &v);
 template<typename A, typename B> ostream& operator<<(ostream &cout, pair<A, B> const &p) { return cout << PAIR_LEFT << p.f << PAIR_SEP << p.s << PAIR_RIGHT; }
 template<typename T> typename enable_if<is_iterable<T>::value&&!is_same<T, string>::value,ostream&>::type operator<<(ostream &cout, T const &v) {
-    cout << IT_LEFT; 
+    cout << IT_LEFT;
     for (auto it = v.begin(); it != v.end();) {
         cout << *it;
         if (++it != v.end()) cout << IT_SEP;
@@ -333,11 +333,15 @@ template<typename A, typename B> istream& operator>>(istream& cin, pair<A, B> &p
     cin >> p.first;
     return cin >> p.second;
 }
- 
+
 void dbg_out() { cout << endl; }
-template<typename Head, typename... Tail> 
+template<typename Head, typename... Tail>
 void dbg_out(Head H, Tail... T) { cout << ' ' << H; dbg_out(T...); }
-#define dbg(...) cout << "(" << #__VA_ARGS__ << "): ", dbg_out(__VA_ARGS__)
 
 //* Template
 //* /Template
+
+#define dbg(...) cout << "(" << #__VA_ARGS__ << "): ", dbg_out(__VA_ARGS__)
+// #define dbg(...)
+#define RAYA ps("================================")
+// define RAYA
