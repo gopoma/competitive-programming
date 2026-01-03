@@ -86,7 +86,7 @@ tcT > int upb(V<T> &a, const T &b) { return int(ub(all(a), b) - bg(a)); }
 
 const int MOD = 1e9 + 7;
 const int MX = (int)2e5 + 5;
-const ll BIG = ll(1e18) + 5;  //? not too close to LLONG_MAX
+const ll BIG = ll(1e15) + 5;  //? not too close to LLONG_MAX
 const int INF = int(1e9) + 5;
 const db PI = acos((db)-1);
 const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
@@ -344,4 +344,4 @@ void dbg_out(Head H, Tail... T) { cout << ' ' << H; dbg_out(T...); }
 #define dbg(...) cout << "(" << #__VA_ARGS__ << "): ", dbg_out(__VA_ARGS__)
 // #define dbg(...)
 #define RAYA ps("================================")
-// define RAYA
+// #define RAYA
