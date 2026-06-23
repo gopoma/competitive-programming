@@ -328,6 +328,10 @@ vpi treeRand(int N, int back) {
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
+    if(isDebugging) {
+
+    }
+
     int t = 1;
     //* cin >> t;
     while(t--) {
