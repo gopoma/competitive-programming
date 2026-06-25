@@ -393,6 +393,7 @@ void solve() {
         }
 
         if(ok) {
+            dbg("good", C);
             ways++;
         }
     } while(next_permutation(all(C)));
