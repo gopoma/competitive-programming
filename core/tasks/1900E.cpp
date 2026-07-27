@@ -285,23 +285,113 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 using vvi = V<vi>;
 using vvl = V<vl>;
 using vvb = V<vb>;
-
-ll custom_abs(ll x) {
-    if(x < 0) return -x;
-    return +x;
-}
 //? /Custom Helpers
 
 
 
 //* Template
+/**
+ * Description: Tarjan's, DFS once to generate
+ 	* strongly connected components in topological order. $a,b$
+ 	* in same component if both $a\to b$ and $b\to a$ exist.
+ 	* Uses less memory than Kosaraju b/c doesn't store reverse edges.
+ * Time: O(N+M)
+ * Source: KACTL
+ 	* https://github.com/kth-competitive-programming/kactl/blob/master/content/graph/SCC.h
+ * Verification: https://cses.fi/problemset/task/1686/
+ */
+
+struct SCC {
+	int N, ti = 0; V<vi> adj;
+	vi disc, comp, stk, comps;
+	void init(int _N){ N = _N, adj.rsz(N);
+		disc.rsz(N), comp.rsz(N,-1);}
+	void ae(int x, int y) { adj[x].pb(y); }
+	int dfs(int x) {
+		int low = disc[x] = ++ti; stk.pb(x);
+		each(y,adj[x]) if (comp[y] == -1) // comp[y] == -1,
+			ckmin(low,disc[y]?:dfs(y));  // disc[y] != 0 -> in stack
+		if (low == disc[x]) { // make new SCC
+			// pop off stack until you find x
+			comps.pb(x); for (int y = -1; y != x;)
+				comp[y = stk.bk] = x, stk.pop_back();
+		}
+		return low;
+	}
+	void gen() {
+		F0R(i,N) if (!disc[i]) dfs(i);
+		reverse(all(comps));
+	}
+};
+
 //* /Template
 
 void solve() {
     // run A < A3.in
     // xd A < A4.in
 
+    int n, m; cin >> n >> m;
+    vl a(n); for(auto& x: a) cin >> x;
+    vpi edges(m);
+    for(auto& [u, v]: edges) {
+        cin >> u >> v;
+        u--; v--;
+    }
+    dbg(n, m);
+    dbg(a);
+    dbg(edges);
 
+
+
+
+
+    SCC strong;
+    strong.init(n);
+    for(auto& [u, v]: edges) {
+        strong.ae(u, v);
+    }
+    strong.gen();
+    dbg(strong.comp);
+    dbg(strong.comps);
+
+
+
+    vl component_size(n);
+    vl component_sum(n);
+    for(int i = 0; i < n; i++) {
+        component_size[strong.comp[i]]++;
+        component_sum[strong.comp[i]] += a[i];
+    }
+
+    vpi U;
+    for(auto& [u, v]: edges) {
+        if(strong.comp[u] != strong.comp[v]) {
+            U.eb(strong.comp[u], strong.comp[v]);
+        }
+    }
+    remDup(U);
+
+
+    vvi adj(n);
+    for(auto& [u, v]: U) adj[u].eb(v);
+
+    vpl dp(n, {-BIG, -BIG});
+    for(int i = sz(strong.comps) - 1; i >= 0; i--) {
+        const int u = strong.comps[i];
+        dp[u] = mp(component_size[u], -component_sum[u]);
+        dbg(i, u, component_size[u], component_sum[u], adj[u]);
+
+        pl adi = {0, 0};
+        for(auto& nxt: adj[u]) {
+            ckmax(adi, dp[nxt]);
+        }
+        dp[u].f += adi.f;
+        dp[u].s += adi.s;
+    }
+
+    pl response = {-BIG, -BIG};
+    for(int i = 0; i < n; i++) response = max(response, dp[i]);
+    cout << response.f << " " << -response.s << "\n";
 }
 
 

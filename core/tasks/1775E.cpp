@@ -1,9 +1,9 @@
 //* sometimes pragmas don't work, if so, just comment it!
-//? #pragma GCC optimize ("Ofast")
+#pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-//! #undef _GLIBCXX_DEBUG //? for Stress Testing
+#undef _GLIBCXX_DEBUG //? for Stress Testing
 
 #include <bits/stdc++.h>
 using namespace std;
@@ -285,23 +285,320 @@ const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
 using vvi = V<vi>;
 using vvl = V<vl>;
 using vvb = V<vb>;
-
-ll custom_abs(ll x) {
-    if(x < 0) return -x;
-    return +x;
-}
 //? /Custom Helpers
 
 
 
 //* Template
+/**
+ * Description: 1D point update and range query where \texttt{cmb} is
+ 	* any associative operation. \texttt{seg[1]==query(0,N-1)}.
+ * Time: O(\log N)
+ * Source:
+	* http://codeforces.com/blog/entry/18051
+	* KACTL
+ * Verification: SPOJ Fenwick
+ * API: SegTree<node> tree; tree.init(int(n));
+ */
+
+tcT> struct SegTree { // cmb(ID,b) = b
+	// const T ID{}; T cmb(T a, T b) { return a+b; }
+    T ID{}; T cmb(T a, T b) { return min(a, b); }
+	int n; V<T> seg;
+	void init(int _n) { // upd, query also work if n = _n
+		for (n = 1; n < _n; ) n *= 2;
+		seg.assign(2*n,ID); }
+	void pull(int p) { seg[p] = cmb(seg[2*p],seg[2*p+1]); }
+	void upd(int p, T val) { // set val at position p
+		seg[p += n] = val; for (p /= 2; p; p /= 2) pull(p); }
+	T query(int l, int r) {	// zero-indexed, inclusive
+		T ra = ID, rb = ID;
+		for (l += n, r += n+1; l < r; l /= 2, r /= 2) {
+			if (l&1) ra = cmb(ra,seg[l++]);
+			if (r&1) rb = cmb(seg[--r],rb);
+		}
+		return cmb(ra,rb);
+	}
+	/// int first_at_least(int lo, int val, int ind, int l, int r) { // if seg stores max across range
+	/// 	if (r < lo || val > seg[ind]) return -1;
+	/// 	if (l == r) return l;
+	/// 	int m = (l+r)/2;
+	/// 	int res = first_at_least(lo,val,2*ind,l,m); if (res != -1) return res;
+	/// 	return first_at_least(lo,val,2*ind+1,m+1,r);
+	/// }
+};
+// /here goes the template!
 //* /Template
+
+ll custom_abs(ll x) {
+    if(x < 0) return -x;
+    return +x;
+}
+
+ll brute(ll n, vl a) {
+    auto norm = [&]() -> void {
+        vl b;
+        for(auto& x: a) if(x != 0) b.eb(x);
+        swap(a, b);
+
+        if(a.empty()) return;
+
+
+        vector<pair<char, ll>> stk;
+        for(auto& x: a) {
+            if(x < 0) {
+                stk.eb('-', custom_abs(x));
+            } else {
+                assert(x > 0);
+                stk.eb('+', custom_abs(x));
+            }
+        }
+
+
+
+        char current_sgn = stk[0].first;
+        ll current_sum = stk[0].second;
+        vector<pair<char, ll>> nstk;
+        for(int i = 1; i < sz(stk); i++) {
+            auto& [sgn, x] = stk[i];
+
+            if(sgn == current_sgn) {
+                current_sum += x;
+            } else {
+                nstk.emplace_back(current_sgn, current_sum);
+                current_sum = x;
+            }
+            current_sgn = sgn;
+        }
+        nstk.emplace_back(current_sgn, current_sum);
+
+
+        for(int i = 0; i + 1 < sz(nstk); i++) {
+            assert(nstk[i].first != nstk[i + 1].first);
+        }
+
+        vl na;
+        for(auto& [sgn, x]: nstk) {
+            if(sgn == '-') na.eb(-x);
+            else na.eb(+x);
+        }
+
+        swap(a, na);
+    };
+
+    ll ans = 0;
+    while(true) {
+        norm();
+        if(a.empty()) break;
+        // dbg(a);
+
+        ll mn = BIG;
+        for(auto& x: a) ckmin(mn, custom_abs(x));
+        ans += mn;
+
+        for(auto& x: a) {
+            if(x < 0) {
+                x += mn;
+            } else {
+                x -= mn;
+            }
+        }
+    }
+    return ans;
+}
+
+void slv(ll n, vl a) {
+    {
+        vl na;
+        for(auto& x: a) {
+            if(x != 0) {
+                na.eb(x);
+            }
+        }
+        swap(a, na);
+    }
+
+
+    ll re = 0;
+    dbg(a);
+    if(!a.empty()) {
+        vector<pair<char, ll>> stk;
+        {
+            for(auto& x: a) {
+                if(x < 0) {
+                    stk.eb('-', custom_abs(x));
+                } else {
+                    assert(x > 0);
+                    stk.eb('+', custom_abs(x));
+                }
+            }
+
+
+
+            char current_sgn = stk[0].first;
+            ll current_sum = stk[0].second;
+            vector<pair<char, ll>> nstk;
+            for(int i = 1; i < sz(stk); i++) {
+                auto& [sgn, x] = stk[i];
+
+                if(sgn == current_sgn) {
+                    current_sum += x;
+                } else {
+                    nstk.emplace_back(current_sgn, current_sum);
+                    current_sum = x;
+                }
+                current_sgn = sgn;
+            }
+            nstk.emplace_back(current_sgn, current_sum);
+
+
+            for(int i = 0; i + 1 < sz(nstk); i++) {
+                assert(nstk[i].first != nstk[i + 1].first);
+            }
+            swap(stk, nstk);
+        }
+        dbg(stk);
+        const int m = sz(stk);
+        dbg(m);
+
+
+
+
+        SegTree<pl> st; st.init(m);
+        st.ID = {BIG, BIG};
+        list<ll> L;
+        set<int> alive;
+        vector<list<ll>::iterator> iters(n);
+
+        vector<char> sgns(m);
+        vl sum(m);
+
+        for(int i = 0; i < m; i++) {
+            L.eb(i);
+            alive.emplace(i);
+            auto lst = L.end(); --lst;
+            iters[i] = lst;
+
+
+            auto [sgn, x] = stk[i];
+            sgns[i] = sgn;
+            sum[i]  = x;
+
+            st.upd(i, {x, i});
+        }
+        dbg(L);
+        dbg(sgns);
+        dbg(sum);
+        auto ddd = [&]() -> void {
+            if(isDebugging) {
+                vl segment_tree;
+                for(int i = 0; i < m; i++) {
+                    segment_tree.eb(st.query(i, i).first);
+                }
+                dbg(segment_tree);
+            }
+        };
+        ddd();
+
+        dbg("Processing");
+        while(true) {
+            RAYA;
+            auto [gmn, _] = st.query(0, m - 1);
+            if(gmn == BIG) break;
+
+            re = gmn;
+
+            dbg(gmn);
+            dbg(alive);
+            dbg(sgns);
+            dbg(sum);
+            ddd();
+
+            vl todo;
+            while(true) {
+                auto [mn, i] = st.query(0, m - 1);
+                if(mn != gmn) break;
+                st.upd(i, {BIG, BIG});
+                todo.eb(i);
+            }
+            dbg(todo);
+
+
+            vl ntodo;
+            for(auto& i: todo) {
+                alive.erase(i);
+                auto it = iters[i];
+
+                if(it != L.begin()) {
+                    auto prv = prev(it);
+                    ntodo.eb(*prv);
+                }
+                L.erase(iters[i]);
+            }
+            swap(todo, ntodo);
+            dbg("Should Normalize", todo);
+
+
+            for(auto& i: todo) {
+                if(!alive.count(i)) continue;
+
+                auto it = iters[i];
+                it++;
+                ll ntot = sum[i];
+
+                char current_sgn = sgns[i];
+                while(it != L.end() && (sgns[*it] == current_sgn)) {
+                    ntot += sum[*it] - gmn;
+                    st.upd(*it, {BIG, BIG});
+                    alive.erase(*it);
+
+                    ll guarda_id_to_remove = *it;
+                    it++;
+                    L.erase(iters[guarda_id_to_remove]);
+                }
+
+                sum[i] = ntot;
+                st.upd(i, {ntot, i});
+            }
+        }
+        ddd();
+
+//        for(int i = 0; i < m; i++) {
+//            dbg(i, *iters[i], iters[i] == L.begin(), iters[i] == L.end());
+//            auto nxt = next(iters[i]);
+//            if(nxt != L.end()) {
+//                dbg(i, *nxt);
+//            }
+//            if(iters[i] != L.begin()) {
+//                auto prv = prev(iters[i]);
+//                dbg(i, *prv);
+//            }
+//        }
+    }
+
+    cout << re << "\n";
+
+
+    if(isDebugging) {
+        dbg("Brute");
+        ll ans = brute(n, a);
+        dbg("/Brute");
+
+        dbg(re, ans);
+        assert(re == ans);
+    }
+}
 
 void solve() {
     // run A < A3.in
     // xd A < A4.in
 
+    ll n; cin >> n;
+    vl a(n); for(auto& x: a) cin >> x;
+    dbg(n);
+    dbg(a);
 
+    slv(n, a);
 }
 
 
@@ -333,9 +630,17 @@ vpi treeRand(int N, int back) {
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
+    while(isDebugging && 1) {
+        ll n = rng_ll(1, 100);
+        vl a(n); for(auto& x: a) x = rng_ll(-1e9, 1e9);
+        dbg(n);
+        slv(n, a);
+    }
+
     if(isDebugging) {
         setIn("xd.in");
     }
+
 
     int t = 1;
     cin >> t;
