@@ -306,19 +306,31 @@ void solve() {
     }
 
     dbg(m, n);
-    set<int> tot; for(auto& x: a[0]) tot.emplace(x);
-    for(auto& vec: a) {
-        set<int> aux;
-        for(auto& x: vec) aux.emplace(x);
+    for(auto& vec: a) dbg(vec);
 
-        set<int> new_tot;
-        for(auto& x: aux) if(tot.count(x)) new_tot.emplace(x);
-        swap(tot, new_tot);
 
-        dbg(tot);
+
+
+    vvb in(m, vb(n + 1));
+    for(int i = 0; i < m; i++) {
+        for(auto& x: a[i]) {
+            in[i][x] = true;
+        }
     }
 
-    if(!tot.empty()) cout << "possible";
+
+    bool ok = true;
+    for(int i = 0; i < m; i++) {
+        for(int j = i + 1; j < m; j++) {
+            bool lok = false;
+            for(auto& x: a[i]) {
+                lok |= in[j][x];
+            }
+            ok &= lok;
+        }
+    }
+
+    if(ok) cout << "possible";
     else cout << "impossible";
     cout << "\n";
 }
