@@ -9,14 +9,14 @@ struct LazySeg {
 	struct F { // lazy update
 		ll inc = 0;
 		F() {}
-		F(int x) { inc = x; }
+		F(ll x) { inc = x; }
 		F& operator*=(const F& a) { inc += a.inc; return *this; }
 	}; V<F> lazy;
 
 	struct T { // data you need to store for each interval
 		ll sz = 1, mn = BIG, sum = 0;
 		T() {}
-		T(int x) { mn = sum = x; }
+		T(ll x) { mn = sum = x; }
 		friend T operator+(const T& a, const T& b) {
 			T res; res.sz = a.sz+b.sz;
 			res.mn = min(a.mn,b.mn), res.sum = a.sum+b.sum;
@@ -56,7 +56,7 @@ struct LazySeg {
 		upd(lo,hi,inc,2*ind+1,M+1,R); pull(ind);
 	}
 
-	void upd(int lo, int hi, int inc) { upd(lo,hi,{inc},1,0,SZ-1); }
+	void upd(int lo, int hi, ll inc) { upd(lo,hi,{inc},1,0,SZ-1); }
 
 	T query(int lo, int hi, int ind, int L, int R) {
 		push(ind); if (lo > R || L > hi) return T();
