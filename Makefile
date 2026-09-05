@@ -1,8 +1,8 @@
-compile:
+co:
 	g++ -std=c++17 -g -Wl,--stack=26843545600 -O2 -Wconversion -Wshadow -Wall -Wextra -D_GLIBCXX_DEBUG -D_GLIBCXX_ASSERTIONS -DLOCAL -fmax-errors=2 -Wno-sign-conversion -Wfloat-equal -Wduplicated-cond -Wlogical-op -Winvalid-pch -o ./bin/${F}.out ${F}
 run:
-	make compile && ./bin/${F}.out
+	make co && ./bin/${F}.out
+coxd:
+	g++ -std=c++17 -g -Wl,--stack=26843545600 -O2 -Wconversion -Wshadow -Wall -Wextra -D_GLIBCXX_DEBUG -D_GLIBCXX_ASSERTIONS -fmax-errors=2 -Wno-sign-conversion -Wfloat-equal -Wduplicated-cond -Wlogical-op -Winvalid-pch -o ./bin/${F}.out ${F}
 xd:
-	g++ -std=c++17 -Wl,--stack=26843545600 -o ./bin/${F}.out ${F} && ./bin/${F}.out
-rpc:
-	g++ -std=c++11 -DLOCAL -o ./bin/${F}.out ${F} && ./bin/${F}.out
+	make coxd && ./bin/${F}.out

@@ -5,7 +5,25 @@
 
 //! #undef _GLIBCXX_DEBUG //? for Stress Testing
 
-#include <bits/stdc++.h>
+
+#include <algorithm>
+#include <array>
+#include <bitset>
+#include <cassert>
+#include <chrono>
+#include <climits>
+#include <cmath>
+#include <complex>
+#include <cstring>
+#include <functional>
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <numeric>
+#include <queue>
+#include <random>
+#include <set>
+#include <vector>
 using namespace std;
 
 
@@ -301,7 +319,7 @@ void solve() {
     // run A < A3.in
     // xd A < A4.in
 
-
+    cout << "thisisaprint\n";
 }
 
 
@@ -334,6 +352,7 @@ int main() {
     cin.tie(0)->sync_with_stdio(0);
 
     if(isDebugging) {
+        dbg("debug");
         setIn("xd.in");
     }
 
