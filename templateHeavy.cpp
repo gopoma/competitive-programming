@@ -250,13 +250,12 @@ vpi treeRand(int N, int back) {
 //* Template
 //* /Template
 
+
 void solve() {
     // run A < A3.in
     // xd A < A4.in
 
-    cout << "thisisaprint\n";
 }
-
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
