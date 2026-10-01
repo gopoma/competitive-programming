@@ -298,6 +298,16 @@ vpi treeRand(int N, int back) {
 void solve() {
     // run A < A3.in
     // xd A < A4.in
+
+    map<char, int> ord;
+    ord['B'] = 0;
+    ord['Y'] = 1;
+    ord['R'] = 2;
+
+    char c; cin >> c;
+    int i = ord[c];
+    str alpha = "BYR";
+    cout << alpha[(i + 1) % 3] << "\n";
 }
 
 int main() {
@@ -309,7 +319,7 @@ int main() {
     }
 
     int t = 1;
-    cin >> t;
+    // cin >> t;
     while(t--) {
         RAYA;
         RAYA;

@@ -293,15 +293,197 @@ vpi treeRand(int N, int back) {
 
 
 //* Template
+/**
+ * Description: Faster 1D range minimum query.
+ * Source: KACTL
+ * Verification:
+	* https://judge.yosupo.jp/submission/126814
+ * Memory: O(N\log N)
+ * Time: O(1)
+ */
+
+tcT, size_t SZ> struct RMQ { // floor(log_2(x))
+	static constexpr int level(int x) { return 31-__builtin_clz(x); }
+	array<array<T,SZ>, level(SZ)+1> jmp;
+	T cmb(T a, T b) { return min(a, b); }
+	void init(const V<T>& v) { assert(sz(v) <= SZ);
+		copy(all(v), begin(jmp[0]));
+		for (int j = 1; 1<<j <= sz(v); ++j) {
+			F0R(i,sz(v)-(1<<j)+1) jmp[j][i] = cmb(jmp[j-1][i],
+				jmp[j-1][i+(1<<(j-1))]);
+		}
+	}
+	T query(int l, int r) {
+		assert(l <= r); int d = level(r-l+1);
+		return cmb(jmp[d][l],jmp[d][r-(1<<d)+1]); }
+};
+
+RMQ<ll, int(1e6)> stleft, stright;
 //* /Template
+
+
+/**
+ * Description: All-Pairs Shortest Path
+ * Source: KACTL
+ * Verification:
+    * https://open.kattis.com/problems/allpairspath
+    * https://cses.fi/problemset/task/1672/
+ */
+
+void floydWarshall(V<vl>& m) {
+    int n = sz(m);
+    F0R(i,n) ckmin(m[i][i], 0LL);
+    F0R(k,n) F0R(i,n) F0R(j,n)
+        if (m[i][k] != BIG && m[k][j] != BIG) {
+            auto newDist = max(m[i][k]+m[k][j],-BIG);
+            ckmin(m[i][j],newDist);
+        }
+    F0R(k,n) if (m[k][k] < 0) F0R(i,n) F0R(j,n)
+        if (m[i][k] != BIG && m[k][j] != BIG) m[i][j] = -BIG;
+}
+
+vl brute(ll n, vl a, vl b, ll q, vpl que) {
+    vvl dist(n + 1, vl(n + 1, BIG));
+    for(int i = 0; i < n; i++) {
+        int u = i;
+        int v = (i + 1) % n;
+
+        ckmin(dist[u][v], a[i]);
+        ckmin(dist[v][u], a[i]);
+    }
+    for(int i = 0; i < n; i++) {
+        int u = i;
+        int v = n;
+
+        ckmin(dist[u][v], b[i]);
+        ckmin(dist[v][u], b[i]);
+    }
+
+    floydWarshall(dist);
+    vl res;
+    for(auto& [u, v]: que) {
+        res.eb(dist[u][v]);
+    }
+    return res;
+}
+
+void slv(ll n, vl a, vl b, ll q, vpl que) {
+    vl pleft(2 * n);
+    vl costleft(2 * n);
+    for(ll i = 1; i < 2 * n; i++) {
+        pleft[i] += pleft[i - 1];
+        pleft[i] += a[(i - 1) % n];
+
+        costleft[i] = pleft[i] + b[i % n];
+    }
+    vl pright(2 * n);
+    vl costright(2 * n);
+    for(ll i = 2 * n - 2; i >= 0; i--) {
+        pright[i] += pright[i + 1];
+        pright[i] += a[i % n];
+
+        costright[i] = pright[i] + b[i % n];
+    }
+    costleft.ft = b.ft;
+    costright.bk = b.bk;
+    stleft.init(costleft);
+    stright.init(costright);
+    dbg(pleft);
+    dbg(pright);
+
+    auto unicost = [&](ll u) -> ll {
+        ll re = BIG;
+        ckmin(re, stleft.query(u, 2 * n - 1) - pleft[u]);
+        ckmin(re, stright.query(0, u + n) - pright[u + n]);
+        return re;
+    };
+
+    auto cost = [&](ll u, ll v) -> ll {
+        ll xx = unicost(u);
+        ll yy = unicost(v);
+
+        ll cotravel = xx + yy;
+
+        if(u > v) v += n;
+        ll conormal = pleft[v] - pleft[u];
+        dbg(u, v, cotravel, xx, yy, conormal);
+
+        ll re = min(conormal, cotravel);
+        return re;
+    };
+
+    auto work = [&](ll u, ll v) -> ll {
+        if(v == n) {
+            return unicost(u);
+        } else {
+            ll xx = cost(u, v);
+            ll yy = cost(v, u);
+            return min(xx, yy);
+        }
+    };
+
+    vl res;
+    for(auto& [u, v]: que) {
+        // RAYA;
+        // RAYA;
+        // dbg("Processing", u, v);
+        chk(u < v);
+        ll lre = work(u, v);
+        res.eb(lre);
+    }
+    for(auto& x: res) cout << x << "\n";
+
+    if(isDebugging) {
+        vl ans = brute(n, a, b, q, que);
+        dbg(res, ans);
+        chk(res == ans);
+    }
+}
 
 void solve() {
     // run A < A3.in
     // xd A < A4.in
+
+    ll n, q; cin >> n >> q;
+    vl a(n); for(auto& x: a) cin >> x;
+    vl b(n); for(auto& x: b) cin >> x;
+    vpl que(q);
+    for(auto& [u, v]: que) {
+        cin >> u >> v;
+        u--; v--;
+    }
+    dbg(n, q);
+    dbg(a);
+    dbg(b);
+
+    slv(n, a, b, q, que);
 }
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
+
+    while(isDebugging&&1) {
+        RAYA;
+        RAYA;
+        RAYA;
+
+        ll n = rng_ll(1, 6);
+        vl a(n), b(n);
+        for(auto& x: a) x = rng_ll(1, 5);
+        for(auto& x: b) x = rng_ll(1, 5);
+        ll q = rng_ll(1, 10);
+        vpl que(q);
+        for(auto& [u, v]: que) {
+            u = rng_ll(0, n - 1);
+            v = rng_ll(u + 1, n);
+        }
+        dbg(n);
+        dbg(a);
+        dbg(b);
+        dbg(q);
+        dbg(que);
+        slv(n, a, b, q, que);
+    }
 
     if(isDebugging) {
         dbg("debug");
@@ -309,7 +491,7 @@ int main() {
     }
 
     int t = 1;
-    cin >> t;
+    // cin >> t;
     while(t--) {
         RAYA;
         RAYA;

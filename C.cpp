@@ -298,6 +298,43 @@ vpi treeRand(int N, int back) {
 void solve() {
     // run A < A3.in
     // xd A < A4.in
+
+    int q; cin >> q;
+    str S, T; cin >> S >> T;
+    vpi que(q); for(auto& [l, r]: que) {
+        cin >> l >> r;
+        l--; r--;
+    }
+
+    const int n = sz(S);
+    const int m = sz(T);
+    vi a(n);
+    for(int l = 0; l < n; l++) {
+        int r = l + m - 1;
+        if(r >= n) break;
+
+        if(S.substr(l, r - l + 1) == T) {
+            a[l] = +1;
+        }
+    }
+    dbg(a);
+
+    for(int i = 1; i < n; i++) {
+        a[i] += a[i - 1];
+    }
+    auto query = [&](int l, int r) -> int {
+        if(l < 0 || r < 0 || l > r || l >= n || r >= n) return 0;
+
+        int sum = a[r];
+        if(l) sum -= a[l - 1];
+        return sum;
+    };
+
+    for(auto& [l, r]: que) {
+        int cnt = query(l, r - m + 1);
+        if(cnt > 0) cout << "Yes\n";
+        else cout << "No\n";
+    }
 }
 
 int main() {
@@ -309,7 +346,7 @@ int main() {
     }
 
     int t = 1;
-    cin >> t;
+    // cin >> t;
     while(t--) {
         RAYA;
         RAYA;

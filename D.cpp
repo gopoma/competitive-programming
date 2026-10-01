@@ -295,13 +295,134 @@ vpi treeRand(int N, int back) {
 //* Template
 //* /Template
 
+str brute(int n, int q, vpi que) {
+    str response(n, 'a');
+    vb blocked(n);
+    for(auto& [type, v]: que) {
+        if(type == 1) {
+            int x = v;
+            blocked[x] = !blocked[x];
+        } else {
+            char c = v;
+            for(int i = 0; i < n; i++) {
+                if(!blocked[i]) {
+                    response[i] = c;
+                }
+            }
+
+        }
+    }
+    return response;
+}
+
+void slv(int n, int q, vpi que) {
+    vb blocked(n, false);
+    for(auto& [type, v]: que) {
+        if(type == 1) {
+            dbg(type, v);
+        } else {
+            char c = char(v);
+            dbg(type, c);
+        }
+
+        if(type == 1) {
+            blocked[v] = !blocked[v];
+        }
+    }
+
+    vb already(n);
+    set<int> alive;
+    for(int i = 0; i < n; i++) {
+        if(!blocked[i]) {
+            alive.emplace(i);
+        }
+    }
+    dbg(alive);
+    dbg(blocked);
+
+    str response(n, 'a');
+    for(int i = q - 1; i >= 0; i--) {
+        dbg(i, response, blocked, already, alive);
+        auto [type, v] = que[i];
+
+        if(type == 1) {
+            int x = v;
+            blocked[x] = !blocked[x];
+
+            if(!already[x] && !blocked[x]) {
+                alive.emplace(x);
+            }
+            if(alive.count(x) && blocked[x]) {
+                safeErase(alive, x);
+            }
+        } else {
+            char c = v;
+            for(auto& id: alive) {
+                response[id] = c;
+                already[id] = true;
+            }
+            alive.clear();
+        }
+    }
+
+    cout << response << "\n";
+    if(isDebugging) {
+        str ans = brute(n, q, que);
+        dbg(response, ans);
+        chk(response == ans);
+    }
+}
+
 void solve() {
     // run A < A3.in
     // xd A < A4.in
+
+    int n, q; cin >> n >> q;
+    vpi que(q);
+    for(auto& [type, v]: que) {
+        cin >> type;
+        if(type == 1) {
+            cin >> v;
+            v--;
+        } else {
+            char c; cin >> c;
+            v = int(c);
+        }
+    }
+
+    dbg(n, q);
+    for(auto& [type, v]: que) {
+        if(type == 1) {
+            dbg(type, v + 1);
+        } else {
+            dbg(type, char(v));
+        }
+    }
+
+    slv(n, q, que);
 }
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
+
+    while(isDebugging) {
+        RAYA;
+        RAYA;
+        RAYA;
+        int n = rng_int(1, 10);
+        int q = rng_int(1, 10);
+        vpi que(q);
+        for(auto& [type, v]: que) {
+            type = rng_int(1, 2);
+            if(type == 1) {
+                v = rng_int(0, n - 1);
+            } else {
+                v = rng_int(int('a'), int('z'));
+            }
+        }
+        dbg(n, q);
+        slv(n, q, que);
+    }
 
     if(isDebugging) {
         dbg("debug");
@@ -309,7 +430,7 @@ int main() {
     }
 
     int t = 1;
-    cin >> t;
+    // cin >> t;
     while(t--) {
         RAYA;
         RAYA;

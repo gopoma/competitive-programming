@@ -298,6 +298,37 @@ vpi treeRand(int N, int back) {
 void solve() {
     // run A < A3.in
     // xd A < A4.in
+
+    ll n, d; cin >> n >> d;
+    vl a(n); for(auto& x: a) cin >> x;
+
+    multiset<ll> ms; for(auto& x: a) ms.emplace(x);
+    vi res;
+    for(int i = 0; i < n; i++) {
+        safeErase(ms, a[i]);
+
+        bool ok = true;
+        { // left
+            auto it = ms.upper_bound(a[i]);
+            if(it != ms.begin()) {
+                it--;
+                ok &= (a[i] - (*it) >= d);
+            }
+        }
+        {
+            auto it = ms.upper_bound(a[i]);
+            if(it != ms.end()) {
+                ok &= ((*it) - a[i] >= d);
+            }
+        }
+        if(ok) res.eb(i + 1);
+
+        ms.emplace(a[i]);
+    }
+
+    cout << sz(res) << "\n";
+    for(auto& x: res) cout << x << " ";
+    cout << "\n";
 }
 
 int main() {
@@ -309,7 +340,7 @@ int main() {
     }
 
     int t = 1;
-    cin >> t;
+    // cin >> t;
     while(t--) {
         RAYA;
         RAYA;
