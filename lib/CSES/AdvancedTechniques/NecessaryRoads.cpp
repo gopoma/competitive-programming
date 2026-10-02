@@ -293,136 +293,101 @@ vpi treeRand(int N, int back) {
 
 
 //* Template
+//?    ll n, m; cin >> n >> m;
+//?    vpl edges(m); for(auto& [u, v]: edges) {
+//?        cin >> u >> v;
+//?        u--; v--;
+//?    }
+//?    dbg(n, m);
+//?    dbg(edges);
+//?    BridgeLocator G; G.init(n);
+//?    for(auto& [u, v]: edges) G.ae(u, v);
+//?
+//?    G.find_bridges();
+//?    dbg(G.bridges);
+
+struct BridgeLocator {
+    // void IS_BRIDGE(int v,int to); // some function to process the found bridge
+    int n; // number of nodes
+    vector<vector<int>> adj; // adjacency list of graph
+    vpi bridges;
+
+    vector<bool> visited;
+    vector<int> tin, low;
+    int timer;
+
+    void init(int _N) {
+        n = _N;
+        adj.rsz(n);
+    }
+
+    void ae(int x, int y) {
+		adj[x].eb(y);
+        adj[y].eb(x);
+    }
+
+    void dfs(int v, int p = -1) {
+        visited[v] = true;
+        tin[v] = low[v] = timer++;
+        bool parent_skipped = false;
+        for (int to : adj[v]) {
+            if (to == p && !parent_skipped) {
+                parent_skipped = true;
+                continue;
+            }
+            if (visited[to]) {
+                low[v] = min(low[v], tin[to]);
+            } else {
+                dfs(to, v);
+                low[v] = min(low[v], low[to]);
+                if (low[to] > tin[v])
+                    IS_BRIDGE(v, to);
+            }
+        }
+    }
+
+    void find_bridges() {
+        timer = 0;
+        visited.assign(n, false);
+        tin.assign(n, -1);
+        low.assign(n, -1);
+        for (int i = 0; i < n; ++i) {
+            if (!visited[i])
+                dfs(i);
+        }
+    }
+
+    //! This is not going to be called multiple times for the same edge
+    void IS_BRIDGE(int v,int to) {
+        dbg("bridge", v, to);
+        bridges.eb(min(v, to), max(v, to));
+    }
+};
+
 //* /Template
-
-str brute(int n, int q, vpi que) {
-    str response(n, 'a');
-    vb blocked(n);
-    for(auto& [type, v]: que) {
-        if(type == 1) {
-            int x = v;
-            blocked[x] = !blocked[x];
-        } else {
-            char c = v;
-            for(int i = 0; i < n; i++) {
-                if(!blocked[i]) {
-                    response[i] = c;
-                }
-            }
-
-        }
-    }
-    return response;
-}
-
-void slv(int n, int q, vpi que) {
-    vb blocked(n, false);
-    for(auto& [type, v]: que) {
-        if(type == 1) {
-            dbg(type, v);
-        } else {
-            char c = char(v);
-            dbg(type, c);
-        }
-
-        if(type == 1) {
-            blocked[v] = !blocked[v];
-        }
-    }
-
-    vb already(n);
-    set<int> alive;
-    for(int i = 0; i < n; i++) {
-        if(!blocked[i]) {
-            alive.emplace(i);
-        }
-    }
-    dbg(alive);
-    dbg(blocked);
-
-    str response(n, 'a');
-    for(int i = q - 1; i >= 0; i--) {
-        dbg(i, response, blocked, already, alive);
-        auto [type, v] = que[i];
-
-        if(type == 1) {
-            int x = v;
-            blocked[x] = !blocked[x];
-
-            if(!already[x] && !blocked[x]) {
-                alive.emplace(x);
-            }
-            if(alive.count(x) && blocked[x]) {
-                safeErase(alive, x);
-            }
-        } else {
-            char c = v;
-            for(auto& id: alive) {
-                response[id] = c;
-                already[id] = true;
-            }
-            alive.clear();
-        }
-    }
-
-    cout << response << "\n";
-    if(isDebugging) {
-        str ans = brute(n, q, que);
-        dbg(response, ans);
-        chk(response == ans);
-    }
-}
 
 void solve() {
     // run A < A3.in
     // xd A < A4.in
 
-    int n, q; cin >> n >> q;
-    vpi que(q);
-    for(auto& [type, v]: que) {
-        cin >> type;
-        if(type == 1) {
-            cin >> v;
-            v--;
-        } else {
-            char c; cin >> c;
-            v = int(c);
-        }
+    int n, m; cin >> n >> m;
+    vpi edges(m); for(auto& [u, v]: edges) {
+        cin >> u >> v;
+        u--; v--;
     }
 
-    dbg(n, q);
-    for(auto& [type, v]: que) {
-        if(type == 1) {
-            dbg(type, v + 1);
-        } else {
-            dbg(type, char(v));
-        }
+    BridgeLocator G; G.init(n);
+    for(auto& [u, v]: edges) {
+        G.ae(u, v);
     }
+    G.find_bridges();
 
-    slv(n, q, que);
+    cout << sz(G.bridges) << "\n";
+    for(auto& [u, v]: G.bridges) cout << (u + 1) << " " << (v + 1) << "\n";
 }
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
-
-    while(isDebugging) {
-        RAYA;
-        RAYA;
-        RAYA;
-        int n = rng_int(1, 10);
-        int q = rng_int(1, 10);
-        vpi que(q);
-        for(auto& [type, v]: que) {
-            type = rng_int(1, 2);
-            if(type == 1) {
-                v = rng_int(0, n - 1);
-            } else {
-                v = rng_int(int('a'), int('z'));
-            }
-        }
-        dbg(n, q);
-        slv(n, q, que);
-    }
 
     if(isDebugging) {
         dbg("debug");

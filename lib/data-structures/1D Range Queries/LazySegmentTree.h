@@ -3,11 +3,14 @@
  * Time: O(n) build, O(log n) per operation, O(1) all_prod
  * Source: algorithm from https://atcoder.github.io/ac-library (lazy_segtree)
  * Verification: TODO
- * API: ranges are inclusive and zero indexed, so prod(0, n - 1) is the whole array,
- *   l == r + 1 is the empty range, and r == n is a mistake that trips an assert.
- *     LazySegmentTree<Node, LazyUpdate> t(v)   built from a vector<Node>
- *     LazySegmentTree<Node, LazyUpdate> t(n)   n copies of Node(), the NEUTRAL value, so
- *                                              for n zeroes write t(vector<Node>(n, Node(0)))
+ * API: ranges are inclusive and zero indexed. A range must be valid, 0 <= l <= r < n,
+ *   so prod(0, n - 1) is the whole array and there is no empty range; r == n trips the
+ *   assert, which is the usual slip coming from half-open code.
+ *     LazySegmentTree<Node, LazyUpdate> t(v)   n is v.size(), SZ is n rounded to a power of 2
+ *     LazySegmentTree<Node, LazyUpdate> t(k)   no vector, so n becomes SZ: k rounded up to a
+ *                                              power of 2, every slot holding Node(), the
+ *                                              NEUTRAL value. For k real zeroes instead use
+ *                                              t(vector<Node>(k, Node(0)))
  *     t.set(p, x)        a[p] = x
  *     t.get(p)           the Node sitting at p
  *     t.apply(p, f)      applies f to a[p]
@@ -22,12 +25,23 @@ struct LazySegmentTree {
   public:
     LazySegmentTree() : LazySegmentTree(0) {}
 
-    explicit LazySegmentTree(int _n) : LazySegmentTree(vector<Node>(_n, Node())) {}
+    explicit LazySegmentTree(int _n) {
+        SZ = 1, LOG = 0;
+
+        while (SZ < max(1, _n)) {
+            SZ *= 2;
+            ++LOG;
+        }
+
+        n = SZ;                                 // sin vector, n es el tamano con padding
+        seg.assign(2 * SZ, Node());             // todo identidad, no hace falta pull:
+        lazy.assign(SZ, LazyUpdate());          // Node() + Node() == Node()
+    }
 
     explicit LazySegmentTree(const vector<Node>& v) : n(int(v.size())) {
         SZ = 1, LOG = 0;
 
-        while (SZ < n) {
+        while (SZ < max(1, n)) {
             SZ *= 2;
             ++LOG;
         }
@@ -73,11 +87,7 @@ struct LazySegmentTree {
     }
 
     Node prod(int l, int r) {
-        assert(0 <= l && l <= r + 1 && r < n);
-
-        if (l > r) {
-            return Node();
-        }
+        assert(0 <= l && l <= r && r < n);
 
         l += SZ, r += SZ;                       // hojas inclusivas: seg[l] .. seg[r]
 
@@ -131,11 +141,7 @@ struct LazySegmentTree {
     }
 
     void apply(int l, int r, LazyUpdate f) {
-        assert(0 <= l && l <= r + 1 && r < n);
-
-        if (l > r) {
-            return;
-        }
+        assert(0 <= l && l <= r && r < n);
 
         l += SZ, r += SZ;                       // hojas inclusivas: seg[l] .. seg[r]
 
@@ -197,11 +203,7 @@ struct LazySegmentTree {
     }
 
     Node query(int l, int r) {
-        assert(0 <= l && l <= r + 1 && r < n);
-
-        if (l > r) {
-            return Node();
-        }
+        assert(0 <= l && l <= r && r < n);
 
         return query(l, r, 1, 0, SZ - 1);
     }

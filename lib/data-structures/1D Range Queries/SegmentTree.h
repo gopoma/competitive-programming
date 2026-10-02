@@ -1,74 +1,62 @@
 /**
- * Description: 1D point update and range query where \texttt{cmb} is
- * any associative operation. \texttt{all_prod()==prod(0,N-1)}.
- * Time: O(\log N)
+ * Description: Segment tree with point assignment and range query. T() is the neutral
+ *   value and a + b folds two neighbouring intervals, a to the left of b, so + has to be
+ *   associative but not commutative.
+ * Time: O(n) build, O(log n) set and prod, O(1) get and all_prod
  * Source:
  *  - http://codeforces.com/blog/entry/18051
  *  - KACTL
  * Verification: SPOJ Fenwick
- * API: SegmentTree<node> tree(vector<node> v);
- *  - prod(l, r) is zero-indexed and inclusive.
- *  - Internal segment tree nodes are 1-indexed: root is 1, children of x are
- *    2 * x and 2 * x + 1.
+ * API: ranges are inclusive and zero indexed. A range must be valid, 0 <= l <= r < n,
+ *   so prod(0, n - 1) is the whole array and there is no empty range.
+ *   Internal nodes are 1-indexed: the root is 1 and the children of x are 2x and 2x + 1.
+ *     SegmentTree<T> t(v)   n is v.size(), SZ is n rounded up to a power of two
+ *     SegmentTree<T> t(k)   no vector, so n becomes SZ: k rounded up to a power of two,
+ *                           every slot holding T(), the neutral value
+ *     t.set(p, x)    a[p] = x
+ *     t.get(p)       the T sitting at p
+ *     t.prod(l, r)   folds a[l..r] into one T
+ *     t.all_prod()   folds the whole array, in O(1)
  */
 
-tcT> struct SegmentTree { // cmb(ID, b) = b
-    // const T ID{};
-    // T cmb(T a, T b) const { return a + b; }
-
-    T ID{};
-
-    T cmb(T a, T b) const {
-        return a + b;
-    }
-
-    int sz = 0;
-    int n = 1;
-    V<T> seg;
-
-    SegmentTree() {
-        init(0);
-    }
+template <class T>
+struct SegmentTree {
+  public:
+    SegmentTree() : SegmentTree(0) {}
 
     explicit SegmentTree(int _n) {
-        init(_n);
-    }
+        SZ = 1;
 
-    explicit SegmentTree(const V<T>& v) {
-        build(v);
-    }
-
-    void init(int _n) {
-        sz = _n;
-        n = 1;
-
-        while(n < max(1, _n)) {
-            n *= 2;
+        while(SZ < max(1, _n)) {
+            SZ *= 2;
         }
 
-        seg.assign(2 * n, ID);
-    }
+        n = SZ;                                 // sin vector, n es el tamano con padding
+        seg.assign(2 * SZ, T());                // todo identidad, no hace falta pull:
+    }                                           // T() + T() == T()
 
-    void build(const V<T>& a) {
-        init((int)a.size());
+    explicit SegmentTree(const vector<T>& v) : n(int(v.size())) {
+        SZ = 1;
 
-        for(int i = 0; i < sz; i++) {
-            seg[n + i] = a[i];
+        while(SZ < max(1, n)) {
+            SZ *= 2;
         }
 
-        for(int p = n - 1; p > 0; p--) {
+        seg.assign(2 * SZ, T());
+
+        for(int i = 0; i < n; i++) {
+            seg[SZ + i] = v[i];
+        }
+
+        for(int p = SZ - 1; p > 0; p--) {
             pull(p);
         }
     }
 
-    void pull(int p) {
-        seg[p] = cmb(seg[2 * p], seg[2 * p + 1]);
-    }
-
     void set(int p, T val) {
-        assert(0 <= p && p < sz);
+        assert(0 <= p && p < n);
 
-        p += n;
+        p += SZ;
         seg[p] = val;
 
         for(p /= 2; p > 0; p /= 2) {
@@ -77,8 +65,8 @@ tcT> struct SegmentTree { // cmb(ID, b) = b
     }
 
     T get(int p) const {
-        assert(0 <= p && p < sz);
-        return seg[p + n];
+        assert(0 <= p && p < n);
+        return seg[p + SZ];
     }
 
     T all_prod() const {
@@ -86,35 +74,35 @@ tcT> struct SegmentTree { // cmb(ID, b) = b
     }
 
     T prod(int l, int r) const { // zero-indexed, inclusive
-        assert(0 <= l && l <= r && r < sz);
+        assert(0 <= l && l <= r && r < n);
 
-        T ra = ID;
-        T rb = ID;
+        T ra = T();
+        T rb = T();
 
-        l += n;
-        r += n + 1;
+        l += SZ;
+        r += SZ + 1;
 
         while(l < r) {
             if(l & 1) {
-                ra = cmb(ra, seg[l]);
+                ra = ra + seg[l];
                 l++;
             }
 
             if(r & 1) {
                 r--;
-                rb = cmb(seg[r], rb);
+                rb = seg[r] + rb;
             }
 
             l /= 2;
             r /= 2;
         }
 
-        return cmb(ra, rb);
+        return ra + rb;
     }
 
     /// // Recursive descent example.
-    /// // seg[x] stores the aggregate of node x according to cmb.
-    /// // This example assumes cmb is max, so seg[x] is the maximum of [lx, rx],
+    /// // seg[x] stores the aggregate of node x under +.
+    /// // This example assumes + is max, so seg[x] is the maximum of [lx, rx],
     /// // and finds the first index p in [l, r] such that a[p] >= k.
     /// // For the rightmost valid index, visit the right child first.
     /// int find(int k, int l, int r, int x, int lx, int rx) {
@@ -141,19 +129,28 @@ tcT> struct SegmentTree { // cmb(ID, b) = b
     /// }
     ///
     /// int find(int k, int l, int r) {
-    ///     assert(0 <= l && l <= r && r < sz);
-    ///     return find(k, l, r, 1, 0, n - 1);
+    ///     assert(0 <= l && l <= r && r < n);
+    ///     return find(k, l, r, 1, 0, SZ - 1);
     /// }
     ///
     /// // Suffix version with the signature find(k, l, x, lx, rx):
     /// // int find(int k, int l, int x, int lx, int rx) {
-    /// //     return find(k, l, sz - 1, x, lx, rx);
+    /// //     return find(k, l, n - 1, x, lx, rx);
     /// // }
     /// //
     /// // int find(int k, int l) {
-    /// //     assert(0 <= l && l < sz);
-    /// //     return find(k, l, 1, 0, n - 1);
+    /// //     assert(0 <= l && l < n);
+    /// //     return find(k, l, 1, 0, SZ - 1);
     /// // }
+
+  private:
+    int n = 1;
+    int SZ = 1;
+    vector<T> seg;
+
+    void pull(int p) {
+        seg[p] = seg[2 * p] + seg[2 * p + 1];
+    }
 };
 
 // /here goes the template!

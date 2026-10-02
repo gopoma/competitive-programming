@@ -293,41 +293,90 @@ vpi treeRand(int N, int back) {
 
 
 //* Template
+struct ArticulationPoints {
+    //! Use this struct inside solve() (Note that there's no cleaning mechanism)
+    //! Undirected Graph
+    // TODO: Implement IS_CUTPOINT
+    //! (Caution that this can be called multiple times for a vertex).
+    vi artipoints;
+    void IS_CUTPOINT(int x) {
+        artipoints.eb(x);
+    }
+
+    int n; // number of nodes
+    vector<vector<int>> adj; // adjacency list of graph
+
+
+    vector<bool> visited;
+    vector<int> tin, low;
+    int timer;
+
+    void init(int _n) {
+        n = _n;
+        adj = vector<vector<int>>(n);
+    }
+
+    void ae(int u, int v) {
+        adj[u].eb(v);
+        adj[v].eb(u);
+    }
+
+    void dfs(int v, int p = -1) {
+        visited[v] = true;
+        tin[v] = low[v] = timer++;
+        int children=0;
+        for (int to : adj[v]) {
+            if (to == p) continue;
+            if (visited[to]) {
+                low[v] = min(low[v], tin[to]);
+            } else {
+                dfs(to, v);
+                low[v] = min(low[v], low[to]);
+                if (low[to] >= tin[v] && p!=-1)
+                    IS_CUTPOINT(v);
+                ++children;
+            }
+        }
+        if(p == -1 && children > 1)
+            IS_CUTPOINT(v);
+    }
+
+    void find_cutpoints() {
+        timer = 0;
+        visited.assign(n, false);
+        tin.assign(n, -1);
+        low.assign(n, -1);
+        for (int i = 0; i < n; ++i) {
+            if (!visited[i])
+                dfs (i);
+        }
+    }
+};
+
 //* /Template
 
 void solve() {
     // run A < A3.in
     // xd A < A4.in
 
-    ll n, d; cin >> n >> d;
-    vl a(n); for(auto& x: a) cin >> x;
-
-    multiset<ll> ms; for(auto& x: a) ms.emplace(x);
-    vi res;
-    for(int i = 0; i < n; i++) {
-        safeErase(ms, a[i]);
-
-        bool ok = true;
-        { // left
-            auto it = ms.upper_bound(a[i]);
-            if(it != ms.begin()) {
-                it--;
-                ok &= (a[i] - (*it) >= d);
-            }
-        }
-        {
-            auto it = ms.upper_bound(a[i]);
-            if(it != ms.end()) {
-                ok &= ((*it) - a[i] >= d);
-            }
-        }
-        if(ok) res.eb(i + 1);
-
-        ms.emplace(a[i]);
+    int n, m; cin >> n >> m;
+    vpi edges(m);
+    for(auto& [u, v]: edges) {
+        cin >> u >> v;
+        u--; v--;
     }
 
-    cout << sz(res) << "\n";
-    for(auto& x: res) cout << x << " ";
+    ArticulationPoints G; G.init(n);
+    for(auto& [u, v]: edges) {
+        G.ae(u, v);
+    }
+    G.find_cutpoints();
+    remDup(G.artipoints);
+
+    cout << sz(G.artipoints) << "\n";
+    for(auto& x: G.artipoints) {
+        cout << (x + 1) << " ";
+    }
     cout << "\n";
 }
 
