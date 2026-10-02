@@ -31,34 +31,34 @@
  *     st.get(root, p)            the Node at p
  *     st.prod(root, l, r)        folds a[l..r]
  *     st.all_prod(root)          folds the whole array, in O(1)
- * Example, CSES Range Queries and Copies: a list of arrays, point set, range sum, clone.
- *   The point set goes through apply with an assign update, which is what exercises the
- *   lazy path; sz is what lets an assign recompute the sum, and sz == 0 marks the neutral.
- *   struct Assign { bool has = false; ll v = 0; Assign() {} Assign(ll x) : has(true), v(x) {}
- *       Assign& operator*=(const Assign& f) {
- *           if (f.has) { has = true; v = f.v; }
- *           return *this; } };
- *   struct Sum { ll sz = 0, sum = 0; Sum() {} Sum(ll x) : sz(1), sum(x) {}
- *       friend Sum operator+(const Sum& a, const Sum& b) {
+ * Example, Versioned Range Add: a list of arrays, add v to a[l..r] of array k, ask the sum
+ *   or the min of a[l..r] of array k, clone array k. The range apply is the costliest
+ *   operation of all, at 4C - 1 nodes, so this is the shape that stresses the pool.
+ *   sz is what lets the update scale with the interval, and sz == 0 marks the neutral.
+ *   struct Add { ll a = 0; Add() {} Add(ll x) : a(x) {}
+ *       Add& operator*=(const Add& f) { a += f.a; return *this; } };
+ *   struct Node { ll sz = 0, mn = 0, sum = 0; Node() {} Node(ll x) : sz(1), mn(x), sum(x) {}
+ *       friend Node operator+(const Node& a, const Node& b) {
  *           if (a.sz == 0) return b;
  *           if (b.sz == 0) return a;
- *           Sum r; r.sz = a.sz + b.sz; r.sum = a.sum + b.sum; return r; }
- *       Sum& operator*=(const Assign& f) {
- *           if (sz == 0 || !f.has) return *this;
- *           sum = f.v * sz; return *this; } };
+ *           Node r; r.sz = a.sz + b.sz; r.mn = min(a.mn, b.mn); r.sum = a.sum + b.sum;
+ *           return r; }
+ *       Node& operator*=(const Add& f) {
+ *           if (sz == 0) return *this;
+ *           mn += f.a; sum += sz * f.a; return *this; } };
  *
  *   int n, q; cin >> n >> q;
- *   vector<Sum> a(n);
- *   for (Sum& x : a) { ll t; cin >> t; x = Sum(t); }
- *   PersistentLazySegmentTree<Sum, Assign> st(n, q);
+ *   vector<Node> a(n);
+ *   for (Node& x : a) { ll t; cin >> t; x = Node(t); }
+ *   PersistentLazySegmentTree<Node, Add> st(n, q);
  *   vector<int> roots = {st.build(a)};
  *   while (q--) {
  *       int type, k; cin >> type >> k; k--;
- *       if (type == 1) { int p; ll x; cin >> p >> x; p--;
- *                        roots[k] = st.apply(roots[k], p, Assign(x)); }
- *       else if (type == 2) { int l, r; cin >> l >> r; l--, r--;
- *                             cout << st.prod(roots[k], l, r).sum << "\n"; }
- *       else roots.push_back(st.copy(roots[k]));
+ *       if (type == 4) { roots.push_back(st.copy(roots[k])); continue; }
+ *       int l, r; cin >> l >> r; l--, r--;
+ *       if (type == 1) { ll v; cin >> v; roots[k] = st.apply(roots[k], l, r, Add(v)); }
+ *       else if (type == 2) cout << st.prod(roots[k], l, r).sum << "\n";
+ *       else cout << st.prod(roots[k], l, r).mn << "\n";
  *   }
  */
 
