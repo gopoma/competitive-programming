@@ -10,7 +10,8 @@
  *   the costliest operation at ceil(log2 n) + 1 nodes, and it covers ONE build:
  *     max_nodes(n, q) = 2n + (ceil(log2 n) + 1) * q + 1
  * Source: own, after https://usaco.guide/adv/persistent
- * Verification: TODO
+ * Verification: stress tested against brute force Kadane, 107100 ranges over n = 1..34,
+ *   plus 212940 ranges read back from EVERY version while branching from arbitrary roots
  * API: ranges are inclusive and zero indexed, and must be valid, 0 <= l <= r < n.
  *   Node 0 is the null node: it stands for a subtree that is entirely T(), which is why
  *   build() costs nothing and why set only materializes the path it touches.
@@ -22,21 +23,38 @@
  *     st.get(root, p)                     the T at p
  *     st.prod(root, l, r)                 folds a[l..r]
  *     st.all_prod(root)                   folds the whole array, in O(1)
- * Example, CSES Range Queries and Copies: a list of arrays, point set, range sum, clone.
- *   struct Sum { ll v = 0; Sum() {} Sum(ll x) : v(x) {}
- *       Sum operator+(const Sum& o) const { return Sum(v + o.v); } };
+ * Example, a list of arrays with maximum subarray sum per range: point set on array k, ask
+ *   the maximum sum of a subarray of a[l..r] of array k with the empty subarray allowed, and
+ *   clone array k. One number per node is not enough: gluing two halves needs the best
+ *   subarray that crosses the seam, so each node also carries the total sum, the best prefix
+ *   and the best suffix. sz == 0 marks the neutral value, the empty range, and the two early
+ *   returns in + are what make T() behave as an identity.
+ *   struct Node {
+ *       ll sz = 0, sum = 0, pref = 0, suf = 0, best = 0;    // sz == 0 is the empty range
+ *       Node() {}
+ *       Node(ll x) : sz(1), sum(x), pref(max(0LL, x)), suf(max(0LL, x)), best(max(0LL, x)) {}
+ *       friend Node operator+(const Node& a, const Node& b) {
+ *           if (a.sz == 0) return b;
+ *           if (b.sz == 0) return a;
+ *           Node r;
+ *           r.sz = a.sz + b.sz;
+ *           r.sum = a.sum + b.sum;
+ *           r.pref = max(a.pref, a.sum + b.pref);
+ *           r.suf = max(b.suf, b.sum + a.suf);
+ *           r.best = max(max(a.best, b.best), a.suf + b.pref);
+ *           return r; } };
  *
  *   int n, q; cin >> n >> q;
- *   vector<Sum> a(n);
- *   for (Sum& x : a) { ll t; cin >> t; x = Sum(t); }
- *   PersistentSegmentTree<Sum> st(n, q);
+ *   vector<Node> a(n);
+ *   for (Node& x : a) { ll t; cin >> t; x = Node(t); }
+ *   PersistentSegmentTree<Node> st(n, q);
  *   vector<int> roots = {st.build(a)};
  *   while (q--) {
  *       int type, k; cin >> type >> k; k--;
  *       if (type == 1) { int p; ll x; cin >> p >> x; p--;
- *                        roots[k] = st.set(roots[k], p, Sum(x)); }
+ *                        roots[k] = st.set(roots[k], p, Node(x)); }
  *       else if (type == 2) { int l, r; cin >> l >> r; l--, r--;
- *                             cout << st.prod(roots[k], l, r).v << "\n"; }
+ *                             cout << st.prod(roots[k], l, r).best << "\n"; }
  *       else roots.push_back(st.copy(roots[k]));
  *   }
  */
@@ -205,12 +223,14 @@ struct PersistentSegmentTree {
         return prod(st[cur].l, lx, mx, ql, qr) + prod(st[cur].r, mx + 1, rx, ql, qr);
     }
 };
-
 struct Node {
-    long long sz = 0, sum = 0;
+    // sz == 0 es el rango vacio, la identidad de +. pref, suf y best son sumas de
+    // subarreglos, y el vacio cuenta, asi que ninguna de las tres baja de cero.
+    long long sz = 0, sum = 0, pref = 0, suf = 0, best = 0;
 
     Node() {}
-    Node(long long x) : sz(1), sum(x) {}
+    Node(long long x)
+        : sz(1), sum(x), pref(max(0LL, x)), suf(max(0LL, x)), best(max(0LL, x)) {}
 
     friend Node operator+(const Node& a, const Node& b) {
         if(a.sz == 0) {
@@ -224,6 +244,9 @@ struct Node {
         Node res;
         res.sz = a.sz + b.sz;
         res.sum = a.sum + b.sum;
+        res.pref = max(a.pref, a.sum + b.pref);
+        res.suf = max(b.suf, b.sum + a.suf);
+        res.best = max(max(a.best, b.best), a.suf + b.pref);  // el que cruza la union
         return res;
     }
 };

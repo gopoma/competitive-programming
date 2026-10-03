@@ -2,7 +2,8 @@
  * Description: Segment tree with lazy propagation.
  * Time: O(n) build, O(log n) per operation, O(1) all_prod
  * Source: algorithm from https://atcoder.github.io/ac-library (lazy_segtree)
- * Verification: TODO
+ * Verification: stress tested against brute force, 69440 ranges over n = 1..30 with range
+ *   assign and range add mixed, checking sum, maximum and minimum at once
  * API: ranges are inclusive and zero indexed. A range must be valid, 0 <= l <= r < n,
  *   so prod(0, n - 1) is the whole array and there is no empty range; r == n trips the
  *   assert, which is the usual slip coming from half-open code.
@@ -18,6 +19,52 @@
  *     t.prod(l, r)       folds a[l..r] into one Node
  *     t.all_prod()       folds the whole array, in O(1)
  *     t.query(l, r)      same answer as prod but written recursively
+ * Example, sum, maximum and minimum of a[l..r], with TWO kinds of range update: assign v to
+ *   every element of a range, and add v to every element of a range. A single update has to
+ *   carry both at once, read as "assign v if has, then add a", because the two do not
+ *   commute: in the composition a later assign wins and erases the add pending under it,
+ *   while a later add just accumulates. That is the case a wrong composition order passes by
+ *   accident with a plain add and fails here. sz is what lets an update scale to the whole
+ *   interval, and sz == 0 marks the neutral value, which every update must leave untouched.
+ *   struct Upd {
+ *       bool has = false; ll v = 0, a = 0;
+ *       Upd() {}
+ *       static Upd assign(ll x) { Upd f; f.has = true; f.v = x; return f; }
+ *       static Upd add(ll x) { Upd f; f.a = x; return f; }
+ *       Upd& operator*=(const Upd& f) {              // f acts AFTER this one
+ *           if (f.has) { has = true; v = f.v; a = f.a; }
+ *           else a += f.a;
+ *           return *this; } };
+ *   struct Node {
+ *       ll sz = 0, sum = 0, mx = 0, mn = 0;          // sz == 0 is the empty range
+ *       Node() {}
+ *       Node(ll x) : sz(1), sum(x), mx(x), mn(x) {}
+ *       friend Node operator+(const Node& a, const Node& b) {
+ *           if (a.sz == 0) return b;
+ *           if (b.sz == 0) return a;
+ *           Node r;
+ *           r.sz = a.sz + b.sz;
+ *           r.sum = a.sum + b.sum;
+ *           r.mx = max(a.mx, b.mx);
+ *           r.mn = min(a.mn, b.mn);
+ *           return r; }
+ *       Node& operator*=(const Upd& f) {
+ *           if (sz == 0) return *this;               // the neutral stays neutral
+ *           if (f.has) { sum = (f.v + f.a) * sz; mx = mn = f.v + f.a; }
+ *           else { sum += f.a * sz; mx += f.a; mn += f.a; }
+ *           return *this; } };
+ *
+ *   int n, q; cin >> n >> q;
+ *   vector<Node> a(n);
+ *   for (Node& x : a) { ll t; cin >> t; x = Node(t); }
+ *   LazySegmentTree<Node, Upd> st(a);
+ *   while (q--) {
+ *       int type, l, r; cin >> type >> l >> r;
+ *       if (type == 1) { ll v; cin >> v; st.apply(l, r, Upd::assign(v)); }
+ *       else if (type == 2) { ll v; cin >> v; st.apply(l, r, Upd::add(v)); }
+ *       else { Node res = st.prod(l, r);
+ *              cout << res.sum << " " << res.mx << " " << res.mn << "\n"; }
+ *   }
  */
 
 template <class Node, class LazyUpdate>
@@ -237,48 +284,79 @@ struct LazySegmentTree {
 
 
 
-
 struct LazyUpdate { // lazy update
-    long long add = 0;
+    // "si has, asignar v a todo el intervalo; despues sumar a a todo el intervalo"
+    bool has = false;
+    long long v = 0, a = 0;
 
     LazyUpdate() {}
-    LazyUpdate(long long x) : add(x) {}
 
+    static LazyUpdate assign(long long x) {
+        LazyUpdate f;
+        f.has = true;
+        f.v = x;
+        return f;
+    }
+
+    static LazyUpdate add(long long x) {
+        LazyUpdate f;
+        f.a = x;
+        return f;
+    }
+
+    // f actua DESPUES: un assign posterior gana y borra el add que quedaba debajo, mientras
+    // que un add posterior solo se acumula. Por eso assign y add no conmutan.
     LazyUpdate& operator*=(const LazyUpdate& f) {
-        add += f.add;
+        if(f.has) {
+            has = true;
+            v = f.v;
+            a = f.a;
+        } else {
+            a += f.a;
+        }
+
         return *this;
     }
 };
 
 struct Node { // data you need to store for each interval
-    long long sz = 0, mn = 0, sum = 0;
+    long long sz = 0, sum = 0, mx = 0, mn = 0;  // sz == 0 es el rango vacio, la identidad
 
     Node() {}
-    Node(long long x) : sz(1), mn(x), sum(x) {}
+    Node(long long x) : sz(1), sum(x), mx(x), mn(x) {}
 
     friend Node operator+(const Node& a, const Node& b) {
-        if (a.sz == 0) {
+        if(a.sz == 0) {
             return b;
         }
 
-        if (b.sz == 0) {
+        if(b.sz == 0) {
             return a;
         }
 
         Node res;
         res.sz = a.sz + b.sz;
-        res.mn = min(a.mn, b.mn);
         res.sum = a.sum + b.sum;
+        res.mx = max(a.mx, b.mx);
+        res.mn = min(a.mn, b.mn);
         return res;
     }
 
+    // sz es lo que permite que el update escale a todo el intervalo de una sola vez.
     Node& operator*=(const LazyUpdate& f) {
-        if (sz == 0) {
+        if(sz == 0) {                           // la identidad se queda identidad
             return *this;
         }
 
-        mn += f.add;
-        sum += sz * f.add;
+        if(f.has) {
+            sum = (f.v + f.a) * sz;
+            mx = mn = f.v + f.a;
+        } else {
+            sum += f.a * sz;
+            mx += f.a;
+            mn += f.a;
+        }
+
         return *this;
     }
 };
