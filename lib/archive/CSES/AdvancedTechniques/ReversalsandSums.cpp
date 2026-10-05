@@ -1,3 +1,17 @@
+#ifdef LOCAL
+    #ifdef _WIN32
+        #define WIN32_LEAN_AND_MEAN
+        #define NOMINMAX
+        #include <windows.h>
+        #include <psapi.h>
+    #else
+        #include <sys/resource.h>
+    #endif
+#endif
+
+
+
+
 //* sometimes pragmas don't work, if so, just comment it!
 //? #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
@@ -5,14 +19,79 @@
 
 //! #undef _GLIBCXX_DEBUG //? for Stress Testing
 
-#include <bits/stdc++.h> //? if you don't want IntelliSense
 
+#include <algorithm>
+#include <array>
+#include <bitset>
+#include <cassert>
+#include <chrono>
+#include <climits>
+#include <cmath>
+#include <complex>
+#include <cstring>
+#include <functional>
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <numeric>
+#include <queue>
+#include <random>
+#include <set>
+#include <vector>
 using namespace std;
 
-// building blocks
-using ll  = long long;
-using db  = long double; // or double, if TL is tight
-using str = string;      // yay python!
+
+
+
+//* Debugger
+void print_memory_usage() {
+#ifdef LOCAL
+    #ifdef _WIN32
+        PROCESS_MEMORY_COUNTERS pmc;
+        if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))) {
+            long double block = 1024;
+            long double taken = pmc.PeakWorkingSetSize / (block * block);
+
+            std::cerr << "\n";
+            std::cerr << "\033[42m++++++++++++++++++++\033[0m\n";
+            std::cerr << "\033[42m[Memory] Peak Working Set: "
+            << taken << " MB\033[0m\n";
+            std::cerr << "\033[42m++++++++++++++++++++\033[0m";
+        }
+    #else
+        struct rusage usage;
+        getrusage(RUSAGE_SELF, &usage);
+        #ifdef __APPLE__
+            double peak_mb = usage.ru_maxrss / (1024.0 * 1024.0); // macOS en Bytes
+        #else
+            double peak_mb = usage.ru_maxrss / 1024.0;            // Linux en KiB
+        #endif
+        std::cerr << "[Memory] Peak RSS: " << peak_mb << " MB\n";
+    #endif
+#endif
+}
+
+
+
+
+#ifdef LOCAL
+    #include "helpers/debug.h"
+
+    const bool isDebugging = true;
+#else
+    #define dbg(...)     0
+    #define chk(...)     0
+    #define RAYA         0
+
+    const bool isDebugging = false;
+#endif
+//* /Debugger
+
+
+
+using ll = long long;
+using db = long double; // or double if tight TL
+using str = string;
 
 //? priority_queue for minimum
 template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
@@ -26,23 +105,20 @@ using ull  = unsigned long long;
 
 
 
-// pairs
 using pi = pair<int, int>;
 using pl = pair<ll, ll>;
 using pd = pair<db, db>;
-
 #define mp make_pair
 #define f  first
 #define s  second
 
 
 
-#define tcT template <class T
+#define tcT template<class T
 #define tcTU tcT, class U
-//! ^ lol this makes everything look weird but I'll try it
 
-tcT > using V = vector<T>;
-tcT, size_t SZ > using AR = array<T, SZ>;
+tcT> using V = vector<T>;
+tcT, size_t SZ> using AR = array<T,SZ>;
 using vi = V<int>;
 using vb = V<bool>;
 using vl = V<ll>;
@@ -52,8 +128,6 @@ using vpi = V<pi>;
 using vpl = V<pl>;
 using vpd = V<pd>;
 
-// vectors
-// oops size(x), rbegin(x), rend(x) need C++17
 #define sz(x) int((x).size())
 #define bg(x) begin(x)
 #define all(x) bg(x), end(x)
@@ -84,12 +158,13 @@ tcT > int upb(V<T> &a, const T &b) { return int(ub(all(a), b) - bg(a)); }
 
 
 
-const int MOD = 1e9 + 7;
-const int MX = (int)2e5 + 5;
-const ll BIG = 1e18;  //? not too close to LLONG_MAX
+const int MOD = int(1e9) + 7;
+const int INF = int(1e9) + 5;
+const ll BIG = ll(1e18) + 5;
 const db PI = acos((db)-1);
-const int dx[4]{1, 0, -1, 0}, dy[4]{0, 1, 0, -1};  //? for every grid problem!!
-mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
+const int dx4[4]{1, 0, -1, 0}, dy4[4]{0, 1, 0, -1};  //? for every grid problem!!
+mt19937 rng(0); // or mt19937_64
+//* mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
 
 
 
@@ -147,126 +222,15 @@ tcTU > void safeErase(T &t, const U &u) {
 
 
 
-#define tcTUU tcT, class ...U
-
-inline namespace IO {
-#define SFINAE(x, ...)                                                         \
-	template <class, class = void> struct x : std::false_type {};              \
-	template <class T> struct x<T, std::void_t<__VA_ARGS__>> : std::true_type {}
-
-SFINAE(DefaultI, decltype(std::cin >> std::declval<T &>()));
-SFINAE(DefaultO, decltype(std::cout << std::declval<T &>()));
-SFINAE(IsTuple, typename std::tuple_size<T>::type);
-SFINAE(Iterable, decltype(std::begin(std::declval<T>())));
-
-template <auto &is> struct Reader {
-	template <class T> void Impl(T &t) {
-		if constexpr (DefaultI<T>::value) is >> t;
-		else if constexpr (Iterable<T>::value) {
-			for (auto &x : t) Impl(x);
-		} else if constexpr (IsTuple<T>::value) {
-			std::apply([this](auto &...args) { (Impl(args), ...); }, t);
-		} else static_assert(IsTuple<T>::value, "No matching type for read");
-	}
-	template <class... Ts> void read(Ts &...ts) { ((Impl(ts)), ...); }
-};
-
-template <class... Ts> void re(Ts &...ts) { Reader<cin>{}.read(ts...); }
-#define def(t, args...)                                                        \
-	t args;                                                                    \
-	re(args);
-
-template <auto &os, bool debug, bool print_nd> struct Writer {
-	string comma() const { return debug ? "," : ""; }
-	template <class T> constexpr char Space(const T &) const {
-		return print_nd && (Iterable<T>::value or IsTuple<T>::value) ? '\n'
-		                                                             : ' ';
-	}
-	template <class T> void Impl(T const &t) const {
-		if constexpr (DefaultO<T>::value) os << t;
-		else if constexpr (Iterable<T>::value) {
-			if (debug) os << '{';
-			int i = 0;
-			for (auto &&x : t)
-				((i++) ? (os << comma() << Space(x), Impl(x)) : Impl(x));
-			if (debug) os << '}';
-		} else if constexpr (IsTuple<T>::value) {
-			if (debug) os << '(';
-			std::apply(
-			    [this](auto const &...args) {
-				    int i = 0;
-				    (((i++) ? (os << comma() << " ", Impl(args)) : Impl(args)),
-				     ...);
-			    },
-			    t);
-			if (debug) os << ')';
-		} else static_assert(IsTuple<T>::value, "No matching type for print");
-	}
-	template <class T> void ImplWrapper(T const &t) const {
-		if (debug) os << "\033[0;31m";
-		Impl(t);
-		if (debug) os << "\033[0m";
-	}
-	template <class... Ts> void print(Ts const &...ts) const {
-		((Impl(ts)), ...);
-	}
-	template <class F, class... Ts>
-	void print_with_sep(const std::string &sep, F const &f,
-	                    Ts const &...ts) const {
-		ImplWrapper(f), ((os << sep, ImplWrapper(ts)), ...), os << '\n';
-	}
-	void print_with_sep(const std::string &) const { os << '\n'; }
-};
-
-template <class... Ts> void pr(Ts const &...ts) {
-	Writer<cout, false, true>{}.print(ts...);
-}
-template <class... Ts> void ps(Ts const &...ts) {
-	Writer<cout, false, true>{}.print_with_sep(" ", ts...);
-}
-}  // namespace IO
-
-inline namespace Debug {
-
-#ifdef LOCAL
-#include "helpers/debug.h"
-
-#define chk(...) if (!(__VA_ARGS__)) cerr << "\033[41m" << "Line(" << __LINE__ << ") -> function(" \
-	 << __FUNCTION__  << ") -> CHK FAILED: (" << #__VA_ARGS__ << ")" << "\033[0m" << "\n", exit(0);
-
-#define MACRO(code) do {code} while (false)
-#define RAYA MACRO(cerr << "\033[101m" << "================================" << "\033[0m" << endl;)
-#else
-#define dbg(...)
-
-#define chk(...)
-#define RAYA
-#endif
+void setIn(string s) { freopen(s.c_str(), "r", stdin); }
+void setOut(string s) { freopen(s.c_str(), "w", stdout); }
 
 const auto beg_time = std::chrono::high_resolution_clock::now();
-// https://stackoverflow.com/questions/47980498/accurate-c-c-clock-on-a-multi-core-processor-with-auto-overclock?noredirect=1&lq=1
 double time_elapsed() {
 	return chrono::duration<double>(std::chrono::high_resolution_clock::now() -
 	                                beg_time)
 	    .count();
 }
-}  // namespace Debug
-
-
-
-inline namespace FileIO {
-void setIn(str s) { freopen(s.c_str(), "r", stdin); }
-void setOut(str s) { freopen(s.c_str(), "w", stdout); }
-void setIO(str s = "") {
-	cin.tie(0)->sync_with_stdio(0);  // unsync C / C++ I/O streams
-	//? cout << fixed << setprecision(12);
-    //? cerr << fixed << setprecision(12);
-	cin.exceptions(cin.failbit);
-	// throws exception when do smth illegal
-	// ex. try to read letter into int
-	if (sz(s)) setIn(s + ".in"), setOut(s + ".out");  // for old USACO
-}
-}  // namespace FileIO
 
 
 
@@ -285,194 +249,521 @@ long long binpow(long long a, long long b) {
     return res;
 }
 
-const int dddx[8]{1, 0, -1,  0, 1,  1, -1, -1};
-const int dddy[8]{0, 1,  0, -1, 1, -1,  1, -1};
+const int dx8[8]{1, 0, -1,  0, 1,  1, -1, -1};
+const int dy8[8]{0, 1,  0, -1, 1, -1,  1, -1};
 
+using vvi = V<vi>;
+using vvl = V<vl>;
+using vvb = V<vb>;
+
+ll custom_abs(ll x) {
+    if(x < 0) return -x;
+    return +x;
+}
 //? /Custom Helpers
 
 
 
+
+// return int in [L,R] inclusive
+int rng_int(int L, int R) { assert(L <= R);
+    return uniform_int_distribution<int>(L,R)(rng);
+}
+
+ll rng_ll(ll L, ll R) { assert(L <= R);
+    return uniform_int_distribution<ll>(L,R)(rng);
+}
+
+// return double in [L,R] inclusive
+db rng_db(db L, db R) { assert(L <= R);
+    return uniform_real_distribution<db>(L,R)(rng);
+}
+
+template<class T> void shuf(vector<T>& v) { shuffle(all(v),rng); }
+
+// generate edges of tree with verts [0,N-1]
+// smaller back -> taller tree
+vpi treeRand(int N, int back) {
+    assert(N >= 1 && back >= 0); vpi ed;
+    FOR(i,1,N) ed.eb(i,i-1-rng_int(0,min(back,i-1)));
+    return ed;
+}
+
+
+
+
 //* Template
-typedef long long LL;
-typedef struct item * pitem;
-struct item {
-    int prior, value, cnt;
-    LL sum;
-    bool rev;
+/**
+ * Description: Implicit treap. A vector with O(log n) insert, erase, reverse, rotate, move,
+ *   range query and range update. Manual, Node contract and examples: ImplicitTreap.md
+ * Time: O(n) build, O(log n) expected rest. Memory: n + q nodes, q = expected inserts
+ * Source: own. Verification: stress tested against brute force, see ImplicitTreap.md
+ */
 
-    item(int value):prior(rng()), value(value) {
-        cnt = 0;
-        rev = 0;
-        sum = value;
-        l = r = nullptr;
+struct NoLazy {};                               // marcador: el treap no lleva updates de rango
+
+template <class Node, class LazyUpdate = NoLazy>
+struct ImplicitTreap {
+  public:
+    static constexpr bool HAS_LAZY = !is_same<LazyUpdate, NoLazy>::value;
+
+    explicit ImplicitTreap(long long q) {
+        reserve_pool(0, q);
     }
 
-    pitem l, r;
-};
+    // gen(i) se llama con i = 0, 1, ..., n - 1 EN ESE ORDEN, y el valor va directo al pool.
+    // Asi se puede leer de un stream sin armar ningun vector intermedio.
+    template <class F>
+    ImplicitTreap(int n, long long q, F gen) {
+        assert(n >= 0);
+        reserve_pool(n, q);
 
-namespace Treap {
-    int cnt (pitem it) {
-        return it != nullptr? it->cnt : 0;
-    }
-    LL sum(pitem it) {
-        return it != nullptr? it->sum : 0;
-    }
-    void upd_cnt (pitem it) {
-        if (it!=nullptr) {
-            it->cnt = cnt(it->l) + cnt(it->r) + 1;
-            it->sum = sum(it->l) + sum(it->r) + it->value;
+        for(int i = 0; i < n; i++) {
+            new_node(gen(i));                   // el nodo de la posicion i queda en 1 + i
         }
+
+        root = build(0, n - 1);
     }
-    void push (pitem it) {
-        if (it != nullptr && it->rev == true) {
-            it->rev = false;
-            swap (it->l, it->r);
-            if (it->l)  it->l->rev ^= true;
-            if (it->r)  it->r->rev ^= true;
-        }
+
+    ImplicitTreap(const vector<Node>& v, long long q)
+        : ImplicitTreap((int)v.size(), q, [&](int i) { return v[i]; }) {}
+
+    static long long max_nodes(long long n, long long q) {
+        assert(n >= 0 && q >= 0);
+        return n + q;
     }
-    void merge (pitem & t, pitem l, pitem r) {
-        push (l);
-        push (r);
-        if (l==nullptr || r==nullptr)
-            t = (l!=nullptr) ? l : r;
-        else if (l->prior > r->prior)
-            merge (l->r, l->r, r),  t = l;
-        else
-            merge (r->l, l, r->l),  t = r;
-        upd_cnt (t);
+
+    int size() const {
+        return st[root].sz;
     }
-    void split (pitem t, pitem & l, pitem & r, int key, int add = 0) {
-        if (t==nullptr) {
-            l = r = nullptr;
+
+    long long nodes_used() const {
+        return (long long)st.size() - 1;
+    }
+
+    static size_t node_bytes() {
+        return sizeof(InternalNode);
+    }
+
+    void insert(int i, Node x) {
+        assert(0 <= i && i <= size());          // i == size() agrega al final
+        int a, b;
+        split(root, i, a, b);
+        root = merge(merge(a, new_node(x)), b);
+    }
+
+    void erase(int i) {
+        assert(0 <= i && i < size());
+        int a, b, c, tmp;
+        split(root, i, a, tmp);
+        split(tmp, 1, b, c);
+        root = merge(a, c);
+    }
+
+    void set(int p, Node x) {
+        assert(0 <= p && p < size());
+        int a, b, c, tmp;
+        split(root, p, a, tmp);
+        split(tmp, 1, b, c);
+        st[b].val = x;
+        pull(b);
+        root = merge(merge(a, b), c);
+    }
+
+    Node get(int p) const {
+        assert(0 <= p && p < size());
+        return prod(p, p);
+    }
+
+    Node prod(int l, int r) const {
+        assert(0 <= l && l <= r && r < size());
+        Node acc;
+        bool has = false;
+        prod(root, 0, l, r, LazyUpdate(), false, acc, has);
+        return acc;
+    }
+
+    Node all_prod() const {
+        return st[root].agg;
+    }
+
+    void apply(int p, LazyUpdate f) {
+        static_assert(HAS_LAZY, "este ImplicitTreap se instancio sin LazyUpdate");
+        assert(0 <= p && p < size());
+        apply(p, p, f);
+    }
+
+    void apply(int l, int r, LazyUpdate f) {
+        static_assert(HAS_LAZY, "este ImplicitTreap se instancio sin LazyUpdate");
+        assert(0 <= l && l <= r && r < size());
+        apply(root, 0, l, r, f);
+    }
+
+    void reverse(int l, int r) {
+        assert(0 <= l && l <= r && r < size());
+        int a, b, c, tmp;
+        split(root, l, a, tmp);
+        split(tmp, r - l + 1, b, c);
+        all_rev(b);
+        root = merge(merge(a, b), c);
+    }
+
+    void rotate(int l, int r, int k) {
+        assert(0 <= l && l <= r && r < size());
+        int len = r - l + 1;
+        assert(0 <= k && k < len);
+
+        if(k == 0) {
             return;
         }
-        push(t);
-        int cur_key = add + cnt(t->l);
 
-        if (key <= cur_key)
-            split (t->l, l, t->l, key, add),  r = t;
-        else
-            split (t->r, t->r, r, key, add + 1 + cnt(t->l)),  l = t;
-        upd_cnt (t);
+        int a, b, c, tmp;
+        split(root, l, a, tmp);
+        split(tmp, len, b, c);
+        int b1, b2;
+        split(b, k, b1, b2);
+        root = merge(merge(a, merge(b2, b1)), c);
     }
-    void reverse (pitem &t, int l, int r) {
-        pitem t1, t2, t3;
-        split (t, t1, t2, l);
-        split (t2, t2, t3, r-l+1);
-        assert(t2 != NULL);
-        t2->rev ^= true;
-        merge (t, t1, t2);
-        merge (t, t, t3);
+
+    // Corta a[l..r] y lo pega justo antes del que era a[p]. p se cuenta sobre el arreglo
+    // ORIGINAL, y tiene que caer afuera del bloque que se mueve.
+    void move(int l, int r, int p) {
+        assert(0 <= l && l <= r && r < size());
+        assert(0 <= p && p <= size() && (p <= l || p > r));
+        int a, b, c, tmp;
+        split(root, l, a, tmp);
+        split(tmp, r - l + 1, b, c);
+        int rest = merge(a, c);
+        int dest = (p <= l) ? p : p - (r - l + 1);
+        int x, y;
+        split(rest, dest, x, y);
+        root = merge(merge(x, b), y);
     }
-    LL query (pitem &t, int l, int r) {
-        pitem t1, t2, t3;
-        split (t, t1, t2, l);
-        split (t2, t2, t3, r-l+1);
-        LL ans = t2->sum;
-        merge (t, t1, t2);
-        merge (t, t, t3);
-        return ans;
+
+  private:
+    struct InternalNode {
+        int lc = 0;
+        int rc = 0;
+        unsigned pri = 0;
+        int sz = 1;
+        Node val{};                             // el elemento propio, cubre 1 posicion
+        Node agg{};                             // el agregado del subarbol, cubre sz posiciones
+        bool rev = false;
+        LazyUpdate lz{};                        // si es NoLazy, entra en el relleno: 0 bytes
+    };
+
+    vector<InternalNode> st;
+    int root = 0;
+    unsigned rng = next_seed();             // ver next_seed(): semilla del reloj, no fija
+
+    void reserve_pool(long long n, long long q) {
+        assert(n >= 0 && q >= 0);
+        st.reserve(size_t(max_nodes(n, q)) + 1);
+        st.push_back(InternalNode());           // el nodo nulo
+        st[0].sz = 0;
     }
-    void insert (pitem & t, int key, int value) {
-        pitem x = new item(value);
-        pitem L, R;
-        split(t, L, R, key);
-        merge(L, L, x);
-        merge(t, L, R);
-        upd_cnt(t);
+
+    //? Para Codeforces, o cualquier lugar donde puedan hackearte: la semilla sale del reloj.
+    //? Con una semilla fija las prioridades son identicas en cada corrida, y un atacante que
+    //? conoce la secuencia puede elegir las posiciones de insert para hacer el arbol profundo.
+    //? Medido: un hill climbing de 3000 evaluaciones duplica la profundidad.
+    //? Para depurar con una corrida reproducible, descomenta esto:
+    // #define IMPLICIT_TREAP_SEED 2463534242u
+    static unsigned next_seed() {
+#ifdef IMPLICIT_TREAP_SEED
+        static unsigned s = IMPLICIT_TREAP_SEED;
+#else
+        static unsigned s =
+            (unsigned)chrono::high_resolution_clock::now().time_since_epoch().count() | 1u;
+#endif
+        s ^= s << 13;                           // xorshift32 nunca sale de los no nulos,
+        s ^= s >> 17;                           // asi que el | 1u alcanza para no quedar en 0
+        s ^= s << 5;
+        return s;
     }
-    int erase (pitem & t, int key) {
-        assert(cnt(t) > key);
-        pitem L, MID, R;
-        split(t, L, MID, key);
-        split(MID, MID, R, 1);
-        merge(t, L, R);
-        upd_cnt(t);
-        int rt = MID->value;
-        delete MID;
-        return rt;
+
+    unsigned next_pri() {                       // xorshift: no depende de <random>
+        rng ^= rng << 13;
+        rng ^= rng >> 17;
+        rng ^= rng << 5;
+        return rng;
     }
-    void output (pitem t, string &v) {
-        if (t==nullptr)  return;
-        push (t);
-        output (t->l, v);
-        v.push_back(t->value);
-        output (t->r, v);
+
+    int new_node(const Node& x) {
+        InternalNode t;
+        t.pri = next_pri();
+        t.val = x;
+        t.agg = x;
+        st.push_back(t);
+        return (int)st.size() - 1;
     }
-    void output2 (pitem t) {
-        if (t==nullptr)  return;
-        push (t);
-//        cout << "(";
-        output2 (t->l);
-        cout << (t->value) << " ";
-        output2 (t->r);
-//        cout << ")";
+
+    // Los nodos de las posiciones 0..n-1 ya estan en el pool, en los indices 1..n y EN ORDEN,
+    // asi que solo hay que enlazarlos balanceado. Eso no cumple la propiedad de heap, y medido
+    // no importa: tras cualquier carga real la profundidad converge a la de un treap aleatorio,
+    // y arrancar balanceado es mas chato que arrancar con el arbol cartesiano de las prioridades.
+    int build(int lo, int hi) {
+        if(lo > hi) {
+            return 0;
+        }
+
+        int mid = lo + (hi - lo) / 2;
+        int t = 1 + mid;
+        st[t].lc = build(lo, mid - 1);
+        st[t].rc = build(mid + 1, hi);
+        pull(t);
+        return t;
     }
-}
+
+    // Saltea los subarboles vacios, asi operator+ nunca recibe Node() y el usuario no necesita
+    // identidad ni guardas de rango vacio.
+    void pull(int t) {
+        st[t].sz = 1 + st[st[t].lc].sz + st[st[t].rc].sz;
+        Node a = st[t].val;
+
+        if(st[t].lc) {
+            a = st[st[t].lc].agg + a;
+        }
+
+        if(st[t].rc) {
+            a = a + st[st[t].rc].agg;
+        }
+
+        st[t].agg = a;
+    }
+
+    // El arbol es la autoridad del largo: 1 para el elemento propio, sz para el agregado.
+    void all_apply(int t, const LazyUpdate& f) {
+        if(!t) {
+            return;
+        }
+
+        if constexpr (HAS_LAZY) {
+            st[t].val.apply(f, 1);
+            st[t].agg.apply(f, st[t].sz);
+            st[t].lz *= f;
+        }
+    }
+
+    // El flag queda pendiente para los HIJOS: los hijos de t ya quedan en el orden correcto.
+    void all_rev(int t) {
+        if(!t) {
+            return;
+        }
+
+        st[t].rev = !st[t].rev;
+        swap(st[t].lc, st[t].rc);
+        st[t].agg.reverse();
+    }
+
+    void push(int t) {
+        if constexpr (HAS_LAZY) {                // incondicional, como en LazySegmentTree
+            all_apply(st[t].lc, st[t].lz);
+            all_apply(st[t].rc, st[t].lz);
+            st[t].lz = LazyUpdate();
+        }
+
+        if(st[t].rev) {
+            all_rev(st[t].lc);
+            all_rev(st[t].rc);
+            st[t].rev = false;
+        }
+    }
+
+    void split(int t, int k, int& a, int& b) {   // los primeros k van a 'a'
+        if(!t) {
+            a = b = 0;
+            return;
+        }
+
+        push(t);
+
+        if(st[st[t].lc].sz + 1 <= k) {
+            a = t;
+            split(st[t].rc, k - st[st[t].lc].sz - 1, st[a].rc, b);
+            pull(a);
+        } else {
+            b = t;
+            split(st[t].lc, k, a, st[b].lc);
+            pull(b);
+        }
+    }
+
+    int merge(int a, int b) {
+        if(!a || !b) {
+            return a ? a : b;
+        }
+
+        if(st[a].pri > st[b].pri) {
+            push(a);
+            st[a].rc = merge(st[a].rc, b);
+            pull(a);
+            return a;
+        }
+
+        push(b);
+        st[b].lc = merge(a, st[b].lc);
+        pull(b);
+        return b;
+    }
+
+    static void join(Node& acc, bool& has, const Node& x) {
+        if(has) {
+            acc = acc + x;
+        } else {
+            acc = x;
+            has = true;
+        }
+    }
+
+    // Descenso de lectura pura: lo pendiente viaja en f y en rv, no se escribe nada. Por eso
+    // una consulta no reestructura ni ensucia el arbol.
+    void prod(int t, int lo, int l, int r, LazyUpdate f, bool rv, Node& acc, bool& has) const {
+        if(!t) {
+            return;
+        }
+
+        int hi = lo + st[t].sz - 1;
+
+        if(hi < l || r < lo) {
+            return;                             // disjunto
+        }
+
+        if(l <= lo && hi <= r) {
+            Node piece = st[t].agg;
+
+            if(rv) {
+                piece.reverse();                // el subarbol esta logicamente al reves
+            }
+
+            if constexpr (HAS_LAZY) {
+                piece.apply(f, st[t].sz);
+            }
+
+            join(acc, has, piece);
+            return;
+        }
+
+        LazyUpdate down = st[t].lz;
+
+        if constexpr (HAS_LAZY) {
+            down *= f;                          // el lz del nodo primero, el carry despues
+        }
+
+        // rv es el flag ENTRANTE: dice si los hijos de t estan dados vuelta
+        int fst = rv ? st[t].rc : st[t].lc;
+        int snd = rv ? st[t].lc : st[t].rc;
+        bool rv2 = rv != st[t].rev;              // esto baja
+        int mp = lo + st[fst].sz;
+
+        prod(fst, lo, l, r, down, rv2, acc, has);
+
+        if(l <= mp && mp <= r) {
+            Node own = st[t].val;
+
+            if constexpr (HAS_LAZY) {
+                own.apply(f, 1);                 // el propio usa f, no down
+            }
+
+            join(acc, has, own);
+        }
+
+        prod(snd, mp + 1, l, r, down, rv2, acc, has);
+    }
+
+    void apply(int t, int lo, int l, int r, const LazyUpdate& f) {
+        if(!t) {
+            return;
+        }
+
+        int hi = lo + st[t].sz - 1;
+
+        if(hi < l || r < lo) {
+            return;
+        }
+
+        if(l <= lo && hi <= r) {
+            all_apply(t, f);
+            return;
+        }
+
+        push(t);                                 // aca si hay que empujar: vamos a escribir
+        int mp = lo + st[st[t].lc].sz;
+        apply(st[t].lc, lo, l, r, f);
+
+        if(l <= mp && mp <= r) {
+            st[t].val.apply(f, 1);
+        }
+
+        apply(st[t].rc, mp + 1, l, r, f);
+        pull(t);
+    }
+};
+
+struct Node {
+    ll sum = 0;
+
+    Node() {}
+    Node(ll x) : sum(x) {}
+
+    friend Node operator+(const Node& a, const Node& b) {
+        return Node(a.sum + b.sum);
+    }
+
+    void reverse() {}
+};
 //* /Template
 
 void solve() {
-    def(int, n, m);
-    vl arr(n); re(arr);
+    // run A < A3.in
+    // xd A < A4.in
 
-    pitem tr = nullptr;
-    for(int i = 0; i < n; i++) {
-        Treap::insert(tr, i, arr[i]);
-    }
+    int n, q; cin >> n >> q;
+    vi a(n); for(auto& x: a) cin >> x;
+    dbg(n, q);
+    dbg(a);
 
-    rep(m) {
-        def(int, t);
+    V<Node> start(n);
+    for(int i = 0; i < n; i++)
+        start[i] = Node(a[i]);
+    ImplicitTreap<Node> st(start, q);
 
-        if(t == 1) {
-            def(int, a, b); a--; b--;
+    rep(q) {
+        int type, l, r; cin >> type >> l >> r; l--; r--;
 
-            Treap::reverse(tr, a, b);
+        if(type == 1) {
+            st.reverse(l, r);
         } else {
-            assert(t == 2);
-
-            def(int, a, b); a--; b--;
-
-            ll ans = Treap::query(tr, a, b);
-            ps(ans);
+            ll res = st.prod(l, r).sum;
+            cout << res << "\n";
         }
     }
 }
 
+int main() {
+    cin.tie(0)->sync_with_stdio(0);
 
-//? Generator
-int rng_int(int L, int R) { assert(L <= R);
-	return uniform_int_distribution<int>(L,R)(rng);  }
-ll rng_ll(ll L, ll R) { assert(L <= R);
-	return uniform_int_distribution<ll>(L,R)(rng);  }
-//? /Generator
+    if(isDebugging) {
+        dbg("debug");
+        // setIn("xd.in");
+    }
 
-
-signed main() {
-    setIO();
-
-    ll t = 1; //? re(t);
-
-    FOR(i, 1, t + 1) {
+    int t = 1;
+    // cin >> t;
+    while(t--) {
+        RAYA;
         RAYA;
         RAYA;
         solve();
     }
-    RAYA;
-    RAYA;
+
 
     #ifdef LOCAL
         cerr << fixed << setprecision(5);
         cerr << "\033[42m++++++++++++++++++++\033[0m\n";
         cerr << "\033[42mtime = " << time_elapsed() << "ms\033[0m\n";
         cerr << "\033[42m++++++++++++++++++++\033[0m";
+
+        print_memory_usage();
     #endif
 }
-
-/* stuff you should look for
- * int overflow, array bounds
- * special cases (n=1?)
- * do smth instead of nothing and stay organized
- * WRITE STUFF DOWN
- * DON'T GET STUCK ON ONE APPROACH
- */

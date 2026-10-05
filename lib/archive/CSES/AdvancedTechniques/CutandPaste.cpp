@@ -725,7 +725,7 @@ void solve() {
 
     rep(m) {
         int a, b; cin >> a >> b; a--; b--;
-        st.reverse(a, b);
+        st.move(a, b, n);
     }
 
     str res;

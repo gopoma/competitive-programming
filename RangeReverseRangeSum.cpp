@@ -701,11 +701,16 @@ struct ImplicitTreap {
 };
 
 struct Node {
-    int sum = 0;
+    ll sum = 0;
+
     Node() {}
-    Node(int x) : sum(x) {}
-    friend Node operator+(const Node& a, const Node& b) { return Node(a.sum + b.sum); }
-    void reverse() {}                          // la suma no distingue el orden
+    Node(ll x) : sum(x) {}
+
+    friend Node operator+(const Node& a, const Node& b) {
+        return Node(a.sum + b.sum);
+    }
+
+    void reverse() {}
 };
 //* /Template
 
@@ -713,26 +718,29 @@ void solve() {
     // run A < A3.in
     // xd A < A4.in
 
-    int n, m; cin >> n >> m;
-    str S; cin >> S;
-
+    int n, q; cin >> n >> q;
+    vi a(n); for(auto& x: a) cin >> x;
+    dbg(n, q);
+    dbg(a);
 
     V<Node> start(n);
-    for(int i = 0; i < n; i++) {
-        start[i] = Node(S[i] - 'A');
-    }
-    ImplicitTreap<Node> st(start, m);
+    for(int i = 0; i < n; i++)
+        start[i] = Node(a[i]);
+    ImplicitTreap<Node> st(start, q);
 
-    rep(m) {
-        int a, b; cin >> a >> b; a--; b--;
-        st.reverse(a, b);
-    }
+    rep(q) {
+        int type, l, r; cin >> type >> l >> r; r--;
 
-    str res;
-    for(int i = 0; i < n; i++) {
-        res.pb('A' + st.get(i).sum);
+        if(type == 0) {
+            if(l <= r)
+                st.reverse(l, r);
+        } else {
+            ll res = 0;
+            if(l <= r)
+                res = st.prod(l, r).sum;
+            cout << res << "\n";
+        }
     }
-    cout << res << "\n";
 }
 
 int main() {
@@ -744,6 +752,7 @@ int main() {
     }
 
     int t = 1;
+    // cin >> t;
     while(t--) {
         RAYA;
         RAYA;
