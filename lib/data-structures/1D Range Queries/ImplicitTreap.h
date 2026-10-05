@@ -2,7 +2,8 @@
  * Description: Implicit treap. A vector with O(log n) insert, erase, reverse, rotate, move,
  *   range query and range update. Manual, Node contract and examples: ImplicitTreap.md
  * Time: O(n) build, O(log n) expected rest. Memory: n + q nodes, q = expected inserts
- * Source: own. Verification: stress tested against brute force, see ImplicitTreap.md
+ * Source: own. Verification: judge.yosupo.jp/submission/407984 (Range Reverse Range Sum, 303 ms)
+ *   plus stress tests against brute force; both detailed in ImplicitTreap.md
  */
 
 struct NoLazy {};                               // marcador: el treap no lleva updates de rango

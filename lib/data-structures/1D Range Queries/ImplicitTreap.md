@@ -331,19 +331,26 @@ Todo con `-O2 -std=c++23 -march=native` (los flags de Library Checker), proceso 
 
 `prod` y `apply` **bajan por el árbol sin partirlo**, como un segment tree, y `prod` no escribe nada: lleva el update pendiente y la inversión pendiente en variables locales. `split`/`merge` queda solo para lo que cambia la forma. Responder consultas con `split`/`merge` —que es lo que hacen **todos** los treaps de Library Checker— mide el doble: cada una reescribe cuatro caminos raíz-hoja para una operación que no mueve nada.
 
-### Contra los rivales de Library Checker
+### Contra los rivales, medido en el juez
 
-Range Reverse Range Sum, `n = q = 2·10⁵`, misma máquina y mismos flags para los tres:
+[Submission 407984](https://judge.yosupo.jp/submission/407984): **AC, 303 ms / 11.27 MiB** en Range Reverse Range Sum. Comparado caso por caso con los dos treaps más rápidos del ranking:
 
-| carga               | esta implementación    | treap `hly1204` (291 ms) | splay `Taiki0715` (215 ms) |
-| ------------------- | ---------------------- | ------------------------ | -------------------------- |
-| mezcla              | **0.291 s** / 12.25 MB | 0.338 s / 12.32 MB       | 0.324 s / 18.52 MB         |
-| casi todo `reverse` | 0.374 s / 12.23 MB     | 0.377 s / 12.32 MB       | **0.310 s** / 18.52 MB     |
-| casi todo consulta  | **0.167 s** / 12.25 MB | 0.336 s / 12.32 MB       | 0.304 s / 18.52 MB         |
+| caso | **este template** | `hly1204` (291 ms) | `oldyan` (269 ms) |
+| --- | --- | --- | --- |
+| `max_random_00/01/02` | **247 / 250 / 249** | 289 / 290 / 291 | 225 / 230 / 230 |
+| `almost_t0_00` (casi todo `reverse`) | **303** | 291 | 269 |
+| `almost_t1_00` (casi todo consulta) | **168** | 259 | 186 |
+| `random_00 / 01 / 02` | **216 / 154 / 225** | 251 / 186 / 265 | 209 / 142 / 225 |
+| `nq_01_06 / 07` | **4 / 5** | 15 / 19 | 5 / 6 |
+| memoria máxima | 11.27 MiB | 11.20 MiB | 10.46 MiB |
 
-Dynamic Sequence Range Affine Range Sum, `n = q = 5·10⁵`: **1.398 s / 36.68 MB**.
+**Le gana a `hly1204` en todos los casos**, incluido 1.54× en el pesado en consultas — que es el descenso rindiendo. Pero el juez reporta el **máximo** sobre los casos, y para los tres ese máximo sale de `almost_t0_00`. Ahí pierde: 303 contra 291 y 269.
 
-Resumen: le gana a todos los treaps del ranking, y al splay en mezcla (1.11×) y en consultas (1.82×); pierde contra el splay por ~5–20% en la carga pesada en `reverse`, donde los dos tienen que reestructurar y no hay nada estructural para ganar.
+O sea que **el único punto flojo es la carga pesada en `reverse`**, y está confirmado en el juez. Es coherente con el diseño: cuando la operación cambia la forma de la secuencia los tres tienen que hacer `split`/`merge`, y la ventaja del descenso no aplica porque no hay consultas que responder.
+
+Puesto ~30 entre usuarios distintos, por detrás de los tres treaps del board y por delante de la mayoría del resto.
+
+> **Advertencia de método, por si proyectás tiempos entre máquinas.** Antes de enviar estimé ~230 ms usando un factor local/juez de 1.60, derivado de correr el código de un competidor en mi máquina y compararlo con su tiempo en el juez. Los tres casos de *ese* programa coincidían en 1.58–1.60, y lo tomé como constante de máquina. Era un error: con tres programas ya medidos de las dos formas, el factor va de **0.99 a 1.57 según el código** (pool plano con I/O propia ≈ 1.0–1.2; treap con punteros y `cin` ≈ 1.2–1.3; splay con `new` por nodo ≈ 1.5). La consistencia entre casos de un mismo programa no dice nada sobre la transferencia a otro. Lo que **sí** transfirió bien fue la comparación relativa local: las tres direcciones acertaron y la de la mezcla con dos decimales.
 
 ### Profundidad
 
@@ -415,4 +422,4 @@ Contra fuerza bruta:
 
 Compila con `-std=c++17 -Wall -Wextra -Wpedantic` sin warnings.
 
-**Sin link de juez todavía**: las dos soluciones de Library Checker están escritas y verificadas localmente, pero no enviadas.
+**Verificado en juez**: [Library Checker submission 407984](https://judge.yosupo.jp/submission/407984), AC 303 ms / 11.27 MiB en Range Reverse Range Sum. Dynamic Sequence Range Affine Range Sum está escrito y verificado localmente, pendiente de enviar.
