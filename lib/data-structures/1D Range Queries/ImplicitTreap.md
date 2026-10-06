@@ -6,23 +6,23 @@ Ningún nodo guarda su índice: la posición se deduce contando cuántos nodos l
 
 ## Cuándo usarlo y cuándo no
 
-| necesitás                                                              | usá                                                                 |
-| ---------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| consulta y update de rango, tamaño fijo                                | **`SegmentTree/LazySegmentTree.h`** — hace lo mismo 1.8× más rápido |
-| además `insert` / `erase` / `reverse` / `rotate` / `move` / concatenar | **`ImplicitTreap.h`**                                               |
+| necesitás                                                                  | usá                                                                     |
+|----------------------------------------------------------------------------|-------------------------------------------------------------------------|
+| consulta y update de rango, tamaño fijo                                    | **`SegmentTree/LazySegmentTree.h`** — hace lo mismo 1.8× más rápido     |
+| además `insert` / `erase` / `reverse` / `rotate` / `move` / concatenar     | **`ImplicitTreap.h`**                                                   |
 
 La regla: el treap entra cuando **cambia la forma de la secuencia**, no solo sus valores. Si no necesitás ninguna de esas cinco operaciones, el segment tree es estrictamente mejor.
 
-|                               | `vector` | `LazySegmentTree` | `ImplicitTreap` |
-| ----------------------------- | -------- | ----------------- | --------------- |
-| `a[i]`                        | O(1)     | O(1)              | O(log n)        |
-| `prod(l, r)`                  | O(n)     | O(log n)          | O(log n)        |
-| `apply(l, r, f)`              | O(n)     | O(log n)          | O(log n)        |
-| `all_prod()`                  | O(n)     | O(1)              | O(1)            |
-| `insert` / `erase`            | O(n)     | **imposible**     | O(log n)        |
-| `reverse` / `rotate` / `move` | O(n)     | **imposible**     | O(log n)        |
-| tamaño                        | dinámico | **fijo**          | dinámico        |
-| constante relativa            | 1×       | 1×                | **1.8×**        |
+|                                 | `vector`   | `LazySegmentTree`   | `ImplicitTreap`   |
+|---------------------------------|------------|---------------------|-------------------|
+| `a[i]`                          | O(1)       | O(1)                | O(log n)          |
+| `prod(l, r)`                    | O(n)       | O(log n)            | O(log n)          |
+| `apply(l, r, f)`                | O(n)       | O(log n)            | O(log n)          |
+| `all_prod()`                    | O(n)       | O(1)                | O(1)              |
+| `insert` / `erase`              | O(n)       | **imposible**       | O(log n)          |
+| `reverse` / `rotate` / `move`   | O(n)       | **imposible**       | O(log n)          |
+| tamaño                          | dinámico   | **fijo**            | dinámico          |
+| constante relativa              | 1×         | 1×                  | **1.8×**          |
 
 Dos límites reales más allá de la constante:
 
@@ -60,21 +60,33 @@ ImplicitTreap<Node> t(n, 0, [](int) { return Node(leer()); });
 
 ### Métodos
 
-| método            | costo    | qué hace                                                               |
-| ----------------- | -------- | ---------------------------------------------------------------------- |
-| `size()`          | O(1)     | cuántos elementos hay ahora                                            |
-| `insert(i, x)`    | O(log n) | `x` pasa a ser `a[i]`; `i == size()` agrega al final                   |
-| `erase(i)`        | O(log n) | quita `a[i]`                                                           |
-| `set(p, x)`       | O(log n) | `a[p] = x`                                                             |
-| `get(p)`          | O(log n) | el `Node` en `p`                                                       |
-| `prod(l, r)`      | O(log n) | pliega `a[l..r]`                                                       |
-| `all_prod()`      | O(1)     | pliega todo                                                            |
-| `apply(p, f)`     | O(log n) | `f` sobre `a[p]` — necesita `LazyUpdate`                               |
-| `apply(l, r, f)`  | O(log n) | `f` sobre `a[l..r]` — necesita `LazyUpdate`                            |
-| `reverse(l, r)`   | O(log n) | da vuelta `a[l..r]`                                                    |
-| `rotate(l, r, k)` | O(log n) | rota `a[l..r]` a izquierda en `k`: el viejo `a[l+k]` pasa a ser `a[l]` |
-| `move(l, r, p)`   | O(log n) | corta `a[l..r]` y lo pega antes del viejo `a[p]`                       |
-| `nodes_used()`    | O(1)     | cuánto del pool se consumió, para depurar                              |
+| método                       | costo                | qué hace                                                                   |
+|------------------------------|----------------------|----------------------------------------------------------------------------|
+| `size()`                     | O(1)                 | cuántos elementos hay ahora                                                |
+| `clear()`                    | O(1)                 | vacia el treap conservando la capacidad del pool                           |
+| `insert(i, x)`               | O(log n)             | `x` pasa a ser `a[i]`; `i == size()` agrega al final                       |
+| `insert(i, v)`               | O(\|v\| + log n)     | inserta toda la secuencia `v` antes del viejo `a[i]`                       |
+| `push_back(x)`               | O(log n)             | agrega al final                                                            |
+| `push_front(x)`              | O(log n)             | agrega al principio                                                        |
+| `erase(i)`                   | O(log n)             | quita `a[i]`                                                               |
+| `erase(l, r)`                | O(log n)             | borra todo `a[l..r]` de una vez                                            |
+| `pop_back()`                 | O(log n)             | quita el ultimo                                                            |
+| `pop_front()`                | O(log n)             | quita el primero                                                           |
+| `set(p, x)`                  | O(log n)             | `a[p] = x`                                                                 |
+| `get(p)`                     | O(log n)             | el `Node` en `p`                                                           |
+| `front()`                    | O(log n)             | el primer `Node`                                                           |
+| `back()`                     | O(log n)             | el ultimo `Node`                                                           |
+| `prod(l, r)`                 | O(log n)             | pliega `a[l..r]`                                                           |
+| `all_prod()`                 | O(1)                 | pliega todo                                                                |
+| `dump()`                     | O(n)                 | toda la secuencia en orden                                                 |
+| `copy_range(l, r)`           | O(r - l + log n)     | los valores de `a[l..r]`                                                   |
+| `apply(p, f)`                | O(log n)             | `f` sobre `a[p]` — necesita `LazyUpdate`                                   |
+| `apply(l, r, f)`             | O(log n)             | `f` sobre `a[l..r]` — necesita `LazyUpdate`                                |
+| `reverse(l, r)`              | O(log n)             | da vuelta `a[l..r]`                                                        |
+| `rotate(l, r, k)`            | O(log n)             | rota `a[l..r]` a izquierda en `k`: el viejo `a[l+k]` pasa a ser `a[l]`     |
+| `move(l, r, p)`              | O(log n)             | corta `a[l..r]` y lo pega antes del viejo `a[p]`                           |
+| `swap_blocks(l1,r1,l2,r2)`   | O(log n)             | intercambia dos bloques disjuntos, `l1<=r1<l2<=r2`                         |
+| `nodes_used()`               | O(1)                 | cuánto del pool se consumió, para depurar                                  |
 
 En `move`, `p` se cuenta sobre el arreglo **original** y tiene que caer fuera de `[l, r]`.
 
@@ -82,15 +94,17 @@ En `move`, `p` se cuenta sobre el arreglo **original** y tiene que caer fuera de
 
 La semántica de `insert`, `erase` y `rotate` coincide con la STL, y está verificada **contra las funciones de la STL mismas**, no contra una reimplementación:
 
-| mío                     | equivalente STL                      |
-| ----------------------- | ------------------------------------ |
-| `t.insert(i, x)`        | `v.insert(v.begin() + i, x)`         |
-| `t.insert(t.size(), x)` | `v.insert(v.end(), x)`               |
-| `t.erase(i)`            | `v.erase(v.begin() + i)`             |
-| `t.rotate(l, r, k)`     | `std::rotate(b+l, b+l+k, b+r+1)`     |
-| `t.reverse(l, r)`       | `std::reverse(b+l, b+r+1)`           |
-| `t.prod(l, r)`          | `std::accumulate(b+l, b+r+1, 0)`     |
-| `t.move(l, r, p)`       | `erase` de rango + `insert` de rango |
+| mío                         | equivalente STL                                   |
+|-----------------------------|---------------------------------------------------|
+| `t.insert(i, x)`            | `v.insert(v.begin() + i, x)`                      |
+| `t.insert(t.size(), x)`     | `v.insert(v.end(), x)`                            |
+| `t.erase(i)`                | `v.erase(v.begin() + i)`                          |
+| `t.erase(l, r)`             | `v.erase(v.begin()+l, v.begin()+r+1)`             |
+| `t.insert(i, v2)`           | `v.insert(v.begin()+i, v2.begin(), v2.end())`     |
+| `t.rotate(l, r, k)`         | `std::rotate(b+l, b+l+k, b+r+1)`                  |
+| `t.reverse(l, r)`           | `std::reverse(b+l, b+r+1)`                        |
+| `t.prod(l, r)`              | `std::accumulate(b+l, b+r+1, 0)`                  |
+| `t.move(l, r, p)`           | `erase` de rango + `insert` de rango              |
 
 Dos diferencias de forma, a propósito:
 
@@ -98,6 +112,48 @@ Dos diferencias de forma, a propósito:
 - **`rotate` cambia la parametrización.** `std::rotate(first, middle, last)` son tres iteradores; el mío es `(l, r, k)`: rango inclusivo más desplazamiento. El resultado es el mismo, pero si escribís `rotate(l, mid, r)` por reflejo te sale otra cosa.
 
 Y un detalle: **`insert` es el único lugar donde el índice puede valer `size()`**. El assert es `0 <= i && i <= size()`, no `i < size()`. Es deliberado: sin eso no se puede expresar "agregar al final", y es la misma libertad que `vector::insert(end(), x)`.
+
+### `dump()` en lugar de `get(p)` repetido
+
+Leer toda la secuencia con `get(p)` en un bucle es O(n log n); `dump()` hace un recorrido en orden simétrico y es O(n). Medido, mínimo de 5 corridas:
+
+| n         | `dump()`         | n veces `get(p)`   |             |
+|-----------|------------------|--------------------|-------------|
+| 10 000    | 0.000050 s       | 0.000581 s         | 11.6×       |
+| 100 000   | 0.000375 s       | 0.007826 s         | 20.9×       |
+| 500 000   | **0.003827 s**   | 0.044045 s         | **11.5×**   |
+
+Igual que `prod`, no escribe nada: lleva el update pendiente y la inversión pendiente en variables locales, así que podés volcar el estado sin ensuciar el árbol. `copy_range(l, r)` usa el mismo recorrido restringido al rango, y se compone con `insert` para duplicar un bloque:
+
+```cpp
+t.insert(j, t.copy_range(l, r));            // duplica a[l..r] antes del viejo a[j]
+```
+
+### Las versiones de rango valen la pena
+
+`erase(l, r)` e `insert(i, v)` no son azúcar sobre las de un elemento: cambian el orden de crecimiento. `erase(l, r)` parte en tres y vuelve a pegar, O(log n) sin importar el largo del bloque. `insert(i, v)` arma un treap balanceado con los nuevos en O(\|v\|) y hace **un solo** `merge`.
+
+Medido a `n = 2·10⁵`, mínimo de 5 corridas:
+
+| L           | `erase(l, r)`      | L veces `erase(l)`     |                |
+|-------------|--------------------|------------------------|----------------|
+| 10          | 0.000001 s         | 0.000002 s             | 3×             |
+| 1 000       | 0.000001 s         | 0.000137 s             | 152×           |
+| 10 000      | 0.000001 s         | 0.001260 s             | 1 146×         |
+| 100 000     | **0.000001 s**     | 0.009581 s             | **7 370×**     |
+
+| L           | `insert(i, v)`     | L veces `insert`     |             |
+|-------------|--------------------|----------------------|-------------|
+| 10          | 0.000001 s         | 0.000002 s           | 2×          |
+| 1 000       | 0.000023 s         | 0.000166 s           | 7×          |
+| 10 000      | 0.000144 s         | 0.001897 s           | 13×         |
+| 100 000     | **0.001298 s**     | 0.023607 s           | **18×**     |
+
+El `erase` de rango es **plano**: borrar 10 o 100 000 elementos cuesta lo mismo, porque nunca toca el bloque — solo lo desconecta. El `insert` no puede ser plano (hay que crear \|v\| nodos), así que la ganancia se estabiliza en ~18×, que es el `log n` que se ahorra.
+
+**Los nodos borrados quedan huérfanos.** El bloque que `erase` desconecta no se recicla: sus nodos siguen ocupando lugar en el pool. Eso ya pasaba con `erase(i)`, pero con rangos se nota. No afecta la fórmula `max_nodes(n, q) = n + q`, que cuenta elementos **insertados**; sí significa que una carga que inserta y borra bloques en ciclo consume pool proporcional al total insertado, no al tamaño vivo. Reciclarlos obligaría a recorrer el subárbol borrado, lo que volvería `erase(l, r)` O(L) y mataría justamente la ventaja de arriba.
+
+**`insert(i, v)` cuenta como \|v\| inserciones para el pool**, no como una. Si insertás bloques, el `q` del constructor es la suma de los largos.
 
 ## Contrato del `Node`
 
@@ -137,10 +193,10 @@ Y no es solo elegancia: tener `sz` dentro del `Node` lo mide **1.34× más lento
 
 ## Contrato del `LazyUpdate`
 
-| requisito      | notas                                                         |
-| -------------- | ------------------------------------------------------------- |
-| `LazyUpdate()` | el update que no cambia nada                                  |
-| `f *= g`       | apila `g` sobre `f`, de modo que **`g` actúa después de `f`** |
+| requisito          | notas                                                             |
+|--------------------|-------------------------------------------------------------------|
+| `LazyUpdate()`     | el update que no cambia nada                                      |
+| `f *= g`           | apila `g` sobre `f`, de modo que **`g` actúa después de `f`**     |
 
 El `push` es **incondicional**, como en `LazySegmentTree.h`, así que no hace falta ninguna bandera de "está vacío".
 
@@ -268,12 +324,12 @@ c.prod(0, 4).fwd        // (120, 20)     en x=1 -> 140
 max_nodes(n, q) = n + q         q = cuántos insert esperás
 ```
 
-| `Node`         | `LazyUpdate` | `sizeof(InternalNode)`  |
-| -------------- | ------------ | ----------------------- |
-| `{ll sum}`     | ninguno      | **40 B**                |
-| `{ll sum}`     | `{ll add}`   | 48 B                    |
-| `{ll sum}`     | `{ll a, b}`  | 56 B                    |
-| `{ll sz, sum}` | ninguno      | 56 B — *sacale el `sz`* |
+| `Node`             | `LazyUpdate`     | `sizeof(InternalNode)`      |
+|--------------------|------------------|-----------------------------|
+| `{ll sum}`         | ninguno          | **40 B**                    |
+| `{ll sum}`         | `{ll add}`       | 48 B                        |
+| `{ll sum}`         | `{ll a, b}`      | 56 B                        |
+| `{ll sz, sum}`     | ninguno          | 56 B — *sacale el `sz`*     |
 
 Un nodo interno guarda **dos `Node`** (el elemento propio y el agregado del subárbol), así que cada campo del `Node` se paga dos veces.
 
@@ -285,31 +341,31 @@ Verificado: con `q = 0` y 16 000 `insert`, 4018 consultas contra fuerza bruta si
 
 **El costo no está en el tiempo sino en la memoria, y no es monótono.** Con `n = 2·10⁵` y 5·10⁵ `insert`, o sea 7·10⁵ nodos al final:
 
-| `q` dado         | tiempo  | pico         | contra el exacto |
-| ---------------- | ------- | ------------ | ---------------- |
-| 500 000 (exacto) | 0.696 s | **32.98 MB** | 1.00×            |
-| 100 000          | 0.701 s | **51.86 MB** | **1.57×**        |
-| 1 000            | 0.782 s | 36.74 MB     | 1.11×            |
-| 0                | 0.712 s | 36.60 MB     | 1.11×            |
+| `q` dado             | tiempo      | pico             | contra el exacto     |
+|----------------------|-------------|------------------|----------------------|
+| 500 000 (exacto)     | 0.696 s     | **32.98 MB**     | 1.00×                |
+| 100 000              | 0.701 s     | **51.86 MB**     | **1.57×**            |
+| 1 000                | 0.782 s     | 36.74 MB         | 1.11×                |
+| 0                    | 0.712 s     | 36.60 MB         | 1.11×                |
 
 Fijate que `q = 100000` sale **peor que `q = 0`**: no es «mientras más corto, peor». La causa es cómo duplica el `vector` — durante una reubicación el buffer viejo y el nuevo existen a la vez, y el peor caso es cuando la cantidad final de nodos **apenas cruza** un límite de capacidad:
 
-| `q`     | capacidades que atraviesa   | coexisten en la última mudanza |
-| ------- | --------------------------- | ------------------------------ |
-| 500 000 | `[700001]`                  | nunca se muda: 37.4 MB         |
-| 100 000 | `[300001, 600002, 1200004]` | 32.0 + 64.1 = **96.1 MB**      |
-| 1 000   | `[201001, 402002, 804004]`  | 21.5 + 42.9 = 64.4 MB          |
-| 0       | `[200001, 400002, 800004]`  | 21.4 + 42.7 = 64.1 MB          |
+| `q`         | capacidades que atraviesa       | coexisten en la última mudanza     |
+|-------------|---------------------------------|------------------------------------|
+| 500 000     | `[700001]`                      | nunca se muda: 37.4 MB             |
+| 100 000     | `[300001, 600002, 1200004]`     | 32.0 + 64.1 = **96.1 MB**          |
+| 1 000       | `[201001, 402002, 804004]`      | 21.5 + 42.9 = 64.4 MB              |
+| 0           | `[200001, 400002, 800004]`      | 21.4 + 42.7 = 64.1 MB              |
 
 Con `q = 100000` la capacidad arranca en 300 001, duplica a 600 002, y los 700 000 nodos finales fuerzan el salto a 1 200 004: pedís lugar para 1.2 millones de nodos cuando usás 700 000, y en ese instante tenés los dos buffers vivos.
 
 ### Pasarse de largo es gratis
 
-| `q` dado                | pico     |
-| ----------------------- | -------- |
-| 500 000 (exacto)        | 32.78 MB |
-| 2 000 000 (4× de más)   | 32.82 MB |
-| 10 000 000 (20× de más) | 32.80 MB |
+| `q` dado                    | pico         |
+|-----------------------------|--------------|
+| 500 000 (exacto)            | 32.78 MB     |
+| 2 000 000 (4× de más)       | 32.82 MB     |
+| 10 000 000 (20× de más)     | 32.80 MB     |
 
 Idéntico. `reserve` no confirma páginas: las que no se tocan no entran en el working set, así que reservar veinte veces de más no cuesta un byte de memoria pico.
 
@@ -323,11 +379,11 @@ Todo con `-O2 -std=c++23 -march=native` (los flags de Library Checker), proceso 
 
 `n = q = 5·10⁵`, afín de rango + suma de rango:
 
-|                                              | tiempo     | contra el segment tree |
-| -------------------------------------------- | ---------- | ---------------------- |
-| `LazySegmentTree.h`                          | 0.37 s     | 1×                     |
-| treap con `split`/`merge` para todo          | 1.47 s     | 4.0×                   |
-| **treap con descenso** (esta implementación) | **0.67 s** | **1.8×**               |
+|                                                  | tiempo         | contra el segment tree     |
+|--------------------------------------------------|----------------|----------------------------|
+| `LazySegmentTree.h`                              | 0.37 s         | 1×                         |
+| treap con `split`/`merge` para todo              | 1.47 s         | 4.0×                       |
+| **treap con descenso** (esta implementación)     | **0.67 s**     | **1.8×**                   |
 
 `prod` y `apply` **bajan por el árbol sin partirlo**, como un segment tree, y `prod` no escribe nada: lleva el update pendiente y la inversión pendiente en variables locales. `split`/`merge` queda solo para lo que cambia la forma. Responder consultas con `split`/`merge` —que es lo que hacen **todos** los treaps de Library Checker— mide el doble: cada una reescribe cuatro caminos raíz-hoja para una operación que no mueve nada.
 
@@ -335,14 +391,14 @@ Todo con `-O2 -std=c++23 -march=native` (los flags de Library Checker), proceso 
 
 [Submission 407984](https://judge.yosupo.jp/submission/407984): **AC, 303 ms / 11.27 MiB** en Range Reverse Range Sum. Comparado caso por caso con los dos treaps más rápidos del ranking:
 
-| caso | **este template** | `hly1204` (291 ms) | `oldyan` (269 ms) |
-| --- | --- | --- | --- |
-| `max_random_00/01/02` | **247 / 250 / 249** | 289 / 290 / 291 | 225 / 230 / 230 |
-| `almost_t0_00` (casi todo `reverse`) | **303** | 291 | 269 |
-| `almost_t1_00` (casi todo consulta) | **168** | 259 | 186 |
-| `random_00 / 01 / 02` | **216 / 154 / 225** | 251 / 186 / 265 | 209 / 142 / 225 |
-| `nq_01_06 / 07` | **4 / 5** | 15 / 19 | 5 / 6 |
-| memoria máxima | 11.27 MiB | 11.20 MiB | 10.46 MiB |
+| caso                                     | **este template**       | `hly1204` (291 ms)     | `oldyan` (269 ms)     |
+|------------------------------------------|-------------------------|------------------------|-----------------------|
+| `max_random_00/01/02`                    | **247 / 250 / 249**     | 289 / 290 / 291        | 225 / 230 / 230       |
+| `almost_t0_00` (casi todo `reverse`)     | **303**                 | 291                    | 269                   |
+| `almost_t1_00` (casi todo consulta)      | **168**                 | 259                    | 186                   |
+| `random_00 / 01 / 02`                    | **216 / 154 / 225**     | 251 / 186 / 265        | 209 / 142 / 225       |
+| `nq_01_06 / 07`                          | **4 / 5**               | 15 / 19                | 5 / 6                 |
+| memoria máxima                           | 11.27 MiB               | 11.20 MiB              | 10.46 MiB             |
 
 **Le gana a `hly1204` en todos los casos**, incluido 1.54× en el pesado en consultas — que es el descenso rindiendo. Pero el juez reporta el **máximo** sobre los casos, y para los tres ese máximo sale de `almost_t0_00`. Ahí pierde: 303 contra 291 y 269.
 
@@ -364,13 +420,13 @@ El `build` enlaza balanceado sin respetar la propiedad de heap, lo cual **medido
 
 Con una semilla fija la secuencia de prioridades es **idéntica en cada corrida**, así que un atacante la reproduce offline y busca con todo el tiempo del mundo una entrada que haga el árbol profundo. Y no es teórico: lo medí con un hill climbing tonto sobre la secuencia de posiciones de `insert`, que es lo único que el atacante controla.
 
-| con `n = 1000` | profundidad |
-| --- | --- |
-| `log₂ n` | 9.97 |
-| esperado de un treap aleatorio | ~13.9 |
-| entradas al azar, promedio de 30 | **22.6** |
-| entradas al azar, peor de 30 | 27 |
-| **tras el ataque, 3000 evaluaciones** | **42** (1.86×) |
+| con `n = 1000`                            | profundidad        |
+|-------------------------------------------|--------------------|
+| `log₂ n`                                  | 9.97               |
+| esperado de un treap aleatorio            | ~13.9              |
+| entradas al azar, promedio de 30          | **22.6**           |
+| entradas al azar, peor de 30              | 27                 |
+| **tras el ataque, 3000 evaluaciones**     | **42** (1.86×)     |
 
 Con 3000 evaluaciones y mutaciones al azar ya se duplica. Un atacante con horas y una construcción pensada llega mucho más lejos.
 
@@ -395,30 +451,31 @@ Los tests contra fuerza bruta no dependen de la semilla —comparan contra la re
 
 ## Errores frecuentes
 
-| error                                           | síntoma                                                                                       |
-| ----------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| fijar la semilla y competir en Codeforces       | hackeable: con la secuencia conocida se puede duplicar la profundidad                         |
-| `reverse()` vacío con un monoide no conmutativo | mal **solo** después de una inversión, y solo en el campo no conmutativo. Invisible con sumas |
-| `f *= g` con el orden al revés                  | pasa desapercibido con un lazy aditivo (conmuta) y revienta con afín o assign                 |
-| pasar un `q` de **más**                         | nada: reservar de sobra es gratis                                                             |
-| pasar un `q` **corto**                          | hasta 1.57× de memoria pico, y de forma no monótona. Corrección y tiempo intactos             |
-| olvidar que `size()` cambia                     | assert en el siguiente `prod` o `apply`                                                       |
-| usar `rotate(l, mid, r)` por reflejo de la STL  | resultado silenciosamente distinto: la firma es `(l, r, k)`                                   |
-| un agregado que depende del índice absoluto     | mal en cuanto haya un `insert`, `erase` o `reverse`                                           |
+| error                                               | síntoma                                                                                           |
+|-----------------------------------------------------|---------------------------------------------------------------------------------------------------|
+| fijar la semilla y competir en Codeforces           | hackeable: con la secuencia conocida se puede duplicar la profundidad                             |
+| `reverse()` vacío con un monoide no conmutativo     | mal **solo** después de una inversión, y solo en el campo no conmutativo. Invisible con sumas     |
+| `f *= g` con el orden al revés                      | pasa desapercibido con un lazy aditivo (conmuta) y revienta con afín o assign                     |
+| contar `insert(i, v)` como una sola inserción       | pool corto: cuenta como \|v\|                                                                     |
+| pasar un `q` de **más**                             | nada: reservar de sobra es gratis                                                                 |
+| pasar un `q` **corto**                              | hasta 1.57× de memoria pico, y de forma no monótona. Corrección y tiempo intactos                 |
+| olvidar que `size()` cambia                         | assert en el siguiente `prod` o `apply`                                                           |
+| usar `rotate(l, mid, r)` por reflejo de la STL      | resultado silenciosamente distinto: la firma es `(l, r, k)`                                       |
+| un agregado que depende del índice absoluto         | mal en cuanto haya un `insert`, `erase` o `reverse`                                               |
 
 ## Verificación
 
 Contra fuerza bruta:
 
-| test                                                                                  | comprobaciones                        |
-| ------------------------------------------------------------------------------------- | ------------------------------------- |
-| `insert`, `erase`, `reverse`, `rotate`, `move`, `prod` contra las funciones de la STL | 3163                                  |
-| más `apply(f, len)`, `set`, `get`                                                     | 2953                                  |
-| monoide **no conmutativo** bajo inversión                                             | 3347                                  |
-| control negativo del anterior (agregado equivocado)                                   | **3105 de 3329 mal** — el test muerde |
-| constructor por generador contra el de vector                                         | 48993                                 |
-| Library Checker Range Reverse Range Sum                                               | muestra + 130 casos aleatorios        |
-| Library Checker Dynamic Sequence Range Affine Range Sum                               | muestra + 130 casos aleatorios        |
+| test                                                                                      | comprobaciones                            |
+|-------------------------------------------------------------------------------------------|-------------------------------------------|
+| `insert`, `erase`, `reverse`, `rotate`, `move`, `prod` contra las funciones de la STL     | 3163                                      |
+| más `apply(f, len)`, `set`, `get`                                                         | 2953                                      |
+| monoide **no conmutativo** bajo inversión                                                 | 3347                                      |
+| control negativo del anterior (agregado equivocado)                                       | **3105 de 3329 mal** — el test muerde     |
+| constructor por generador contra el de vector                                             | 48993                                     |
+| Library Checker Range Reverse Range Sum                                                   | muestra + 130 casos aleatorios            |
+| Library Checker Dynamic Sequence Range Affine Range Sum                                   | muestra + 130 casos aleatorios            |
 
 Compila con `-std=c++17 -Wall -Wextra -Wpedantic` sin warnings.
 

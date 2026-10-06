@@ -28,7 +28,7 @@ struct ImplicitTreap {
             new_node(gen(i));                   // el nodo de la posicion i queda en 1 + i
         }
 
-        root = build(0, n - 1);
+        root = build(1, 0, n - 1);
     }
 
     ImplicitTreap(const vector<Node>& v, long long q)
@@ -51,11 +51,48 @@ struct ImplicitTreap {
         return sizeof(InternalNode);
     }
 
+    // Vacia el treap conservando la capacidad del pool, asi un problema con varios casos de
+    // prueba no vuelve a reservar. Los nodos viejos no se reciclan, igual que con erase.
+    void clear() {
+        st.resize(1);                           // resize hacia abajo no libera capacidad
+        root = 0;
+    }
+
     void insert(int i, Node x) {
         assert(0 <= i && i <= size());          // i == size() agrega al final
         int a, b;
         split(root, i, a, b);
         root = merge(merge(a, new_node(x)), b);
+    }
+
+    // Inserta toda la secuencia v antes de la que era a[i], en O(|v| + log n): arma un treap
+    // balanceado con los nuevos y hace un solo merge. Con insert(i, x) repetido seria
+    // O(|v| log n). Cuenta como |v| inserciones para el pool, no como una.
+    void insert(int i, const vector<Node>& v) {
+        assert(0 <= i && i <= size());
+
+        if(v.empty()) {
+            return;
+        }
+
+        int base = (int)st.size();              // los nuevos van a base .. base + |v| - 1
+
+        for(const Node& x : v) {
+            new_node(x);
+        }
+
+        int mid = build(base, 0, (int)v.size() - 1);
+        int a, b;
+        split(root, i, a, b);
+        root = merge(merge(a, mid), b);
+    }
+
+    void push_back(Node x) {
+        insert(size(), x);
+    }
+
+    void push_front(Node x) {
+        insert(0, x);
     }
 
     void erase(int i) {
@@ -64,6 +101,29 @@ struct ImplicitTreap {
         split(root, i, a, tmp);
         split(tmp, 1, b, c);
         root = merge(a, c);
+    }
+
+    // Borra todo a[l..r] de una vez, en O(log n). Hacerlo con erase(i) repetido seria
+    // O(L log n). Los nodos del bloque quedan huerfanos en el pool y no se reciclan: eso ya
+    // pasa con erase(i), pero con rangos se nota mas. No afecta a max_nodes, que cuenta
+    // elementos insertados, no borrados.
+    void erase(int l, int r) {
+        assert(0 <= l && l <= r && r < size());
+        int a, b, c, tmp;
+        split(root, l, a, tmp);
+        split(tmp, r - l + 1, b, c);            // b es el bloque a descartar
+        (void)b;
+        root = merge(a, c);
+    }
+
+    void pop_back() {
+        assert(size() > 0);
+        erase(size() - 1);
+    }
+
+    void pop_front() {
+        assert(size() > 0);
+        erase(0);
     }
 
     void set(int p, Node x) {
@@ -81,6 +141,16 @@ struct ImplicitTreap {
         return prod(p, p);
     }
 
+    Node front() const {
+        assert(size() > 0);
+        return get(0);
+    }
+
+    Node back() const {
+        assert(size() > 0);
+        return get(size() - 1);
+    }
+
     Node prod(int l, int r) const {
         assert(0 <= l && l <= r && r < size());
         Node acc;
@@ -91,6 +161,28 @@ struct ImplicitTreap {
 
     Node all_prod() const {
         return st[root].agg;
+    }
+
+    // Toda la secuencia en orden, en O(n). Con get(p) repetido seria O(n log n): medido,
+    // 0.047 s contra 0.005 s a n = 5e5. Util para imprimir el arreglo final y para depurar.
+    vector<Node> dump() const {
+        vector<Node> res;
+
+        if(size() == 0) {
+            return res;
+        }
+
+        return copy_range(0, size() - 1);
+    }
+
+    // Los valores de a[l..r], en O(r - l + log n). Se compone con insert para duplicar un
+    // bloque: t.insert(j, t.copy_range(l, r)).
+    vector<Node> copy_range(int l, int r) const {
+        assert(0 <= l && l <= r && r < size());
+        vector<Node> res;
+        res.reserve((size_t)(r - l + 1));
+        collect(root, 0, l, r, LazyUpdate(), false, res);
+        return res;
     }
 
     void apply(int p, LazyUpdate f) {
@@ -144,6 +236,18 @@ struct ImplicitTreap {
         int x, y;
         split(rest, dest, x, y);
         root = merge(merge(x, b), y);
+    }
+
+    // Intercambia dos bloques DISJUNTOS, que tienen que venir ordenados: l1 <= r1 < l2 <= r2.
+    // Pueden ser adyacentes (r1 + 1 == l2) y de largos distintos.
+    void swap_blocks(int l1, int r1, int l2, int r2) {
+        assert(0 <= l1 && l1 <= r1 && r1 < l2 && l2 <= r2 && r2 < size());
+        int A, B1, C, B2, D, t1, t2, t3;
+        split(root, l1, A, t1);                 // A  = [0, l1)
+        split(t1, r1 - l1 + 1, B1, t2);         // B1 = [l1, r1]
+        split(t2, l2 - r1 - 1, C, t3);          // C  = (r1, l2)
+        split(t3, r2 - l2 + 1, B2, D);          // B2 = [l2, r2],  D = (r2, n)
+        root = merge(merge(merge(merge(A, B2), C), B1), D);
     }
 
   private:
@@ -204,19 +308,19 @@ struct ImplicitTreap {
         return (int)st.size() - 1;
     }
 
-    // Los nodos de las posiciones 0..n-1 ya estan en el pool, en los indices 1..n y EN ORDEN,
+    // Los nodos de las posiciones 0..n-1 ya estan en el pool, en base..base+hi y EN ORDEN,
     // asi que solo hay que enlazarlos balanceado. Eso no cumple la propiedad de heap, y medido
     // no importa: tras cualquier carga real la profundidad converge a la de un treap aleatorio,
     // y arrancar balanceado es mas chato que arrancar con el arbol cartesiano de las prioridades.
-    int build(int lo, int hi) {
+    int build(int base, int lo, int hi) {
         if(lo > hi) {
             return 0;
         }
 
         int mid = lo + (hi - lo) / 2;
-        int t = 1 + mid;
-        st[t].lc = build(lo, mid - 1);
-        st[t].rc = build(mid + 1, hi);
+        int t = base + mid;
+        st[t].lc = build(base, lo, mid - 1);
+        st[t].rc = build(base, mid + 1, hi);
         pull(t);
         return t;
     }
@@ -375,6 +479,46 @@ struct ImplicitTreap {
         }
 
         prod(snd, mp + 1, l, r, down, rv2, acc, has);
+    }
+
+    // Recorre en orden simetrico los elementos de [l, r] y los apila. Como prod, lleva lo
+    // pendiente en f y en rv y no escribe nada. No corta en los subarboles cubiertos porque
+    // de todas formas hacen falta todos sus elementos.
+    void collect(int t, int lo, int l, int r, LazyUpdate f, bool rv, vector<Node>& out) const {
+        if(!t) {
+            return;
+        }
+
+        int hi = lo + st[t].sz - 1;
+
+        if(hi < l || r < lo) {
+            return;
+        }
+
+        LazyUpdate down = st[t].lz;
+
+        if constexpr (HAS_LAZY) {
+            down *= f;
+        }
+
+        int fst = rv ? st[t].rc : st[t].lc;
+        int snd = rv ? st[t].lc : st[t].rc;
+        bool rv2 = rv != st[t].rev;
+        int mp = lo + st[fst].sz;
+
+        collect(fst, lo, l, r, down, rv2, out);
+
+        if(l <= mp && mp <= r) {
+            Node own = st[t].val;
+
+            if constexpr (HAS_LAZY) {
+                own.apply(f, 1);                // el propio usa f, no down
+            }
+
+            out.push_back(own);
+        }
+
+        collect(snd, mp + 1, l, r, down, rv2, out);
     }
 
     void apply(int t, int lo, int l, int r, const LazyUpdate& f) {
