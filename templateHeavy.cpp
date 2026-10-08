@@ -305,7 +305,7 @@ int main() {
 
     if(isDebugging) {
         dbg("debug");
-        // setIn("xd.in");
+        setIn("xd.in");
     }
 
     int t = 1;
