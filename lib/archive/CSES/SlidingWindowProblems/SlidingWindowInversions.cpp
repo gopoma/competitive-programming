@@ -328,78 +328,48 @@ void solve() {
     // run A < A3.in
     // xd A < A4.in
 
-    int n; cin >> n;
+    int n, k; cin >> n >> k;
     vi a(n); for(auto& x: a) cin >> x;
-    vi b(n); for(auto& x: b) cin >> x;
-    dbg(n);
-    dbg(a);
-    dbg(b);
 
-
-
-
-    // 1. Re-indexar de acuerdo al orden declarado en T
-    vpi c;
+    vi b = a;
+    sor(b);
     for(int i = 0; i < n; i++) {
-        c.eb(b[i], i);
-    }
-    sor(c);
-    dbg(c);
-
-
-    vpi events;
-    vi orderInT(n);
-    for(int i = 0; i < n; i++) {
-        orderInT[c[i].second] = i;
-    }
-
-    vi loc(n);
-    for(int i = 0; i < n; i++) {
-        events.eb(a[i], orderInT[i]);
-        loc[orderInT[i]] = b[i];
-    }
-    sor(events);
-    dbg(events);
-    dbg(loc);
-
-
-    ll res = 0;
-    for(int i = 0; i < n; i++) {
-        dbg(a[i], b[i]);
-        res += custom_abs(a[i] - b[i]);
+        a[i] = lower_bound(all(b), a[i]) - b.begin();
     }
 
 
-    ll inc = 0;
-    // backwards
-    {
-        BIT<int> st; st.init(n + 5);
-        for(int i = n - 1; i >= 0; i--) {
-            auto [x, id] = events[i];
 
-            ll sgn;
-            if(loc[id] <= x) {
-                sgn = +1;
-            } else {
-                sgn = -1;
-            }
+    BIT<int> st; st.init(n + 5);
+    ll invs = 0;
+    int len = 0;
+    auto pushback = [&](int x) -> void {
+        invs += st.sum(x + 1, n + 4);
+        st.add(x, +1);
+    };
+    auto popfront = [&](int x) -> void {
+        if(0 <= x - 1) {
+            invs -= st.sum(0, x - 1);
+        }
+        st.add(x, -1);
+    };
 
-            ll l = 0;
-            ll r = id;
-            ll cnt = st.sum(l, r);
+    vl res;
+    for(int i = 0; i < n; i++) {
+        pushback(a[i]);
+        len++;
 
-            ll con = sgn * cnt;
-            inc += con;
-            dbg(x, loc[id], id, sgn, cnt, con);
+        if(0 <= i - k) {
+            popfront(a[i - k]);
+            len--;
+        }
 
-            st.add(id, +1);
+        if(len == k) {
+            res.eb(invs);
         }
     }
-    dbg("After Backwards", inc);
 
-    res += inc;
-    dbg(res);
-    cout << res << "\n";
+    for(auto& x: res) cout << x << " ";
+    cout << "\n";
 }
 
 int main() {
