@@ -1,8 +1,10 @@
 /**
  * Description: Segment tree with lazy propagation. Node() neutral, a + b associative,
  *   node *= f applies an update to a whole interval, f *= g stacks g after f.
+ *   max_right / min_left descend the tree to find a boundary, like the AtCoder Library.
  * Time: O(n) build, O(log n) per operation, O(1) all_prod
- * Source: atcoder.github.io/ac-library. Verification and manual: LazySegmentTree.md
+ * Source: atcoder.github.io/ac-library. Manual and stress tests: LazySegmentTree.md
+ * Verification: codeforces.com/edu submission 394467936, 125 ms (uses max_right)
  */
 
 template <class Node, class LazyUpdate>
@@ -109,6 +111,17 @@ struct LazySegmentTree {
         return seg[1];
     }
 
+    // Vuelca el arreglo logico para depurar: dump()[i] es exactamente lo que da get(i).
+    // NO es const: baja todos los lazy pendientes, igual que get hace sobre un solo camino.
+    // El orden k = 1 .. SZ-1 es correcto por construccion, porque el padre de k es k / 2 < k.
+    vector<Node> dump() {
+        for (int k = 1; k < SZ; k++) {
+            push(k);
+        }
+
+        return vector<Node>(seg.begin() + SZ, seg.begin() + SZ + n);
+    }
+
     void apply(int p, LazyUpdate f) {
         assert(0 <= p && p < n);
 
@@ -172,25 +185,24 @@ struct LazySegmentTree {
     }
 
 
-    Node query(int l, int r, int ind, int L, int R) {
-        if (r < L || R < l) {
-            return Node();                      // disjunto del rango pedido
-        }
-
-        if (l <= L && R <= r) {
-            return seg[ind];                    // cubierto: seg[ind] ya es el agregado
-        }
-
-        push(ind);                              // recien ahora los hijos son legibles
-
-        int M = (L + R) / 2;
-        return query(l, r, 2 * ind, L, M) + query(l, r, 2 * ind + 1, M + 1, R);
-    }
-
-    Node query(int l, int r) {
+    // PREFIJOS, ancla en l: la mayor p de [l, r] tal que f(prod(l, p)) es verdadera,
+    // o l - 1 si ninguna lo es. f tiene que ser T T T F F F al crecer p.
+    template <class F>
+    int max_right(int l, int r, F f) {
         assert(0 <= l && l <= r && r < n);
 
-        return query(l, r, 1, 0, SZ - 1);
+        Node acc = Node();
+        return corte_izq(l, r, 1, 0, SZ - 1, acc, f) - 1;
+    }
+
+    // SUFIJOS, ancla en r: la menor p de [l, r] tal que f(prod(p, r)) es verdadera,
+    // o r + 1 si ninguna lo es. f tiene que ser T T T F F F al DECRECER p.
+    template <class F>
+    int min_left(int l, int r, F f) {
+        assert(0 <= l && l <= r && r < n);
+
+        Node acc = Node();
+        return corte_der(l, r, 1, 0, SZ - 1, acc, f) + 1;
     }
 
 
@@ -217,6 +229,71 @@ struct LazySegmentTree {
         all_apply(2 * k, lazy[k]);
         all_apply(2 * k + 1, lazy[k]);
         lazy[k] = LazyUpdate();
+    }
+
+    // Menor p de [l, r] con f(prod(l, p)) FALSA, o r + 1. acc entra valiendo prod(l, L - 1).
+    // El agregado se lee sin push: all_apply mantiene seg[ind] siempre al dia.
+    template <class F>
+    int corte_izq(int l, int r, int ind, int L, int R, Node& acc, F f) {
+        if (R < l || r < L) {
+            return r + 1;                       // disjunto: no tocar acc
+        }
+
+        if (l <= L && R <= r) {                 // el nodo entra completo en [l, r]
+            Node t = acc + seg[ind];            // acc a la izquierda, el nodo a la derecha
+
+            if (f(t)) {
+                acc = t;
+                return r + 1;                   // aguanta entero: saltarlo sin bajar
+            }
+
+            if (L == R) {
+                return L;                       // una sola posicion, y rompe: es esta
+            }
+        }                                       // rompe adentro: hay que bajar
+
+        push(ind);                              // una hoja nunca llega aca
+
+        int M = (L + R) / 2;
+        int res = corte_izq(l, r, 2 * ind, L, M, acc, f);
+
+        if (res <= r) {
+            return res;                         // ya esta, no seguir
+        }
+
+        return corte_izq(l, r, 2 * ind + 1, M + 1, R, acc, f);
+    }
+
+    // Mayor p de [l, r] con f(prod(p, r)) FALSA, o l - 1. acc entra valiendo prod(R + 1, r).
+    template <class F>
+    int corte_der(int l, int r, int ind, int L, int R, Node& acc, F f) {
+        if (R < l || r < L) {
+            return l - 1;
+        }
+
+        if (l <= L && R <= r) {
+            Node t = seg[ind] + acc;            // el nodo a la IZQUIERDA de acc
+
+            if (f(t)) {
+                acc = t;
+                return l - 1;
+            }
+
+            if (L == R) {
+                return L;
+            }
+        }
+
+        push(ind);
+
+        int M = (L + R) / 2;
+        int res = corte_der(l, r, 2 * ind + 1, M + 1, R, acc, f);   // el DERECHO primero
+
+        if (res >= l) {
+            return res;
+        }
+
+        return corte_der(l, r, 2 * ind, L, M, acc, f);
     }
 };
 

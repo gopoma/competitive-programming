@@ -48,6 +48,17 @@ struct PersistentLazySegmentTree {
         return apply(rt, 0, n - 1, l, r, f, LazyUpdate());
     }
 
+    // Vuelca el arreglo logico de UNA version: dump(rt)[i] es lo que da get(rt, i).
+    // Sirve para mirar cualquier version, incluso vieja, y no consume nodos del pool.
+    vector<Node> dump(int rt) const {
+        assert(valid(rt));
+
+        vector<Node> out;
+        out.reserve(size_t(n));
+        dump(rt, 0, n - 1, LazyUpdate(), out);
+        return out;
+    }
+
     int copy(int rt) {
         assert(valid(rt));
         return new_node(st[rt].lc, st[rt].rc, st[rt].val, st[rt].lz);
@@ -70,6 +81,29 @@ struct PersistentLazySegmentTree {
     Node all_prod(int rt) const {
         assert(valid(rt));
         return st[rt].val;
+    }
+
+
+    // PREFIJOS, ancla en l: la mayor p de [l, r] tal que f(prod(rt, l, p)) es verdadera,
+    // o l - 1 si ninguna lo es. f tiene que ser T T T F F F al crecer p.
+    template<class F>
+    int max_right(int rt, int l, int r, F f) const {
+        assert(valid(rt));
+        assert(0 <= l && l <= r && r < n);
+
+        Node acc = Node();
+        return corte_izq(rt, 0, n - 1, l, r, acc, LazyUpdate(), f) - 1;
+    }
+
+    // SUFIJOS, ancla en r: la menor p de [l, r] tal que f(prod(rt, p, r)) es verdadera,
+    // o r + 1 si ninguna lo es. f tiene que ser T T T F F F al DECRECER p.
+    template<class F>
+    int min_left(int rt, int l, int r, F f) const {
+        assert(valid(rt));
+        assert(0 <= l && l <= r && r < n);
+
+        Node acc = Node();
+        return corte_der(rt, 0, n - 1, l, r, acc, LazyUpdate(), f) + 1;
     }
 
     int size() const {
@@ -118,6 +152,95 @@ struct PersistentLazySegmentTree {
     }
 
     // Un nodo nuevo igual al subarbol cur pero con f aplicado a todo el.
+    // Menor p de [l, r] con f(prod(l, p)) FALSA, o r + 1. acc entra valiendo prod(l, lx - 1).
+    // st[0] es el nodo nulo y su val ya es Node(), asi que un subarbol sin materializar no
+    // necesita caso aparte: aporta la identidad y no mueve acc.
+    // g es el lazy pendiente que baja desde arriba, igual que en prod.
+    template<class F>
+    int corte_izq(int cur, int lx, int rx, int l, int r, Node& acc, LazyUpdate g, F f) const {
+        if(rx < l || r < lx) {
+            return r + 1;                       // disjunto: no tocar acc
+        }
+
+        if(l <= lx && rx <= r) {                // el nodo entra completo en [l, r]
+            Node pieza = st[cur].val;
+            pieza *= g;                         // el pendiente que viene de arriba
+            Node t = acc + pieza;
+            if(f(t)) {
+                acc = t;
+                return r + 1;                   // aguanta entero: saltarlo sin bajar
+            }
+
+            if(lx == rx) {
+                return lx;                      // una sola posicion, y rompe: es esta
+            }
+        }                                       // rompe adentro: hay que bajar
+
+        LazyUpdate down = st[cur].lz;           // no se puede hacer push: la version es de solo
+        down *= g;                              // lectura. Lo pendiente viaja como parametro.
+
+        int mx = (lx + rx) / 2;
+        int res = corte_izq(st[cur].lc, lx, mx, l, r, acc, down, f);
+
+        if(res <= r) {
+            return res;                         // ya esta, no seguir
+        }
+
+        return corte_izq(st[cur].rc, mx + 1, rx, l, r, acc, down, f);
+    }
+
+    // Mayor p de [l, r] con f(prod(p, r)) FALSA, o l - 1. acc entra valiendo prod(rx + 1, r).
+    template<class F>
+    int corte_der(int cur, int lx, int rx, int l, int r, Node& acc, LazyUpdate g, F f) const {
+        if(rx < l || r < lx) {
+            return l - 1;
+        }
+
+        if(l <= lx && rx <= r) {
+            Node pieza = st[cur].val;
+            pieza *= g;
+            Node t = pieza + acc;               // el nodo a la IZQUIERDA de acc
+            if(f(t)) {
+                acc = t;
+                return l - 1;
+            }
+
+            if(lx == rx) {
+                return lx;
+            }
+        }
+
+        LazyUpdate down = st[cur].lz;           // no se puede hacer push: la version es de solo
+        down *= g;                              // lectura. Lo pendiente viaja como parametro.
+
+        int mx = (lx + rx) / 2;
+        int res = corte_der(st[cur].rc, mx + 1, rx, l, r, acc, down, f);   // el DERECHO primero
+
+        if(res >= l) {
+            return res;
+        }
+
+        return corte_der(st[cur].lc, lx, mx, l, r, acc, down, f);
+    }
+
+    // No se puede hacer push: la version es de solo lectura. Lo pendiente viaja en f,
+    // igual que en prod y en los dos descensos.
+    void dump(int cur, int lx, int rx, LazyUpdate f, vector<Node>& out) const {
+        if(lx == rx) {
+            Node res = st[cur].val;             // si cur es 0, st[0].val ya es Node()
+            res *= f;
+            out.push_back(res);
+            return;
+        }
+
+        LazyUpdate down = st[cur].lz;
+        down *= f;
+
+        int mx = (lx + rx) / 2;
+        dump(st[cur].lc, lx, mx, down, out);
+        dump(st[cur].rc, mx + 1, rx, down, out);
+    }
+
     int clone_with(int cur, const LazyUpdate& f) {
         Node v = st[cur].val;
         v *= f;

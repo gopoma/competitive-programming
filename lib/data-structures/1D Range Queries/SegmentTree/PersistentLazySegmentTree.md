@@ -22,7 +22,10 @@ vector<int> roots = {st.build(a)};
 | `st.get(root, p)` | O(log n) | **0** | el `Node` en `p` |
 | `st.prod(root, l, r)` | O(log n) | **0** | pliega `a[l..r]` |
 | `st.all_prod(root)` | **O(1)** | **0** | pliega todo |
+| `st.max_right(root, l, r, f)` | O(log n) | **0** | mayor `p` con `f(prod(l, p))`, o `l - 1` |
+| `st.min_left(root, l, r, f)` | O(log n) | **0** | menor `p` con `f(prod(p, r))`, o `r + 1` |
 | `st.nodes_used()` | O(1) | — | cuánto del pool se consumió |
+| `st.dump(root)` | O(n) | **0** | vuelca esa versión entera, para depurar |
 
 con `C = ceil(log2 n)`.
 
@@ -92,6 +95,85 @@ while (q--) {
 
 Esta es la forma que **más estresa el pool**, porque el `apply` de rango es la operación más cara de todas.
 
+# Los dos descensos
+
+$$
+\texttt{max\_right}(\dots,l,r,f) \;=\; \max\{\, p \in [l,r] \;:\; f(\text{prod}(l,p)) \,\}, \qquad l-1 \text{ si es vacío}
+$$
+
+$$
+\texttt{min\_left}(\dots,l,r,f) \;=\; \min\{\, p \in [l,r] \;:\; f(\text{prod}(p,r)) \,\}, \qquad r+1 \text{ si es vacío}
+$$
+
+`max_right` ancla en $l$ y acumula **prefijos**; `min_left` ancla en $r$ y acumula **sufijos**. Los centinelas, el requisito de monotonía de $f$ y la tabla de predicados están en el [README](README.md#los-dos-descensos) y desarrollados con ejemplos en [SegmentTree.md](SegmentTree.md#los-dos-descensos).
+
+**El centinela, en corto:** si $f$ falla ya en el primer elemento, `max_right` devuelve $l-1$ y `min_left` devuelve $r+1$. Los dos **pueden ser índices válidos**, así que el chequeo es `p == l - 1`, nunca `p < 0`. Y el largo del tramo sale sin ramas: $p-l+1$ y $r-p+1$.
+
+## El lazy viaja como parámetro, no se hace `push`
+
+Acá está la particularidad. En el denso el descenso hace `push` y escribe; sobre una versión persistente **eso sería corromper el pasado**. Entonces el lazy pendiente baja como argumento, exactamente como lo hace `prod`:
+
+```cpp
+LazyUpdate down = st[cur].lz;
+down *= g;                               // g es lo que vino de arriba
+```
+
+y el agregado de un nodo cubierto se lee en una copia local con `pieza *= g`. Resultado: el descenso es **`const`** y consume **0 nodos** del pool. Es la misma propiedad que hace que las lecturas no inventen versiones.
+
+```cpp
+PersistentLazySegmentTree<Node, LazyUpdate> t(8, 20);
+int v0 = t.build(iv);                                      // {3,1,4,1,5,9,2,6}
+int v1 = t.apply(v0, 2, 5, LazyUpdate::add(10));            // {3,1,14,11,15,19,2,6}
+int v2 = t.apply(v1, 0, 3, LazyUpdate::assign(7));          // {7,7,7,7,15,19,2,6}
+```
+
+| `sum <= S` | en `v0` | en `v1` | en `v2` |
+|---|---|---|---|
+| $S = 0$ | $-1$ *(centinela)* | $-1$ | $-1$ |
+| $S = 8$ | 2 | 1 | 0 |
+| $S = 28$ | 6 | 2 | 3 |
+| $S = 1000$ | 7 | 7 | 7 |
+
+Y una de las cuatro variantes de umbral sobre la versión más nueva:
+
+```
+'ninguno > 7' en v2:  max_right(v2, 0, 7, mx <= 7) = 3     (a[0..3] = 7, a[4] = 15 rompe)
+nodes_used = 25   <- el descenso no clono nada
+```
+
+Las tres filas de `S = 8` muestran lo que se gana: la misma pregunta contra tres estados históricos del arreglo, sin reconstruir ninguno.
+
+## `dump()`: ver el estado para depurar
+
+Devuelve el arreglo lógico completo como un `vector`, con tres propiedades que valen en los seis templates de la familia:
+
+$$
+\texttt{dump()}[i] = \texttt{get}(i), \qquad
+\textstyle\bigoplus \texttt{dump()} = \texttt{all\_prod()}, \qquad
+\textstyle\bigoplus_{i=l}^{r} \texttt{dump()}[i] = \texttt{prod}(l,r)
+$$
+
+Devuelve **`n` elementos, no `SZ`**: el relleno $[n, SZ)$ no es parte del arreglo lógico. (Con el constructor de un argumento `t(k)` resulta $n = SZ$, así que ahí el relleno *sí* aparece — porque en ese caso es el arreglo.)
+
+Es el mismo nombre y el mismo contrato que [`ImplicitTreap::dump()`](../ImplicitTreap.md).
+
+El root entra por parámetro, así que volcás cualquier versión, y **no consume pool** (verificado con `nodes_used()` antes y después).
+
+No se puede hacer `push`: la versión es de solo lectura y empujar la corrompería. El lazy pendiente viaja como parámetro, con la misma composición que usan `prod` y los dos descensos:
+
+```cpp
+LazyUpdate down = st[cur].lz;
+down *= f;                                   // el lz del nodo primero, el carry despues
+```
+
+```cpp
+for (int ver = 0; ver < (int)roots.size(); ver++) {
+    cerr << "v" << ver << ":";
+    for (const Node& x : st.dump(roots[ver])) cerr << " " << x.sum;
+    cerr << "\n";
+}
+```
+
 ## Verificación
 
 - Contra fuerza bruta: **69 440 rangos** sobre `n = 1..30` con assign y add mezclados, verificando suma, máximo y mínimo a la vez, junto con `LazySegmentTree` y `SparseLazySegmentTree` usando el mismo par.
@@ -100,3 +182,20 @@ Esta es la forma que **más estresa el pool**, porque el `apply` de rango es la 
 El segundo es el que caza los errores propios de esta estructura: una lectura que escribiera, o un carry compuesto en el orden equivocado, puede dar bien sobre la versión actual y mal sobre las viejas.
 
 **Sin link de juez todavía.**
+
+### Los descensos
+
+| test | comprobaciones |
+|---|---|
+| el descenso sobre todas las versiones, con el lazy de parámetro | 31 956 consultas |
+| el descenso con `Node` **no conmutativo** (tramo ordenado) | 40 296 consultas |
+
+Cuatro controles negativos, los cuatro cazados por la suite: invertir el orden de `+` en `min_left`, podar sin chequear si el predicado rompe, no componer el lazy que baja, y pasarle a `apply` un largo fijo en vez del largo del nodo. El primero **solo** lo detecta un `Node` no conmutativo — con sumas pasa inadvertido, y de hecho mi primera versión del test no lo cazaba.
+
+### `dump()`
+
+| test | comprobaciones |
+|---|---|
+| `dump(root)` sobre **16 800 versiones vivas**, pool intacto | 575 302 |
+
+Diez controles negativos sobre los seis, los diez cazados por la suite: dar vuelta el vector, devolver `SZ` en vez de `n`, sacar el `push` de `LazySegmentTree`, invertirle el orden, visitar los hijos al revés, invertir la composición del lazy que baja, no aplicar el lazy en la hoja, y pasarle a `apply` un largo distinto de 1.

@@ -55,6 +55,70 @@ struct PersistentSegmentTree {
         return st[rt].val;
     }
 
+
+    // PREFIJOS, ancla en l: la mayor p de [l, r] tal que f(prod(rt, l, p)) es verdadera,
+    // o l - 1 si ninguna lo es. f tiene que ser T T T F F F al crecer p.
+    template<class F>
+    int max_right(int rt, int l, int r, F f) const {
+        assert(valid(rt));
+        assert(0 <= l && l <= r && r < n);
+
+        T acc = T();
+        return corte_izq(rt, 0, n - 1, l, r, acc, f) - 1;
+    }
+
+    // SUFIJOS, ancla en r: la menor p de [l, r] tal que f(prod(rt, p, r)) es verdadera,
+    // o r + 1 si ninguna lo es. f tiene que ser T T T F F F al DECRECER p.
+    template<class F>
+    int min_left(int rt, int l, int r, F f) const {
+        assert(valid(rt));
+        assert(0 <= l && l <= r && r < n);
+
+        T acc = T();
+        return corte_der(rt, 0, n - 1, l, r, acc, f) + 1;
+    }
+
+    // Vuelca el arreglo logico de UNA version: dump(rt)[i] es lo que da get(rt, i).
+    // Sirve para mirar cualquier version, incluso vieja, y no consume nodos del pool.
+    // Baja por DOS versiones a la vez hasta una hoja, y devuelve su posicion.
+    // Es lo que hace falta para el k-esimo menor de un rango: ninguna version sola alcanza,
+    // porque el conteo del rango sale de RESTAR dos prefijos. izq(a, b) recibe los agregados
+    // del hijo IZQUIERDO de las dos versiones y dice si hay que bajar por ahi; puede llevar
+    // estado, por ejemplo descontar k. La resta corre por cuenta de izq, asi que el monoide
+    // no necesita inverso: el contrato de + se queda como esta.
+    template<class F>
+    int descend2(int rtA, int rtB, F izq) const {
+        assert(valid(rtA) && valid(rtB));
+
+        int a = rtA, b = rtB;
+        int lx = 0, rx = n - 1;
+
+        while(lx < rx) {
+            int mx = (lx + rx) / 2;
+
+            if(izq(st[st[a].l].val, st[st[b].l].val)) {
+                a = st[a].l;                    // st[0] es el nodo nulo: sus hijos son 0 y
+                b = st[b].l;                    // su val ya es T(), asi que no hay caso aparte
+                rx = mx;
+            } else {
+                a = st[a].r;
+                b = st[b].r;
+                lx = mx + 1;
+            }
+        }
+
+        return lx;
+    }
+
+    vector<T> dump(int rt) const {
+        assert(valid(rt));
+
+        vector<T> out;
+        out.reserve(size_t(n));
+        dump(rt, 0, n - 1, out);
+        return out;
+    }
+
     int copy(int rt) {
         assert(valid(rt));
         return clone(rt);
@@ -105,6 +169,79 @@ struct PersistentSegmentTree {
 
     int clone(int k) {
         return new_node(st[k].l, st[k].r, st[k].val);
+    }
+
+    // Menor p de [l, r] con f(prod(l, p)) FALSA, o r + 1. acc entra valiendo prod(l, lx - 1).
+    // st[0] es el nodo nulo y su val ya es T(), asi que un subarbol sin materializar no
+    // necesita caso aparte: aporta la identidad y no mueve acc.
+    template<class F>
+    int corte_izq(int cur, int lx, int rx, int l, int r, T& acc, F f) const {
+        if(rx < l || r < lx) {
+            return r + 1;                       // disjunto: no tocar acc
+        }
+
+        if(l <= lx && rx <= r) {                // el nodo entra completo en [l, r]
+            T t = acc + st[cur].val;            // acc a la izquierda, el nodo a la derecha
+            if(f(t)) {
+                acc = t;
+                return r + 1;                   // aguanta entero: saltarlo sin bajar
+            }
+
+            if(lx == rx) {
+                return lx;                      // una sola posicion, y rompe: es esta
+            }
+        }                                       // rompe adentro: hay que bajar
+
+        int mx = (lx + rx) / 2;
+        int res = corte_izq(st[cur].l, lx, mx, l, r, acc, f);
+
+        if(res <= r) {
+            return res;                         // ya esta, no seguir
+        }
+
+        return corte_izq(st[cur].r, mx + 1, rx, l, r, acc, f);
+    }
+
+    // Mayor p de [l, r] con f(prod(p, r)) FALSA, o l - 1. acc entra valiendo prod(rx + 1, r).
+    template<class F>
+    int corte_der(int cur, int lx, int rx, int l, int r, T& acc, F f) const {
+        if(rx < l || r < lx) {
+            return l - 1;
+        }
+
+        if(l <= lx && rx <= r) {
+            T t = st[cur].val + acc;            // el nodo a la IZQUIERDA de acc
+            if(f(t)) {
+                acc = t;
+                return l - 1;
+            }
+
+            if(lx == rx) {
+                return lx;
+            }
+        }
+
+        int mx = (lx + rx) / 2;
+        int res = corte_der(st[cur].r, mx + 1, rx, l, r, acc, f);   // el DERECHO primero
+
+        if(res >= l) {
+            return res;
+        }
+
+        return corte_der(st[cur].l, lx, mx, l, r, acc, f);
+    }
+
+    // st[0] es el nodo nulo: sus hijos son 0 y su val ya es T(), asi que un subarbol sin
+    // materializar no necesita caso aparte.
+    void dump(int cur, int lx, int rx, vector<T>& out) const {
+        if(lx == rx) {
+            out.push_back(st[cur].val);
+            return;
+        }
+
+        int mx = (lx + rx) / 2;
+        dump(st[cur].l, lx, mx, out);
+        dump(st[cur].r, mx + 1, rx, out);
     }
 
     int build(int lx, int rx, const vector<T>& a) {

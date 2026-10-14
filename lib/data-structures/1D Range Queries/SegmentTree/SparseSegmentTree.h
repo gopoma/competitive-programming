@@ -39,6 +39,42 @@ struct SparseSegmentTree {
         return st[root].val;
     }
 
+
+    // PREFIJOS, ancla en l: la mayor p de [l, r] tal que f(prod(l, p)) es verdadera,
+    // o l - 1 si ninguna lo es. f tiene que ser T T T F F F al crecer p.
+    template<class F>
+    long long max_right(long long l, long long r, F f) const {
+        assert(0 <= l && l <= r && r < n);
+
+        T acc = T();
+        return corte_izq(root, 0, n - 1, l, r, acc, f) - 1;
+    }
+
+    // SUFIJOS, ancla en r: la menor p de [l, r] tal que f(prod(p, r)) es verdadera,
+    // o r + 1 si ninguna lo es. f tiene que ser T T T F F F al DECRECER p.
+    template<class F>
+    long long min_left(long long l, long long r, F f) const {
+        assert(0 <= l && l <= r && r < n);
+
+        T acc = T();
+        return corte_der(root, 0, n - 1, l, r, acc, f) + 1;
+    }
+
+    // Tope de dump(): n puede valer 1e18 y volcarlo entero no entra en memoria.
+    static const long long DUMP_MAX = 10000000;
+
+    // Vuelca el universo entero para depurar: dump()[i] es lo que da get(i). Las posiciones
+    // sin materializar vuelven como T(), que es el RANGO VACIO y no "un cero".
+    // No consume nodos del pool.
+    vector<T> dump() const {
+        assert(n <= DUMP_MAX);
+
+        vector<T> out;
+        out.reserve(size_t(n));
+        dump(root, 0, n - 1, out);
+        return out;
+    }
+
     long long size() const {
         return n;
     }
@@ -66,6 +102,78 @@ struct SparseSegmentTree {
         }
 
         return c;
+    }
+
+    // Menor p de [l, r] con f(prod(l, p)) FALSA, o r + 1. acc entra valiendo prod(l, lx - 1).
+    // st[0] es el nodo nulo y su val ya es T(), asi que un subarbol sin materializar no
+    // necesita caso aparte: aporta la identidad y no mueve acc.
+    template<class F>
+    long long corte_izq(int cur, long long lx, long long rx, long long l, long long r, T& acc, F f) const {
+        if(rx < l || r < lx) {
+            return r + 1;                       // disjunto: no tocar acc
+        }
+
+        if(l <= lx && rx <= r) {                // el nodo entra completo en [l, r]
+            T t = acc + st[cur].val;            // acc a la izquierda, el nodo a la derecha
+            if(f(t)) {
+                acc = t;
+                return r + 1;                   // aguanta entero: saltarlo sin bajar
+            }
+
+            if(lx == rx) {
+                return lx;                      // una sola posicion, y rompe: es esta
+            }
+        }                                       // rompe adentro: hay que bajar
+
+        long long mx = lx + (rx - lx) / 2;
+        long long res = corte_izq(st[cur].lc, lx, mx, l, r, acc, f);
+
+        if(res <= r) {
+            return res;                         // ya esta, no seguir
+        }
+
+        return corte_izq(st[cur].rc, mx + 1, rx, l, r, acc, f);
+    }
+
+    // Mayor p de [l, r] con f(prod(p, r)) FALSA, o l - 1. acc entra valiendo prod(rx + 1, r).
+    template<class F>
+    long long corte_der(int cur, long long lx, long long rx, long long l, long long r, T& acc, F f) const {
+        if(rx < l || r < lx) {
+            return l - 1;
+        }
+
+        if(l <= lx && rx <= r) {
+            T t = st[cur].val + acc;            // el nodo a la IZQUIERDA de acc
+            if(f(t)) {
+                acc = t;
+                return l - 1;
+            }
+
+            if(lx == rx) {
+                return lx;
+            }
+        }
+
+        long long mx = lx + (rx - lx) / 2;
+        long long res = corte_der(st[cur].rc, mx + 1, rx, l, r, acc, f);   // el DERECHO primero
+
+        if(res >= l) {
+            return res;
+        }
+
+        return corte_der(st[cur].lc, lx, mx, l, r, acc, f);
+    }
+
+    // st[0] es el nodo nulo: sus hijos son 0 y su val ya es T().
+    void dump(int cur, long long lx, long long rx, vector<T>& out) const {
+        if(lx == rx) {
+            out.push_back(st[cur].val);
+            return;
+        }
+
+        long long mx = lx + (rx - lx) / 2;
+        dump(st[cur].lc, lx, mx, out);
+        dump(st[cur].rc, mx + 1, rx, out);
     }
 
     int new_node() {

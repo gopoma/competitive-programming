@@ -24,9 +24,11 @@ Todos los seis las cumplen, y es lo que los hace intercambiables:
 
 1. **Rangos inclusivos `[l, r]`**, siempre. `prod(0, n - 1)` es todo el arreglo.
 2. **Se parametriza con structs**, no con punteros a función: nada de `op`, `e`, `mapping`, `composition`, `id`.
-3. **No hay `max_right` ni `min_left`.**
+3. **`max_right` y `min_left` reciben el predicado como parámetro**, con la misma idea que la AtCoder Library pero sobre rango inclusivo: `max_right(l, r, f)`. Están en `SegmentTree` y `LazySegmentTree`. Ver [Los dos descensos](#los-dos-descensos).
 4. **Solo intervalos válidos**: `assert(0 <= l && l <= r && r < n)`. No existe el rango vacío, y `r == n` dispara el assert — es el error típico al traducir código semiabierto.
 5. **`n` es el tamaño del vector original** (o `SZ` si no se pasa vector), y `SZ` es la potencia de dos.
+
+Y los seis exponen **`dump()`** con el mismo contrato: devuelve el arreglo lógico completo (`n` elementos, no `SZ`), con `dump()[i] == get(i)`. En los persistentes toma el root, así que volcás cualquier versión. Es el mismo nombre que [`ImplicitTreap::dump()`](../ImplicitTreap.md). Detalles por template en cada manual.
 
 Y las tres convenciones de forma: sin `#pragma once`, sin `#include`, sin `using namespace std`. El header asume que quien lo incluye ya tiene todo eso.
 
@@ -152,6 +154,53 @@ Para `SparseLazySegmentTree` el mismo `Upd`, y el `Node` cambia `operator*=` por
         else { sum += f.a * len; mx += f.a; mn += f.a; } }
 ```
 
+## Los dos descensos
+
+`SegmentTree` y `LazySegmentTree` tienen `max_right` y `min_left`. Misma idea que la [AtCoder Library](https://atcoder.github.io/ac-library/production/document_en/lazysegtree.html) —el predicado va como parámetro— pero sobre rango inclusivo, con un `r` que ACL no tiene.
+
+| método | devuelve | si ninguna cumple |
+|---|---|---|
+| `t.max_right(l, r, f)` | la **mayor** `p` de `[l, r]` con `f(prod(l, p))` verdadera | `l - 1` |
+| `t.min_left(l, r, f)` | la **menor** `p` de `[l, r]` con `f(prod(p, r))` verdadera | `r + 1` |
+
+`max_right` ancla en `l` y acumula **prefijos**; `min_left` ancla en `r` y acumula **sufijos**. Los dos son O(log n) en los dos templates.
+
+### Los dos no usan la misma estrategia, y es a propósito
+
+| | implementación | por qué |
+|---|---|---|
+| `SegmentTree` | **iterativa** (estilo AtCoder Library, acotada a `[l, r]`) | 1.8×–3.9× más rápida, medida |
+| `LazySegmentTree` | **recursiva** | la iterativa empata (0.99×–1.11×) y cuesta 51% más `push` |
+
+La iterativa recorre la descomposición de `[l, r]` absorbiendo nodos enteros, y cuando uno rompe baja por él. ACL no lleva la posición ni el largo del nodo porque su versión **no tiene `r`**: cualquier hermano que tome entra en el rango. Con rango inclusivo hay que **agrandar** mientras el padre entre y **encoger** cuando el hermano se pase de `r` — sin ese segundo bucle la respuesta se va de `r`.
+
+En el lazy la iterativa tiene que limpiar los **dos** caminos del borde por adelantado (las piezas del borde derecho cuelgan del camino hasta `r`, no del de `l`), los use o no, y eso le da 1.51× más `push` que la recursiva, que empuja solo donde baja. Ahí se come toda la ventaja del recorrido. La recursiva es la mitad de código y se lee de arriba abajo.
+
+La API es **la misma en los dos**, así que siguen siendo intercambiables.
+
+Los centinelas están elegidos para que el largo del tramo salga **sin ramas**: `p - l + 1` con `max_right`, `r - p + 1` con `min_left`. En el centinela da 0 y en el otro extremo da el intervalo completo, sin un `if`. Son los mismos de `fstTrue`/`lstTrue` del template de contest. Ojo que `l - 1` y `r + 1` pueden ser índices válidos, así que el chequeo es `p == l - 1`, no `p < 0`.
+
+### El predicado tiene que ser monótono
+
+`f` tiene que ser `T T T F F F` al extender el rango: una vez falsa, falsa para siempre. Si no, la poda saltea un subárbol donde la respuesta estaba y **te devuelve algo incorrecto en silencio** — medido, 5.6% de respuestas mal con sumas que incluyen negativos.
+
+El patrón para convertir una propiedad frágil en monótona: guardá el **peor** valor visto, no el actual. `minPref` en vez de `sum` para «el prefijo nunca se fue a negativo».
+
+| problema | campos del `Node` | `f` |
+|---|---|---|
+| k-ésimo 1 en `[l, r]` | `sum` sobre 0/1 | `sum < k`, y la respuesta es `max_right + 1` |
+| tramo con todos `< x` | `mx` | `mx < x` |
+| tramo con todos `> x` | `mn` | `mn > x` |
+| hasta dónde llego con `S` | `sum` **no negativo** | `sum <= S` |
+| máxima subsuma acotada | el monoide A | `best <= S` |
+| tramo no decreciente | `pri, ult, ok` | `ok` |
+
+### Si no te alcanza, hay una red de seguridad
+
+`lstTrue(l, r, p -> f(prod(l, p)))` del template de contest da la misma respuesta en O(log² n), y es trivialmente correcta. Medido contra la versión recursiva, el descenso le gana 3.4×–4.4×. Si estás justo de tiempo el descenso vale; si tenés margen, `lstTrue` es menos código que puede salir mal, y te sirve de referencia para el stress test.
+
+Y si solo te interesa el prefijo o el sufijo **completo** (`r = n - 1`, o `l = 0`), la firma de ACL sin `r` es apenas **1.10×** más rápida que pasarle `r = n - 1` a esta, y en el lazy es un empate. No vale mantener una variante aparte.
+
 ## El pool y el `reserve`
 
 Los cuatro que alocan nodos dinámicamente (los dos persistentes y los dos sparse) reservan el pool **una sola vez** y nunca crecen, así que **siempre hay que pasarles `n` y la cantidad de consultas esperada `q`**. Las fórmulas son **pesimistas**: asumen que *cada* consulta es la operación más cara.
@@ -191,7 +240,13 @@ Los seis están estresados contra fuerza bruta con los dos monoides de arriba:
 | B, los tres con lazy, assign y add mezclados, `n = 1..30` | 69 440 rangos × 3 estructuras × 3 agregados |
 | B, el persistente lazy sobre **todas** las versiones | 131 560 rangos |
 | B, el sparse lazy a `n = 10¹⁸` contra fórmula cerrada | 8 propiedades |
+| `max_right`/`min_left` en los dos, siete problemas, con `apply` intercalado | 381 683 consultas |
+| el descenso iterativo de `SegmentTree`, **exhaustivo** `n = 1..40`, todo `(l, r)` y todo `S` | 4 818 802 consultas |
+
+El descenso iterativo de `SegmentTree` se verificó además contra el recursivo que reemplazó, celda por celda, y contra la firma sin `r` de ACL (`max_right_acl(l, f) - 1 == max_right(l, n-1, f)`, 1 076 612 comprobaciones). El bug que encontré al adaptarlo —el hermano del nodo absorbido puede pasarse de `r`, lo que sin el bucle de encoger devuelve un índice fuera del rango— está cubierto por el barrido exhaustivo.
+
+Los tres invariantes de los descensos tienen control negativo: invertir el orden de `+` en `min_left`, podar sin chequear si el predicado rompe, y sacar el corte temprano. Los tres hacen fallar la suite. El primero **solo** lo detecta el monoide A, porque la suma conmuta y el de máxima subsuma no — un test con `Node` conmutativo no prueba nada sobre el orden.
 
 Los ejemplos de los seis manuales se extraen de los comentarios, se compilan **tal cual** con `-Wall -Wextra` y se vuelven a correr con esos structs, no con otros. Cero discrepancias.
 
-**Ninguno tiene link de juez todavía**, salvo `LazySegmentTree`, que pasó dos problemas de Codeforces EDU.
+**Solo `LazySegmentTree` tiene juez**: Codeforces EDU submission **394467936** (*Addition and First element at least X*, Accepted, 125 ms), que además es la primera verificación en juez de **`max_right`**. Los otros cinco siguen sin link.

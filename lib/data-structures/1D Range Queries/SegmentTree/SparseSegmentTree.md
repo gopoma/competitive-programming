@@ -27,7 +27,10 @@ No hay `build`: el árbol **arranca vacío**, con todas las posiciones en `T()`.
 | `st.prod(l, r)` | O(log n) | pliega `a[l..r]` |
 | `st.all_prod()` | **O(1)** | pliega todo el universo |
 | `st.size()` | O(1) | `n` |
+| `st.max_right(l, r, f)` | O(log n) | mayor `p` con `f(prod(l, p))`, o `l - 1` |
+| `st.min_left(l, r, f)` | O(log n) | menor `p` con `f(prod(p, r))`, o `r + 1` |
 | `st.nodes_used()` | O(1) | cuánto del pool se consumió |
+| `st.dump()` | O(n) | vuelca el universo entero, para depurar |
 
 A diferencia de los persistentes, acá **no hay raíces explícitas**: el `set` muta en el lugar. Un camino que ya existe no cuesta nodos nuevos.
 
@@ -80,6 +83,84 @@ while (q--) {
 
 `PersistentSegmentTree` también materializa solo los caminos que toca, así que con `long long` en los índices haría de sparse. Lo contrasté y **no conviene**: el persistente clona en cada `set` en vez de mutar en el lugar, así que gasta muchos más nodos para el mismo trabajo. Dos templates separados es la decisión correcta, y la API de cada uno queda más intuitiva (uno con raíces explícitas, el otro sin).
 
+# Los dos descensos
+
+$$
+\texttt{max\_right}(\dots,l,r,f) \;=\; \max\{\, p \in [l,r] \;:\; f(\text{prod}(l,p)) \,\}, \qquad l-1 \text{ si es vacío}
+$$
+
+$$
+\texttt{min\_left}(\dots,l,r,f) \;=\; \min\{\, p \in [l,r] \;:\; f(\text{prod}(p,r)) \,\}, \qquad r+1 \text{ si es vacío}
+$$
+
+`max_right` ancla en $l$ y acumula **prefijos**; `min_left` ancla en $r$ y acumula **sufijos**. Los centinelas, el requisito de monotonía de $f$ y la tabla de predicados están en el [README](README.md#los-dos-descensos) y desarrollados con ejemplos en [SegmentTree.md](SegmentTree.md#los-dos-descensos).
+
+**El centinela, en corto:** si $f$ falla ya en el primer elemento, `max_right` devuelve $l-1$ y `min_left` devuelve $r+1$. Los dos **pueden ser índices válidos**, así que el chequeo es `p == l - 1`, nunca `p < 0`. Y el largo del tramo sale sin ramas: $p-l+1$ y $r-p+1$.
+
+## Lo que hay que entender acá: las posiciones intactas son la identidad
+
+El descenso cuesta $O(\log n)$ con $n$ el **universo**, no la cantidad de posiciones usadas. Con $n = 10^{18}$ son ~60 niveles, el triple que un denso de $10^6$.
+
+Y lo más importante: una posición que nunca se puso vale `T()`, que es el **rango vacío**, no «un elemento con valor cero». Como `acc + T() == acc`, extender el prefijo sobre una zona intacta **no mueve el agregado**, así que el predicado es constante entre dos posiciones materializadas consecutivas. El descenso respeta eso y **no materializa nada**: es `const` y cuesta 0 del pool.
+
+```cpp
+const ll N = 1000000000000000000LL;
+SparseSegmentTree<Cnt> t(N, 20);
+for (ll q : {5LL, 7LL, 1000000LL, 500000000000LL, 999999999999999998LL}) t.set(q, Cnt(1));
+// nodes_used = 185  de 1221 reservados
+```
+
+$k$-ésimo uno sobre **todo** $[0,\ 10^{18})$:
+
+| $k$ | `max_right` | el $k$-ésimo uno está en |
+|---|---|---|
+| 1 | 4 | 5 |
+| 2 | 6 | 7 |
+| 3 | 999 999 | 1 000 000 |
+| 4 | 499 999 999 999 | 500 000 000 000 |
+| 5 | 999 999 999 999 999 997 | 999 999 999 999 999 998 |
+| 6 | 999 999 999 999 999 999 $= r$ | no hay tantos |
+
+```
+primer uno en [8, 1e18):   max_right(8, N-1, sum < 1) + 1 = 1000000
+ultimo uno en [0, 1e9]:    min_left (0, 1e9, sum < 1) - 1 = 1000000
+```
+
+Y el caso que conviene tener claro:
+
+```
+en un rango SIN nada puesto, [100, 200]:  max_right = 200 = r
+```
+
+o sea «aguantó todo el rango», porque no hay ningún elemento ahí que pueda romper el predicado. **Eso no es un bug, es la semántica**: el sparse modela un arreglo donde lo no puesto está *ausente*, no en cero. Si tu problema necesita que las posiciones intactas valgan cero *de verdad* y que cuenten como elementos, el sparse sin lazy no te lo da — usá [`SparseLazySegmentTree`](SparseLazySegmentTree.md) con un `apply` que materialice el largo, o comprimí coordenadas y usá el denso.
+
+## `dump()`: ver el estado para depurar
+
+Devuelve el arreglo lógico completo como un `vector`, con tres propiedades que valen en los seis templates de la familia:
+
+$$
+\texttt{dump()}[i] = \texttt{get}(i), \qquad
+\textstyle\bigoplus \texttt{dump()} = \texttt{all\_prod()}, \qquad
+\textstyle\bigoplus_{i=l}^{r} \texttt{dump()}[i] = \texttt{prod}(l,r)
+$$
+
+Devuelve **`n` elementos, no `SZ`**: el relleno $[n, SZ)$ no es parte del arreglo lógico. (Con el constructor de un argumento `t(k)` resulta $n = SZ$, así que ahí el relleno *sí* aparece — porque en ese caso es el arreglo.)
+
+Es el mismo nombre y el mismo contrato que [`ImplicitTreap::dump()`](../ImplicitTreap.md).
+
+Dos cosas propias del sparse.
+
+**Las posiciones sin materializar vuelven como `T()`**, que es el **rango vacío** y no «un elemento que vale cero». Es lo mismo que devuelve `get` en esas posiciones, y es coherente con [cómo el sparse modela el arreglo](#las-posiciones-intactas-valen-t). No materializa nada: `nodes_used()` no cambia.
+
+**Hay un tope.** `n` puede valer $10^{18}$ y volcarlo entero no entra en memoria, así que
+
+```cpp
+static const long long DUMP_MAX = 10000000;
+assert(n <= DUMP_MAX);
+```
+
+El assert hace que falle fuerte y temprano en vez de que el sistema mate el proceso. Si necesitás inspeccionar una ventana de un universo gigante, `dump(l, r)` es un agregado de dos líneas sobre el mismo recorrido.
+
 ## Verificación
 
 - Contra Kadane de fuerza bruta: **107 100 rangos** sobre `n = 1..34`, junto con `SegmentTree` y `PersistentSegmentTree` usando el mismo `Node`.
@@ -88,3 +169,20 @@ while (q--) {
 Ese segundo test es el que importa: verifica la aritmética de índices en el rango donde el `(lx + rx) / 2` desbordaría.
 
 **Sin link de juez todavía.**
+
+### Los descensos
+
+| test | comprobaciones |
+|---|---|
+| el descenso contra `SegmentTree`, con posiciones sin materializar | 29 994 consultas |
+| el descenso a $n = 10^{18}$ contra un `map` | 500 consultas |
+
+Cuatro controles negativos, los cuatro cazados por la suite: invertir el orden de `+` en `min_left`, podar sin chequear si el predicado rompe, no componer el lazy que baja, y pasarle a `apply` un largo fijo en vez del largo del nodo. El primero **solo** lo detecta un `Node` no conmutativo — con sumas pasa inadvertido, y de hecho mi primera versión del test no lo cazaba.
+
+### `dump()`
+
+| test | comprobaciones |
+|---|---|
+| `dump()` con 80 925 huecos devueltos como `T()`, pool intacto | 907 098 |
+
+Diez controles negativos sobre los seis, los diez cazados por la suite: dar vuelta el vector, devolver `SZ` en vez de `n`, sacar el `push` de `LazySegmentTree`, invertirle el orden, visitar los hijos al revés, invertir la composición del lazy que baja, no aplicar el lazy en la hoja, y pasarle a `apply` un largo distinto de 1.

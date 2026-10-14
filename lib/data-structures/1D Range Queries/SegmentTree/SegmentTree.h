@@ -1,7 +1,8 @@
 /**
  * Description: Segment tree with point assignment and range query. T() is the neutral value,
  *   a + b folds two neighbouring intervals (a left of b) and must be associative.
- * Time: O(n) build, O(log n) set and prod, O(1) get and all_prod
+ *   max_right / min_left descend the tree to find a boundary, like the AtCoder Library.
+ * Time: O(n) build, O(log n) set, prod, max_right and min_left, O(1) get and all_prod
  * Source: codeforces.com/blog/entry/18051, KACTL. Verification and manual: SegmentTree.md
  */
 
@@ -59,6 +60,12 @@ struct SegmentTree {
         return seg[1];
     }
 
+    // Vuelca el arreglo logico para depurar: dump()[i] es exactamente lo que da get(i).
+    // Son n elementos, no SZ: el relleno [n, SZ) no es parte del arreglo.
+    vector<T> dump() const {
+        return vector<T>(seg.begin() + SZ, seg.begin() + SZ + n);
+    }
+
     T prod(int l, int r) const { // zero-indexed, inclusive
         assert(0 <= l && l <= r && r < n);
 
@@ -86,48 +93,109 @@ struct SegmentTree {
         return ra + rb;
     }
 
-    /// // Recursive descent example.
-    /// // seg[x] stores the aggregate of node x under +.
-    /// // This example assumes + is max, so seg[x] is the maximum of [lx, rx],
-    /// // and finds the first index p in [l, r] such that a[p] >= k.
-    /// // For the rightmost valid index, visit the right child first.
-    /// int find(int k, int l, int r, int x, int lx, int rx) {
-    ///     if(rx < l || r < lx) {
-    ///         return -1;
-    ///     }
-    ///
-    ///     if(seg[x] < k) {
-    ///         return -1;
-    ///     }
-    ///
-    ///     if(rx - lx + 1 == 1) {
-    ///         return lx;
-    ///     }
-    ///
-    ///     int m = (lx + rx) >> 1;
-    ///     int re = find(k, l, r, 2 * x, lx, m);
-    ///
-    ///     if(re == -1) {
-    ///         re = find(k, l, r, 2 * x + 1, m + 1, rx);
-    ///     }
-    ///
-    ///     return re;
-    /// }
-    ///
-    /// int find(int k, int l, int r) {
-    ///     assert(0 <= l && l <= r && r < n);
-    ///     return find(k, l, r, 1, 0, SZ - 1);
-    /// }
-    ///
-    /// // Suffix version with the signature find(k, l, x, lx, rx):
-    /// // int find(int k, int l, int x, int lx, int rx) {
-    /// //     return find(k, l, n - 1, x, lx, rx);
-    /// // }
-    /// //
-    /// // int find(int k, int l) {
-    /// //     assert(0 <= l && l < n);
-    /// //     return find(k, l, 1, 0, SZ - 1);
-    /// // }
+    // PREFIJOS, ancla en l: la mayor p de [l, r] tal que f(prod(l, p)) es verdadera,
+    // o l - 1 si ninguna lo es. f tiene que ser T T T F F F al crecer p.
+    //
+    // Recorre la descomposicion de [l, r] de izquierda a derecha absorbiendo nodos enteros
+    // mientras f aguante, y cuando uno rompe baja por el para ubicar la posicion exacta.
+    // El nodo actual cubre [pos, pos + len - 1]; ACL no necesita llevar eso porque su
+    // version no tiene r, pero con rango acotado hay que AGRANDAR mientras el padre entre
+    // y ENCOGER cuando el hermano se pase de r.
+    template<class F>
+    int max_right(int l, int r, F f) const {
+        assert(0 <= l && l <= r && r < n);
+
+        int k = l + SZ;
+        int pos = l;
+        int len = 1;
+        T sm = T();                             // vale prod(l, pos - 1)
+
+        while(pos <= r) {
+            while(k % 2 == 0 && pos + 2 * len - 1 <= r) {
+                k >>= 1;                        // agrandar: el padre todavia entra
+                len *= 2;
+            }
+
+            while(pos + len - 1 > r) {
+                k = 2 * k;                      // encoger: este nodo se pasa de r
+                len /= 2;
+            }
+
+            T t = sm + seg[k];                  // sm a la izquierda, el nodo a la derecha
+
+            if(!f(t)) {                         // rompe: la respuesta esta adentro
+                while(k < SZ) {
+                    k = 2 * k;
+                    len /= 2;
+                    T t2 = sm + seg[k];
+
+                    if(f(t2)) {                 // el izquierdo aguanta: absorber e ir al derecho
+                        sm = t2;
+                        pos += len;
+                        k++;
+                    }
+                }
+
+                return pos - 1;                 // pos rompe, la ultima buena es pos - 1
+            }
+
+            sm = t;                             // aguanta entero: absorber y seguir
+            pos += len;
+            k++;
+        }
+
+        return r;                               // aguanto todo [l, r]
+    }
+
+    // SUFIJOS, ancla en r: la menor p de [l, r] tal que f(prod(p, r)) es verdadera,
+    // o r + 1 si ninguna lo es. f tiene que ser T T T F F F al DECRECER p.
+    // Espejo del de arriba: el nodo cubre [pos - len + 1, pos], se encoge por el lado
+    // derecho, y el agregado se arma con el nodo a la IZQUIERDA de lo acumulado.
+    template<class F>
+    int min_left(int l, int r, F f) const {
+        assert(0 <= l && l <= r && r < n);
+
+        int k = r + SZ;
+        int pos = r;
+        int len = 1;
+        T sm = T();                             // vale prod(pos + 1, r)
+
+        while(pos >= l) {
+            while(k % 2 == 1 && k > 1 && pos - 2 * len + 1 >= l) {
+                k >>= 1;
+                len *= 2;
+            }
+
+            while(pos - len + 1 < l) {
+                k = 2 * k + 1;                  // encoger por el lado DERECHO
+                len /= 2;
+            }
+
+            T t = seg[k] + sm;                  // el nodo a la IZQUIERDA de sm
+
+            if(!f(t)) {
+                while(k < SZ) {
+                    k = 2 * k + 1;              // el DERECHO primero
+                    len /= 2;
+                    T t2 = seg[k] + sm;
+
+                    if(f(t2)) {
+                        sm = t2;
+                        pos -= len;
+                        k--;
+                    }
+                }
+
+                return pos + 1;
+            }
+
+            sm = t;
+            pos -= len;
+            k--;
+        }
+
+        return l;
+    }
 
   private:
     int n = 1;
