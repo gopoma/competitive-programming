@@ -15,15 +15,15 @@ vector<int> roots = {st.build(a)};
 |---|---|---|---|
 | `st.build(a)` | O(n) | `2n − 1` | raíz de la versión inicial |
 | `st.build()` | **O(1)** | **0** | raíz de la versión todo-`Node()` |
-| `st.set(root, p, x)` | O(log n) | `2C + 1` | raíz nueva, `a[p] = x` |
-| `st.apply(root, p, f)` | O(log n) | `2C + 1` | raíz nueva, `f` sobre `a[p]` |
-| `st.apply(root, l, r, f)` | O(log n) | `4C − 1` | raíz nueva, `f` sobre `a[l..r]` |
+| `st.set(root, pos, val)` | O(log n) | `2C + 1` | raíz nueva, `a[p] = x` |
+| `st.apply(root, pos, upd)` | O(log n) | `2C + 1` | raíz nueva, `f` sobre `a[p]` |
+| `st.apply(root, l, r, upd)` | O(log n) | `4C − 1` | raíz nueva, `f` sobre `a[l..r]` |
 | `st.copy(root)` | **O(1)** | **1** | duplica una versión |
-| `st.get(root, p)` | O(log n) | **0** | el `Node` en `p` |
+| `st.get(root, pos)` | O(log n) | **0** | el `Node` en `p` |
 | `st.prod(root, l, r)` | O(log n) | **0** | pliega `a[l..r]` |
 | `st.all_prod(root)` | **O(1)** | **0** | pliega todo |
-| `st.max_right(root, l, r, f)` | O(log n) | **0** | mayor `p` con `f(prod(l, p))`, o `l - 1` |
-| `st.min_left(root, l, r, f)` | O(log n) | **0** | menor `p` con `f(prod(p, r))`, o `r + 1` |
+| `st.max_right(root, l, r, pred)` | O(log n) | **0** | mayor `p` con `f(prod(l, p))`, o `l - 1` |
+| `st.min_left(root, l, r, pred)` | O(log n) | **0** | menor `p` con `f(prod(p, r))`, o `r + 1` |
 | `st.nodes_used()` | O(1) | — | cuánto del pool se consumió |
 | `st.dump(root)` | O(n) | **0** | vuelca esa versión entera, para depurar |
 

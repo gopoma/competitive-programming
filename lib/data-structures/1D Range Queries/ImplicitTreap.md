@@ -96,15 +96,15 @@ La semántica de `insert`, `erase` y `rotate` coincide con la STL, y está verif
 
 | mío                         | equivalente STL                                   |
 |-----------------------------|---------------------------------------------------|
-| `t.insert(i, x)`            | `v.insert(v.begin() + i, x)`                      |
+| `t.insert(pos, val)`            | `v.insert(v.begin() + i, x)`                      |
 | `t.insert(t.size(), x)`     | `v.insert(v.end(), x)`                            |
-| `t.erase(i)`                | `v.erase(v.begin() + i)`                          |
+| `t.erase(pos)`                | `v.erase(v.begin() + i)`                          |
 | `t.erase(l, r)`             | `v.erase(v.begin()+l, v.begin()+r+1)`             |
 | `t.insert(i, v2)`           | `v.insert(v.begin()+i, v2.begin(), v2.end())`     |
-| `t.rotate(l, r, k)`         | `std::rotate(b+l, b+l+k, b+r+1)`                  |
+| `t.rotate(l, r, shift)`         | `std::rotate(b+l, b+l+k, b+r+1)`                  |
 | `t.reverse(l, r)`           | `std::reverse(b+l, b+r+1)`                        |
 | `t.prod(l, r)`              | `std::accumulate(b+l, b+r+1, 0)`                  |
-| `t.move(l, r, p)`           | `erase` de rango + `insert` de rango              |
+| `t.move(l, r, to)`           | `erase` de rango + `insert` de rango              |
 
 Dos diferencias de forma, a propósito:
 
@@ -187,9 +187,9 @@ Dejarlo vacío en el segundo caso da mal **solo después de una inversión**, y 
 
 Solo si pasás un `LazyUpdate`. Aplica el update a `len` posiciones de una vez.
 
-**El árbol es la autoridad del largo**: pasa `1` para el elemento que el nodo tiene propio y el tamaño del subárbol para el agregado. Por eso el `Node` no necesita llevar un campo `sz`. Es el mismo contrato que `SegmentTree/SparseLazySegmentTree.h`, por la misma razón.
+**El árbol es la autoridad del largo**: pasa `1` para el elemento que el nodo tiene propio y el tamaño del subárbol para el agregado. Por eso el `Node` no necesita llevar un campo `size`. Es el mismo contrato que `SegmentTree/SparseLazySegmentTree.h`, por la misma razón.
 
-Y no es solo elegancia: tener `sz` dentro del `Node` lo mide **1.34× más lento** y el nodo pasa de 40 a 56 bytes, porque un nodo interno del treap guarda **dos `Node`** (el elemento propio y el agregado), así que cada campo se paga doble.
+Y no es solo elegancia: tener `size` dentro del `Node` lo mide **1.34× más lento** y el nodo pasa de 40 a 56 bytes, porque un nodo interno del treap guarda **dos `Node`** (el elemento propio y el agregado), así que cada campo se paga doble.
 
 ## Contrato del `LazyUpdate`
 
@@ -329,7 +329,7 @@ max_nodes(n, q) = n + q         q = cuántos insert esperás
 | `{ll sum}`         | ninguno          | **40 B**                    |
 | `{ll sum}`         | `{ll add}`       | 48 B                        |
 | `{ll sum}`         | `{ll a, b}`      | 56 B                        |
-| `{ll sz, sum}`     | ninguno          | 56 B — *sacale el `sz`*     |
+| `{ll size, sum}`     | ninguno          | 56 B — *sacale el `size`*     |
 
 Un nodo interno guarda **dos `Node`** (el elemento propio y el agregado del subárbol), así que cada campo del `Node` se paga dos veces.
 

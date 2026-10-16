@@ -15,15 +15,15 @@ LazySegmentTree<Node, LazyUpdate> t(k)   // sin vector: n pasa a ser SZ, con Nod
 |---|---|---|
 | constructor con `vector` | $O(n)$ | copia las hojas y hace `pull` de abajo hacia arriba |
 | constructor con `int` | $O(SZ)$ | todo `Node()` y todo `LazyUpdate()` |
-| `t.set(p, x)` | $O(\log n)$ | $a_p \leftarrow x$ (baja los lazy del camino, escribe, repara) |
-| `t.get(p)` | $O(\log n)$ | el `Node` que está en $p$ |
-| `t.apply(p, f)` | $O(\log n)$ | aplica $f$ a $a_p$ |
-| `t.apply(l, r, f)` | $O(\log n)$ | aplica $f$ a **todo** $a_l \dots a_r$ |
+| `t.set(pos, val)` | $O(\log n)$ | $a_p \leftarrow x$ (baja los lazy del camino, escribe, repara) |
+| `t.get(pos)` | $O(\log n)$ | el `Node` que está en $p$ |
+| `t.apply(pos, upd)` | $O(\log n)$ | aplica $f$ a $a_p$ |
+| `t.apply(l, r, upd)` | $O(\log n)$ | aplica $f$ a **todo** $a_l \dots a_r$ |
 | `t.prod(l, r)` | $O(\log n)$ | pliega $a_l \oplus \dots \oplus a_r$ (bucle ascendente) |
 | `t.all_prod()` | $\mathbf{O(1)}$ | pliega todo: es `seg[1]` |
 | `t.dump()` | $O(n)$ | vuelca el arreglo entero, para depurar (**no `const`**) |
-| `t.max_right(l, r, f)` | $O(\log n)$ | la mayor $p$ con $f(\text{prod}(l,p))$, o $l-1$ |
-| `t.min_left(l, r, f)` | $O(\log n)$ | la menor $p$ con $f(\text{prod}(p,r))$, o $r+1$ |
+| `t.max_right(l, r, pred)` | $O(\log n)$ | la mayor $p$ con $f(\text{prod}(l,p))$, o $l-1$ |
+| `t.min_left(l, r, pred)` | $O(\log n)$ | la menor $p$ con $f(\text{prod}(p,r))$, o $r+1$ |
 
 Privados quedan `pull`, `all_apply`, `push` y los dos recursivos de los descensos.
 
@@ -85,7 +85,7 @@ De esa invariante salen tres consecuencias prácticas:
 
 ## Todos los métodos, con resultados reales
 
-Con $a = \{3, 1, 4, 1, 5, 9, 2, 6\}$ y el `Node` de cuatro campos (`sz, sum, mx, mn`) más el `Upd` de assign+add del [README](README.md#b-suma-máximo-y-mínimo-con-assign-y-add-de-rango):
+Con $a = \{3, 1, 4, 1, 5, 9, 2, 6\}$ y el `Node` de cuatro campos (`size, sum, mx, mn`) más el `Upd` de assign+add del [README](README.md#b-suma-máximo-y-mínimo-con-assign-y-add-de-rango):
 
 ```cpp
 vector<Node> iv(8);
@@ -93,7 +93,7 @@ for (int i = 0; i < 8; i++) iv[i] = Node(a[i]);
 LazySegmentTree<Node, LazyUpdate> t(iv);     // n = 8, SZ = 8, LOG = 3
 ```
 
-| llamada | `sz` | `sum` | `mx` | `mn` |
+| llamada | `size` | `sum` | `mx` | `mn` |
 |---|---|---|---|---|
 | `prod(0, 7)` | 8 | 31 | 9 | 1 |
 | `prod(2, 4)` | 3 | 10 | 5 | 1 |
@@ -107,7 +107,7 @@ Ahora los updates de rango:
 t.apply(2, 5, LazyUpdate::add(10));      // a = {3, 1, 14, 11, 15, 19, 2, 6}
 ```
 
-| llamada | `sz` | `sum` | `mx` | `mn` |
+| llamada | `size` | `sum` | `mx` | `mn` |
 |---|---|---|---|---|
 | `prod(0, 7)` | 8 | 71 | 19 | 1 |
 | `prod(2, 5)` | 4 | 59 | 19 | 11 |
@@ -116,7 +116,7 @@ t.apply(2, 5, LazyUpdate::add(10));      // a = {3, 1, 14, 11, 15, 19, 2, 6}
 t.apply(0, 3, LazyUpdate::assign(7));    // a = {7, 7, 7, 7, 15, 19, 2, 6}
 ```
 
-| llamada | `sz` | `sum` | `mx` | `mn` |
+| llamada | `size` | `sum` | `mx` | `mn` |
 |---|---|---|---|---|
 | `prod(0, 7)` | 8 | 70 | 19 | 2 |
 | `prod(0, 3)` | 4 | 28 | 7 | 7 |
@@ -206,7 +206,7 @@ min_left (0, 7, sum <= 1000) =  0   largo = 8   <- aguanto todo
 
 ## Ejemplo 2 — $k$-ésimo uno y $k$-ésimo cero
 
-Con valores en $\{0,1\}$: `sum` cuenta los unos y `sz - sum` cuenta los ceros. Acá **sí** va el $+1$.
+Con valores en $\{0,1\}$: `sum` cuenta los unos y `size - sum` cuenta los ceros. Acá **sí** va el $+1$.
 
 ```cpp
 // k-esimo UNO en [l, r]
@@ -214,7 +214,7 @@ int p   = t.max_right(l, r, [&](const Node& v) { return v.sum < k; });
 int ans = (p == r ? -1 : p + 1);          // -1 si no hay k unos en el rango
 
 // k-esimo CERO: mismo descenso, otro campo
-int p   = t.max_right(l, r, [&](const Node& v) { return v.sz - v.sum < k; });
+int p   = t.max_right(l, r, [&](const Node& v) { return v.size - v.sum < k; });
 int ans = (p == r ? -1 : p + 1);
 
 // k-esimo uno contando DESDE LA DERECHA

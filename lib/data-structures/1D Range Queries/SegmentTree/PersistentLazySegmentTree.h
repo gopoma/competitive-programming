@@ -8,102 +8,102 @@
 template <class Node, class LazyUpdate>
 struct PersistentLazySegmentTree {
   public:
-    PersistentLazySegmentTree(int _n, long long q) : n(_n) {
-        assert(n >= 1 && q >= 0);
+    PersistentLazySegmentTree(int len, long long max_ops) : n(len) {
+        assert(n >= 1 && max_ops >= 0);
 
-        st.reserve(size_t(max_nodes(n, q)));
+        st.reserve(size_t(max_nodes(n, max_ops)));
         st.push_back(InternalNode());           // el nodo nulo: subarbol entero en Node()
     }
 
-    static long long max_nodes(int _n, long long q) {
-        assert(_n >= 1 && q >= 0);
-        return 2LL * _n + 4LL * (ceil_log2(_n) + 1) * q + 1;
+    static long long max_nodes(int len, long long max_ops) {
+        assert(len >= 1 && max_ops >= 0);
+        return 2LL * len + 4LL * (ceil_log2(len) + 1) * max_ops + 1;
     }
 
     int build() {
         return 0;
     }
 
-    int build(const vector<Node>& a) {
-        assert(int(a.size()) == n);
-        return build(0, n - 1, a);
+    int build(const vector<Node>& init) {
+        assert(int(init.size()) == n);
+        return build(0, n - 1, init);
     }
 
-    int set(int rt, int p, Node x) {
-        assert(valid(rt));
-        assert(0 <= p && p < n);
+    int set(int root, int pos, Node val) {
+        assert(valid(root));
+        assert(0 <= pos && pos < n);
 
-        return set(rt, 0, n - 1, p, x, LazyUpdate());
+        return set(root, 0, n - 1, pos, val, LazyUpdate());
     }
 
-    int apply(int rt, int p, LazyUpdate f) {
-        assert(0 <= p && p < n);
-        return apply(rt, p, p, f);
+    int apply(int root, int pos, LazyUpdate upd) {
+        assert(0 <= pos && pos < n);
+        return apply(root, pos, pos, upd);
     }
 
-    int apply(int rt, int l, int r, LazyUpdate f) {
-        assert(valid(rt));
+    int apply(int root, int l, int r, LazyUpdate upd) {
+        assert(valid(root));
         assert(0 <= l && l <= r && r < n);
 
-        return apply(rt, 0, n - 1, l, r, f, LazyUpdate());
+        return apply(root, 0, n - 1, l, r, upd, LazyUpdate());
     }
 
     // Vuelca el arreglo logico de UNA version: dump(rt)[i] es lo que da get(rt, i).
     // Sirve para mirar cualquier version, incluso vieja, y no consume nodos del pool.
-    vector<Node> dump(int rt) const {
-        assert(valid(rt));
+    vector<Node> dump(int root) const {
+        assert(valid(root));
 
         vector<Node> out;
         out.reserve(size_t(n));
-        dump(rt, 0, n - 1, LazyUpdate(), out);
+        dump(root, 0, n - 1, LazyUpdate(), out);
         return out;
     }
 
-    int copy(int rt) {
-        assert(valid(rt));
-        return new_node(st[rt].lc, st[rt].rc, st[rt].val, st[rt].lz);
+    int copy(int root) {
+        assert(valid(root));
+        return new_node(st[root].lc, st[root].rc, st[root].val, st[root].lz);
     }
 
-    Node get(int rt, int p) const {
-        assert(valid(rt));
-        assert(0 <= p && p < n);
+    Node get(int root, int pos) const {
+        assert(valid(root));
+        assert(0 <= pos && pos < n);
 
-        return get(rt, 0, n - 1, p);
+        return get(root, 0, n - 1, pos);
     }
 
-    Node prod(int rt, int l, int r) const {
-        assert(valid(rt));
+    Node prod(int root, int l, int r) const {
+        assert(valid(root));
         assert(0 <= l && l <= r && r < n);
 
-        return prod(rt, 0, n - 1, l, r, LazyUpdate());
+        return prod(root, 0, n - 1, l, r, LazyUpdate());
     }
 
-    Node all_prod(int rt) const {
-        assert(valid(rt));
-        return st[rt].val;
+    Node all_prod(int root) const {
+        assert(valid(root));
+        return st[root].val;
     }
 
 
     // PREFIJOS, ancla en l: la mayor p de [l, r] tal que f(prod(rt, l, p)) es verdadera,
     // o l - 1 si ninguna lo es. f tiene que ser T T T F F F al crecer p.
     template<class F>
-    int max_right(int rt, int l, int r, F f) const {
-        assert(valid(rt));
+    int max_right(int root, int l, int r, F pred) const {
+        assert(valid(root));
         assert(0 <= l && l <= r && r < n);
 
         Node acc = Node();
-        return corte_izq(rt, 0, n - 1, l, r, acc, LazyUpdate(), f) - 1;
+        return corte_izq(root, 0, n - 1, l, r, acc, LazyUpdate(), pred) - 1;
     }
 
     // SUFIJOS, ancla en r: la menor p de [l, r] tal que f(prod(rt, p, r)) es verdadera,
     // o r + 1 si ninguna lo es. f tiene que ser T T T F F F al DECRECER p.
     template<class F>
-    int min_left(int rt, int l, int r, F f) const {
-        assert(valid(rt));
+    int min_left(int root, int l, int r, F pred) const {
+        assert(valid(root));
         assert(0 <= l && l <= r && r < n);
 
         Node acc = Node();
-        return corte_der(rt, 0, n - 1, l, r, acc, LazyUpdate(), f) + 1;
+        return corte_der(root, 0, n - 1, l, r, acc, LazyUpdate(), pred) + 1;
     }
 
     int size() const {
@@ -391,39 +391,39 @@ struct LazyUpdate { // lazy update
 };
 
 struct Node { // data you need to store for each interval
-    long long sz = 0, sum = 0, mx = 0, mn = 0;  // sz == 0 es el rango vacio, la identidad
+    long long size = 0, sum = 0, mx = 0, mn = 0;  // size == 0 es el rango vacio, la identidad
 
     Node() {}
-    Node(long long x) : sz(1), sum(x), mx(x), mn(x) {}
+    Node(long long x) : size(1), sum(x), mx(x), mn(x) {}
 
     friend Node operator+(const Node& a, const Node& b) {
-        if(a.sz == 0) {
+        if(a.size == 0) {
             return b;
         }
 
-        if(b.sz == 0) {
+        if(b.size == 0) {
             return a;
         }
 
         Node res;
-        res.sz = a.sz + b.sz;
+        res.size = a.size + b.size;
         res.sum = a.sum + b.sum;
         res.mx = max(a.mx, b.mx);
         res.mn = min(a.mn, b.mn);
         return res;
     }
 
-    // sz es lo que permite que el update escale a todo el intervalo de una sola vez.
+    // size es lo que permite que el update escale a todo el intervalo de una sola vez.
     Node& operator*=(const LazyUpdate& f) {
-        if(sz == 0) {                           // la identidad se queda identidad
+        if(size == 0) {                         // la identidad se queda identidad
             return *this;
         }
 
         if(f.has) {
-            sum = (f.v + f.a) * sz;
+            sum = (f.v + f.a) * size;
             mx = mn = f.v + f.a;
         } else {
-            sum += f.a * sz;
+            sum += f.a * size;
             mx += f.a;
             mn += f.a;
         }

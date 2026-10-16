@@ -24,15 +24,15 @@ No hay `build`: arranca vacío.
 
 | método | costo | qué hace |
 |---|---|---|
-| `st.set(p, x)` | O(log n) | `a[p] = x` |
-| `st.apply(p, f)` | O(log n) | `f` sobre `a[p]` |
-| `st.apply(l, r, f)` | O(log n) | `f` sobre `a[l..r]` |
-| `st.get(p)` | O(log n) | el `Node` en `p` |
+| `st.set(pos, val)` | O(log n) | `a[p] = x` |
+| `st.apply(pos, upd)` | O(log n) | `f` sobre `a[p]` |
+| `st.apply(l, r, upd)` | O(log n) | `f` sobre `a[l..r]` |
+| `st.get(pos)` | O(log n) | el `Node` en `p` |
 | `st.prod(l, r)` | O(log n) | pliega `a[l..r]` |
 | `st.all_prod()` | **O(1)** | pliega todo el universo |
 | `st.size()` | O(1) | `n` |
-| `st.max_right(l, r, f)` | O(log n) | mayor `p` con `f(prod(l, p))`, o `l - 1` |
-| `st.min_left(l, r, f)` | O(log n) | menor `p` con `f(prod(p, r))`, o `r + 1` |
+| `st.max_right(l, r, pred)` | O(log n) | mayor `p` con `f(prod(l, p))`, o `l - 1` |
+| `st.min_left(l, r, pred)` | O(log n) | menor `p` con `f(prod(p, r))`, o `r + 1` |
 | `st.nodes_used()` | O(1) | cuánto del pool se consumió |
 | `st.dump()` | O(n) | vuelca el universo entero, para depurar |
 
@@ -42,21 +42,21 @@ En los lazy densos el nodo conoce su propio largo, porque existe. Acá **un sub�
 
 ```cpp
 void apply(const Upd& f, ll len) {
-    sz = len;                                    // FIJA, no suma
+    size = len;                                    // FIJA, no suma
     ...
 }
 ```
 
-Ese `sz = len` (fijar, no acumular) es la parte que se presta a confusión. La distinción es:
+Ese `size = len` (fijar, no acumular) es la parte que se presta a confusión. La distinción es:
 
 | | significa |
 |---|---|
 | `Node()` sola | **ninguna** posición: el rango vacío, la identidad de `+` |
 | `apply(f, len)` sobre `Node()` | **`len` posiciones** que nunca fueron tocadas |
 
-Son dos cosas distintas y el `sz` es lo que las separa. Si `apply` sumara a `sz` en vez de fijarlo, un subárbol no materializado reportaría largo cero y los agregados que escalan con el largo saldrían mal.
+Son dos cosas distintas y el `size` es lo que las separa. Si `apply` sumara a `size` en vez de fijarlo, un subárbol no materializado reportaría largo cero y los agregados que escalan con el largo saldrían mal.
 
-> Lo probé al revés para estar seguro: saqué el `sz` del `Node`, y `prod(0, 0)` devolvía `mn = 0` en vez de 3, porque el caso disjunto devuelve `Node()` y sin `sz` no hay forma de distinguirlo de «una posición cuyo valor es 0». El `sz` es necesario, y `apply` tiene que fijarlo.
+> Lo probé al revés para estar seguro: saqué el `size` del `Node`, y `prod(0, 0)` devolvía `mn = 0` en vez de 3, porque el caso disjunto devuelve `Node()` y sin `size` no hay forma de distinguirlo de «una posición cuyo valor es 0». El `size` es necesario, y `apply` tiene que fijarlo.
 
 Mismo contrato que usa [`../ImplicitTreap.h`](../ImplicitTreap.md), por la misma razón.
 
@@ -128,7 +128,7 @@ Node pieza = st[cur].val;
 pieza.apply(g, rx - lx + 1);             // el arbol es el que sabe cuantas posiciones cubre
 ```
 
-Es el mismo contrato que `prod`: **el árbol es la autoridad sobre el largo**, porque un subárbol sin materializar no sabe cuántas posiciones abarca. Por eso `apply` **fija** `sz = len` en vez de sumarle.
+Es el mismo contrato que `prod`: **el árbol es la autoridad sobre el largo**, porque un subárbol sin materializar no sabe cuántas posiciones abarca. Por eso `apply` **fija** `size = len` en vez de sumarle.
 
 A diferencia del sparse sin lazy, acá sí podés hacer que todo el universo cuente como posiciones reales, con un `apply` que lo materialice:
 

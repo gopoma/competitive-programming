@@ -8,36 +8,36 @@
 template <class Node, class LazyUpdate>
 struct SparseLazySegmentTree {
   public:
-    SparseLazySegmentTree(long long _n, long long q) : n(_n) {
-        assert(n >= 1 && q >= 0);
+    SparseLazySegmentTree(long long len, long long max_ops) : n(len) {
+        assert(n >= 1 && max_ops >= 0);
 
-        st.reserve(size_t(max_nodes(n, q)));
+        st.reserve(size_t(max_nodes(n, max_ops)));
         st.push_back(InternalNode());           // el nodo nulo: nadie lo toco todavia
     }
 
-    static long long max_nodes(long long _n, long long q) {
-        assert(_n >= 1 && q >= 0);
-        return 4LL * (ceil_log2(_n) + 1) * q + 1;
+    static long long max_nodes(long long len, long long max_ops) {
+        assert(len >= 1 && max_ops >= 0);
+        return 4LL * (ceil_log2(len) + 1) * max_ops + 1;
     }
 
-    void set(long long p, Node x) {
-        assert(0 <= p && p < n);
-        root = set(root, 0, n - 1, p, x);
+    void set(long long pos, Node val) {
+        assert(0 <= pos && pos < n);
+        root = set(root, 0, n - 1, pos, val);
     }
 
-    void apply(long long p, LazyUpdate f) {
-        assert(0 <= p && p < n);
-        apply(p, p, f);
+    void apply(long long pos, LazyUpdate upd) {
+        assert(0 <= pos && pos < n);
+        apply(pos, pos, upd);
     }
 
-    void apply(long long l, long long r, LazyUpdate f) {
+    void apply(long long l, long long r, LazyUpdate upd) {
         assert(0 <= l && l <= r && r < n);
-        root = apply(root, 0, n - 1, l, r, f);
+        root = apply(root, 0, n - 1, l, r, upd);
     }
 
-    Node get(long long p) const {
-        assert(0 <= p && p < n);
-        return prod(p, p);
+    Node get(long long pos) const {
+        assert(0 <= pos && pos < n);
+        return prod(pos, pos);
     }
 
     Node prod(long long l, long long r) const {
@@ -53,21 +53,21 @@ struct SparseLazySegmentTree {
     // PREFIJOS, ancla en l: la mayor p de [l, r] tal que f(prod(l, p)) es verdadera,
     // o l - 1 si ninguna lo es. f tiene que ser T T T F F F al crecer p.
     template<class F>
-    long long max_right(long long l, long long r, F f) const {
+    long long max_right(long long l, long long r, F pred) const {
         assert(0 <= l && l <= r && r < n);
 
         Node acc = Node();
-        return corte_izq(root, 0, n - 1, l, r, acc, LazyUpdate(), f) - 1;
+        return corte_izq(root, 0, n - 1, l, r, acc, LazyUpdate(), pred) - 1;
     }
 
     // SUFIJOS, ancla en r: la menor p de [l, r] tal que f(prod(p, r)) es verdadera,
     // o r + 1 si ninguna lo es. f tiene que ser T T T F F F al DECRECER p.
     template<class F>
-    long long min_left(long long l, long long r, F f) const {
+    long long min_left(long long l, long long r, F pred) const {
         assert(0 <= l && l <= r && r < n);
 
         Node acc = Node();
-        return corte_der(root, 0, n - 1, l, r, acc, LazyUpdate(), f) + 1;
+        return corte_der(root, 0, n - 1, l, r, acc, LazyUpdate(), pred) + 1;
     }
 
     // Tope de dump(): n puede valer 1e18 y volcarlo entero no entra en memoria.
@@ -348,22 +348,22 @@ struct LazyUpdate {
 };
 
 struct Node {
-    long long sz = 0, sum = 0, mx = 0, mn = 0;  // sz == 0 es el rango vacio, la identidad
+    long long size = 0, sum = 0, mx = 0, mn = 0;  // size == 0 es el rango vacio, la identidad
 
     Node() {}
-    Node(long long x) : sz(1), sum(x), mx(x), mn(x) {}
+    Node(long long x) : size(1), sum(x), mx(x), mn(x) {}
 
     friend Node operator+(const Node& a, const Node& b) {
-        if(a.sz == 0) {
+        if(a.size == 0) {
             return b;
         }
 
-        if(b.sz == 0) {
+        if(b.size == 0) {
             return a;
         }
 
         Node res;
-        res.sz = a.sz + b.sz;
+        res.size = a.size + b.size;
         res.sum = a.sum + b.sum;
         res.mx = max(a.mx, b.mx);
         res.mn = min(a.mn, b.mn);
@@ -371,10 +371,10 @@ struct Node {
     }
 
     // El arbol es la autoridad sobre cuantas posiciones cubre el intervalo, asi que apply
-    // FIJA sz: un subarbol sin materializar llega como Node() y sale como len posiciones
+    // FIJA size: un subarbol sin materializar llega como Node() y sale como len posiciones
     // intactas, que para este problema valen cero.
     void apply(const LazyUpdate& f, long long len) {
-        sz = len;
+        size = len;
 
         if(f.has) {
             sum = (f.v + f.a) * len;

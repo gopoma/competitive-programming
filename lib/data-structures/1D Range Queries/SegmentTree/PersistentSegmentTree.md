@@ -19,16 +19,17 @@ vector<int> roots = {st.build(a)};       // el patron de uso
 |---|---|---|---|
 | `st.build(a)` | O(n) | `2n − 1` | raíz de la versión inicial |
 | `st.build()` | **O(1)** | **0** | raíz de la versión todo-`T()` |
-| `st.set(root, p, x)` | O(log n) | `C + 1` | raíz nueva; la vieja sigue válida |
+| `st.set(root, pos, val)` | O(log n) | `C + 1` | raíz nueva; la vieja sigue válida |
 | `st.copy(root)` | **O(1)** | **1** | duplica una versión |
-| `st.get(root, p)` | O(log n) | 0 | la `T` en `p` de esa versión |
+| `st.get(root, pos)` | O(log n) | 0 | la `T` en `p` de esa versión |
 | `st.prod(root, l, r)` | O(log n) | 0 | pliega `a[l..r]` de esa versión |
 | `st.all_prod(root)` | **O(1)** | 0 | pliega todo de esa versión |
-| `st.max_right(root, l, r, f)` | O(log n) | **0** | mayor `p` con `f(prod(l, p))`, o `l - 1` |
-| `st.min_left(root, l, r, f)` | O(log n) | **0** | menor `p` con `f(prod(p, r))`, o `r + 1` |
+| `st.max_right(root, l, r, pred)` | O(log n) | **0** | mayor `p` con `f(prod(l, p))`, o `l - 1` |
+| `st.min_left(root, l, r, pred)` | O(log n) | **0** | menor `p` con `f(prod(p, r))`, o `r + 1` |
 | `st.nodes_used()` | O(1) | — | cuánto del pool se consumió |
 | `st.dump(root)` | O(n) | **0** | vuelca esa versión entera, para depurar |
-| `st.descend2(rA, rB, f)` | O(log n) | **0** | baja por **dos** versiones a la vez |
+| `st.max_right(root_before, root_after, l, r, pred)` | O(log n) | **0** | ídem sobre la **diferencia** de dos versiones |
+| `st.min_left(root_before, root_after, l, r, pred)` | O(log n) | **0** | ídem, acumulando sufijos |
 
 con `C = ceil(log2 n)`. **Las consultas no crean nodos**, solo `set`, `build` y `copy`.
 
@@ -137,48 +138,62 @@ max_right(v0, 2, 6, sum <= 2) = 4        min_left(v0, 2, 6, sum <= 2) = 3
 nodes_used antes = 23,  despues = 23     <- el descenso no consumio pool
 ```
 
-## `descend2`: bajar por dos versiones a la vez
+## Los descensos sobre **dos** versiones
 
-El uso estrella del persistente es el **$k$-ésimo menor de un rango**, y no sale con `max_right`: ese toma una sola raíz, y acá el conteo del rango se obtiene **restando** dos prefijos.
-
-La idea: construir $N+1$ versiones de un contador sobre el dominio de **valores** (comprimidos a $[0, m)$), donde `ver[i]` cuenta cuántas veces aparece cada valor en $a_0 \dots a_{i-1}$. Entonces
-
-$$
-\#\{\, j \in [l, r) : a_j = v \,\} \;=\; 	exttt{ver}[r][v] - 	exttt{ver}[l][v]
-$$
-
-y lo mismo vale para **cualquier subárbol**, no solo para una hoja. Por eso se puede bajar: en cada nodo, la cantidad de elementos del rango que caen en el hijo izquierdo es la resta de ese hijo en las dos versiones.
+Los mismos `max_right` y `min_left`, pero el arreglo virtual que recorren es **`root_after` menos `root_before`**:
 
 ```cpp
 template<class F>
-int descend2(int rtA, int rtB, F izq) const;
+int max_right(int root_before, int root_after, int l, int r, F pred) const;
+
+template<class F>
+int min_left(int root_before, int root_after, int l, int r, F pred) const;
 ```
 
-`izq(a, b)` recibe los agregados del hijo **izquierdo** de las dos versiones y devuelve si hay que bajar por ahí. Puede llevar estado. **La resta corre por cuenta de `izq`**, así que el monoide no necesita inverso y el contrato de `+` se queda como está.
+`f(antes, despues)` recibe los **dos** acumulados y **la resta corre por tu cuenta**, así que el monoide sigue sin necesitar inverso. Los nombres dicen el rol: con el patrón de prefijos, `ver[l]` es el estado **antes** del rango y `ver[r]` **después**.
 
-El $k$-ésimo menor queda en seis líneas:
+El $k$-ésimo menor de $a_l \dots a_{r-1}$ queda así, y **el centinela te dice si no existe**:
 
 ```cpp
-int falta = k + 1;                              // k viene 0-indexado
-int pos = st.descend2(ver[l], ver[r], [&](const Cnt& iz_l, const Cnt& iz_r) {
-    int c = iz_r.cnt - iz_l.cnt;                // cuantos de a[l..r-1] caen a la izquierda
-    if(falta <= c) return true;
-    falta -= c;                                 // no alcanzan: los descarto y voy a la derecha
-    return false;
-});
-cout << vals[pos] << "
-";                      // pos es un indice de valor comprimido
+int p = st.max_right(ver[l], ver[r], 0, m - 1,
+    [&](const Cnt& antes, const Cnt& despues) { return despues.cnt - antes.cnt < k; });
+
+if(p == m - 1) { /* no hay k elementos en el rango */ }
+else           { cout << vals[p + 1] << "
+"; }
 ```
 
-Es $O(\log n)$, `const`, y **no consume pool**: una consulta de lectura no te come nodos, verificado comparando `nodes_used()` antes y después.
+Y el $k$-ésimo **mayor** es el espejo con `min_left`, leyendo `vals[p - 1]` y con el centinela en `p == 0`.
 
-La solución completa está en `LC_RangeKthSmallest.cpp`, en la raíz del repo.
+### Lo que el centinela habilita
 
-### Lo que no cubre
+Sin él, «¿existe el $k$-ésimo?» hay que contestarlo contando aparte — un recorrido extra. Con él sale del mismo descenso:
 
-`descend2` baja hasta una **hoja**, así que sirve para «¿qué valor?» y no para «¿cuántos?». Para contar cuántos elementos de $a_l \dots a_{r-1}$ caen en $[x, y]$ hace falta un recorrido distinto —dos `prod` restados— que con este monoide se escribe afuera: `st.prod(ver[r], x, y).cnt - st.prod(ver[l], x, y).cnt`.
+| | sin centinela | con centinela |
+|---|---|---|
+| detectar que **no existe** | contar aparte (2 `prod`) | `p == r` |
+| ventana de valores $[x, y]$ | contar + buscar: 3 recorridos | **uno** |
+| dirección | — | las **dos**, con `min_left` |
 
-Tampoco está en `PersistentLazySegmentTree`: con lazy habría que arrastrar **dos** carries y no hay un caso de uso canónico que lo justifique. Si aparece, es la misma idea con dos `LazyUpdate` más en la firma.
+### Con `root_before` vacío son los de una versión
+
+Pasando el nodo nulo como `root_before` (o sea `build()`), la resta no resta nada y el resultado es **idéntico** al `max_right`/`min_left` de una versión. Verificado en 10 998 604 casos.
+
+Eso cuesta **1.08×–1.22×** medido, por el segundo recorrido en paralelo. Poco, pero no cero: por eso los de una versión siguen existiendo como camino rápido en vez de ser un wrapper.
+
+### La precondición nueva, que no se puede asertar
+
+`root_before` tiene que ser una **sub-versión** de `root_after`: sus agregados no deben superarlo en ningún nodo. Se cumple si los dos salen de la misma cadena de prefijos (`ver[0]`, `ver[1]`, …). Con versiones de **ramas distintas** del árbol de versiones la diferencia puede dar negativa, la monotonía de `f` se rompe y la respuesta sale mal **en silencio**. No hay forma de verificarlo desde el template.
+
+## Lo que estos descensos no cubren
+
+Bajan hasta una **frontera**, así que contestan «¿qué valor?» y no «¿cuántos?». Para contar cuántos elementos de $a_l \dots a_{r-1}$ caen en $[x, y]$ son dos `prod` restados, que se escribe afuera:
+
+```cpp
+st.prod(ver[r], x, y).cnt - st.prod(ver[l], x, y).cnt
+```
+
+Tampoco están en `PersistentLazySegmentTree`: con lazy habría que arrastrar **dos** carries y no hay un caso de uso canónico que lo justifique. Si aparece, es la misma idea con dos `LazyUpdate` más en la firma.
 
 ## `dump()`: ver el estado para depurar
 
@@ -233,14 +248,14 @@ Cuatro controles negativos, los cuatro cazados por la suite: invertir el orden d
 
 Diez controles negativos sobre los seis, los diez cazados por la suite: dar vuelta el vector, devolver `SZ` en vez de `n`, sacar el `push` de `LazySegmentTree`, invertirle el orden, visitar los hijos al revés, invertir la composición del lazy que baja, no aplicar el lazy en la hoja, y pasarle a `apply` un largo distinto de 1.
 
-### `descend2` y el k-ésimo menor
+### El k-ésimo menor
 
 | test | comprobaciones |
 |---|---|
 | **todos** los $(l, r, k)$ sobre $n \le 12$, contra ordenar e indexar | 3 378 856 |
 | el sample de Library Checker *Range Kth Smallest* | exacto |
 
-Cuatro controles negativos, los cuatro cazados: pasarle a `izq` los hijos **derechos**, bajar por la rama opuesta a la que `izq` eligió, partir mal el rango (`rx = mx + 1`), e ignorar una de las dos versiones. Y `nodes_used()` no cambia en ninguna consulta.
+Y `nodes_used()` no cambia en ninguna consulta: el descenso no consume pool.
 
 Tiempos con $N = Q = 2 \cdot 10^5$ (límite 5 s), 50 MB de pico y pool al 89 % de lo reservado:
 
@@ -249,3 +264,18 @@ Tiempos con $N = Q = 2 \cdot 10^5$ (límite 5 s), 50 MB de pico y pool al 89 % d
 | valores todos distintos | 0.731 s |
 | muchos repetidos ($m = 10$) | 0.254 s |
 | ordenado, rangos completos | 0.310 s |
+
+### Los descensos de dos versiones
+
+| test | comprobaciones |
+|---|---|
+| $k$-ésimo menor, con el centinela detectando inexistencia (313 454 casos) | 862 301 |
+| $k$-ésimo en la ventana de valores $[x, y]$, en **un solo** descenso | 3 021 080 |
+| $k$-ésimo **mayor** con `min_left`, con su centinela | 856 428 |
+| diferencia de sumas entre dos versiones (uso que **no** es de conteo) | 1 820 651 |
+| con `root_before` vacío == los de una versión | 10 998 604 |
+| monoide **no conmutativo** (máxima subsuma), las dos direcciones | 16 224 832 |
+
+Cinco controles negativos, los cinco cazados: invertir el orden del `+` en `corte_der`, cruzar las dos versiones, bajar por una sola, no absorber uno de los dos acumulados, y bajar por el hijo izquierdo en `corte_der`.
+
+**El primero solo lo caza el monoide no conmutativo.** Con los monoides de suma que usaba al principio, invertir el orden del `+` pasaba inadvertido — es la sexta vez en esta estructura que la conmutatividad tapa un error de orden.

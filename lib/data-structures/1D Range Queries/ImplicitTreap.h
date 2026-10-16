@@ -13,30 +13,30 @@ struct ImplicitTreap {
   public:
     static constexpr bool HAS_LAZY = !is_same<LazyUpdate, NoLazy>::value;
 
-    explicit ImplicitTreap(long long q) {
-        reserve_pool(0, q);
+    explicit ImplicitTreap(long long max_ops) {
+        reserve_pool(0, max_ops);
     }
 
     // gen(i) se llama con i = 0, 1, ..., n - 1 EN ESE ORDEN, y el valor va directo al pool.
     // Asi se puede leer de un stream sin armar ningun vector intermedio.
     template <class F>
-    ImplicitTreap(int n, long long q, F gen) {
-        assert(n >= 0);
-        reserve_pool(n, q);
+    ImplicitTreap(int len, long long max_ops, F gen) {
+        assert(len >= 0);
+        reserve_pool(len, max_ops);
 
-        for(int i = 0; i < n; i++) {
+        for(int i = 0; i < len; i++) {
             new_node(gen(i));                   // el nodo de la posicion i queda en 1 + i
         }
 
-        root = build(1, 0, n - 1);
+        root = build(1, 0, len - 1);
     }
 
-    ImplicitTreap(const vector<Node>& v, long long q)
-        : ImplicitTreap((int)v.size(), q, [&](int i) { return v[i]; }) {}
+    ImplicitTreap(const vector<Node>& init, long long max_ops)
+        : ImplicitTreap((int)init.size(), max_ops, [&](int i) { return init[i]; }) {}
 
-    static long long max_nodes(long long n, long long q) {
-        assert(n >= 0 && q >= 0);
-        return n + q;
+    static long long max_nodes(long long len, long long max_ops) {
+        assert(len >= 0 && max_ops >= 0);
+        return len + max_ops;
     }
 
     int size() const {
@@ -58,47 +58,47 @@ struct ImplicitTreap {
         root = 0;
     }
 
-    void insert(int i, Node x) {
-        assert(0 <= i && i <= size());          // i == size() agrega al final
+    void insert(int pos, Node val) {
+        assert(0 <= pos && pos <= size());      // pos == size() agrega al final
         int a, b;
-        split(root, i, a, b);
-        root = merge(merge(a, new_node(x)), b);
+        split(root, pos, a, b);
+        root = merge(merge(a, new_node(val)), b);
     }
 
     // Inserta toda la secuencia v antes de la que era a[i], en O(|v| + log n): arma un treap
     // balanceado con los nuevos y hace un solo merge. Con insert(i, x) repetido seria
     // O(|v| log n). Cuenta como |v| inserciones para el pool, no como una.
-    void insert(int i, const vector<Node>& v) {
-        assert(0 <= i && i <= size());
+    void insert(int pos, const vector<Node>& block) {
+        assert(0 <= pos && pos <= size());
 
-        if(v.empty()) {
+        if(block.empty()) {
             return;
         }
 
-        int base = (int)st.size();              // los nuevos van a base .. base + |v| - 1
+        int base = (int)st.size();              // los nuevos van a base .. base + |block| - 1
 
-        for(const Node& x : v) {
+        for(const Node& x : block) {
             new_node(x);
         }
 
-        int mid = build(base, 0, (int)v.size() - 1);
+        int mid = build(base, 0, (int)block.size() - 1);
         int a, b;
-        split(root, i, a, b);
+        split(root, pos, a, b);
         root = merge(merge(a, mid), b);
     }
 
-    void push_back(Node x) {
-        insert(size(), x);
+    void push_back(Node val) {
+        insert(size(), val);
     }
 
-    void push_front(Node x) {
-        insert(0, x);
+    void push_front(Node val) {
+        insert(0, val);
     }
 
-    void erase(int i) {
-        assert(0 <= i && i < size());
+    void erase(int pos) {
+        assert(0 <= pos && pos < size());
         int a, b, c, tmp;
-        split(root, i, a, tmp);
+        split(root, pos, a, tmp);
         split(tmp, 1, b, c);
         root = merge(a, c);
     }
@@ -126,19 +126,19 @@ struct ImplicitTreap {
         erase(0);
     }
 
-    void set(int p, Node x) {
-        assert(0 <= p && p < size());
+    void set(int pos, Node val) {
+        assert(0 <= pos && pos < size());
         int a, b, c, tmp;
-        split(root, p, a, tmp);
+        split(root, pos, a, tmp);
         split(tmp, 1, b, c);
-        st[b].val = x;
+        st[b].val = val;
         pull(b);
         root = merge(merge(a, b), c);
     }
 
-    Node get(int p) const {
-        assert(0 <= p && p < size());
-        return prod(p, p);
+    Node get(int pos) const {
+        assert(0 <= pos && pos < size());
+        return prod(pos, pos);
     }
 
     Node front() const {
@@ -185,16 +185,16 @@ struct ImplicitTreap {
         return res;
     }
 
-    void apply(int p, LazyUpdate f) {
+    void apply(int pos, LazyUpdate upd) {
         static_assert(HAS_LAZY, "este ImplicitTreap se instancio sin LazyUpdate");
-        assert(0 <= p && p < size());
-        apply(p, p, f);
+        assert(0 <= pos && pos < size());
+        apply(pos, pos, upd);
     }
 
-    void apply(int l, int r, LazyUpdate f) {
+    void apply(int l, int r, LazyUpdate upd) {
         static_assert(HAS_LAZY, "este ImplicitTreap se instancio sin LazyUpdate");
         assert(0 <= l && l <= r && r < size());
-        apply(root, 0, l, r, f);
+        apply(root, 0, l, r, upd);
     }
 
     void reverse(int l, int r) {
@@ -206,12 +206,12 @@ struct ImplicitTreap {
         root = merge(merge(a, b), c);
     }
 
-    void rotate(int l, int r, int k) {
+    void rotate(int l, int r, int shift) {
         assert(0 <= l && l <= r && r < size());
         int len = r - l + 1;
-        assert(0 <= k && k < len);
+        assert(0 <= shift && shift < len);
 
-        if(k == 0) {
+        if(shift == 0) {
             return;
         }
 
@@ -219,20 +219,20 @@ struct ImplicitTreap {
         split(root, l, a, tmp);
         split(tmp, len, b, c);
         int b1, b2;
-        split(b, k, b1, b2);
+        split(b, shift, b1, b2);
         root = merge(merge(a, merge(b2, b1)), c);
     }
 
-    // Corta a[l..r] y lo pega justo antes del que era a[p]. p se cuenta sobre el arreglo
+    // Corta a[l..r] y lo pega justo antes del que era a[to]. to se cuenta sobre el arreglo
     // ORIGINAL, y tiene que caer afuera del bloque que se mueve.
-    void move(int l, int r, int p) {
+    void move(int l, int r, int to) {
         assert(0 <= l && l <= r && r < size());
-        assert(0 <= p && p <= size() && (p <= l || p > r));
+        assert(0 <= to && to <= size() && (to <= l || to > r));
         int a, b, c, tmp;
         split(root, l, a, tmp);
         split(tmp, r - l + 1, b, c);
         int rest = merge(a, c);
-        int dest = (p <= l) ? p : p - (r - l + 1);
+        int dest = (to <= l) ? to : to - (r - l + 1);
         int x, y;
         split(rest, dest, x, y);
         root = merge(merge(x, b), y);
@@ -264,7 +264,7 @@ struct ImplicitTreap {
 
     vector<InternalNode> st;
     int root = 0;
-    unsigned rng = next_seed();             // ver next_seed(): semilla del reloj, no fija
+    unsigned rng = next_seed();                 // ver next_seed(): semilla del reloj, no fija
 
     void reserve_pool(long long n, long long q) {
         assert(n >= 0 && q >= 0);
@@ -281,15 +281,15 @@ struct ImplicitTreap {
     // #define IMPLICIT_TREAP_SEED 2463534242u
     static unsigned next_seed() {
 #ifdef IMPLICIT_TREAP_SEED
-        static unsigned s = IMPLICIT_TREAP_SEED;
+        static unsigned seed = IMPLICIT_TREAP_SEED;
 #else
-        static unsigned s =
+        static unsigned seed =
             (unsigned)chrono::high_resolution_clock::now().time_since_epoch().count() | 1u;
 #endif
-        s ^= s << 13;                           // xorshift32 nunca sale de los no nulos,
-        s ^= s >> 17;                           // asi que el | 1u alcanza para no quedar en 0
-        s ^= s << 5;
-        return s;
+        seed ^= seed << 13;                     // xorshift32 nunca sale de los no nulos,
+        seed ^= seed >> 17;                     // asi que el | 1u alcanza para no quedar en 0
+        seed ^= seed << 5;
+        return seed;
     }
 
     unsigned next_pri() {                       // xorshift: no depende de <random>
@@ -367,7 +367,7 @@ struct ImplicitTreap {
     }
 
     void push(int t) {
-        if constexpr (HAS_LAZY) {                // incondicional, como en LazySegmentTree
+        if constexpr (HAS_LAZY) {               // incondicional, como en LazySegmentTree
             all_apply(st[t].lc, st[t].lz);
             all_apply(st[t].rc, st[t].lz);
             st[t].lz = LazyUpdate();
@@ -380,7 +380,7 @@ struct ImplicitTreap {
         }
     }
 
-    void split(int t, int k, int& a, int& b) {   // los primeros k van a 'a'
+    void split(int t, int k, int& a, int& b) {  // los primeros k van a 'a'
         if(!t) {
             a = b = 0;
             return;
@@ -463,22 +463,22 @@ struct ImplicitTreap {
         // rv es el flag ENTRANTE: dice si los hijos de t estan dados vuelta
         int fst = rv ? st[t].rc : st[t].lc;
         int snd = rv ? st[t].lc : st[t].rc;
-        bool rv2 = rv != st[t].rev;              // esto baja
-        int mp = lo + st[fst].sz;
+        bool rv2 = rv != st[t].rev;             // esto baja
+        int mid = lo + st[fst].sz;
 
         prod(fst, lo, l, r, down, rv2, acc, has);
 
-        if(l <= mp && mp <= r) {
+        if(l <= mid && mid <= r) {
             Node own = st[t].val;
 
             if constexpr (HAS_LAZY) {
-                own.apply(f, 1);                 // el propio usa f, no down
+                own.apply(f, 1);                // el propio usa f, no down
             }
 
             join(acc, has, own);
         }
 
-        prod(snd, mp + 1, l, r, down, rv2, acc, has);
+        prod(snd, mid + 1, l, r, down, rv2, acc, has);
     }
 
     // Recorre en orden simetrico los elementos de [l, r] y los apila. Como prod, lleva lo
@@ -504,11 +504,11 @@ struct ImplicitTreap {
         int fst = rv ? st[t].rc : st[t].lc;
         int snd = rv ? st[t].lc : st[t].rc;
         bool rv2 = rv != st[t].rev;
-        int mp = lo + st[fst].sz;
+        int mid = lo + st[fst].sz;
 
         collect(fst, lo, l, r, down, rv2, out);
 
-        if(l <= mp && mp <= r) {
+        if(l <= mid && mid <= r) {
             Node own = st[t].val;
 
             if constexpr (HAS_LAZY) {
@@ -518,7 +518,7 @@ struct ImplicitTreap {
             out.push_back(own);
         }
 
-        collect(snd, mp + 1, l, r, down, rv2, out);
+        collect(snd, mid + 1, l, r, down, rv2, out);
     }
 
     void apply(int t, int lo, int l, int r, const LazyUpdate& f) {
@@ -537,15 +537,15 @@ struct ImplicitTreap {
             return;
         }
 
-        push(t);                                 // aca si hay que empujar: vamos a escribir
-        int mp = lo + st[st[t].lc].sz;
+        push(t);                                // aca si hay que empujar: vamos a escribir
+        int mid = lo + st[st[t].lc].sz;
         apply(st[t].lc, lo, l, r, f);
 
-        if(l <= mp && mp <= r) {
+        if(l <= mid && mid <= r) {
             st[t].val.apply(f, 1);
         }
 
-        apply(st[t].rc, mp + 1, l, r, f);
+        apply(st[t].rc, mid + 1, l, r, f);
         pull(t);
     }
 };

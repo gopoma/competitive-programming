@@ -12,10 +12,10 @@ struct LazySegmentTree {
   public:
     LazySegmentTree() : LazySegmentTree(0) {}
 
-    explicit LazySegmentTree(int _n) {
+    explicit LazySegmentTree(int len) {
         SZ = 1, LOG = 0;
 
-        while (SZ < max(1, _n)) {
+        while (SZ < max(1, len)) {
             SZ *= 2;
             ++LOG;
         }
@@ -25,7 +25,7 @@ struct LazySegmentTree {
         lazy.assign(SZ, LazyUpdate());          // Node() + Node() == Node()
     }
 
-    explicit LazySegmentTree(const vector<Node>& v) : n(int(v.size())) {
+    explicit LazySegmentTree(const vector<Node>& init) : n(int(init.size())) {
         SZ = 1, LOG = 0;
 
         while (SZ < max(1, n)) {
@@ -37,7 +37,7 @@ struct LazySegmentTree {
         lazy.assign(SZ, LazyUpdate());
 
         for (int i = 0; i < n; i++) {
-            seg[SZ + i] = v[i];
+            seg[SZ + i] = init[i];
         }
 
         for (int i = SZ - 1; i >= 1; i--) {
@@ -45,32 +45,32 @@ struct LazySegmentTree {
         }
     }
 
-    void set(int p, Node x) {
-        assert(0 <= p && p < n);
+    void set(int pos, Node val) {
+        assert(0 <= pos && pos < n);
 
-        p += SZ;
+        pos += SZ;
 
         for (int i = LOG; i >= 1; i--) {
-            push(p >> i);
+            push(pos >> i);
         }
 
-        seg[p] = x;
+        seg[pos] = val;
 
         for (int i = 1; i <= LOG; i++) {
-            pull(p >> i);
+            pull(pos >> i);
         }
     }
 
-    Node get(int p) {
-        assert(0 <= p && p < n);
+    Node get(int pos) {
+        assert(0 <= pos && pos < n);
 
-        p += SZ;
+        pos += SZ;
 
         for (int i = LOG; i >= 1; i--) {
-            push(p >> i);
+            push(pos >> i);
         }
 
-        return seg[p];
+        return seg[pos];
     }
 
     Node prod(int l, int r) {
@@ -122,23 +122,23 @@ struct LazySegmentTree {
         return vector<Node>(seg.begin() + SZ, seg.begin() + SZ + n);
     }
 
-    void apply(int p, LazyUpdate f) {
-        assert(0 <= p && p < n);
+    void apply(int pos, LazyUpdate upd) {
+        assert(0 <= pos && pos < n);
 
-        p += SZ;
+        pos += SZ;
 
         for (int i = LOG; i >= 1; i--) {
-            push(p >> i);
+            push(pos >> i);
         }
 
-        seg[p] *= f;
+        seg[pos] *= upd;
 
         for (int i = 1; i <= LOG; i++) {
-            pull(p >> i);
+            pull(pos >> i);
         }
     }
 
-    void apply(int l, int r, LazyUpdate f) {
+    void apply(int l, int r, LazyUpdate upd) {
         assert(0 <= l && l <= r && r < n);
 
         l += SZ, r += SZ;                       // hojas inclusivas: seg[l] .. seg[r]
@@ -159,11 +159,11 @@ struct LazySegmentTree {
 
         while (l <= r) {
             if (l & 1) {
-                all_apply(l++, f);
+                all_apply(l++, upd);
             }
 
             if (!(r & 1)) {
-                all_apply(r--, f);
+                all_apply(r--, upd);
             }
 
             l >>= 1, r >>= 1;
@@ -188,21 +188,21 @@ struct LazySegmentTree {
     // PREFIJOS, ancla en l: la mayor p de [l, r] tal que f(prod(l, p)) es verdadera,
     // o l - 1 si ninguna lo es. f tiene que ser T T T F F F al crecer p.
     template <class F>
-    int max_right(int l, int r, F f) {
+    int max_right(int l, int r, F pred) {
         assert(0 <= l && l <= r && r < n);
 
         Node acc = Node();
-        return corte_izq(l, r, 1, 0, SZ - 1, acc, f) - 1;
+        return corte_izq(l, r, 1, 0, SZ - 1, acc, pred) - 1;
     }
 
     // SUFIJOS, ancla en r: la menor p de [l, r] tal que f(prod(p, r)) es verdadera,
     // o r + 1 si ninguna lo es. f tiene que ser T T T F F F al DECRECER p.
     template <class F>
-    int min_left(int l, int r, F f) {
+    int min_left(int l, int r, F pred) {
         assert(0 <= l && l <= r && r < n);
 
         Node acc = Node();
-        return corte_der(l, r, 1, 0, SZ - 1, acc, f) + 1;
+        return corte_der(l, r, 1, 0, SZ - 1, acc, pred) + 1;
     }
 
 
@@ -335,39 +335,39 @@ struct LazyUpdate { // lazy update
 };
 
 struct Node { // data you need to store for each interval
-    long long sz = 0, sum = 0, mx = 0, mn = 0;  // sz == 0 es el rango vacio, la identidad
+    long long size = 0, sum = 0, mx = 0, mn = 0;  // size == 0 es el rango vacio
 
     Node() {}
-    Node(long long x) : sz(1), sum(x), mx(x), mn(x) {}
+    Node(long long x) : size(1), sum(x), mx(x), mn(x) {}
 
     friend Node operator+(const Node& a, const Node& b) {
-        if(a.sz == 0) {
+        if(a.size == 0) {
             return b;
         }
 
-        if(b.sz == 0) {
+        if(b.size == 0) {
             return a;
         }
 
         Node res;
-        res.sz = a.sz + b.sz;
+        res.size = a.size + b.size;
         res.sum = a.sum + b.sum;
         res.mx = max(a.mx, b.mx);
         res.mn = min(a.mn, b.mn);
         return res;
     }
 
-    // sz es lo que permite que el update escale a todo el intervalo de una sola vez.
+    // size es lo que permite que el update escale a todo el intervalo de una sola vez.
     Node& operator*=(const LazyUpdate& f) {
-        if(sz == 0) {                           // la identidad se queda identidad
+        if(size == 0) {                         // la identidad se queda identidad
             return *this;
         }
 
         if(f.has) {
-            sum = (f.v + f.a) * sz;
+            sum = (f.v + f.a) * size;
             mx = mn = f.v + f.a;
         } else {
-            sum += f.a * sz;
+            sum += f.a * size;
             mx += f.a;
             mn += f.a;
         }

@@ -24,7 +24,7 @@ Todos los seis las cumplen, y es lo que los hace intercambiables:
 
 1. **Rangos inclusivos `[l, r]`**, siempre. `prod(0, n - 1)` es todo el arreglo.
 2. **Se parametriza con structs**, no con punteros a función: nada de `op`, `e`, `mapping`, `composition`, `id`.
-3. **`max_right` y `min_left` reciben el predicado como parámetro**, con la misma idea que la AtCoder Library pero sobre rango inclusivo: `max_right(l, r, f)`. Están en `SegmentTree` y `LazySegmentTree`. Ver [Los dos descensos](#los-dos-descensos).
+3. **`max_right` y `min_left` reciben el predicado como parámetro**, con la misma idea que la AtCoder Library pero sobre rango inclusivo: `max_right(l, r, pred)`. Están en los seis. Ver [Los dos descensos](#los-dos-descensos).
 4. **Solo intervalos válidos**: `assert(0 <= l && l <= r && r < n)`. No existe el rango vacío, y `r == n` dispara el assert — es el error típico al traducir código semiabierto.
 5. **`n` es el tamaño del vector original** (o `SZ` si no se pasa vector), y `SZ` es la potencia de dos.
 
@@ -46,29 +46,29 @@ Según el template, el `Node` tiene que proveer dos, tres o cuatro cosas:
 
 `Node()` es la **identidad** de `+`, y por eso representa el **rango vacío**. `a + b` pliega dos intervalos vecinos con `a` a la **izquierda** de `b`, y tiene que ser **asociativo**. No hace falta que conmute.
 
-El patrón para marcar la identidad es un campo `sz` con dos salidas tempranas:
+El patrón para marcar la identidad es un campo `size` con dos salidas tempranas:
 
 ```cpp
 friend Node operator+(const Node& a, const Node& b) {
-    if (a.sz == 0) return b;          // a es la identidad
-    if (b.sz == 0) return a;          // b es la identidad
+    if (a.size == 0) return b;          // a es la identidad
+    if (b.size == 0) return a;          // b es la identidad
     ...
 }
 ```
 
-> **La trampa clásica**: que `Node()` **no** sea la identidad. En una versión anterior de `LazySegmentTree` el constructor por defecto dejaba `sz = 1` en vez de `0`, y el campo `sz` de **todos** los resultados de consulta salía inflado — 5000 de 5000 mal. `sum` y `mn` sobrevivían por casualidad, así que el bug era invisible si solo mirabas esos.
+> **La trampa clásica**: que `Node()` **no** sea la identidad. En una versión anterior de `LazySegmentTree` el constructor por defecto dejaba `size = 1` en vez de `0`, y el campo `size` de **todos** los resultados de consulta salía inflado — 5000 de 5000 mal. `sum` y `mn` sobrevivían por casualidad, así que el bug era invisible si solo mirabas esos.
 
 ### `node *= f` (los dos lazy densos)
 
-Aplica el update a **todo el intervalo de una vez**, y **tiene que dejar la identidad quieta**: `Node() *= f` sigue siendo `Node()`. De ahí el `if (sz == 0) return *this;`.
+Aplica el update a **todo el intervalo de una vez**, y **tiene que dejar la identidad quieta**: `Node() *= f` sigue siendo `Node()`. De ahí el `if (size == 0) return *this;`.
 
 Requiere además **distributividad**: `(a ⊙ b) ⊗ f = (a ⊗ f) ⊙ (b ⊗ f)`. Si tu update no distribuye sobre tu agregado, el lazy no sirve, no importa cómo lo escribas.
 
-Y el `sz` del nodo es lo que permite escalar: `sum += f.a * sz`.
+Y el `size` del nodo es lo que permite escalar: `sum += f.a * size`.
 
 ### `apply(f, len)` (solo el sparse lazy)
 
-Ahí el nodo **no puede** conocer su propio largo: un subárbol que nadie materializó no sabe cuántas posiciones cubre, pero el árbol sí, y se lo pasa. Por eso `apply` **fija** `sz = len` en vez de sumarle.
+Ahí el nodo **no puede** conocer su propio largo: un subárbol que nadie materializó no sabe cuántas posiciones cubre, pero el árbol sí, y se lo pasa. Por eso `apply` **fija** `size = len` en vez de sumarle.
 
 Mantené los dos casos separados: `Node()` solo significa *ninguna posición*, mientras que `apply(f, len)` sobre ella significa *`len` posiciones que nunca se tocaron*.
 
@@ -93,14 +93,14 @@ Para los tres **sin lazy**. Un número por nodo no alcanza: pegar dos mitades ne
 
 ```cpp
 struct Node {
-    ll sz = 0, sum = 0, pref = 0, suf = 0, best = 0;    // sz == 0 es el rango vacio
+    ll size = 0, sum = 0, pref = 0, suf = 0, best = 0;    // size == 0 es el rango vacio
     Node() {}
-    Node(ll x) : sz(1), sum(x), pref(max(0LL, x)), suf(max(0LL, x)), best(max(0LL, x)) {}
+    Node(ll x) : size(1), sum(x), pref(max(0LL, x)), suf(max(0LL, x)), best(max(0LL, x)) {}
     friend Node operator+(const Node& a, const Node& b) {
-        if (a.sz == 0) return b;
-        if (b.sz == 0) return a;
+        if (a.size == 0) return b;
+        if (b.size == 0) return a;
         Node r;
-        r.sz = a.sz + b.sz;
+        r.size = a.size + b.size;
         r.sum = a.sum + b.sum;
         r.pref = max(a.pref, a.sum + b.pref);
         r.suf = max(b.suf, b.sum + a.suf);
@@ -125,22 +125,22 @@ struct Upd {
         return *this; }
 };
 struct Node {
-    ll sz = 0, sum = 0, mx = 0, mn = 0;          // sz == 0 es el rango vacio
+    ll size = 0, sum = 0, mx = 0, mn = 0;          // size == 0 es el rango vacio
     Node() {}
-    Node(ll x) : sz(1), sum(x), mx(x), mn(x) {}
+    Node(ll x) : size(1), sum(x), mx(x), mn(x) {}
     friend Node operator+(const Node& a, const Node& b) {
-        if (a.sz == 0) return b;
-        if (b.sz == 0) return a;
+        if (a.size == 0) return b;
+        if (b.size == 0) return a;
         Node r;
-        r.sz = a.sz + b.sz;
+        r.size = a.size + b.size;
         r.sum = a.sum + b.sum;
         r.mx = max(a.mx, b.mx);
         r.mn = min(a.mn, b.mn);
         return r; }
     Node& operator*=(const Upd& f) {             // densos: el nodo sabe su largo
-        if (sz == 0) return *this;               // la identidad se queda identidad
-        if (f.has) { sum = (f.v + f.a) * sz; mx = mn = f.v + f.a; }
-        else { sum += f.a * sz; mx += f.a; mn += f.a; }
+        if (size == 0) return *this;               // la identidad se queda identidad
+        if (f.has) { sum = (f.v + f.a) * size; mx = mn = f.v + f.a; }
+        else { sum += f.a * size; mx += f.a; mn += f.a; }
         return *this; }
 };
 ```
@@ -149,7 +149,7 @@ Para `SparseLazySegmentTree` el mismo `Upd`, y el `Node` cambia `operator*=` por
 
 ```cpp
     void apply(const Upd& f, ll len) {           // sparse: el arbol dicta el largo
-        sz = len;                                // FIJA, no suma
+        size = len;                                // FIJA, no suma
         if (f.has) { sum = (f.v + f.a) * len; mx = mn = f.v + f.a; }
         else { sum += f.a * len; mx += f.a; mn += f.a; } }
 ```
@@ -160,8 +160,8 @@ Para `SparseLazySegmentTree` el mismo `Upd`, y el `Node` cambia `operator*=` por
 
 | método | devuelve | si ninguna cumple |
 |---|---|---|
-| `t.max_right(l, r, f)` | la **mayor** `p` de `[l, r]` con `f(prod(l, p))` verdadera | `l - 1` |
-| `t.min_left(l, r, f)` | la **menor** `p` de `[l, r]` con `f(prod(p, r))` verdadera | `r + 1` |
+| `t.max_right(l, r, pred)` | la **mayor** `p` de `[l, r]` con `f(prod(l, p))` verdadera | `l - 1` |
+| `t.min_left(l, r, pred)` | la **menor** `p` de `[l, r]` con `f(prod(p, r))` verdadera | `r + 1` |
 
 `max_right` ancla en `l` y acumula **prefijos**; `min_left` ancla en `r` y acumula **sufijos**. Los dos son O(log n) en los dos templates.
 
@@ -216,6 +216,24 @@ con `C = ceil(log2 n)`. El **nodo 0 es el nodo nulo**: representa un subárbol e
 
 `nodes_used()` te dice cuánto del pool se consumió de verdad; comparado con `max_nodes` te dice si la estimación fue razonable.
 
+## Convivencia con `templateHeavy`
+
+Los seis conviven con [`templateHeavy.cpp`](../../../../templateHeavy.cpp) sin conflictos, y eso **no es gratuito**: el template de contest define macros que pisan identificadores comunes.
+
+| macro | cómo rompe |
+|---|---|
+| `#define sz(x) int((x).size())` | es **con paréntesis**, así que `Node(ll x) : sz(1), ...` expande a `int((1).size())` |
+| `#define f first`, `#define s second` | son **sin paréntesis**: *toda* aparición de `f` o `s` como identificador se reemplaza |
+| `#define mp make_pair`, `ins`, `pb`, `eb`, `lb`, `ub`, `ft`, `bk`, `ts`, `rsz` | ídem |
+
+Por eso el campo de tamaño del `Node` se llama **`size`** y no `sz` en los seis. Es el único nombre que hubo que cambiar, pero conviene saber por qué está así antes de «mejorarlo».
+
+Por eso el predicado se llama **`pred`** y el update **`upd`**, no `f`: con `#define f first` toda aparición de `f` se reemplazaba, y aunque el rename era consistente y compilaba, se rompía apenas tu `Node` tuviera un campo llamado `first`.
+
+Y por eso los nombres de parámetros son **descriptivos y no de una letra**: `pos`, `val`, `pred`, `upd`, `root`, `len`, `max_ops`. Es lo que muestra el hint del IDE cuando escribís la llamada, así que `t.set(pos, val)` dice algo que `t.set(p, x)` no.
+
+Verificado: los seis templates más [`ImplicitTreap`](../ImplicitTreap.md) se insertan en `templateHeavy.cpp` en el lugar de `//* Template`, compilan con `-Wall -Wextra` sin warnings y corren.
+
 ## Errores frecuentes
 
 | error | síntoma |
@@ -224,7 +242,7 @@ con `C = ceil(log2 n)`. El **nodo 0 es el nodo nulo**: representa un subárbol e
 | `Node()` que no es la identidad de `+` | los campos derivados salen mal; `sum` y `min` suelen sobrevivir y tapan el bug |
 | `f *= g` con el orden invertido | invisible con un lazy aditivo, revienta con assign o afín |
 | un update que no distribuye sobre el agregado | resultados mal en cuanto un `apply` cubra un nodo interno |
-| en el sparse lazy, `apply` que **suma** a `sz` en vez de fijarlo | mal en los subárboles no materializados |
+| en el sparse lazy, `apply` que **suma** a `size` en vez de fijarlo | mal en los subárboles no materializados |
 | usar el sparse cuando podías comprimir | funciona, pero más lento y con más memoria que el denso |
 | un `q` corto en los que llevan pool | el pool no crece: **comportamiento indefinido** |
 

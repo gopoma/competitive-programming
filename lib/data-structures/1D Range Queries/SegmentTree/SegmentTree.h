@@ -11,10 +11,10 @@ struct SegmentTree {
   public:
     SegmentTree() : SegmentTree(0) {}
 
-    explicit SegmentTree(int _n) {
+    explicit SegmentTree(int len) {
         SZ = 1;
 
-        while(SZ < max(1, _n)) {
+        while(SZ < max(1, len)) {
             SZ *= 2;
         }
 
@@ -22,7 +22,7 @@ struct SegmentTree {
         seg.assign(2 * SZ, T());                // todo identidad, no hace falta pull:
     }                                           // T() + T() == T()
 
-    explicit SegmentTree(const vector<T>& v) : n(int(v.size())) {
+    explicit SegmentTree(const vector<T>& init) : n(int(init.size())) {
         SZ = 1;
 
         while(SZ < max(1, n)) {
@@ -32,7 +32,7 @@ struct SegmentTree {
         seg.assign(2 * SZ, T());
 
         for(int i = 0; i < n; i++) {
-            seg[SZ + i] = v[i];
+            seg[SZ + i] = init[i];
         }
 
         for(int p = SZ - 1; p > 0; p--) {
@@ -40,20 +40,20 @@ struct SegmentTree {
         }
     }
 
-    void set(int p, T val) {
-        assert(0 <= p && p < n);
+    void set(int pos, T val) {
+        assert(0 <= pos && pos < n);
 
-        p += SZ;
-        seg[p] = val;
+        pos += SZ;
+        seg[pos] = val;
 
-        for(p /= 2; p > 0; p /= 2) {
-            pull(p);
+        for(pos /= 2; pos > 0; pos /= 2) {
+            pull(pos);
         }
     }
 
-    T get(int p) const {
-        assert(0 <= p && p < n);
-        return seg[p + SZ];
+    T get(int pos) const {
+        assert(0 <= pos && pos < n);
+        return seg[pos + SZ];
     }
 
     T all_prod() const {
@@ -102,7 +102,7 @@ struct SegmentTree {
     // version no tiene r, pero con rango acotado hay que AGRANDAR mientras el padre entre
     // y ENCOGER cuando el hermano se pase de r.
     template<class F>
-    int max_right(int l, int r, F f) const {
+    int max_right(int l, int r, F pred) const {
         assert(0 <= l && l <= r && r < n);
 
         int k = l + SZ;
@@ -123,13 +123,13 @@ struct SegmentTree {
 
             T t = sm + seg[k];                  // sm a la izquierda, el nodo a la derecha
 
-            if(!f(t)) {                         // rompe: la respuesta esta adentro
+            if(!pred(t)) {                      // rompe: la respuesta esta adentro
                 while(k < SZ) {
                     k = 2 * k;
                     len /= 2;
                     T t2 = sm + seg[k];
 
-                    if(f(t2)) {                 // el izquierdo aguanta: absorber e ir al derecho
+                    if(pred(t2)) {              // el izquierdo aguanta: absorber e ir al derecho
                         sm = t2;
                         pos += len;
                         k++;
@@ -152,7 +152,7 @@ struct SegmentTree {
     // Espejo del de arriba: el nodo cubre [pos - len + 1, pos], se encoge por el lado
     // derecho, y el agregado se arma con el nodo a la IZQUIERDA de lo acumulado.
     template<class F>
-    int min_left(int l, int r, F f) const {
+    int min_left(int l, int r, F pred) const {
         assert(0 <= l && l <= r && r < n);
 
         int k = r + SZ;
@@ -173,13 +173,13 @@ struct SegmentTree {
 
             T t = seg[k] + sm;                  // el nodo a la IZQUIERDA de sm
 
-            if(!f(t)) {
+            if(!pred(t)) {
                 while(k < SZ) {
                     k = 2 * k + 1;              // el DERECHO primero
                     len /= 2;
                     T t2 = seg[k] + sm;
 
-                    if(f(t2)) {
+                    if(pred(t2)) {
                         sm = t2;
                         pos -= len;
                         k--;
@@ -209,25 +209,25 @@ struct SegmentTree {
 
 // /here goes the template!
 struct Node {
-    // sz == 0 es el rango vacio, la identidad de +. pref, suf y best son sumas de
+    // size == 0 es el rango vacio, la identidad de +. pref, suf y best son sumas de
     // subarreglos, y el vacio cuenta, asi que ninguna de las tres baja de cero.
-    long long sz = 0, sum = 0, pref = 0, suf = 0, best = 0;
+    long long size = 0, sum = 0, pref = 0, suf = 0, best = 0;
 
     Node() {}
     Node(long long x)
-        : sz(1), sum(x), pref(max(0LL, x)), suf(max(0LL, x)), best(max(0LL, x)) {}
+        : size(1), sum(x), pref(max(0LL, x)), suf(max(0LL, x)), best(max(0LL, x)) {}
 
     friend Node operator+(const Node& a, const Node& b) {
-        if(a.sz == 0) {
+        if(a.size == 0) {
             return b;
         }
 
-        if(b.sz == 0) {
+        if(b.size == 0) {
             return a;
         }
 
         Node res;
-        res.sz = a.sz + b.sz;
+        res.size = a.size + b.size;
         res.sum = a.sum + b.sum;
         res.pref = max(a.pref, a.sum + b.pref);
         res.suf = max(b.suf, b.sum + a.suf);

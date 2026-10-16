@@ -22,13 +22,13 @@ No hay `build`: el árbol **arranca vacío**, con todas las posiciones en `T()`.
 
 | método | costo | qué hace |
 |---|---|---|
-| `st.set(p, x)` | O(log n) | `a[p] = x` |
-| `st.get(p)` | O(log n) | la `T` en `p` |
+| `st.set(pos, val)` | O(log n) | `a[p] = x` |
+| `st.get(pos)` | O(log n) | la `T` en `p` |
 | `st.prod(l, r)` | O(log n) | pliega `a[l..r]` |
 | `st.all_prod()` | **O(1)** | pliega todo el universo |
 | `st.size()` | O(1) | `n` |
-| `st.max_right(l, r, f)` | O(log n) | mayor `p` con `f(prod(l, p))`, o `l - 1` |
-| `st.min_left(l, r, f)` | O(log n) | menor `p` con `f(prod(p, r))`, o `r + 1` |
+| `st.max_right(l, r, pred)` | O(log n) | mayor `p` con `f(prod(l, p))`, o `l - 1` |
+| `st.min_left(l, r, pred)` | O(log n) | menor `p` con `f(prod(p, r))`, o `r + 1` |
 | `st.nodes_used()` | O(1) | cuánto del pool se consumió |
 | `st.dump()` | O(n) | vuelca el universo entero, para depurar |
 

@@ -15,13 +15,13 @@ SegmentTree<T> t(k)    // sin vector: n pasa a ser SZ, con T() en cada lugar
 |---|---|---|
 | constructor con `vector` | $O(n)$ | copia las hojas y hace `pull` de abajo hacia arriba |
 | constructor con `int` | $O(SZ)$ | todo `T()`; no hace falta `pull` porque `T() + T() == T()` |
-| `t.set(p, x)` | $O(\log n)$ | $a_p \leftarrow x$, y repara el camino hasta la raíz |
-| `t.get(p)` | $\mathbf{O(1)}$ | la `T` que está en $p$ |
+| `t.set(pos, val)` | $O(\log n)$ | $a_p \leftarrow x$, y repara el camino hasta la raíz |
+| `t.get(pos)` | $\mathbf{O(1)}$ | la `T` que está en $p$ |
 | `t.prod(l, r)` | $O(\log n)$ | pliega $a_l \oplus a_{l+1} \oplus \dots \oplus a_r$ |
 | `t.all_prod()` | $\mathbf{O(1)}$ | pliega todo el arreglo: es `seg[1]` |
 | `t.dump()` | $O(n)$ | vuelca el arreglo entero, para depurar |
-| `t.max_right(l, r, f)` | $O(\log n)$ | la mayor $p$ con $f(\text{prod}(l,p))$, o $l-1$ |
-| `t.min_left(l, r, f)` | $O(\log n)$ | la menor $p$ con $f(\text{prod}(p,r))$, o $r+1$ |
+| `t.max_right(l, r, pred)` | $O(\log n)$ | la mayor $p$ con $f(\text{prod}(l,p))$, o $l-1$ |
+| `t.min_left(l, r, pred)` | $O(\log n)$ | la menor $p$ con $f(\text{prod}(p,r))$, o $r+1$ |
 
 No hay nada más. Los cuatro helpers (`pull` y los bucles internos de los descensos) son privados.
 
@@ -62,15 +62,15 @@ De ahí salen dos cosas:
 
 ```cpp
 SegmentTree<Suma> z(5);
-// all_prod().sz == 0  y  all_prod().sum == 0
-// SZ = 8, no 5, y cada lugar vale Suma() con sz = 0, NO Suma(0) con sz = 1
+// all_prod().size == 0  y  all_prod().sum == 0
+// SZ = 8, no 5, y cada lugar vale Suma() con size = 0, NO Suma(0) con size = 1
 ```
 
 Si querés $k$ ceros de verdad, usá `SegmentTree<T>(vector<T>(k, T(0)))`. La diferencia importa cuando `T()` y `T(0)` no son lo mismo, que es justo el caso de los monoides de ejemplo.
 
 ## Todos los métodos, con resultados reales
 
-Con $a = \{3, 1, 4, 1, 5, 9, 2, 6\}$ y un `Node` que solo lleva `sz` y `sum`:
+Con $a = \{3, 1, 4, 1, 5, 9, 2, 6\}$ y un `Node` que solo lleva `size` y `sum`:
 
 ```cpp
 vector<Suma> iv(8);
@@ -174,7 +174,7 @@ min_left (0, 7, sum <= 100) =  0   <- aguanto todo: p == l
 
 ## Ejemplo 2 — $k$-ésimo uno y $k$-ésimo cero
 
-Con valores en $\{0,1\}$, `sum` cuenta los unos y `sz - sum` cuenta los ceros. **El mismo descenso sirve para los dos**, y notá que acá hay que **sumar uno** al resultado:
+Con valores en $\{0,1\}$, `sum` cuenta los unos y `size - sum` cuenta los ceros. **El mismo descenso sirve para los dos**, y notá que acá hay que **sumar uno** al resultado:
 
 ```cpp
 // k-esimo UNO en [l, r]
@@ -182,7 +182,7 @@ int p   = t.max_right(l, r, [&](const Suma& v) { return v.sum < k; });
 int ans = (p == r ? -1 : p + 1);          // -1 si no hay k unos en el rango
 
 // k-esimo CERO: mismo descenso, otro campo
-int p   = t.max_right(l, r, [&](const Suma& v) { return v.sz - v.sum < k; });
+int p   = t.max_right(l, r, [&](const Suma& v) { return v.size - v.sum < k; });
 int ans = (p == r ? -1 : p + 1);
 
 // k-esimo uno contando DESDE LA DERECHA
@@ -256,15 +256,15 @@ Un `Node` que no es conmutativo, y por eso es el que caza los errores de orden:
 
 ```cpp
 struct ND {
-    ll sz = 0, pri = 0, ult = 0;
+    ll size = 0, pri = 0, ult = 0;
     bool ord = true;
     ND() {}
-    ND(ll x) : sz(1), pri(x), ult(x), ord(true) {}
+    ND(ll x) : size(1), pri(x), ult(x), ord(true) {}
     friend ND operator+(const ND& a, const ND& b) {
-        if (a.sz == 0) return b;
-        if (b.sz == 0) return a;
+        if (a.size == 0) return b;
+        if (b.size == 0) return a;
         ND r;
-        r.sz = a.sz + b.sz;
+        r.size = a.size + b.size;
         r.pri = a.pri;                           // el primero viene de a
         r.ult = b.ult;                           // el ultimo viene de b
         r.ord = a.ord && b.ord && a.ult <= b.pri;  // y la union tiene que pegar
@@ -284,14 +284,14 @@ El patrón para volver monótona una propiedad frágil: guardá el **peor** valo
 
 ```cpp
 struct PB {
-    ll sz = 0, sum = 0, minpref = 0;             // minpref = la peor suma de un prefijo
+    ll size = 0, sum = 0, minpref = 0;             // minpref = la peor suma de un prefijo
     PB() {}
-    PB(ll x) : sz(1), sum(x), minpref(min(0LL, x)) {}
+    PB(ll x) : size(1), sum(x), minpref(min(0LL, x)) {}
     friend PB operator+(const PB& a, const PB& b) {
-        if (a.sz == 0) return b;
-        if (b.sz == 0) return a;
+        if (a.size == 0) return b;
+        if (b.size == 0) return a;
         PB r;
-        r.sz = a.sz + b.sz;
+        r.size = a.size + b.size;
         r.sum = a.sum + b.sum;
         r.minpref = min(a.minpref, a.sum + b.minpref);
         return r;
