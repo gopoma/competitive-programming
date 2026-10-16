@@ -230,10 +230,13 @@ struct ImplicitTreap {
         root = merge(merge(a, b), c);
     }
 
+    // Rota a[l..r] a la IZQUIERDA en shift: el viejo a[l+shift] pasa a ser a[l]. Acepta
+    // cualquier entero, que se normaliza: un shift negativo rota a la derecha, y uno mayor
+    // que el largo da la vuelta. Asi el llamador no tiene que normalizar y equivocarse.
     void rotate(int l, int r, int shift) {
         assert(0 <= l && l <= r && r < size());
         int len = r - l + 1;
-        assert(0 <= shift && shift < len);
+        shift = ((shift % len) + len) % len;    // el %len primero: evita el overflow al sumar
 
         if(shift == 0) {
             return;

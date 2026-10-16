@@ -225,11 +225,16 @@ Da vuelta `a[l..r]`.
 void t.rotate(int l, int r, int shift)
 ```
 
-Rota `a[l..r]` a la **izquierda** en `shift`: el viejo `a[l+shift]` pasa a ser `a[l]`. Equivale a
-`std::rotate(b+l, b+l+shift, b+r+1)`.
+Rota `a[l..r]` a la **izquierda** en `shift`: el viejo `a[l+shift]` pasa a ser `a[l]`.
 
-**Restricciones**: $0 \le l \le r < size()$ y $0 \le shift < r - l + 1$. ·
-**Complejidad**: $O(\log n)$.
+`shift` acepta **cualquier entero** y se normaliza internamente: negativo rota a la derecha, y
+un múltiplo del largo no hace nada. O sea que no hace falta escribir `((k % len) + len) % len`
+en el llamador, que es donde se olvida el segundo `% len` o se suma antes del módulo y se
+desborda con `INT_MAX`.
+
+Con `shift` ya en $[0, len)$ equivale a `std::rotate(b+l, b+l+shift, b+r+1)`.
+
+**Restricciones**: $0 \le l \le r < size()$. · **Complejidad**: $O(\log n)$.
 
 ## move
 
@@ -394,6 +399,7 @@ t.insert(j, t.copy_range(l, r));                // O(r - l + log n)
 ```cpp
 t.move(l, r, to);                               // cortar y pegar antes del viejo a[to]
 t.rotate(l, r, k);                              // el viejo a[l+k] pasa a ser a[l]
+t.rotate(l, r, -1);                             // k negativo rota a la derecha, sin normalizar
 t.swap_blocks(l1, r1, l2, r2);                  // l1 <= r1 < l2 <= r2
 ```
 
