@@ -176,6 +176,34 @@ for(int i = 0; i < q; i++) {
 cout << st.prod(ver[t], l, r).sum << "\n";      // como estaba en el tiempo t
 ```
 
+### Cuántos $a_i \in [lo, hi]$ hay en $a[l..r]$
+
+El uso más simple del patrón de dos versiones, y **sin descenso**. El árbol vive sobre el dominio
+de **valores** comprimidos: `ver[i]` cuenta cuántas veces aparece cada valor en `a[0..i-1]`.
+Entonces cualquier tramo del dominio de valores se obtiene **restando** las dos versiones.
+
+```cpp
+PersistentSegmentTree<NodeSum> st(m, n);        // m = valores distintos
+vector<int> ver(n + 1);
+ver[0] = st.build();                            // build() sin argumentos no gasta nodos
+vector<ll> veces(m, 0);
+
+for(int i = 0; i < n; i++) {
+    int c = int(lower_bound(vals.begin(), vals.end(), a[i]) - vals.begin());
+    ++veces[c];
+    ver[i + 1] = st.set(ver[i], c, NodeSum(veces[c]));
+}
+
+// cuantos a_i con lo <= a_i <= hi hay en a[l..r]
+int cl = int(lower_bound(vals.begin(), vals.end(), lo) - vals.begin());
+int ch = int(upper_bound(vals.begin(), vals.end(), hi) - vals.begin()) - 1;
+
+ll cuantos = (cl <= ch) ? st.prod(ver[r + 1], cl, ch).sum - st.prod(ver[l], cl, ch).sum : 0;
+```
+
+El `cl > ch` es el caso en que ningún valor presente cae en $[lo, hi]$: ahí el rango del dominio
+sería vacío y `prod` tiene `assert(l <= r)`, así que hay que cortar antes.
+
 ### $k$-ésimo menor de un rango (el patrón clave)
 
 El árbol vive sobre el dominio de **valores** comprimidos, no de posiciones: `ver[i]` cuenta

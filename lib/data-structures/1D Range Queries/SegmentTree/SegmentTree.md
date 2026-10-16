@@ -187,3 +187,42 @@ El monoide no conmutativo del [README](README.md#a-máxima-suma-de-un-subarreglo
 SegmentTree<Node> seg(a);
 cout << seg.prod(l, r).best << "\n";
 ```
+
+### Paréntesis balanceados en $[l, r]$
+
+El primer `Node` con un combine no obvio, y **no conmutativo**: el mínimo prefijo de `a + b`
+depende de dónde arrancan los prefijos de `b`.
+
+```cpp
+struct NodeSumMnPref {
+    ll sum = 0;                                 // '(' vale +1, ')' vale -1
+    ll mnpref = 0;                              // el minimo sobre TODOS los prefijos, el vacio incluido
+
+    NodeSumMnPref() {}                          // (0, 0) es la identidad
+    NodeSumMnPref(ll x) : sum(x), mnpref(min(0LL, x)) {}
+
+    friend NodeSumMnPref operator+(const NodeSumMnPref& a, const NodeSumMnPref& b) {
+        NodeSumMnPref r;
+        r.sum = a.sum + b.sum;
+        r.mnpref = min(a.mnpref, a.sum + b.mnpref);   // los prefijos de b arrancan en a.sum
+        return r;
+    }
+};
+```
+
+Incluir el prefijo vacío es lo que hace que `(0, 0)` sea la identidad: así `mnpref` siempre es
+$\le 0$, y entonces `min(a.mnpref, a.sum)` ya vale `a.mnpref` sin tener que chequear nada.
+
+```cpp
+NodeSumMnPref v = seg.prod(l, r);
+bool balanceado = v.sum == 0 && v.mnpref == 0;  // cierra en 0 y ningun prefijo se fue a negativo
+```
+
+Y `max_right` da **dónde se rompe**: el último $p$ tal que `a[l..p]` todavía no se fue a negativo.
+
+```cpp
+int p = seg.max_right(l, r, [&](const NodeSumMnPref& v) { return v.mnpref == 0; });
+// si p < r, el primer ')' de sobra esta en p + 1
+```
+
+El predicado es monótono porque `mnpref` no crece al extender el prefijo.

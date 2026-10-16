@@ -183,3 +183,43 @@ tramos vacíos de una: el costo es $O(\log n)$ aunque el rango barra $10^{18}$ �
 long long p = st.max_right(l, r, [&](const NodeSum& v) { return v.sum <= S; });
 cout << p - l + 1 << "\n";                      // el largo, sin if
 ```
+
+### Contar inversiones sin comprimir
+
+```cpp
+SparseSegmentTree<NodeSum> st(LIM, n);
+long long inv = 0;
+
+for(int i = 0; i < n; i++) {
+    if(a[i] + 1 <= LIM - 1) {
+        inv += st.prod(a[i] + 1, LIM - 1).sum;  // cuantos de los ya vistos son > a[i]
+    }
+
+    st.set(a[i], NodeSum(st.get(a[i]).sum + 1));   // get evita llevar un map de conteos
+}
+```
+
+El `get` antes del `set` es lo que permite no llevar ningún `map`: el árbol mismo guarda el
+conteo. Con `BIT.h` esto es más rápido, pero te obliga a comprimir primero — el sparse sirve
+justamente cuando las consultas llegan **online** y no podés.
+
+---
+
+### Lo que `T()` tiene que cumplir, y lo que por eso no se puede
+
+En un árbol sparse `T()` hace **dos trabajos a la vez**:
+
+1. es el agregado que se devuelve por un hijo nulo, o sea **el valor verdadero de un tramo que
+   nadie tocó**;
+2. es con lo que arranca el acumulador de `max_right` / `min_left` (`T acc = T();` y después
+   `acc + st[cur].val`), o sea **la identidad algebraica de `operator+`**.
+
+Con suma las dos coinciden en $0$, y con máximo sobre valores $\ge 0$ también. Por eso los
+ejemplos de arriba funcionan.
+
+Pero eso **descarta** los predicados que necesitan que "sin tocar" signifique *ocupado*. El caso
+típico es *"el primer índice libre $\ge l$"* con $1$ = ocupado y mínimo: para que el predicado
+`mn > 0` ("todo ocupado") sirva, la identidad del mínimo tendría que ser $+\infty$, pero un tramo
+sin tocar está **libre**, así que `T()` tiene que valer $0$. Las dos demandas se contradicen, el
+acumulador queda clavado en $0$ y `max_right` devuelve el centinela siempre. No es un bug del
+template: es que el problema necesita otra estructura.

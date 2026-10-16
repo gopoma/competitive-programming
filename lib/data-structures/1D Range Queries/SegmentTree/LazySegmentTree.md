@@ -172,13 +172,79 @@ cout << seg.prod(l, r).sum << "\n";
 El `LazyUpdate` que compone assign y add está en el
 [README](README.md#b-suma-máximo-y-mínimo-con-assign-y-add-de-rango).
 
+### Afín de rango: $a_i \to p\,a_i + q$, suma de rango
+
+El clásico de clásicos, y **el único ejemplo que obliga a acertar el orden de `f *= g`**: con un
+lazy aditivo el orden conmuta y un error queda latente, acá revienta.
+
+```cpp
+static const ll MOD = 998244353;
+
+struct LazyAffine {                             // x -> p*x + q
+    ll p = 1, q = 0;                            // (1, 0) es la identidad
+
+    LazyAffine() {}
+    LazyAffine(ll P, ll Q) : p(P), q(Q) {}
+
+    // g actua DESPUES de f:  g(f(x)) = g.p*(p*x + q) + g.q
+    LazyAffine& operator*=(const LazyAffine& g) {
+        p = g.p * p % MOD;
+        q = (g.p * q + g.q) % MOD;
+        return *this;
+    }
+};
+
+struct NodeSum {
+    ll size = 0, sum = 0;                       // size == 0 es el rango vacio: la identidad
+
+    NodeSum() {}
+    NodeSum(ll x) : size(1), sum(x % MOD) {}
+
+    friend NodeSum operator+(const NodeSum& a, const NodeSum& b) {
+        NodeSum r;
+        r.size = a.size + b.size;
+        r.sum = (a.sum + b.sum) % MOD;
+        return r;
+    }
+
+    NodeSum& operator*=(const LazyAffine& f) {
+        sum = (f.p * sum + f.q * size) % MOD;   // cada x_i -> p*x_i + q, en size posiciones
+        return *this;
+    }
+};
+
+LazySegmentTree<NodeSum, LazyAffine> seg(a);
+seg.apply(l, r, LazyAffine(p, q));
+cout << seg.prod(l, r).sum << "\n";
+```
+
+Library Checker [Range Affine Range Sum](https://judge.yosupo.jp/problem/range_affine_range_sum).
+
+### Máximo solapamiento de intervalos
+
+El sweep line, que es la aplicación más común de add + máximo: sumá $1$ en cada intervalo y pedí
+el máximo global.
+
+```cpp
+LazySegmentTree<NodeMxLazy, LazyAdd> seg(vector<NodeMxLazy>(n, NodeMxLazy(0)));
+
+for(auto& [l, r] : intervalos) {
+    seg.apply(l, r, LazyAdd(1));
+}
+
+ll best = seg.all_prod().mx;                    // cuantos intervalos se pisan como maximo
+```
+
+Y `max_right` dice **dónde**: el primer índice que alcanza ese máximo es
+`seg.max_right(0, n - 1, [&](const NodeMxLazy& v) { return v.mx < best; }) + 1`.
+
 ### Primer $j \ge l$ con $a_j \ge x$, con add de rango
 
 Codeforces EDU, ITMO Academy, segment tree part 2, problema C — **AC en 125 ms**
 ([envío 394467936](https://codeforces.com/edu/course/2/lesson/5/3)):
 
 ```cpp
-int p = seg.max_right(l, n - 1, [&](const NodeMx& v) { return v.mx < x; });
+int p = seg.max_right(l, n - 1, [&](const NodeMxLazy& v) { return v.mx < x; });
 cout << (p == n - 1 ? -1 : p + 1) << "\n";      // p == n-1 es el "no existe"
 ```
 

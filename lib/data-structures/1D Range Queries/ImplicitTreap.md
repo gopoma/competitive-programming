@@ -402,6 +402,14 @@ t.swap_blocks(l1, r1, l2, r2);                  // l1 <= r1 < l2 <= r2
 El predicado `mx < x` es monótono **siempre**: el máximo de un prefijo no decrece al extenderlo.
 
 ```cpp
+struct NodeMx {
+    ll mx = LLONG_MIN;
+    NodeMx() {}
+    NodeMx(ll x) : mx(x) {}
+    friend NodeMx operator+(const NodeMx& a, const NodeMx& b) { return NodeMx(max(a.mx, b.mx)); }
+    void reverse() {}                           // el treap SIEMPRE pide reverse()
+};
+
 int p = t.max_right(l, t.size() - 1, [&](const NodeMx& v) { return v.mx < x; });
 cout << (p == t.size() - 1 ? -1 : p + 1) << "\n";
 ```
@@ -425,9 +433,71 @@ cout << p + 1 << "\n";
 t.erase(p + 1);                                 // y lo saco, que el segment tree no puede
 ```
 
+
 ### Sufijo más largo de $[l, r]$ con suma $\le S$
 
 ```cpp
 int p = t.min_left(l, r, [&](const NodeSum& v) { return v.sum <= S; });
 cout << r - p + 1 << "\n";
 ```
+
+### Conjunto ordenado con agregados de rango
+
+Esto es lo que `max_right` desbloquea, y **no lo hace ninguna otra estructura del repo**: una
+secuencia *ordenada* y dinámica que además responde `prod` de rango. `max_right` ubica la posición
+de inserción, así que el orden se mantiene solo.
+
+```cpp
+struct NodeSumMx {
+    ll sum = 0, mx = LLONG_MIN;                 // Node() nunca llega a operator+ en el treap
+
+    NodeSumMx() {}
+    NodeSumMx(ll x) : sum(x), mx(x) {}
+
+    friend NodeSumMx operator+(const NodeSumMx& a, const NodeSumMx& b) {
+        NodeSumMx r;
+        r.sum = a.sum + b.sum;
+        r.mx = max(a.mx, b.mx);
+        return r;
+    }
+
+    void reverse() {}                           // suma y maximo conmutan
+};
+
+using Conjunto = ImplicitTreap<NodeSumMx>;
+
+// Cuantos elementos son < x. Con el centinela da 0 si x va al frente.
+int cuantos_menores(const Conjunto& s, ll x) {
+    if(s.size() == 0) {
+        return 0;
+    }
+
+    return s.max_right(0, s.size() - 1, [&](const NodeSumMx& v) { return v.mx < x; }) + 1;
+}
+
+void insertar(Conjunto& s, ll x) {
+    s.insert(cuantos_menores(s, x), NodeSumMx(x));
+}
+
+bool borrar_uno(Conjunto& s, ll x) {
+    int p = cuantos_menores(s, x);
+
+    if(p == s.size() || s.get(p).sum != x) {
+        return false;                           // x no esta
+    }
+
+    s.erase(p);
+    return true;
+}
+```
+
+Y con la secuencia ordenada, de arriba salen gratis:
+
+| consulta | cómo |
+|---|---|
+| cuántos $< x$ | `cuantos_menores(s, x)` |
+| el $k$-ésimo menor | `s.get(k)` |
+| suma de los $k$ menores | `s.prod(0, k - 1).sum` |
+| el máximo de los $k$ menores | `s.prod(0, k - 1).mx` |
+
+Un `multiset` hace el insert y el erase, pero **no** te da la suma de los $k$ menores.

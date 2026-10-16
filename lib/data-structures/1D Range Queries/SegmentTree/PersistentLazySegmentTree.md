@@ -174,7 +174,7 @@ vacío, el centinela nunca es un índice válido.
 ### Historial de updates de rango
 
 ```cpp
-PersistentLazySegmentTree<NodeSum, LazyAdd> st(n, q);
+PersistentLazySegmentTree<NodeSumLazy, LazyAdd> st(n, q);
 vector<int> ver;
 ver.push_back(st.build(a));
 
@@ -206,13 +206,13 @@ int ramaB = st.apply(base, n / 2, n - 1, LazyAdd(-5));
 ### Primer $j \ge l$ con $a_j \ge x$ en una versión vieja
 
 ```cpp
-int p = st.max_right(ver[t], l, n - 1, [&](const NodeMx& v) { return v.mx < x; });
+int p = st.max_right(ver[t], l, n - 1, [&](const NodeMxLazy& v) { return v.mx < x; });
 cout << (p == n - 1 ? -1 : p + 1) << "\n";
 ```
 
 ### Prefijo más largo de $[l, r]$ con suma $\le S$, en la versión `t`
 
 ```cpp
-int p = st.max_right(ver[t], l, r, [&](const NodeSum& v) { return v.sum <= S; });
+int p = st.max_right(ver[t], l, r, [&](const NodeSumLazy& v) { return v.sum <= S; });
 cout << p - l + 1 << "\n";                      // el largo, sin if
 ```

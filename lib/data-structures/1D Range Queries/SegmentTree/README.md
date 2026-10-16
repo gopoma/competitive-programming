@@ -166,6 +166,57 @@ struct NodeSumLazy {
 
 Un mínimo o un máximo con lazy **no** necesitan `size` (sumarle una constante a todo el rango le suma lo mismo al mínimo), pero sí la guardia del rango vacío, para que la identidad no se contamine.
 
+```cpp
+struct NodeMnLazy {
+    bool vacio = true;                           // la guardia, en lugar de size
+    ll mn = LLONG_MAX;
+    NodeMnLazy() {}
+    NodeMnLazy(ll x) : vacio(false), mn(x) {}
+    friend NodeMnLazy operator+(const NodeMnLazy& a, const NodeMnLazy& b) {
+        if (a.vacio) return b;
+        if (b.vacio) return a;
+        return NodeMnLazy(min(a.mn, b.mn));
+    }
+    NodeMnLazy& operator*=(const LazyAdd& g) {
+        if (vacio) return *this;                 // la identidad se queda identidad
+        mn += g.a;
+        return *this;
+    }
+};
+
+struct NodeMxLazy {
+    bool vacio = true;
+    ll mx = LLONG_MIN;
+    NodeMxLazy() {}
+    NodeMxLazy(ll x) : vacio(false), mx(x) {}
+    friend NodeMxLazy operator+(const NodeMxLazy& a, const NodeMxLazy& b) {
+        if (a.vacio) return b;
+        if (b.vacio) return a;
+        return NodeMxLazy(max(a.mx, b.mx));
+    }
+    NodeMxLazy& operator*=(const LazyAdd& g) {
+        if (vacio) return *this;
+        mx += g.a;
+        return *this;
+    }
+};
+```
+
+### Las tres formas del contrato, y cuál pide cada template
+
+El `Node` cambia según el template, y **copiar la forma equivocada no compila**:
+
+| template | lo que el `Node` necesita además de `Node()` y `a + b` |
+|---|---|
+| `SegmentTree`, `PersistentSegmentTree`, `SparseSegmentTree` | nada |
+| `LazySegmentTree`, `PersistentLazySegmentTree` | `operator*=(const LazyUpdate&)` |
+| `SparseLazySegmentTree` | `void apply(const LazyUpdate&, ll len)` — el árbol dicta el largo |
+| `ImplicitTreap` | `void reverse()`, y `apply(f, len)` si lleva `LazyUpdate` |
+
+O sea: para los dos lazy densos usá `NodeSumLazy` / `NodeMnLazy` / `NodeMxLazy` de arriba; para el
+sparse lazy cambiá el `operator*=` por `void apply(const LazyUpdate& f, ll len)`; y para el treap
+agregá `void reverse() {}` si el monoide conmuta.
+
 Los cinco están verificados contra fuerza bruta: 651 988 consultas los cuatro sin lazy, 20 173 el de suma con `add` de rango.
 
 ## Los dos monoides de ejemplo

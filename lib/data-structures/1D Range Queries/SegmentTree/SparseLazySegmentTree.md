@@ -179,6 +179,37 @@ st.apply(1'000'000, 2'000'000'000'000LL, LazyAdd(3));
 cout << st.prod(0, 5'000'000'000'000LL).sum << "\n";
 ```
 
+### Máximo solapamiento de intervalos, sin comprimir
+
+El sweep line a $10^{18}$, que es la razón de existir de este template: nada de ordenar eventos ni
+comprimir coordenadas.
+
+```cpp
+struct NodeMx {
+    ll mx = 0;                                  // un tramo SIN TOCAR tiene 0 intervalos encima,
+                                                // y 0 es la identidad del maximo con valores >= 0
+    NodeMx() {}
+    NodeMx(ll x) : mx(x) {}
+
+    friend NodeMx operator+(const NodeMx& a, const NodeMx& b) { return NodeMx(max(a.mx, b.mx)); }
+
+    void apply(const LazyAdd& f, ll) { mx += f.a; }   // el largo no hace falta para un maximo
+};
+
+SparseLazySegmentTree<NodeMx, LazyAdd> st(LIM, intervalos.size());
+
+for(auto& [l, r] : intervalos) {
+    st.apply(l, r, LazyAdd(1));
+}
+
+ll best = st.all_prod().mx;                     // cuantos se pisan como maximo
+ll donde = st.max_right(0, LIM - 1, [&](const NodeMx& v) { return v.mx < best; }) + 1;
+```
+
+Acá `NodeMx()` vale `mx = 0`, y **eso es correcto por dos razones a la vez**: un tramo que nadie
+tocó tiene de verdad $0$ intervalos encima, y $0$ es la identidad del máximo mientras los valores
+sean $\ge 0$. En un árbol sparse `T()` tiene que cumplir las dos cosas — ver la nota al final.
+
 ### Pintar intervalos y contar
 
 Con un `LazyUpdate` de assign, `apply(l, r, assign(1))` pinta y `prod` cuenta lo pintado:
@@ -189,6 +220,8 @@ cout << st.prod(0, n - 1).sum << "\n";          // cuantas posiciones quedaron p
 ```
 
 ### Primer índice $\ge l$ con $a_j \ge x$ tras varios add de rango
+
+Con el `NodeMx` de arriba:
 
 ```cpp
 long long p = st.max_right(l, n - 1, [&](const NodeMx& v) { return v.mx < x; });
