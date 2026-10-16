@@ -251,22 +251,26 @@ cout << r - p + 1 << "\n";
 
 ## Hasta dónde llega
 
-Medido, no estimado: Intel Core Ultra 7 155U, g++ 13.2.0 `-O2 -DNDEBUG`, proceso fijado a un
-core con prioridad alta, **un proceso por corrida** y el mínimo de 3. El pico de memoria es
-`PeakWorkingSetSize` del proceso entero, así que **incluye el vector de entrada**, que es lo que
-de verdad vas a tener en memoria. La fila del techo también está medida: es la `q` más grande que
-entró en 1 s, buscada a mano, no extrapolada de las otras filas.
+Intel Core Ultra 7 155U, g++ 13.2.0 `-O2 -DNDEBUG`, proceso fijado a un core con prioridad alta,
+**un proceso por corrida** y el mínimo de 3. Cada celda es **tiempo total (build + consultas) ·
+pico de memoria**. El pico es `PeakWorkingSetSize` del proceso entero, así que incluye el vector
+de entrada, que es lo que de verdad vas a tener en memoria.
 
-`Node` de 8 B, `LazyUpdate` de 8 B, $n = 10^{18}$ **fijo**. Carga: 25% `apply` de rango, 50% `prod`, 25% `max_right`. No hay build.
+Referencia: **5 s** y **1024 MiB**. `!` marca lo que se pasa de 5 s; `~` lo que queda **en el
+borde**, entre 4 y 6.5 s — ahí la medición varía hasta un 15% entre corridas según el estado
+térmico de la máquina, así que no te fíes de un pass/fail: medí tu caso.
 
-| n | q | build | consultas | **total** | **pico** | ¿entra en 1 s / 1024 MiB? |
-|---|---|---|---|---|---|---|
-| 10¹⁸ | 10⁴ | 0.0 ms | 22.6 ms | **23 ms** | **15 MiB** · 2.4M nodos | sí |
-| 10¹⁸ | 10⁵ | 0.0 ms | 277.8 ms | **278 ms** | **104 MiB** · 24.4M nodos | sí |
-| 10¹⁸ | 5·10⁵ | 0.0 ms | 1819.9 ms | **1820 ms** | **473 MiB** · 122.0M nodos | **no**, se pasa de 1 s |
-| 10¹⁸ | **3·10⁵** | 0.0 ms | 988.0 ms | **988 ms** | **291 MiB** · 73.2M nodos | **el techo medido** |
+`Node` de 8 B, `LazyUpdate` de 8 B. Carga: 25% `apply` de rango, 50% `prod`, 25% `max_right`. No hay build.
 
-Las referencias son los límites típicos de un problema: **1 s** y **1024 MiB**. Si tu problema da
-2 s o 256 MiB, escalá.
+| n \ q | 10⁴ | 10⁵ | 5·10⁵ | 10⁶ |
+|---|---|---|---|---|
+| **10⁶** | 8 ms · 6 MiB | 108 ms · 13 MiB | 724 ms · 26 MiB | 1.6 s · 34 MiB |
+| **10¹⁸** | 21 ms · 15 MiB | 278 ms · 104 MiB | 1.7 s · 474 MiB | 3.9 s · 921 MiB |
 
-El factor 4 del pool se nota enseguida: a $q = 10^5$ ya son 24 M de nodos y 104 MiB. El techo medido es $q = 3\cdot10^5$, y ahí ya vas por 291 MiB — **la memoria te alcanza poco después del tiempo**, no mucho después. Con 256 MiB de límite el techo baja a $q \approx 2.5\cdot10^5$.
+El **techo medido** (la `q` más grande que entró en 5 s, buscada a mano y no extrapolada):
+
+A $n = 10^{18}$: **$q = 10^6$** en 3.5 s, pero con **921 MiB** — el tiempo entra y la memoria casi no. A $n = 10^6$: $q = 10^6$ en 1.6 s y 34 MiB.
+
+**Acá la memoria es el cuello, no el tiempo.** A $n = 10^{18}$ con $q = 10^6$ el tiempo entra en 5 s con holgura (3.5 s) pero el pico es de 921 MiB: con un límite de 1024 MiB estás al 90%, y con uno de 256 MiB el techo baja a $q \approx 2.5\cdot10^5$. El factor 4 del pool por el `apply` de rango se multiplica por los 60 niveles de $10^{18}$.
+
+Y el `n` pesa muchísimo: con el mismo $q = 10^6$, bajar de $10^{18}$ a $10^6$ te deja **2.5x más rápido y 27x más liviano**. Si tus coordenadas caben en $10^6$ después de comprimir, comprimí.

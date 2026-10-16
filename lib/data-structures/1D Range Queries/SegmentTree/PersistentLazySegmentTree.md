@@ -221,26 +221,25 @@ cout << p - l + 1 << "\n";                      // el largo, sin if
 
 ## Hasta dónde llega
 
-Medido, no estimado: Intel Core Ultra 7 155U, g++ 13.2.0 `-O2 -DNDEBUG`, proceso fijado a un
-core con prioridad alta, **un proceso por corrida** y el mínimo de 3. El pico de memoria es
-`PeakWorkingSetSize` del proceso entero, así que **incluye el vector de entrada**, que es lo que
-de verdad vas a tener en memoria. La fila del techo también está medida: es la `q` más grande que
-entró en 1 s, buscada a mano, no extrapolada de las otras filas.
+Intel Core Ultra 7 155U, g++ 13.2.0 `-O2 -DNDEBUG`, proceso fijado a un core con prioridad alta,
+**un proceso por corrida** y el mínimo de 3. Cada celda es **tiempo total (build + consultas) ·
+pico de memoria**. El pico es `PeakWorkingSetSize` del proceso entero, así que incluye el vector
+de entrada, que es lo que de verdad vas a tener en memoria.
+
+Referencia: **5 s** y **1024 MiB**. `!` marca lo que se pasa de 5 s; `~` lo que queda **en el
+borde**, entre 4 y 6.5 s — ahí la medición varía hasta un 15% entre corridas según el estado
+térmico de la máquina, así que no te fíes de un pass/fail: medí tu caso.
 
 `Node` de 16 B, `LazyUpdate` de 8 B, `InternalNode` de 32 B. Carga: 25% `apply` de rango creando versión, 50% `prod` sobre una versión al azar, 25% `max_right`.
 
-| n | q | build | consultas | **total** | **pico** | ¿entra en 1 s / 1024 MiB? |
-|---|---|---|---|---|---|---|
-| 10⁴ | 10⁵ | 0.3 ms | 213.7 ms | **214 ms** | **41 MiB** · 6.0M nodos | sí |
-| 10⁴ | 5·10⁵ | 0.3 ms | 1278.6 ms | **1279 ms** | **183 MiB** · 30.0M nodos | **no**, se pasa de 1 s |
-| 10⁵ | 10⁵ | 3.3 ms | 296.2 ms | **300 ms** | **58 MiB** · 7.4M nodos | sí |
-| 10⁵ | 5·10⁵ | 3.5 ms | 1770.7 ms | **1774 ms** | **241 MiB** · 36.2M nodos | **no**, se pasa de 1 s |
-| 10⁶ | 10⁵ | 29.4 ms | 397.9 ms | **427 ms** | **136 MiB** · 10.4M nodos | sí |
-| 10⁶ | 5·10⁵ | 32.2 ms | 2425.6 ms | **2458 ms** | **359 MiB** · 44.0M nodos | **no**, se pasa de 1 s |
-| 10⁶ | 10⁶ | 30.4 ms | 5918.7 ms | **5949 ms** | **636 MiB** · 86.0M nodos | **no**, se pasa de 1 s |
-| 10⁶ | **2·10⁵** | 30.0 ms | 874.0 ms | **904 ms** | **192 MiB** · 18.8M nodos | **el techo medido** |
+| n \ q | 10⁴ | 10⁵ | 5·10⁵ | 10⁶ |
+|---|---|---|---|---|
+| **10⁴** | 7 ms · 9 MiB | 188 ms · 41 MiB | 1.1 s · 183 MiB | 2.6 s · 361 MiB |
+| **10⁵** | 16 ms · 17 MiB | 269 ms · 58 MiB | 1.6 s · 241 MiB | 3.9 s · 469 MiB |
+| **10⁶** | 55 ms · 86 MiB | 409 ms · 136 MiB | 2.2 s · 359 MiB | 5.4 s · 637 MiB `~` |
 
-Las referencias son los límites típicos de un problema: **1 s** y **1024 MiB**. Si tu problema da
-2 s o 256 MiB, escalá.
+El **techo medido** (la `q` más grande que entró en 5 s, buscada a mano y no extrapolada):
 
-**La más cara de las siete, por lejos.** El factor 4 del pool se paga en todo: a $n = q = 10^6$ son 86 M de nodos, 637 MiB y **5.9 s**. El techo medido a $n = 10^6$ es $q = 2\cdot10^5$ — siete veces menos que el `LazySegmentTree` no persistente. Si necesitás $q = 10^6$ con updates de rango **y** persistencia, esta estructura no te sirve: buscá si el problema se puede resolver offline.
+A $n = 10^6$: **$q = 5\cdot10^5$** en 2.3 s y 359 MiB.
+
+**La más cara de las siete, por lejos.** El factor 4 del pool se paga en todo: a $n = q = 10^6$ son 637 MiB y 5.4 s, contra 631 ms y 60 MiB del `LazySegmentTree` no persistente — **8.6x el tiempo y 10x la memoria**. Acá la memoria y el tiempo se agotan casi juntos, que es lo que la vuelve incómoda: no podés comprar tiempo con memoria ni al revés. Si necesitás $q = 10^6$ con updates de rango **y** persistencia, mirá si el problema sale offline.

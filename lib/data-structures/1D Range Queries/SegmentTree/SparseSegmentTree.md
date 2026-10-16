@@ -228,22 +228,26 @@ template: es que el problema necesita otra estructura.
 
 ## Hasta dónde llega
 
-Medido, no estimado: Intel Core Ultra 7 155U, g++ 13.2.0 `-O2 -DNDEBUG`, proceso fijado a un
-core con prioridad alta, **un proceso por corrida** y el mínimo de 3. El pico de memoria es
-`PeakWorkingSetSize` del proceso entero, así que **incluye el vector de entrada**, que es lo que
-de verdad vas a tener en memoria. La fila del techo también está medida: es la `q` más grande que
-entró en 1 s, buscada a mano, no extrapolada de las otras filas.
+Intel Core Ultra 7 155U, g++ 13.2.0 `-O2 -DNDEBUG`, proceso fijado a un core con prioridad alta,
+**un proceso por corrida** y el mínimo de 3. Cada celda es **tiempo total (build + consultas) ·
+pico de memoria**. El pico es `PeakWorkingSetSize` del proceso entero, así que incluye el vector
+de entrada, que es lo que de verdad vas a tener en memoria.
 
-`T` de 8 B, `InternalNode` de 16 B, $n = 10^{18}$ **fijo**. Carga: 25% `set` en posición al azar, 50% `prod`, 25% `max_right`. No hay build.
+Referencia: **5 s** y **1024 MiB**. `!` marca lo que se pasa de 5 s; `~` lo que queda **en el
+borde**, entre 4 y 6.5 s — ahí la medición varía hasta un 15% entre corridas según el estado
+térmico de la máquina, así que no te fíes de un pass/fail: medí tu caso.
 
-| n | q | build | consultas | **total** | **pico** | ¿entra en 1 s / 1024 MiB? |
-|---|---|---|---|---|---|---|
-| 10¹⁸ | 10⁴ | 0.0 ms | 10.3 ms | **10 ms** | **6 MiB** · 0.6M nodos | sí |
-| 10¹⁸ | 10⁵ | 0.0 ms | 164.0 ms | **164 ms** | **22 MiB** · 6.1M nodos | sí |
-| 10¹⁸ | 10⁶ | 0.0 ms | 2340.6 ms | **2341 ms** | **169 MiB** · 61.0M nodos | **no**, se pasa de 1 s |
-| 10¹⁸ | **5·10⁵** | 0.0 ms | 999.0 ms | **999 ms** | **89 MiB** · 30.5M nodos | **el techo medido** |
+`T` de 8 B, `InternalNode` de 16 B. Carga: 25% `set` en posición al azar, 50% `prod`, 25% `max_right`. No hay build.
 
-Las referencias son los límites típicos de un problema: **1 s** y **1024 MiB**. Si tu problema da
-2 s o 256 MiB, escalá.
+| n \ q | 10⁴ | 10⁵ | 10⁶ | 2·10⁶ |
+|---|---|---|---|---|
+| **10⁶** | 4 ms · 5 MiB | 50 ms · 7 MiB | 970 ms · 17 MiB | 2.4 s · 22 MiB |
+| **10¹⁸** | 10 ms · 6 MiB | 129 ms · 22 MiB | 2.1 s · 169 MiB | 5.6 s · 325 MiB `~` |
 
-El $n$ **no influye**: el costo es $q \log n$ y nada más, y el build es gratis — un árbol de $10^{18}$ recién instanciado tiene un nodo. El techo medido es $q = 5\cdot10^5$. Si podés comprimir coordenadas y usar el `SegmentTree` denso, hacelo: es **8x** más rápido a $q = 10^6$ (287 ms contra 2341) y usa 6x menos memoria.
+El **techo medido** (la `q` más grande que entró en 5 s, buscada a mano y no extrapolada):
+
+A $n = 10^{18}$: **$q = 10^6$** en 2.2 s y 169 MiB. A $n = 10^6$ entra $q = 2\cdot10^6$ en 2.4 s.
+
+**El `n` sí influye, y bastante.** Con el mismo $q = 10^6$, pasar de $n = 10^6$ a $n = 10^{18}$ cuesta **2.2x el tiempo y 10x la memoria** (970 ms y 17 MiB contra 2.1 s y 169 MiB), porque cada `set` materializa $\lceil\log_2 n\rceil + 1$ nodos: 20 contra 60. El build sigue siendo gratis a cualquier `n` — un árbol de $10^{18}$ recién instanciado tiene un nodo.
+
+Si podés comprimir coordenadas y usar el `SegmentTree` denso, hacelo: a $q = 10^6$ es **8.6x** más rápido (247 ms contra 2.1 s) y usa 6x menos memoria.

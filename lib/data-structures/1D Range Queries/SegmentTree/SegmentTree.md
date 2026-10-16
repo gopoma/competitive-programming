@@ -231,27 +231,26 @@ El predicado es monótono porque `mnpref` no crece al extender el prefijo.
 
 ## Hasta dónde llega
 
-Medido, no estimado: Intel Core Ultra 7 155U, g++ 13.2.0 `-O2 -DNDEBUG`, proceso fijado a un
-core con prioridad alta, **un proceso por corrida** y el mínimo de 3. El pico de memoria es
-`PeakWorkingSetSize` del proceso entero, así que **incluye el vector de entrada**, que es lo que
-de verdad vas a tener en memoria. La fila del techo también está medida: es la `q` más grande que
-entró en 1 s, buscada a mano, no extrapolada de las otras filas.
+Intel Core Ultra 7 155U, g++ 13.2.0 `-O2 -DNDEBUG`, proceso fijado a un core con prioridad alta,
+**un proceso por corrida** y el mínimo de 3. Cada celda es **tiempo total (build + consultas) ·
+pico de memoria**. El pico es `PeakWorkingSetSize` del proceso entero, así que incluye el vector
+de entrada, que es lo que de verdad vas a tener en memoria.
+
+Referencia: **5 s** y **1024 MiB**. `!` marca lo que se pasa de 5 s; `~` lo que queda **en el
+borde**, entre 4 y 6.5 s — ahí la medición varía hasta un 15% entre corridas según el estado
+térmico de la máquina, así que no te fíes de un pass/fail: medí tu caso.
 
 `Node` de 8 B (solo `sum`). Carga: 25% `set`, 50% `prod`, 25% `max_right`, rangos al azar.
 
-| n | q | build | consultas | **total** | **pico** | ¿entra en 1 s / 1024 MiB? |
-|---|---|---|---|---|---|---|
-| 10⁴ | 10⁵ | 0.1 ms | 14.8 ms | **15 ms** | **5 MiB** | sí |
-| 10⁴ | 10⁶ | 0.1 ms | 145.4 ms | **146 ms** | **5 MiB** | sí |
-| 10⁵ | 10⁵ | 0.9 ms | 17.4 ms | **18 ms** | **7 MiB** | sí |
-| 10⁵ | 10⁶ | 1.1 ms | 177.8 ms | **179 ms** | **7 MiB** | sí |
-| 10⁶ | 10⁵ | 8.5 ms | 28.3 ms | **37 ms** | **28 MiB** | sí |
-| 10⁶ | 10⁶ | 7.8 ms | 278.9 ms | **287 ms** | **28 MiB** | sí |
-| 5·10⁶ | 10⁵ | 81.1 ms | 36.6 ms | **118 ms** | **171 MiB** | sí |
-| 5·10⁶ | 10⁶ | 66.3 ms | 336.4 ms | **403 ms** | **171 MiB** | sí |
-| 10⁶ | **3·10⁶** | 8.0 ms | 874.0 ms | **882 ms** | **28 MiB** | **el techo medido** |
+| n \ q | 10⁴ | 10⁵ | 10⁶ | 5·10⁶ |
+|---|---|---|---|---|
+| **10⁴** | 1 ms · 5 MiB | 15 ms · 5 MiB | 146 ms · 5 MiB | 679 ms · 5 MiB |
+| **10⁵** | 2 ms · 7 MiB | 17 ms · 7 MiB | 178 ms · 7 MiB | 781 ms · 7 MiB |
+| **10⁶** | 9 ms · 28 MiB | 31 ms · 28 MiB | 246 ms · 28 MiB | 1.2 s · 28 MiB |
+| **10⁷** | 131 ms · 337 MiB | 149 ms · 337 MiB | 429 ms · 337 MiB | 1.6 s · 337 MiB |
 
-Las referencias son los límites típicos de un problema: **1 s** y **1024 MiB**. Si tu problema da
-2 s o 256 MiB, escalá.
+El **techo medido** (la `q` más grande que entró en 5 s, buscada a mano y no extrapolada):
 
-**La más rápida de la familia, y por bastante.** A $n = q = 10^6$ todo el trabajo entra en 287 ms, con holgura de 3.5x, y el techo real a $n = 10^6$ es $q = 3\cdot10^6$. El build domina hasta $n \approx 10^6$ y las consultas desde ahí. La memoria nunca es el problema: ni a $n = 5\cdot10^6$ pasa de 171 MiB.
+A $n = 10^7$: **$q = 10^7$** en 3.3 s y 337 MiB. A $n = 10^6$ ni $q = 5\cdot10^6$ la hace sudar: 1.2 s.
+
+**La más rápida de la familia y la que más aguanta.** El tiempo de consulta casi no depende de `n` (2 ms a $n = 10^6$ contra 3.5 ms a $n = 10^7$, con $q = 10^4$): lo que crece es el **build**, que a $n = 10^7$ son 118 ms y domina todo salvo las cargas con $q \ge 10^6$. La memoria es $2 \cdot SZ$ nodos y nada más, así que ni a $n = 10^7$ pasa de 337 MiB.
