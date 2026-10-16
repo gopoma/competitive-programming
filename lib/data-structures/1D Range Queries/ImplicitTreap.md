@@ -222,15 +222,19 @@ Da vuelta `a[l..r]`.
 ## rotate
 
 ```cpp
-void t.rotate(int l, int r, int shift)
+void t.rotate(int l, int r, long long shift)
 ```
 
 Rota `a[l..r]` a la **izquierda** en `shift`: el viejo `a[l+shift]` pasa a ser `a[l]`.
 
-`shift` acepta **cualquier entero** y se normaliza internamente: negativo rota a la derecha, y
-un múltiplo del largo no hace nada. O sea que no hace falta escribir `((k % len) + len) % len`
-en el llamador, que es donde se olvida el segundo `% len` o se suma antes del módulo y se
-desborda con `INT_MAX`.
+`shift` acepta **cualquier valor** y se normaliza internamente: negativo rota a la derecha, y un
+múltiplo del largo no hace nada. O sea que no hace falta escribir `((k % len) + len) % len` en
+el llamador, que es donde se olvida el segundo `% len` o se suma antes del módulo y se desborda.
+
+Es `long long` y no `int` **a propósito**: con `int` un valor fuera de rango se estrecha *antes*
+de entrar al método, así que la normalización recibiría un número que no es el que escribiste.
+La cuenta se hace en `long long`, por lo que no hay desborde posible: como `len ≥ 1`, el resto
+cae en $(-len, 0]$ y al sumarle `len` queda en $(0, len]$.
 
 Con `shift` ya en $[0, len)$ equivale a `std::rotate(b+l, b+l+shift, b+r+1)`.
 
