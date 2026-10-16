@@ -226,3 +226,32 @@ int p = seg.max_right(l, r, [&](const NodeSumMnPref& v) { return v.mnpref == 0; 
 ```
 
 El predicado es monótono porque `mnpref` no crece al extender el prefijo.
+
+---
+
+## Hasta dónde llega
+
+Medido, no estimado: Intel Core Ultra 7 155U, g++ 13.2.0 `-O2 -DNDEBUG`, proceso fijado a un
+core con prioridad alta, **un proceso por corrida** y el mínimo de 3. El pico de memoria es
+`PeakWorkingSetSize` del proceso entero, así que **incluye el vector de entrada**, que es lo que
+de verdad vas a tener en memoria. La fila del techo también está medida: es la `q` más grande que
+entró en 1 s, buscada a mano, no extrapolada de las otras filas.
+
+`Node` de 8 B (solo `sum`). Carga: 25% `set`, 50% `prod`, 25% `max_right`, rangos al azar.
+
+| n | q | build | consultas | **total** | **pico** | ¿entra en 1 s / 1024 MiB? |
+|---|---|---|---|---|---|---|
+| 10⁴ | 10⁵ | 0.1 ms | 14.8 ms | **15 ms** | **5 MiB** | sí |
+| 10⁴ | 10⁶ | 0.1 ms | 145.4 ms | **146 ms** | **5 MiB** | sí |
+| 10⁵ | 10⁵ | 0.9 ms | 17.4 ms | **18 ms** | **7 MiB** | sí |
+| 10⁵ | 10⁶ | 1.1 ms | 177.8 ms | **179 ms** | **7 MiB** | sí |
+| 10⁶ | 10⁵ | 8.5 ms | 28.3 ms | **37 ms** | **28 MiB** | sí |
+| 10⁶ | 10⁶ | 7.8 ms | 278.9 ms | **287 ms** | **28 MiB** | sí |
+| 5·10⁶ | 10⁵ | 81.1 ms | 36.6 ms | **118 ms** | **171 MiB** | sí |
+| 5·10⁶ | 10⁶ | 66.3 ms | 336.4 ms | **403 ms** | **171 MiB** | sí |
+| 10⁶ | **3·10⁶** | 8.0 ms | 874.0 ms | **882 ms** | **28 MiB** | **el techo medido** |
+
+Las referencias son los límites típicos de un problema: **1 s** y **1024 MiB**. Si tu problema da
+2 s o 256 MiB, escalá.
+
+**La más rápida de la familia, y por bastante.** A $n = q = 10^6$ todo el trabajo entra en 287 ms, con holgura de 3.5x, y el techo real a $n = 10^6$ es $q = 3\cdot10^6$. El build domina hasta $n \approx 10^6$ y las consultas desde ahí. La memoria nunca es el problema: ni a $n = 5\cdot10^6$ pasa de 171 MiB.

@@ -511,3 +511,30 @@ Y con la secuencia ordenada, de arriba salen gratis:
 | el máximo de los $k$ menores | `s.prod(0, k - 1).mx` |
 
 Un `multiset` hace el insert y el erase, pero **no** te da la suma de los $k$ menores.
+
+---
+
+## Hasta dónde llega
+
+Medido, no estimado: Intel Core Ultra 7 155U, g++ 13.2.0 `-O2 -DNDEBUG`, proceso fijado a un
+core con prioridad alta, **un proceso por corrida** y el mínimo de 3. El pico de memoria es
+`PeakWorkingSetSize` del proceso entero, así que **incluye el vector de entrada**, que es lo que
+de verdad vas a tener en memoria. La fila del techo también está medida: es la `q` más grande que
+entró en 1 s, buscada a mano, no extrapolada de las otras filas.
+
+`Node` de 8 B con `reverse()` vacío, `LazyUpdate` de 8 B. Carga: las seis operaciones rotando — `insert`, `erase`, `apply` de rango, `reverse`, `prod`, `max_right`.
+
+| n | q | build | consultas | **total** | **pico** | ¿entra en 1 s / 1024 MiB? |
+|---|---|---|---|---|---|---|
+| 10⁴ | 10⁵ | 0.3 ms | 134.9 ms | **135 ms** | **6 MiB** · 0.1M nodos | sí |
+| 10⁴ | 10⁶ | 0.3 ms | 1310.6 ms | **1311 ms** | **13 MiB** · 1.0M nodos | **no**, se pasa de 1 s |
+| 10⁵ | 10⁵ | 2.3 ms | 256.4 ms | **259 ms** | **10 MiB** · 0.2M nodos | sí |
+| 10⁵ | 10⁶ | 2.3 ms | 2666.5 ms | **2669 ms** | **17 MiB** · 1.1M nodos | **no**, se pasa de 1 s |
+| 10⁶ | 10⁵ | 26.0 ms | 499.7 ms | **526 ms** | **51 MiB** · 1.1M nodos | sí |
+| 10⁶ | 10⁶ | 23.3 ms | 5767.2 ms | **5790 ms** | **58 MiB** · 2.0M nodos | **no**, se pasa de 1 s |
+| 10⁶ | **2·10⁵** | 26.0 ms | 950.0 ms | **976 ms** | **52 MiB** · 1.2M nodos | **el techo medido** |
+
+Las referencias son los límites típicos de un problema: **1 s** y **1024 MiB**. Si tu problema da
+2 s o 256 MiB, escalá.
+
+**La memoria nunca es el problema**: el pool es $n + q$ y a $n = q = 10^6$ son 58 MiB. El techo es el tiempo: a $n = q = 10^6$ son **5.8 s**, porque cada `insert`/`erase` reestructura con `split` y `merge`. El techo medido a $n = 10^6$ es $q = 2\cdot10^5$. Si no necesitás `insert`/`erase`/`reverse`, el `LazySegmentTree` hace lo mismo **8x** más rápido (738 ms contra 5.8 s a $n = q = 10^6$).

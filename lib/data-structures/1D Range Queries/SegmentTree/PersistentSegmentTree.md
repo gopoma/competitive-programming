@@ -274,3 +274,30 @@ menor $v$ cuya última aparición es $< l$, o sea un `max_right` con `mn >= l`:
 int p = st.max_right(ver[r], 0, m - 1, [&](const NodeMn& v) { return v.mn >= l; });
 cout << p + 1 << "\n";
 ```
+
+---
+
+## Hasta dónde llega
+
+Medido, no estimado: Intel Core Ultra 7 155U, g++ 13.2.0 `-O2 -DNDEBUG`, proceso fijado a un
+core con prioridad alta, **un proceso por corrida** y el mínimo de 3. El pico de memoria es
+`PeakWorkingSetSize` del proceso entero, así que **incluye el vector de entrada**, que es lo que
+de verdad vas a tener en memoria. La fila del techo también está medida: es la `q` más grande que
+entró en 1 s, buscada a mano, no extrapolada de las otras filas.
+
+`T` de 8 B (solo `sum`), `InternalNode` de 16 B. Carga: 25% `set` creando versión, 50% `prod` sobre una versión al azar, 25% `max_right`. Las raíces se guardan en un `vector<int>`.
+
+| n | q | build | consultas | **total** | **pico** | ¿entra en 1 s / 1024 MiB? |
+|---|---|---|---|---|---|---|
+| 10⁴ | 10⁵ | 0.3 ms | 64.0 ms | **64 ms** | **11 MiB** · 1.5M nodos | sí |
+| 10⁴ | 10⁶ | 0.3 ms | 1792.3 ms | **1793 ms** | **61 MiB** · 15.0M nodos | **no**, se pasa de 1 s |
+| 10⁵ | 10⁵ | 2.0 ms | 114.0 ms | **116 ms** | **15 MiB** · 2.0M nodos | sí |
+| 10⁵ | 10⁶ | 2.2 ms | 2489.9 ms | **2492 ms** | **77 MiB** · 18.2M nodos | **no**, se pasa de 1 s |
+| 10⁶ | 10⁵ | 21.9 ms | 216.4 ms | **238 ms** | **51 MiB** · 4.1M nodos | sí |
+| 10⁶ | 10⁶ | 21.2 ms | 3066.9 ms | **3088 ms** | **124 MiB** · 23.0M nodos | **no**, se pasa de 1 s |
+| 10⁶ | **3·10⁵** | 21.0 ms | 789.0 ms | **810 ms** | **67 MiB** · 7.4M nodos | **el techo medido** |
+
+Las referencias son los límites típicos de un problema: **1 s** y **1024 MiB**. Si tu problema da
+2 s o 256 MiB, escalá.
+
+**El techo es el tiempo, no la memoria**: el pico nunca llega a 124 MiB, pero a $q = 10^6$ se pasa de 1 s en las tres $n$. El techo medido a $n = 10^6$ es $q = 3\cdot10^5$. El pool lo domina $q \log n$, no $n$: a $n = 10^4$ con $q = 10^6$ son 15 M de nodos, y a $n$ cien veces más grande apenas 23 M.

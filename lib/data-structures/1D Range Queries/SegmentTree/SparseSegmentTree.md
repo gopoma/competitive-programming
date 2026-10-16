@@ -223,3 +223,27 @@ típico es *"el primer índice libre $\ge l$"* con $1$ = ocupado y mínimo: para
 sin tocar está **libre**, así que `T()` tiene que valer $0$. Las dos demandas se contradicen, el
 acumulador queda clavado en $0$ y `max_right` devuelve el centinela siempre. No es un bug del
 template: es que el problema necesita otra estructura.
+
+---
+
+## Hasta dónde llega
+
+Medido, no estimado: Intel Core Ultra 7 155U, g++ 13.2.0 `-O2 -DNDEBUG`, proceso fijado a un
+core con prioridad alta, **un proceso por corrida** y el mínimo de 3. El pico de memoria es
+`PeakWorkingSetSize` del proceso entero, así que **incluye el vector de entrada**, que es lo que
+de verdad vas a tener en memoria. La fila del techo también está medida: es la `q` más grande que
+entró en 1 s, buscada a mano, no extrapolada de las otras filas.
+
+`T` de 8 B, `InternalNode` de 16 B, $n = 10^{18}$ **fijo**. Carga: 25% `set` en posición al azar, 50% `prod`, 25% `max_right`. No hay build.
+
+| n | q | build | consultas | **total** | **pico** | ¿entra en 1 s / 1024 MiB? |
+|---|---|---|---|---|---|---|
+| 10¹⁸ | 10⁴ | 0.0 ms | 10.3 ms | **10 ms** | **6 MiB** · 0.6M nodos | sí |
+| 10¹⁸ | 10⁵ | 0.0 ms | 164.0 ms | **164 ms** | **22 MiB** · 6.1M nodos | sí |
+| 10¹⁸ | 10⁶ | 0.0 ms | 2340.6 ms | **2341 ms** | **169 MiB** · 61.0M nodos | **no**, se pasa de 1 s |
+| 10¹⁸ | **5·10⁵** | 0.0 ms | 999.0 ms | **999 ms** | **89 MiB** · 30.5M nodos | **el techo medido** |
+
+Las referencias son los límites típicos de un problema: **1 s** y **1024 MiB**. Si tu problema da
+2 s o 256 MiB, escalá.
+
+El $n$ **no influye**: el costo es $q \log n$ y nada más, y el build es gratis — un árbol de $10^{18}$ recién instanciado tiene un nodo. El techo medido es $q = 5\cdot10^5$. Si podés comprimir coordenadas y usar el `SegmentTree` denso, hacelo: es **8x** más rápido a $q = 10^6$ (287 ms contra 2341) y usa 6x menos memoria.

@@ -246,3 +246,27 @@ cout << p - l + 1 << "\n";                      // el largo, sin if
 long long p = st.min_left(l, r, [&](const NodeSum& v) { return v.sum <= S; });
 cout << r - p + 1 << "\n";
 ```
+
+---
+
+## Hasta dónde llega
+
+Medido, no estimado: Intel Core Ultra 7 155U, g++ 13.2.0 `-O2 -DNDEBUG`, proceso fijado a un
+core con prioridad alta, **un proceso por corrida** y el mínimo de 3. El pico de memoria es
+`PeakWorkingSetSize` del proceso entero, así que **incluye el vector de entrada**, que es lo que
+de verdad vas a tener en memoria. La fila del techo también está medida: es la `q` más grande que
+entró en 1 s, buscada a mano, no extrapolada de las otras filas.
+
+`Node` de 8 B, `LazyUpdate` de 8 B, $n = 10^{18}$ **fijo**. Carga: 25% `apply` de rango, 50% `prod`, 25% `max_right`. No hay build.
+
+| n | q | build | consultas | **total** | **pico** | ¿entra en 1 s / 1024 MiB? |
+|---|---|---|---|---|---|---|
+| 10¹⁸ | 10⁴ | 0.0 ms | 22.6 ms | **23 ms** | **15 MiB** · 2.4M nodos | sí |
+| 10¹⁸ | 10⁵ | 0.0 ms | 277.8 ms | **278 ms** | **104 MiB** · 24.4M nodos | sí |
+| 10¹⁸ | 5·10⁵ | 0.0 ms | 1819.9 ms | **1820 ms** | **473 MiB** · 122.0M nodos | **no**, se pasa de 1 s |
+| 10¹⁸ | **3·10⁵** | 0.0 ms | 988.0 ms | **988 ms** | **291 MiB** · 73.2M nodos | **el techo medido** |
+
+Las referencias son los límites típicos de un problema: **1 s** y **1024 MiB**. Si tu problema da
+2 s o 256 MiB, escalá.
+
+El factor 4 del pool se nota enseguida: a $q = 10^5$ ya son 24 M de nodos y 104 MiB. El techo medido es $q = 3\cdot10^5$, y ahí ya vas por 291 MiB — **la memoria te alcanza poco después del tiempo**, no mucho después. Con 256 MiB de límite el techo baja a $q \approx 2.5\cdot10^5$.

@@ -279,3 +279,32 @@ combinado con el `LazyUpdate` de assign:
 seg.apply(l, r, LazyUpdate::assign(v));
 cout << seg.prod(l, r).best << "\n";
 ```
+
+---
+
+## Hasta dónde llega
+
+Medido, no estimado: Intel Core Ultra 7 155U, g++ 13.2.0 `-O2 -DNDEBUG`, proceso fijado a un
+core con prioridad alta, **un proceso por corrida** y el mínimo de 3. El pico de memoria es
+`PeakWorkingSetSize` del proceso entero, así que **incluye el vector de entrada**, que es lo que
+de verdad vas a tener en memoria. La fila del techo también está medida: es la `q` más grande que
+entró en 1 s, buscada a mano, no extrapolada de las otras filas.
+
+`Node` de 16 B (`size` + `sum`) y `LazyUpdate` de 8 B. Carga: 25% `apply` de rango, 50% `prod`, 25% `max_right`, rangos al azar.
+
+| n | q | build | consultas | **total** | **pico** | ¿entra en 1 s / 1024 MiB? |
+|---|---|---|---|---|---|---|
+| 10⁴ | 10⁵ | 0.3 ms | 32.4 ms | **33 ms** | **5 MiB** | sí |
+| 10⁴ | 10⁶ | 0.3 ms | 331.0 ms | **331 ms** | **5 MiB** | sí |
+| 10⁵ | 10⁵ | 2.1 ms | 45.7 ms | **48 ms** | **11 MiB** | sí |
+| 10⁵ | 10⁶ | 2.2 ms | 472.5 ms | **475 ms** | **11 MiB** | sí |
+| 10⁶ | 10⁵ | 19.6 ms | 80.3 ms | **100 ms** | **60 MiB** | sí |
+| 10⁶ | 10⁶ | 17.8 ms | 719.9 ms | **738 ms** | **60 MiB** | justo |
+| 5·10⁶ | 10⁵ | 177.7 ms | 105.6 ms | **283 ms** | **401 MiB** | sí |
+| 5·10⁶ | 10⁶ | 162.2 ms | 1046.7 ms | **1209 ms** | **401 MiB** | **no**, se pasa de 1 s |
+| 10⁶ | **1.4·10⁶** | 18.0 ms | 936.0 ms | **954 ms** | **60 MiB** | **el techo medido** |
+
+Las referencias son los límites típicos de un problema: **1 s** y **1024 MiB**. Si tu problema da
+2 s o 256 MiB, escalá.
+
+Cuesta **2.6x** el `SegmentTree` a $n = q = 10^6$ (738 ms contra 287), que es el precio del `push`. El techo a $n = 10^6$ es $q = 1.4\cdot10^6$, o sea que $n = q = 10^6$ entra pero sin sobrar: si tu `Node` es más gordo que 16 B o el `operator+` hace más que sumar, medilo. A $n = 5\cdot10^6$ con $q = 10^6$ ya se pasa de 1 s.
