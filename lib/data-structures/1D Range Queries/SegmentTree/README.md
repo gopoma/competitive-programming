@@ -81,7 +81,92 @@ Mantené los dos casos separados: `Node()` solo significa *ninguna posición*, m
 
 El `push` es **incondicional**: no hay bandera de "está vacío" ni variables `static` o `constexpr` en el `LazyUpdate`. Si el update es la identidad, aplicarlo igual es correcto y más barato que chequear.
 
-> **La trampa del orden.** Un lazy aditivo conmuta, así que un `f *= g` escrito al revés **pasa igual** y el bug queda latente. Se destapa recién con un update no conmutativo como assign o afín. En esta librería lo verificamos con el `Upd` de assign+add de abajo, que es justamente el caso que lo caza.
+> **La trampa del orden.** Un lazy aditivo conmuta, así que un `f *= g` escrito al revés **pasa igual** y el bug queda latente. Se destapa recién con un update no conmutativo como assign o afín. En esta librería lo verificamos con el `LazyUpdate` de assign+add de abajo, que es justamente el caso que lo caza.
+
+## Cómo se llaman los `Node`
+
+Un archivo de solución puede necesitar más de un árbol —uno de sumas y uno de mínimos, por ejemplo— y ahí `Node` a secas no alcanza. La convención:
+
+| nombre | cuándo |
+|---|---|
+| `Node` | cuando el monoide es **complejo**, con campos que no se leen del nombre (máxima subsuma, convex hull trick, matrices) |
+| `NodeSum`, `NodeMn`, `NodeMx`, `NodeMnMx`, `NodeSumMnMx` | cuando el nombre **puede** decir qué agrega |
+| `LazyUpdate` | el update perezoso, siempre |
+
+Por eso el monoide de máxima subsuma se llama `Node` y el de suma/máximo/mínimo `NodeSumMnMx`.
+
+## Nodos listos para copiar
+
+Los cuatro casos simples. **Sin lazy no hace falta campo de tamaño**: el neutro de cada uno se escribe directo.
+
+```cpp
+struct NodeSum {
+    ll sum = 0;                                  // el neutro de + ya es el cero
+    NodeSum() {}
+    NodeSum(ll x) : sum(x) {}
+    friend NodeSum operator+(const NodeSum& a, const NodeSum& b) { return NodeSum(a.sum + b.sum); }
+};
+
+struct NodeMn {
+    ll mn = LLONG_MAX;                           // el neutro del minimo es +infinito
+    NodeMn() {}
+    NodeMn(ll x) : mn(x) {}
+    friend NodeMn operator+(const NodeMn& a, const NodeMn& b) { return NodeMn(min(a.mn, b.mn)); }
+};
+
+struct NodeMx {
+    ll mx = LLONG_MIN;                           // y el del maximo, -infinito
+    NodeMx() {}
+    NodeMx(ll x) : mx(x) {}
+    friend NodeMx operator+(const NodeMx& a, const NodeMx& b) { return NodeMx(max(a.mx, b.mx)); }
+};
+
+struct NodeMnMx {
+    ll mn = LLONG_MAX, mx = LLONG_MIN;           // cada campo con SU propio neutro
+    NodeMnMx() {}
+    NodeMnMx(ll x) : mn(x), mx(x) {}
+    friend NodeMnMx operator+(const NodeMnMx& a, const NodeMnMx& b) {
+        NodeMnMx res;
+        res.mn = min(a.mn, b.mn);
+        res.mx = max(a.mx, b.mx);
+        return res;
+    }
+};
+```
+
+**Con lazy la cosa cambia**: el update tiene que escalar al largo del intervalo, así que ahí sí aparece el campo `size` y con él la guardia del rango vacío.
+
+```cpp
+struct LazyAdd {
+    ll a = 0;
+    LazyAdd() {}
+    LazyAdd(ll x) : a(x) {}
+    LazyAdd& operator*=(const LazyAdd& g) { a += g.a; return *this; }
+};
+
+struct NodeSumLazy {
+    ll size = 0, sum = 0;                        // size == 0 es el rango vacio
+    NodeSumLazy() {}
+    NodeSumLazy(ll x) : size(1), sum(x) {}
+    friend NodeSumLazy operator+(const NodeSumLazy& a, const NodeSumLazy& b) {
+        if (a.size == 0) return b;
+        if (b.size == 0) return a;
+        NodeSumLazy res;
+        res.size = a.size + b.size;
+        res.sum = a.sum + b.sum;
+        return res;
+    }
+    NodeSumLazy& operator*=(const LazyAdd& g) {
+        if (size == 0) return *this;             // la identidad se queda identidad
+        sum += g.a * size;
+        return *this;
+    }
+};
+```
+
+Un mínimo o un máximo con lazy **no** necesitan `size` (sumarle una constante a todo el rango le suma lo mismo al mínimo), pero sí la guardia del rango vacío, para que la identidad no se contamine.
+
+Los cinco están verificados contra fuerza bruta: 651 988 consultas los cuatro sin lazy, 20 173 el de suma con `add` de rango.
 
 ## Los dos monoides de ejemplo
 
@@ -114,30 +199,30 @@ struct Node {
 Para los tres **con lazy**. El update tiene que llevar **las dos clases a la vez**, leído como *«si `has`, asignar `v`; después sumar `a`»*, porque no conmutan: en la composición un assign posterior gana y borra el add que tenía pendiente debajo, mientras que un add posterior solo se acumula.
 
 ```cpp
-struct Upd {
+struct LazyUpdate {
     bool has = false; ll v = 0, a = 0;
-    Upd() {}
-    static Upd assign(ll x) { Upd f; f.has = true; f.v = x; return f; }
-    static Upd add(ll x) { Upd f; f.a = x; return f; }
-    Upd& operator*=(const Upd& f) {              // f actua DESPUES
+    LazyUpdate() {}
+    static LazyUpdate assign(ll x) { LazyUpdate f; f.has = true; f.v = x; return f; }
+    static LazyUpdate add(ll x) { LazyUpdate f; f.a = x; return f; }
+    LazyUpdate& operator*=(const LazyUpdate& f) {              // f actua DESPUES
         if (f.has) { has = true; v = f.v; a = f.a; }
         else a += f.a;
         return *this; }
 };
-struct Node {
+struct NodeSumMnMx {
     ll size = 0, sum = 0, mx = 0, mn = 0;          // size == 0 es el rango vacio
-    Node() {}
-    Node(ll x) : size(1), sum(x), mx(x), mn(x) {}
-    friend Node operator+(const Node& a, const Node& b) {
+    NodeSumMnMx() {}
+    NodeSumMnMx(ll x) : size(1), sum(x), mx(x), mn(x) {}
+    friend NodeSumMnMx operator+(const NodeSumMnMx& a, const NodeSumMnMx& b) {
         if (a.size == 0) return b;
         if (b.size == 0) return a;
-        Node r;
+        NodeSumMnMx r;
         r.size = a.size + b.size;
         r.sum = a.sum + b.sum;
         r.mx = max(a.mx, b.mx);
         r.mn = min(a.mn, b.mn);
         return r; }
-    Node& operator*=(const Upd& f) {             // densos: el nodo sabe su largo
+    NodeSumMnMx& operator*=(const LazyUpdate& f) {             // densos: el nodo sabe su largo
         if (size == 0) return *this;               // la identidad se queda identidad
         if (f.has) { sum = (f.v + f.a) * size; mx = mn = f.v + f.a; }
         else { sum += f.a * size; mx += f.a; mn += f.a; }
@@ -145,10 +230,10 @@ struct Node {
 };
 ```
 
-Para `SparseLazySegmentTree` el mismo `Upd`, y el `Node` cambia `operator*=` por:
+Para `SparseLazySegmentTree` el mismo `LazyUpdate`, y el `NodeSumMnMx` cambia `operator*=` por:
 
 ```cpp
-    void apply(const Upd& f, ll len) {           // sparse: el arbol dicta el largo
+    void apply(const LazyUpdate& f, ll len) {           // sparse: el arbol dicta el largo
         size = len;                                // FIJA, no suma
         if (f.has) { sum = (f.v + f.a) * len; mx = mn = f.v + f.a; }
         else { sum += f.a * len; mx += f.a; mn += f.a; } }
@@ -265,6 +350,6 @@ El descenso iterativo de `SegmentTree` se verificó además contra el recursivo 
 
 Los tres invariantes de los descensos tienen control negativo: invertir el orden de `+` en `min_left`, podar sin chequear si el predicado rompe, y sacar el corte temprano. Los tres hacen fallar la suite. El primero **solo** lo detecta el monoide A, porque la suma conmuta y el de máxima subsuma no — un test con `Node` conmutativo no prueba nada sobre el orden.
 
-Los ejemplos de los seis manuales se extraen de los comentarios, se compilan **tal cual** con `-Wall -Wextra` y se vuelven a correr con esos structs, no con otros. Cero discrepancias.
+Los nodos de este catálogo se compilan **tal cual** con `-Wall -Wextra` y se corren con esos structs, no con otros. De los seis manuales se verifica además que cada método documentado exista en el header y que cada tipo que aparece en un `Examples` esté definido ahí o acá.
 
 **Solo `LazySegmentTree` tiene juez**: Codeforces EDU submission **394467936** (*Addition and First element at least X*, Accepted, 125 ms), que además es la primera verificación en juez de **`max_right`**. Los otros cinco siguen sin link.

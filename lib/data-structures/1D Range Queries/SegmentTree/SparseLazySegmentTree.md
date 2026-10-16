@@ -1,198 +1,215 @@
 # SparseLazySegmentTree
 
-Segment tree **con propagación perezosa** sobre un universo de hasta 10¹⁸. Combina el universo gigante de [`SparseSegmentTree`](SparseSegmentTree.md) con el update de rango de [`LazySegmentTree`](LazySegmentTree.md).
+[`SparseSegmentTree`](SparseSegmentTree.md) más updates de rango: nodos creados al tocarlos, largo
+hasta $10^{18}$, y `apply(l, r, upd)` en $O(\log n)$.
 
-Es el único de la familia cuyo `Node` usa **`apply(f, len)`** en vez de `operator*=`, y eso no es un capricho: está explicado abajo.
-
-Convenciones, contrato del `Node`/`LazyUpdate`, el pool y el monoide de ejemplo: [README.md](README.md).
-
-## Antes de usarlo: el aviso es más fuerte que en el sparse sin lazy
-
-Un `apply` de rango cuesta **~150 nodos** a `n = 10¹⁸`. Con `q = 10⁶` eso son **~9 GB**: no entra en ningún juez. Lo medí y el proceso paginó.
-
-Si un problema realmente pide eso, la salida es **comprimir coordenadas y usar `LazySegmentTree`**: 10⁶ consultas dan a lo sumo 2·10⁶ extremos, y el denso lo resuelve en ~88 MB.
-
-El sparse lazy sirve para `q` moderado (≲ 10⁵) sobre un universo que no podés comprimir.
-
-## API
+El contrato del `Node` es el único distinto de la familia: **no** es `operator*=`, es
 
 ```cpp
-SparseLazySegmentTree<Node, LazyUpdate> st(n, q)
+void apply(const LazyUpdate& f, long long len)
 ```
 
-No hay `build`: arranca vacío.
+porque el árbol **le pasa el largo**. Un nodo sparse puede representar un tramo gigante que nunca
+se materializó, así que no puede llevar su propio `size`. El `LazyUpdate` sí es igual al de
+[`LazySegmentTree`](LazySegmentTree.md): `LazyUpdate()` es $\mathrm{id}$ y `operator*=` es $\circ$.
+Catálogo en [README.md](README.md).
 
-| método | costo | qué hace |
-|---|---|---|
-| `st.set(pos, val)` | O(log n) | `a[p] = x` |
-| `st.apply(pos, upd)` | O(log n) | `f` sobre `a[p]` |
-| `st.apply(l, r, upd)` | O(log n) | `f` sobre `a[l..r]` |
-| `st.get(pos)` | O(log n) | el `Node` en `p` |
-| `st.prod(l, r)` | O(log n) | pliega `a[l..r]` |
-| `st.all_prod()` | **O(1)** | pliega todo el universo |
-| `st.size()` | O(1) | `n` |
-| `st.max_right(l, r, pred)` | O(log n) | mayor `p` con `f(prod(l, p))`, o `l - 1` |
-| `st.min_left(l, r, pred)` | O(log n) | menor `p` con `f(prod(p, r))`, o `r + 1` |
-| `st.nodes_used()` | O(1) | cuánto del pool se consumió |
-| `st.dump()` | O(n) | vuelca el universo entero, para depurar |
+**Todos los rangos son cerrados, `[l, r]`, y no pueden ser vacíos**: `assert(0 <= l && l <= r && r < n)`.
+Los índices son `long long`.
 
-## Por qué `apply(f, len)` y no `operator*=`
+**Pool**: el factor 4 sale de que un `apply` de rango toca hasta cuatro caminos.
 
-En los lazy densos el nodo conoce su propio largo, porque existe. Acá **un subárbol que nadie materializó no tiene forma de saber cuántas posiciones cubre** — pero el árbol sí, y se lo pasa:
+$$\texttt{max\_nodes}(n, q) = 4(\lceil \log_2 n \rceil + 1)\,q + 1$$
+
+> El lazy **no se baja con `push`**: eso materializaría nodos durante una lectura. Lo pendiente
+> viaja como parámetro en el descenso, así que todas las lecturas son `const`.
+
+## Constructor
 
 ```cpp
-void apply(const Upd& f, ll len) {
-    size = len;                                    // FIJA, no suma
-    ...
-}
+SparseLazySegmentTree<Node, LazyUpdate> st(long long len, long long max_ops);
 ```
 
-Ese `size = len` (fijar, no acumular) es la parte que se presta a confusión. La distinción es:
+Reserva el pool para un árbol de largo `len` y `max_ops` operaciones que creen nodos.
 
-| | significa |
-|---|---|
-| `Node()` sola | **ninguna** posición: el rango vacío, la identidad de `+` |
-| `apply(f, len)` sobre `Node()` | **`len` posiciones** que nunca fueron tocadas |
+**Restricciones**: $len \ge 1$, $max\_ops \ge 0$. · **Complejidad**: $O(1)$ — solo reserva.
 
-Son dos cosas distintas y el `size` es lo que las separa. Si `apply` sumara a `size` en vez de fijarlo, un subárbol no materializado reportaría largo cero y los agregados que escalan con el largo saldrían mal.
-
-> Lo probé al revés para estar seguro: saqué el `size` del `Node`, y `prod(0, 0)` devolvía `mn = 0` en vez de 3, porque el caso disjunto devuelve `Node()` y sin `size` no hay forma de distinguirlo de «una posición cuyo valor es 0». El `size` es necesario, y `apply` tiene que fijarlo.
-
-Mismo contrato que usa [`../ImplicitTreap.h`](../ImplicitTreap.md), por la misma razón.
-
-## El `push` materializa los dos hijos
-
-Cuando un `apply` parcial llega a un nodo, `push` tiene que **materializar los dos hijos aunque estén vacíos**: lo pendiente tiene que quedar guardado en algún lado. De ahí sale el factor 4 de la fórmula del pool — hasta cuatro nodos por nivel en vez de uno.
-
-La lectura, en cambio, **no materializa nada**: `prod` lleva lo pendiente en una variable local, igual que el persistente lazy.
-
-## Memoria
-
-```
-max_nodes(n, q) = 4 * (ceil(log2 n) + 1) * q + 1
-```
-
-Pesimista dos veces (un update sobre nodos ya materializados no crea ninguno, y los nodos cerca de la raíz los comparten todos los caminos), pero el `apply` de rango es genuinamente caro.
-
-Medido con un `Node` de 32 bytes y un `LazyUpdate` de 24, o sea 64 por nodo interno:
-
-| n | q | nodos usados | estructura | pico | `q` applies | `q` prods |
-|---|---|---|---|---|---|---|
-| 200 000 | 200 000 | 379 113 | 23.1 MB | 30.8 MB | 0.213 s | 0.208 s |
-| 10⁹ | 200 000 | 8 344 955 | 509.3 MB | 517.0 MB | 0.668 s | 0.599 s |
-| **10¹⁸** | 25 000 | 4 336 163 | 264.7 MB | 269.7 MB | 0.163 s | 0.120 s |
-| 10¹⁸ | 100 000 | 16 540 727 | 1009.6 MB | 1015.8 MB | 0.668 s | 0.543 s |
-| 10¹⁸ | 10⁶ | 152 095 887 | **9283.2 MB** | 8527.4 MB | 17.3 s | 34.4 s |
-
-A 256 MB el techo es `q ≈ 2.7·10⁴` con `n = 10¹⁸`. Esa última fila es la que hay que mirar antes de elegir esta estructura: los 17 y 34 segundos son **paginación**, no algoritmo — el pico medido (8527 MB) sale menor que la memoria de los nodos (9283 MB) justamente porque el sistema no pudo mantenerlos residentes.
-
-## Ejemplo
-
-Suma, máximo y mínimo con assign y add de rango, coordenadas hasta 10¹⁸ (el `Upd` está en el [README](README.md#b-suma-máximo-y-mínimo-con-assign-y-add-de-rango); el `Node` es la variante con `apply(f, len)` que figura ahí mismo):
+## max_nodes
 
 ```cpp
-const ll N = 1000000000000000000LL;
-int q; cin >> q;
-SparseLazySegmentTree<Node, Upd> st(N, q);
-while (q--) {
-    int type; ll l, r; cin >> type >> l >> r;
-    if (type == 1) { ll v; cin >> v; st.apply(l, r, Upd::assign(v)); }
-    else if (type == 2) { ll v; cin >> v; st.apply(l, r, Upd::add(v)); }
-    else { Node res = st.prod(l, r);
-           cout << res.sum << " " << res.mx << " " << res.mn << "\n"; }
-}
+static long long SparseLazySegmentTree<Node, LazyUpdate>::max_nodes(long long len, long long max_ops)
 ```
 
-Las posiciones intactas cuentan como ceros y salen bien solas: un rango sin nodos debajo llega como `Node()` y `apply` lo convierte en `len` posiciones reportando suma 0, máximo 0 y mínimo 0. **Si tu problema necesita otro valor por defecto, asignalo sobre todo el universo antes que nada.**
+Devuelve cuántos nodos va a reservar el constructor con esos parámetros, para presupuestar memoria
+antes de instanciar.
 
-# Los dos descensos
+**Complejidad**: $O(1)$.
 
-$$
-\texttt{max\_right}(\dots,l,r,f) \;=\; \max\{\, p \in [l,r] \;:\; f(\text{prod}(l,p)) \,\}, \qquad l-1 \text{ si es vacío}
-$$
-
-$$
-\texttt{min\_left}(\dots,l,r,f) \;=\; \min\{\, p \in [l,r] \;:\; f(\text{prod}(p,r)) \,\}, \qquad r+1 \text{ si es vacío}
-$$
-
-`max_right` ancla en $l$ y acumula **prefijos**; `min_left` ancla en $r$ y acumula **sufijos**. Los centinelas, el requisito de monotonía de $f$ y la tabla de predicados están en el [README](README.md#los-dos-descensos) y desarrollados con ejemplos en [SegmentTree.md](SegmentTree.md#los-dos-descensos).
-
-**El centinela, en corto:** si $f$ falla ya en el primer elemento, `max_right` devuelve $l-1$ y `min_left` devuelve $r+1$. Los dos **pueden ser índices válidos**, así que el chequeo es `p == l - 1`, nunca `p < 0`. Y el largo del tramo sale sin ramas: $p-l+1$ y $r-p+1$.
-
-## El descenso lleva el lazy y le pide el largo al árbol
-
-Dos cosas se juntan acá. El lazy pendiente baja como parámetro (nada de `push`, así el descenso no materializa nodos y es `const`), y el agregado de un nodo cubierto se arma con
+## set
 
 ```cpp
-Node pieza = st[cur].val;
-pieza.apply(g, rx - lx + 1);             // el arbol es el que sabe cuantas posiciones cubre
+void st.set(long long pos, Node val)
 ```
 
-Es el mismo contrato que `prod`: **el árbol es la autoridad sobre el largo**, porque un subárbol sin materializar no sabe cuántas posiciones abarca. Por eso `apply` **fija** `size = len` en vez de sumarle.
+`a[pos] = val`, materializando el camino hasta `pos` si hacía falta.
 
-A diferencia del sparse sin lazy, acá sí podés hacer que todo el universo cuente como posiciones reales, con un `apply` que lo materialice:
+**Restricciones**: $0 \le pos < n$. · **Complejidad**: $O(\log n)$.
+
+## apply
 
 ```cpp
-const ll N = 1000000000000000000LL;
-SparseLazySegmentTree<CntLen, LazyUpdate> t(N, 20);
-t.apply(0, N - 1, LazyUpdate::assign(0));      // 1e18 posiciones en 0, de una
-t.apply(10, 19, LazyUpdate::assign(1));        // diez unos
-t.apply(1000, 1004, LazyUpdate::assign(2));    // cinco dos
-// nodes_used = 147,  prod(0, N-1).sum = 20
+(1) void st.apply(long long pos, LazyUpdate upd)
+(2) void st.apply(long long l, long long r, LazyUpdate upd)
 ```
 
-| `sum <= S` | `max_right(0, N-1, ...)` | por qué |
-|---|---|---|
-| $S = 0$ | 9 | $[0,9]$ son todos cero; en 10 arranca el primer uno |
-| $S = 5$ | 14 | cinco unos: $[10,14]$ |
-| $S = 10$ | 999 | los diez unos, y después ceros hasta 999 |
-| $S = 14$ | 1 001 | $10 + 2\cdot2 = 14$ |
-| $S = 20$ | 999 999 999 999 999 999 $= r$ | el total es 20, aguanta todo |
+- (1): `a[pos] = upd(a[pos])`.
+- (2): `a[i] = upd(a[i])` para todo `i` en `[l, r]`.
 
+**Restricciones**: (1) $0 \le pos < n$; (2) $0 \le l \le r < n$. · **Complejidad**: $O(\log n)$.
+
+## get
+
+```cpp
+Node st.get(long long pos) const
 ```
-min_left(0, N-1, sum <= 0) = 1005        <- el sufijo de ceros arranca justo despues del ultimo dos
+
+Devuelve `a[pos]`, con los `apply` pendientes ya resueltos.
+
+**Restricciones**: $0 \le pos < n$. · **Complejidad**: $O(\log n)$.
+
+## prod
+
+```cpp
+Node st.prod(long long l, long long r) const
 ```
 
-Fijate en la fila de $S = 10$: la respuesta es 999 y no 19, porque extender sobre los ceros de $[20, 999]$ no cambia la suma. El descenso devuelve **la mayor** posición que cumple, y eso incluye toda la cola de ceros.
+Devuelve `a[l] + ... + a[r]`.
 
-## `dump()`: ver el estado para depurar
+**Restricciones**: $0 \le l \le r < n$. · **Complejidad**: $O(\log n)$.
 
-Devuelve el arreglo lógico completo como un `vector`, con tres propiedades que valen en los seis templates de la familia:
+## all_prod
 
-$$
-\texttt{dump()}[i] = \texttt{get}(i), \qquad
-\textstyle\bigoplus \texttt{dump()} = \texttt{all\_prod()}, \qquad
-\textstyle\bigoplus_{i=l}^{r} \texttt{dump()}[i] = \texttt{prod}(l,r)
-$$
+```cpp
+Node st.all_prod() const
+```
 
-Devuelve **`n` elementos, no `SZ`**: el relleno $[n, SZ)$ no es parte del arreglo lógico. (Con el constructor de un argumento `t(k)` resulta $n = SZ$, así que ahí el relleno *sí* aparece — porque en ese caso es el arreglo.)
+Devuelve `a[0] + ... + a[n-1]`.
 
-Es el mismo nombre y el mismo contrato que [`ImplicitTreap::dump()`](../ImplicitTreap.md).
+**Complejidad**: $O(1)$.
 
-Las posiciones sin materializar vuelven como `Node()` con `apply(f, 1)` encima — una sola posición, igual que haría `get`. Y rige el mismo tope de $10^7$ que en el sparse sin lazy, porque `n` puede valer $10^{18}$.
+## max_right
 
-**Acá el carry no es opcional.** El `push` de este template **materializa los dos hijos**, así que un `dump` que empujara crearía nodos y podría reventar el pool. Bajando el lazy como parámetro, el dump no toca el pool: verificado con `nodes_used()` antes y después.
+```cpp
+template <class F> long long st.max_right(long long l, long long r, F pred) const
+```
 
-## Verificación
+Devuelve el **mayor** $p \in [l, r]$ tal que `pred(prod(l, p))` es cierto, o `l - 1` si ninguno lo
+cumple.
 
-- Contra fuerza bruta: **69 440 rangos** sobre `n = 1..30` con assign y add mezclados, verificando suma, máximo y mínimo a la vez, junto con `LazySegmentTree` y `PersistentLazySegmentTree` usando el mismo par.
-- A `n = 10¹⁸`, ocho propiedades contra fórmula cerrada: assign global, add a media mitad, assign al centro, y `prod`/`get` sobre cada región. Con 123 nodos usados — que es el otro punto: a esa escala, unas pocas operaciones de rango sobre rangos gigantes casi no cuestan nodos.
+**Restricciones**: $0 \le l \le r < n$, `pred` monótono sobre el rango y sin efectos de lado. ·
+**Complejidad**: $O(\log n)$.
 
-**Sin link de juez todavía.**
+## min_left
 
-### Los descensos
+```cpp
+template <class F> long long st.min_left(long long l, long long r, F pred) const
+```
 
-| test | comprobaciones |
-|---|---|
-| el descenso contra fuerza bruta, con `apply(f, len)` | 37 618 consultas |
-| el descenso con `Node` **no conmutativo** (tramo ordenado) | 32 116 consultas |
+Devuelve el **menor** $p \in [l, r]$ tal que `pred(prod(p, r))` es cierto, o `r + 1` si ninguno lo
+cumple.
 
-Cuatro controles negativos, los cuatro cazados por la suite: invertir el orden de `+` en `min_left`, podar sin chequear si el predicado rompe, no componer el lazy que baja, y pasarle a `apply` un largo fijo en vez del largo del nodo. El primero **solo** lo detecta un `Node` no conmutativo — con sumas pasa inadvertido, y de hecho mi primera versión del test no lo cazaba.
+**Restricciones**: las mismas, con `pred` monótono al **decrecer** $p$. ·
+**Complejidad**: $O(\log n)$.
 
-### `dump()`
+## dump
 
-| test | comprobaciones |
-|---|---|
-| `dump()` con `apply(f, 1)`, pool intacto | 381 195 |
+```cpp
+vector<Node> st.dump() const
+```
 
-Diez controles negativos sobre los seis, los diez cazados por la suite: dar vuelta el vector, devolver `SZ` en vez de `n`, sacar el `push` de `LazySegmentTree`, invertirle el orden, visitar los hijos al revés, invertir la composición del lazy que baja, no aplicar el lazy en la hoja, y pasarle a `apply` un largo distinto de 1.
+Devuelve los `n` elementos en orden, incluyendo los tramos que nunca se materializaron (con los
+`apply` pendientes ya aplicados), para depurar. Hace `assert(n <= DUMP_MAX)` con
+`DUMP_MAX = 10'000'000`.
+
+**Complejidad**: $O(n)$.
+
+## size / nodes_used
+
+```cpp
+long long st.size() const
+long long st.nodes_used() const
+```
+
+El largo del árbol, y cuántos nodos del pool se materializaron — para depurar el presupuesto.
+
+**Complejidad**: $O(1)$.
+
+---
+
+### Los centinelas
+
+`l - 1` y `r + 1` están elegidos para que el largo del tramo salga **sin un `if`**:
+`p - l + 1` y `r - p + 1`. Con el centinela los dos dan $0$, y como el rango es cerrado y no
+vacío, el centinela nunca es un índice válido.
+
+## Examples
+
+### Add y suma de rango sobre coordenadas gigantes
+
+El `Node` recibe el largo, así que no necesita `size`:
+
+```cpp
+struct LazyAdd {
+    long long a = 0;
+    LazyAdd() {}
+    LazyAdd(long long x) : a(x) {}
+    LazyAdd& operator*=(const LazyAdd& f) { a += f.a; return *this; }
+};
+
+struct NodeSum {
+    long long sum = 0;
+    NodeSum() {}
+    NodeSum(long long x) : sum(x) {}
+    friend NodeSum operator+(const NodeSum& a, const NodeSum& b) { return NodeSum(a.sum + b.sum); }
+    void apply(const LazyAdd& f, long long len) { sum += f.a * len; }   // el largo lo da el arbol
+};
+
+SparseLazySegmentTree<NodeSum, LazyAdd> st(1'000'000'000'000'000'000LL, q);
+st.apply(1'000'000, 2'000'000'000'000LL, LazyAdd(3));
+cout << st.prod(0, 5'000'000'000'000LL).sum << "\n";
+```
+
+### Pintar intervalos y contar
+
+Con un `LazyUpdate` de assign, `apply(l, r, assign(1))` pinta y `prod` cuenta lo pintado:
+
+```cpp
+st.apply(l, r, LazyUpdate::assign(1));
+cout << st.prod(0, n - 1).sum << "\n";          // cuantas posiciones quedaron pintadas
+```
+
+### Primer índice $\ge l$ con $a_j \ge x$ tras varios add de rango
+
+```cpp
+long long p = st.max_right(l, n - 1, [&](const NodeMx& v) { return v.mx < x; });
+cout << (p == n - 1 ? -1 : p + 1) << "\n";
+```
+
+Entre dos posiciones materializadas el predicado es **constante**, así que el descenso salta los
+tramos vacíos de una: el costo es $O(\log n)$ aunque el rango barra $10^{18}$ índices. Eso vale
+también cuando el tramo vacío tiene un `apply` pendiente — el `Node` lo resuelve con el largo que
+le pasa el árbol.
+
+### Prefijo más largo de $[l, r]$ con suma $\le S$
+
+```cpp
+long long p = st.max_right(l, r, [&](const NodeSum& v) { return v.sum <= S; });
+cout << p - l + 1 << "\n";                      // el largo, sin if
+```
+
+### Sufijo más largo de $[l, r]$ con suma $\le S$
+
+```cpp
+long long p = st.min_left(l, r, [&](const NodeSum& v) { return v.sum <= S; });
+cout << r - p + 1 << "\n";
+```

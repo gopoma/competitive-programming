@@ -3,7 +3,7 @@
  *   a + b folds two neighbouring intervals (a left of b) and must be associative.
  *   max_right / min_left descend the tree to find a boundary, like the AtCoder Library.
  * Time: O(n) build, O(log n) set, prod, max_right and min_left, O(1) get and all_prod
- * Source: codeforces.com/blog/entry/18051, KACTL. Verification and manual: SegmentTree.md
+ * Source: codeforces.com/blog/entry/18051, KACTL. Manual: SegmentTree.md, stress: README.md
  */
 
 template <class T>
