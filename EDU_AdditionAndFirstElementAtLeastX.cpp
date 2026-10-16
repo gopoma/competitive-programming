@@ -31,29 +31,29 @@ struct LazyUpdate {                             // alcanza con add: el problema 
     }
 };
 
-struct Node {                                   // alcanza con el maximo
-    ll sz = 0, mx = 0;                          // sz == 0 es el rango vacio, la identidad de +
+struct NodeMx {                                 // alcanza con el maximo
+    ll size = 0, mx = 0;                        // size == 0 es el rango vacio, la identidad de +
 
-    Node() {}
-    Node(ll x) : sz(1), mx(x) {}
+    NodeMx() {}
+    NodeMx(ll x) : size(1), mx(x) {}
 
-    friend Node operator+(const Node& a, const Node& b) {
-        if(a.sz == 0) {
+    friend NodeMx operator+(const NodeMx& a, const NodeMx& b) {
+        if(a.size == 0) {
             return b;
         }
 
-        if(b.sz == 0) {
+        if(b.size == 0) {
             return a;
         }
 
-        Node res;
-        res.sz = a.sz + b.sz;
+        NodeMx res;
+        res.size = a.size + b.size;
         res.mx = max(a.mx, b.mx);
         return res;
     }
 
-    Node& operator*=(const LazyUpdate& f) {
-        if(sz == 0) {                           // la identidad se queda identidad
+    NodeMx& operator*=(const LazyUpdate& f) {
+        if(size == 0) {                         // la identidad se queda identidad
             return *this;
         }
 
@@ -367,10 +367,10 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    // OJO: vector<Node>(n) daria n copias de Node() con sz = 0, o sea el rango VACIO, y
+    // OJO: vector<NodeMx>(n) daria n copias de NodeMx() con size = 0, o sea el rango VACIO, y
     // entonces operator*= no haria nada y todos los add se perderian en silencio.
-    // Node(0) es "un elemento que vale cero", que es lo que pide el enunciado.
-    LazySegmentTree<Node, LazyUpdate> st(vector<Node>(n, Node(0)));
+    // NodeMx(0) es "un elemento que vale cero", que es lo que pide el enunciado.
+    LazySegmentTree<NodeMx, LazyUpdate> st(vector<NodeMx>(n, NodeMx(0)));
 
     while(m--) {
         int tipo;
@@ -387,7 +387,7 @@ int main() {
             int l;
             cin >> x >> l;                      // x PRIMERO, l despues
 
-            int p = st.max_right(l, n - 1, [&](const Node& v) { return v.mx < x; });
+            int p = st.max_right(l, n - 1, [&](const NodeMx& v) { return v.mx < x; });
             cout << (p == n - 1 ? -1 : p + 1) << "\n";
         }
     }

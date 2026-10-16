@@ -347,13 +347,13 @@ struct LazyUpdate {
     }
 };
 
-struct Node {
+struct NodeSumMnMx {
     long long size = 0, sum = 0, mx = 0, mn = 0;  // size == 0 es el rango vacio, la identidad
 
-    Node() {}
-    Node(long long x) : size(1), sum(x), mx(x), mn(x) {}
+    NodeSumMnMx() {}
+    NodeSumMnMx(long long x) : size(1), sum(x), mx(x), mn(x) {}
 
-    friend Node operator+(const Node& a, const Node& b) {
+    friend NodeSumMnMx operator+(const NodeSumMnMx& a, const NodeSumMnMx& b) {
         if(a.size == 0) {
             return b;
         }
@@ -362,7 +362,7 @@ struct Node {
             return a;
         }
 
-        Node res;
+        NodeSumMnMx res;
         res.size = a.size + b.size;
         res.sum = a.sum + b.sum;
         res.mx = max(a.mx, b.mx);
@@ -371,7 +371,7 @@ struct Node {
     }
 
     // El arbol es la autoridad sobre cuantas posiciones cubre el intervalo, asi que apply
-    // FIJA size: un subarbol sin materializar llega como Node() y sale como len posiciones
+    // FIJA size: un subarbol sin materializar llega como NodeSumMnMx() y sale como len posiciones
     // intactas, que para este problema valen cero.
     void apply(const LazyUpdate& f, long long len) {
         size = len;

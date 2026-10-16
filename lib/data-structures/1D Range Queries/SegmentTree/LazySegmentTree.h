@@ -3,7 +3,7 @@
  *   node *= f applies an update to a whole interval, f *= g stacks g after f.
  *   max_right / min_left descend the tree to find a boundary, like the AtCoder Library.
  * Time: O(n) build, O(log n) per operation, O(1) all_prod
- * Source: atcoder.github.io/ac-library. Manual and stress tests: LazySegmentTree.md
+ * Source: atcoder.github.io/ac-library. Manual: LazySegmentTree.md, stress: README.md
  * Verification: codeforces.com/edu submission 394467936, 125 ms (uses max_right)
  */
 
@@ -334,13 +334,13 @@ struct LazyUpdate { // lazy update
     }
 };
 
-struct Node { // data you need to store for each interval
+struct NodeSumMnMx { // data you need to store for each interval
     long long size = 0, sum = 0, mx = 0, mn = 0;  // size == 0 es el rango vacio
 
-    Node() {}
-    Node(long long x) : size(1), sum(x), mx(x), mn(x) {}
+    NodeSumMnMx() {}
+    NodeSumMnMx(long long x) : size(1), sum(x), mx(x), mn(x) {}
 
-    friend Node operator+(const Node& a, const Node& b) {
+    friend NodeSumMnMx operator+(const NodeSumMnMx& a, const NodeSumMnMx& b) {
         if(a.size == 0) {
             return b;
         }
@@ -349,7 +349,7 @@ struct Node { // data you need to store for each interval
             return a;
         }
 
-        Node res;
+        NodeSumMnMx res;
         res.size = a.size + b.size;
         res.sum = a.sum + b.sum;
         res.mx = max(a.mx, b.mx);
@@ -358,7 +358,7 @@ struct Node { // data you need to store for each interval
     }
 
     // size es lo que permite que el update escale a todo el intervalo de una sola vez.
-    Node& operator*=(const LazyUpdate& f) {
+    NodeSumMnMx& operator*=(const LazyUpdate& f) {
         if(size == 0) {                         // la identidad se queda identidad
             return *this;
         }

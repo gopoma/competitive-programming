@@ -24,14 +24,14 @@
 using namespace std;
 using ll = long long;
 
-struct Cnt {                                    // Cnt() vale 0, que ya es la identidad de +
-    int cnt = 0;
+struct NodeSum {                                // NodeSum() vale 0, que ya es la identidad de +
+    int sum = 0;
 
-    Cnt() {}
-    Cnt(int x) : cnt(x) {}
+    NodeSum() {}
+    NodeSum(int x) : sum(x) {}
 
-    friend Cnt operator+(const Cnt& a, const Cnt& b) {
-        return Cnt(a.cnt + b.cnt);
+    friend NodeSum operator+(const NodeSum& a, const NodeSum& b) {
+        return NodeSum(a.sum + b.sum);
     }
 };
 
@@ -433,7 +433,7 @@ int main() {
 
     // El arbol vive sobre el dominio de VALORES [0, m), no sobre las posiciones.
     // n sets, cada uno cuesta C + 1 nodos; build() sin argumentos cuesta cero.
-    PersistentSegmentTree<Cnt> st(m, n);
+    PersistentSegmentTree<NodeSum> st(m, n);
 
     vector<int> ver(n + 1);
     ver[0] = st.build();
@@ -442,7 +442,7 @@ int main() {
     for(int i = 0; i < n; i++) {
         int c = int(lower_bound(vals.begin(), vals.end(), a[i]) - vals.begin());
         ++veces[c];
-        ver[i + 1] = st.set(ver[i], c, Cnt(veces[c]));
+        ver[i + 1] = st.set(ver[i], c, NodeSum(veces[c]));
     }
 
     while(q--) {
@@ -453,8 +453,8 @@ int main() {
         // k+1 elementos con valor <= vals[p]. El k-esimo menor es entonces vals[p + 1].
         int faltan = k + 1;                     // el enunciado da k 0-indexado
         int p = st.max_right(ver[l], ver[r], 0, m - 1,
-            [&](const Cnt& antes, const Cnt& despues) {
-                return despues.cnt - antes.cnt < faltan;
+            [&](const NodeSum& antes, const NodeSum& despues) {
+                return despues.sum - antes.sum < faltan;
             });
 
         // El enunciado garantiza k < r - l, asi que el k-esimo siempre existe. Si no fuera

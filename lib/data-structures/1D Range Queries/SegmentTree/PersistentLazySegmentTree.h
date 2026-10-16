@@ -390,13 +390,13 @@ struct LazyUpdate { // lazy update
     }
 };
 
-struct Node { // data you need to store for each interval
+struct NodeSumMnMx { // data you need to store for each interval
     long long size = 0, sum = 0, mx = 0, mn = 0;  // size == 0 es el rango vacio, la identidad
 
-    Node() {}
-    Node(long long x) : size(1), sum(x), mx(x), mn(x) {}
+    NodeSumMnMx() {}
+    NodeSumMnMx(long long x) : size(1), sum(x), mx(x), mn(x) {}
 
-    friend Node operator+(const Node& a, const Node& b) {
+    friend NodeSumMnMx operator+(const NodeSumMnMx& a, const NodeSumMnMx& b) {
         if(a.size == 0) {
             return b;
         }
@@ -405,7 +405,7 @@ struct Node { // data you need to store for each interval
             return a;
         }
 
-        Node res;
+        NodeSumMnMx res;
         res.size = a.size + b.size;
         res.sum = a.sum + b.sum;
         res.mx = max(a.mx, b.mx);
@@ -414,7 +414,7 @@ struct Node { // data you need to store for each interval
     }
 
     // size es lo que permite que el update escale a todo el intervalo de una sola vez.
-    Node& operator*=(const LazyUpdate& f) {
+    NodeSumMnMx& operator*=(const LazyUpdate& f) {
         if(size == 0) {                         // la identidad se queda identidad
             return *this;
         }
