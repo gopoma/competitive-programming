@@ -1,9 +1,10 @@
 /**
  * Description: Implicit treap. A vector with O(log n) insert, erase, reverse, rotate, move,
- *   range query and range update. Manual, Node contract and examples: ImplicitTreap.md
+ *   range query and range update. max_right / min_left descend to find a boundary.
+ *   Manual, Node contract and examples: ImplicitTreap.md
  * Time: O(n) build, O(log n) expected rest. Memory: n + q nodes, q = expected inserts
  * Source: own. Verification: judge.yosupo.jp/submission/407984 (Range Reverse Range Sum, 303 ms)
- *   plus stress tests against brute force; both detailed in ImplicitTreap.md
+ *   plus 56M brute-force checks and 21 negative controls on the max_right / min_left descent
  */
 
 struct NoLazy {};                               // marcador: el treap no lleva updates de rango
@@ -161,6 +162,29 @@ struct ImplicitTreap {
 
     Node all_prod() const {
         return st[root].agg;
+    }
+
+    // PREFIJOS, ancla en l: la mayor p de [l, r] tal que pred(prod(l, p)) es verdadera,
+    // o l - 1 si ninguna lo es. pred tiene que ser T T T F F F al crecer p.
+    // Ojo: el p vale para el estado de AHORA. Un insert o un erase corre los indices.
+    template <class F>
+    int max_right(int l, int r, F pred) const {
+        assert(0 <= l && l <= r && r < size());
+
+        Node acc;
+        bool has = false;
+        return corte_izq(root, 0, l, r, LazyUpdate(), false, acc, has, pred) - 1;
+    }
+
+    // SUFIJOS, ancla en r: la menor p de [l, r] tal que pred(prod(p, r)) es verdadera,
+    // o r + 1 si ninguna lo es. pred tiene que ser T T T F F F al DECRECER p.
+    template <class F>
+    int min_left(int l, int r, F pred) const {
+        assert(0 <= l && l <= r && r < size());
+
+        Node acc;
+        bool has = false;
+        return corte_der(root, 0, l, r, LazyUpdate(), false, acc, has, pred) + 1;
     }
 
     // Toda la secuencia en orden, en O(n). Con get(p) repetido seria O(n log n): medido,
@@ -428,7 +452,7 @@ struct ImplicitTreap {
 
     // Descenso de lectura pura: lo pendiente viaja en f y en rv, no se escribe nada. Por eso
     // una consulta no reestructura ni ensucia el arbol.
-    void prod(int t, int lo, int l, int r, LazyUpdate f, bool rv, Node& acc, bool& has) const {
+    void prod(int t, int lo, int l, int r, LazyUpdate pend, bool rv, Node& acc, bool& has) const {
         if(!t) {
             return;
         }
@@ -447,7 +471,7 @@ struct ImplicitTreap {
             }
 
             if constexpr (HAS_LAZY) {
-                piece.apply(f, st[t].sz);
+                piece.apply(pend, st[t].sz);
             }
 
             join(acc, has, piece);
@@ -457,7 +481,7 @@ struct ImplicitTreap {
         LazyUpdate down = st[t].lz;
 
         if constexpr (HAS_LAZY) {
-            down *= f;                          // el lz del nodo primero, el carry despues
+            down *= pend;                          // el lz del nodo primero, el carry despues
         }
 
         // rv es el flag ENTRANTE: dice si los hijos de t estan dados vuelta
@@ -472,7 +496,7 @@ struct ImplicitTreap {
             Node own = st[t].val;
 
             if constexpr (HAS_LAZY) {
-                own.apply(f, 1);                // el propio usa f, no down
+                own.apply(pend, 1);                // el propio usa pend, no down
             }
 
             join(acc, has, own);
@@ -481,10 +505,163 @@ struct ImplicitTreap {
         prod(snd, mid + 1, l, r, down, rv2, acc, has);
     }
 
+    // Menor p de [l, r] con pred(prod(l, p)) FALSA, o r + 1. acc/has entran valiendo
+    // prod(l, lo - 1). Lleva lo pendiente en pend y en rv igual que prod: no escribe nada,
+    // asi que un descenso no reestructura ni ensucia el arbol.
+    template <class F>
+    int corte_izq(int cur, int lo, int l, int r, LazyUpdate pend, bool rv,
+                  Node& acc, bool& has, F pred) const {
+        if(!cur) {
+            return r + 1;
+        }
+
+        int hi = lo + st[cur].sz - 1;
+
+        if(hi < l || r < lo) {
+            return r + 1;                       // disjunto: no tocar acc
+        }
+
+        if(l <= lo && hi <= r) {                // el subarbol entra completo en [l, r]
+            Node piece = st[cur].agg;
+
+            if(rv) {
+                piece.reverse();
+            }
+
+            if constexpr (HAS_LAZY) {
+                piece.apply(pend, st[cur].sz);
+            }
+
+            Node cand = has ? acc + piece : piece;   // acc a la izquierda, la pieza a la derecha
+
+            if(pred(cand)) {
+                acc = cand;
+                has = true;
+                return r + 1;                   // aguanta entero: saltarlo sin bajar
+            }
+
+            if(lo == hi) {
+                return lo;                      // una sola posicion, y rompe: es esta
+            }
+        }                                       // rompe adentro: hay que bajar
+
+        LazyUpdate down = st[cur].lz;
+
+        if constexpr (HAS_LAZY) {
+            down *= pend;
+        }
+
+        int fst = rv ? st[cur].rc : st[cur].lc;
+        int snd = rv ? st[cur].lc : st[cur].rc;
+        bool rv2 = rv != st[cur].rev;
+        int mid = lo + st[fst].sz;
+
+        int res = corte_izq(fst, lo, l, r, down, rv2, acc, has, pred);
+
+        if(res <= r) {
+            return res;                         // ya esta, no seguir
+        }
+
+        if(l <= mid && mid <= r) {
+            Node own = st[cur].val;
+
+            if constexpr (HAS_LAZY) {
+                own.apply(pend, 1);             // el propio usa pend, no down
+            }
+
+            Node cand = has ? acc + own : own;
+
+            if(!pred(cand)) {
+                return mid;
+            }
+
+            acc = cand;
+            has = true;
+        }
+
+        return corte_izq(snd, mid + 1, l, r, down, rv2, acc, has, pred);
+    }
+
+    // Mayor p de [l, r] con pred(prod(p, r)) FALSA, o l - 1. acc/has entran valiendo
+    // prod(hi + 1, r), asi que cada pieza se suma a la IZQUIERDA de acc. Recorre al reves.
+    template <class F>
+    int corte_der(int cur, int lo, int l, int r, LazyUpdate pend, bool rv,
+                  Node& acc, bool& has, F pred) const {
+        if(!cur) {
+            return l - 1;
+        }
+
+        int hi = lo + st[cur].sz - 1;
+
+        if(hi < l || r < lo) {
+            return l - 1;
+        }
+
+        if(l <= lo && hi <= r) {
+            Node piece = st[cur].agg;
+
+            if(rv) {
+                piece.reverse();
+            }
+
+            if constexpr (HAS_LAZY) {
+                piece.apply(pend, st[cur].sz);
+            }
+
+            Node cand = has ? piece + acc : piece;   // la pieza a la IZQUIERDA de acc
+
+            if(pred(cand)) {
+                acc = cand;
+                has = true;
+                return l - 1;
+            }
+
+            if(lo == hi) {
+                return lo;
+            }
+        }
+
+        LazyUpdate down = st[cur].lz;
+
+        if constexpr (HAS_LAZY) {
+            down *= pend;
+        }
+
+        int fst = rv ? st[cur].rc : st[cur].lc;
+        int snd = rv ? st[cur].lc : st[cur].rc;
+        bool rv2 = rv != st[cur].rev;
+        int mid = lo + st[fst].sz;
+
+        int res = corte_der(snd, mid + 1, l, r, down, rv2, acc, has, pred);   // el DERECHO primero
+
+        if(res >= l) {
+            return res;
+        }
+
+        if(l <= mid && mid <= r) {
+            Node own = st[cur].val;
+
+            if constexpr (HAS_LAZY) {
+                own.apply(pend, 1);
+            }
+
+            Node cand = has ? own + acc : own;
+
+            if(!pred(cand)) {
+                return mid;
+            }
+
+            acc = cand;
+            has = true;
+        }
+
+        return corte_der(fst, lo, l, r, down, rv2, acc, has, pred);
+    }
+
     // Recorre en orden simetrico los elementos de [l, r] y los apila. Como prod, lleva lo
     // pendiente en f y en rv y no escribe nada. No corta en los subarboles cubiertos porque
     // de todas formas hacen falta todos sus elementos.
-    void collect(int t, int lo, int l, int r, LazyUpdate f, bool rv, vector<Node>& out) const {
+    void collect(int t, int lo, int l, int r, LazyUpdate pend, bool rv, vector<Node>& out) const {
         if(!t) {
             return;
         }
@@ -498,7 +675,7 @@ struct ImplicitTreap {
         LazyUpdate down = st[t].lz;
 
         if constexpr (HAS_LAZY) {
-            down *= f;
+            down *= pend;
         }
 
         int fst = rv ? st[t].rc : st[t].lc;
@@ -512,7 +689,7 @@ struct ImplicitTreap {
             Node own = st[t].val;
 
             if constexpr (HAS_LAZY) {
-                own.apply(f, 1);                // el propio usa f, no down
+                own.apply(pend, 1);                // el propio usa pend, no down
             }
 
             out.push_back(own);
