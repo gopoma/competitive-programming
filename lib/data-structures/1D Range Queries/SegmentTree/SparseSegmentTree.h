@@ -3,6 +3,7 @@
  *   touches them. Pool: max_nodes(n, q) = (ceil(log2 n) + 1) * q + 1.
  * Time: O(log n) set, get and prod, O(1) all_prod. No build: it starts empty.
  * Source: own, after usaco.guide/plat/sparse-segtree. Manual: SparseSegmentTree.md
+ * Public: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/SparseSegmentTree.h
  */
 
 template <class T>

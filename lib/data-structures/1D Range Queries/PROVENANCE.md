@@ -30,6 +30,31 @@ benchmarks.
 **Lo que esa asistencia no cubre**: los algoritmos, que vienen de las fuentes públicas de la tabla,
 y la estructura base de los templates, que es anterior a esas fechas.
 
+## Link público de cada archivo
+
+Cada template vive en una ruta pública del repositorio. Es la misma URL que el propio
+archivo declara en su cabecera, en el campo `Public:`.
+
+1. `SegmentTree/SegmentTree.h`
+   <https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/SegmentTree.h>
+2. `SegmentTree/LazySegmentTree.h`
+   <https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/LazySegmentTree.h>
+3. `SegmentTree/PersistentSegmentTree.h`
+   <https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/PersistentSegmentTree.h>
+4. `SegmentTree/PersistentLazySegmentTree.h`
+   <https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/PersistentLazySegmentTree.h>
+5. `SegmentTree/SparseSegmentTree.h`
+   <https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/SparseSegmentTree.h>
+6. `SegmentTree/SparseLazySegmentTree.h`
+   <https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/SparseLazySegmentTree.h>
+7. `ImplicitTreap.h`
+   <https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/ImplicitTreap.h>
+
+> **Si el juez necesita un link inmutable**, cambiale `main` por el SHA del commit: un
+> link a `main` muestra lo que haya en `main` hoy, y se mueve con cada push. Con el SHA
+> queda clavado en ese contenido y en esa fecha. Por ejemplo, cambiar `/blob/main/` por
+> `/blob/7c4bf9d/` en el link del `SegmentTree.h`.
+
 ## Tabla por archivo
 
 Tres fechas, porque las tres dicen cosas distintas y solo la tercera responde *"¿el código que estoy

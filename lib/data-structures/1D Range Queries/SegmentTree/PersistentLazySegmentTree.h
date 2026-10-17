@@ -3,6 +3,7 @@
  *   in a local. Pool: max_nodes(n, q) = 2n + 4 * (ceil(log2 n) + 1) * q + 1.
  * Time: O(n) build, O(log n) set, apply, get and prod, O(1) all_prod and copy
  * Source: own, algorithm after AtCoder Library. Manual: PersistentLazySegmentTree.md
+ * Public: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/PersistentLazySegmentTree.h
  */
 
 template <class Node, class LazyUpdate>

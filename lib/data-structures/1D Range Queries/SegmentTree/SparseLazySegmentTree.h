@@ -3,6 +3,7 @@
  *   the tree supplies the length. Pool: max_nodes(n, q) = 4 * (ceil(log2 n) + 1) * q + 1.
  * Time: O(log n) set, apply, get and prod, O(1) all_prod. No build: it starts empty.
  * Source: own, after usaco.guide/plat/sparse-segtree. Manual: SparseLazySegmentTree.md
+ * Public: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/SparseLazySegmentTree.h
  */
 
 template <class Node, class LazyUpdate>

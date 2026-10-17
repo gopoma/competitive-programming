@@ -5,6 +5,7 @@
  * Time: O(n) build, O(log n) per operation, O(1) all_prod
  * Source: atcoder.github.io/ac-library. Manual: LazySegmentTree.md, stress: README.md
  * Verification: codeforces.com/edu submission 394467936, 125 ms (uses max_right)
+ * Public: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/LazySegmentTree.h
  */
 
 template <class Node, class LazyUpdate>

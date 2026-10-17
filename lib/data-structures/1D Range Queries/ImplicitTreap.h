@@ -5,6 +5,7 @@
  * Time: O(n) build, O(log n) expected rest. Memory: n + q nodes, q = expected inserts
  * Source: own. Verification: judge.yosupo.jp/submission/407984 (Range Reverse Range Sum, 303 ms)
  *   plus 56M brute-force checks and 21 negative controls on the max_right / min_left descent
+ * Public: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/ImplicitTreap.h
  */
 
 struct NoLazy {};                               // marcador: el treap no lleva updates de rango

@@ -4,6 +4,7 @@
  *   max_right / min_left descend the tree to find a boundary, like the AtCoder Library.
  * Time: O(n) build, O(log n) set, prod, max_right and min_left, O(1) get and all_prod
  * Source: codeforces.com/blog/entry/18051, KACTL. Manual: SegmentTree.md, stress: README.md
+ * Public: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/SegmentTree.h
  */
 
 template <class T>

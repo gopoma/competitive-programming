@@ -3,6 +3,7 @@
  *   root is just an int. Pool: max_nodes(n, q) = 2n + (ceil(log2 n) + 1) * q + 1.
  * Time: O(n) build, O(log n) set, get and prod, O(1) all_prod and copy
  * Source: own, after usaco.guide/adv/persistent. Manual: PersistentSegmentTree.md
+ * Public: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/PersistentSegmentTree.h
  */
 
 template <class T>
