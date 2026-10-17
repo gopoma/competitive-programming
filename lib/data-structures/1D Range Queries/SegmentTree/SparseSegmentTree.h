@@ -1,9 +1,13 @@
 /**
- * Description: Segment tree over a universe up to 1e18; nodes are created only when a set
- *   touches them. Pool: max_nodes(n, q) = (ceil(log2 n) + 1) * q + 1.
+ * Author: gopoma
+ * Date: 2026-10-03
+ * Source: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/SparseSegmentTree.h
+ *   algorithm after usaco.guide/plat/sparse-segtree
+ * Description: Segment tree over a universe up to 1e18; nodes are created only when a set touches
+ *   them. Pool: max_nodes(n, q) = (ceil(log2 n) + 1) * q + 1.
+ *   Manual: SparseSegmentTree.md
  * Time: O(log n) set, get and prod, O(1) all_prod. No build: it starts empty.
- * Source: own, after usaco.guide/plat/sparse-segtree. Manual: SparseSegmentTree.md
- * Public: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/SparseSegmentTree.h
+ * Status: Stress-tested against a map at n = 1e18. No judge submission yet.
  */
 
 template <class T>

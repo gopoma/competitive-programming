@@ -1,9 +1,13 @@
 /**
- * Description: Persistent segment tree. Every set returns the root of a NEW version and a
- *   root is just an int. Pool: max_nodes(n, q) = 2n + (ceil(log2 n) + 1) * q + 1.
+ * Author: gopoma
+ * Date: 2026-10-01
+ * Source: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/PersistentSegmentTree.h
+ *   algorithm after usaco.guide/adv/persistent
+ * Description: Persistent segment tree. Every set returns the root of a NEW version and a root
+ *   is just an int. Pool: max_nodes(n, q) = 2n + (ceil(log2 n) + 1) * q + 1.
+ *   Manual: PersistentSegmentTree.md
  * Time: O(n) build, O(log n) set, get and prod, O(1) all_prod and copy
- * Source: own, after usaco.guide/adv/persistent. Manual: PersistentSegmentTree.md
- * Public: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/PersistentSegmentTree.h
+ * Status: Stress-tested against brute force over all versions. No judge submission yet.
  */
 
 template <class T>

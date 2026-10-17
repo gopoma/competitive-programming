@@ -1,11 +1,13 @@
 /**
+ * Author: gopoma
+ * Date: 2026-10-01
+ * Source: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/LazySegmentTree.h
+ *   algorithm after atcoder.github.io/ac-library
  * Description: Segment tree with lazy propagation. Node() neutral, a + b associative,
  *   node *= f applies an update to a whole interval, f *= g stacks g after f.
- *   max_right / min_left descend the tree to find a boundary, like the AtCoder Library.
+ *   max_right / min_left descend the tree. Manual: LazySegmentTree.md
  * Time: O(n) build, O(log n) per operation, O(1) all_prod
- * Source: atcoder.github.io/ac-library. Manual: LazySegmentTree.md, stress: README.md
- * Verification: codeforces.com/edu submission 394467936, 125 ms (uses max_right)
- * Public: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/LazySegmentTree.h
+ * Status: Codeforces EDU submission 394467936, AC 125 ms (uses max_right). Stress-tested.
  */
 
 template <class Node, class LazyUpdate>

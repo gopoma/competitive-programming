@@ -1,8 +1,5 @@
 # Familia SegmentTree
 
-> De dónde sale cada template, desde cuándo existe y qué se hizo con asistencia de IA:
-> [PROVENANCE.md](../PROVENANCE.md).
-
 Seis templates que comparten las mismas convenciones y los mismos contratos. Este archivo tiene lo común; cada uno tiene su manual con lo propio.
 
 ## Cuál usar

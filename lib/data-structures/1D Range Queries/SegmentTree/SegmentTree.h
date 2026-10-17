@@ -1,10 +1,13 @@
 /**
+ * Author: gopoma
+ * Date: 2026-10-03
+ * Source: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/SegmentTree.h
+ *   algorithm after codeforces.com/blog/entry/18051 (Al.Cash) and KACTL
  * Description: Segment tree with point assignment and range query. T() is the neutral value,
  *   a + b folds two neighbouring intervals (a left of b) and must be associative.
- *   max_right / min_left descend the tree to find a boundary, like the AtCoder Library.
+ *   max_right / min_left descend the tree to find a boundary. Manual: SegmentTree.md
  * Time: O(n) build, O(log n) set, prod, max_right and min_left, O(1) get and all_prod
- * Source: codeforces.com/blog/entry/18051, KACTL. Manual: SegmentTree.md, stress: README.md
- * Public: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/SegmentTree.h
+ * Status: Stress-tested against brute force, exhaustive for n = 1..40. No judge submission yet.
  */
 
 template <class T>

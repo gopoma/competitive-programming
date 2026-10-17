@@ -1,9 +1,13 @@
 /**
- * Description: Lazy segment tree over a universe up to 1e18. The Node needs apply(f, len):
- *   the tree supplies the length. Pool: max_nodes(n, q) = 4 * (ceil(log2 n) + 1) * q + 1.
+ * Author: gopoma
+ * Date: 2026-10-03
+ * Source: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/SparseLazySegmentTree.h
+ *   algorithm after usaco.guide/plat/sparse-segtree
+ * Description: Lazy segment tree over a universe up to 1e18. The Node needs apply(f, len): the
+ *   tree supplies the length. Pool: max_nodes(n, q) = 4 * (ceil(log2 n) + 1) * q + 1.
+ *   Manual: SparseLazySegmentTree.md
  * Time: O(log n) set, apply, get and prod, O(1) all_prod. No build: it starts empty.
- * Source: own, after usaco.guide/plat/sparse-segtree. Manual: SparseLazySegmentTree.md
- * Public: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/SparseLazySegmentTree.h
+ * Status: Stress-tested against brute force at n = 1e18. No judge submission yet.
  */
 
 template <class Node, class LazyUpdate>

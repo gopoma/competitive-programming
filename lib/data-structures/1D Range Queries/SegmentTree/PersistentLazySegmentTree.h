@@ -1,9 +1,13 @@
 /**
- * Description: Persistent lazy segment tree; reads never write, they carry the pending update
- *   in a local. Pool: max_nodes(n, q) = 2n + 4 * (ceil(log2 n) + 1) * q + 1.
+ * Author: gopoma
+ * Date: 2026-10-02
+ * Source: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/PersistentLazySegmentTree.h
+ *   algorithm after atcoder.github.io/ac-library
+ * Description: Persistent lazy segment tree; reads never write, they carry the pending update in
+ *   a local. Pool: max_nodes(n, q) = 2n + 4 * (ceil(log2 n) + 1) * q + 1.
+ *   Manual: PersistentLazySegmentTree.md
  * Time: O(n) build, O(log n) set, apply, get and prod, O(1) all_prod and copy
- * Source: own, algorithm after AtCoder Library. Manual: PersistentLazySegmentTree.md
- * Public: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/SegmentTree/PersistentLazySegmentTree.h
+ * Status: Stress-tested against brute force over all versions. No judge submission yet.
  */
 
 template <class Node, class LazyUpdate>

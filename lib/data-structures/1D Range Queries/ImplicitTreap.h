@@ -1,11 +1,13 @@
 /**
- * Description: Implicit treap. A vector with O(log n) insert, erase, reverse, rotate, move,
- *   range query and range update. max_right / min_left descend to find a boundary.
+ * Author: gopoma
+ * Date: 2026-10-05
+ * Source: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/ImplicitTreap.h
+ * Description: Implicit treap. A vector with O(log n) insert, erase, reverse, rotate, move, range
+ *   query and range update. max_right / min_left descend to find a boundary.
  *   Manual, Node contract and examples: ImplicitTreap.md
  * Time: O(n) build, O(log n) expected rest. Memory: n + q nodes, q = expected inserts
- * Source: own. Verification: judge.yosupo.jp/submission/407984 (Range Reverse Range Sum, 303 ms)
- *   plus 56M brute-force checks and 21 negative controls on the max_right / min_left descent
- * Public: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/ImplicitTreap.h
+ * Status: judge.yosupo.jp/submission/407984, AC 303 ms (Range Reverse Range Sum).
+ *   Stress-tested: 56M checks, 21 negative controls on the descent.
  */
 
 struct NoLazy {};                               // marcador: el treap no lleva updates de rango
