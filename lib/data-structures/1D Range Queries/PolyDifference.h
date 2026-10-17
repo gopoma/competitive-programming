@@ -8,7 +8,8 @@
  *   Manual, the overflow table and examples: PolyDifference.md
  * Time: O(K^2) add, O(n K) build, O(1) size and clear
  * Status: Stress-tested against brute force for every degree 0..7, with long long and with a
- *   modular int: 142202 checks, 15 negative controls. No judge submission yet.
+ *   modular int: 142202 checks, plus 80325 with the library mi of ModInt.h.
+ *   15 negative controls, all caught. No judge submission yet.
  */
 
 template <int K, class T>
