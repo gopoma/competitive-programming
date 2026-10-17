@@ -285,25 +285,52 @@ cout << seg.prod(l, r).best << "\n";
 ## Hasta dónde llega
 
 Intel Core Ultra 7 155U, g++ 13.2.0 `-O2 -DNDEBUG`, proceso fijado a un core con prioridad alta,
-**un proceso por corrida** y el mínimo de 3. Cada celda es **tiempo total (build + consultas) ·
-pico de memoria**. El pico es `PeakWorkingSetSize` del proceso entero, así que incluye el vector
-de entrada, que es lo que de verdad vas a tener en memoria.
+**un proceso por corrida**. Las celdas que entran en 8 s son el mínimo de 3 corridas; las que se
+pasan son una sola, porque afinar un número que ya no sirve es tiempo tirado.
 
-Referencia: **5 s** y **1024 MiB**. `!` marca lo que se pasa de 5 s; `~` lo que queda **en el
-borde**, entre 4 y 6.5 s — ahí la medición varía hasta un 15% entre corridas según el estado
-térmico de la máquina, así que no te fíes de un pass/fail: medí tu caso.
+> **Las celdas pesadas son órdenes de magnitud, no valores precisos.** La grilla entera tardó
+> ~1.5 h y la máquina deriva térmicamente: una celda del treap que la grilla midió en 5.7 s dio
+> 9.3–12.3 s al re-medirla después. Lo que **sí** es robusto es el veredicto (entra / no entra) y
+> la forma de la matriz; el número exacto de una celda de más de 5 s no lo es.
+
+Marcas, con las referencias **5 s** y **1024 MiB**:
+
+| | en tiempo | en memoria |
+|---|---|---|
+| sin marca | entra | entra |
+| `~` | 4–6.5 s: en el borde, medí tu caso | más de 820 MiB, o sea 80% del límite |
+| `!` | se pasa de 5 s | se pasa de 1024 MiB |
+| `≫` | no se corrió: con una `q` menor ya se había ido muy lejos, y el tiempo crece con `q` | — |
+| `✕` | no terminó o no pudo reservar el pool | — |
 
 `Node` de 16 B (`size` + `sum`) y `LazyUpdate` de 8 B. Carga: 25% `apply` de rango, 50% `prod`, 25% `max_right`, rangos al azar.
 
-| n \ q | 10⁴ | 10⁵ | 10⁶ | 5·10⁶ |
-|---|---|---|---|---|
-| **10⁴** | 4 ms · 5 MiB | 32 ms · 5 MiB | 304 ms · 5 MiB | 1.4 s · 5 MiB |
-| **10⁵** | 6 ms · 11 MiB | 40 ms · 11 MiB | 372 ms · 11 MiB | 1.9 s · 11 MiB |
-| **10⁶** | 23 ms · 60 MiB | 75 ms · 60 MiB | 631 ms · 60 MiB | 3.3 s · 60 MiB |
-| **10⁷** | 349 ms · 797 MiB | 433 ms · 797 MiB | 1.5 s · 797 MiB | 7.6 s · 797 MiB `!` |
+### Tiempo total (build + consultas)
 
-El **techo medido** (la `q` más grande que entró en 5 s, buscada a mano y no extrapolada):
+| n \ q | 10⁵ | 2·10⁵ | 5·10⁵ | 10⁶ | 2·10⁶ | 5·10⁶ | 10⁷ |
+|---|---|---|---|---|---|---|---|
+| **10⁵** | 29 ms | 50 ms | 130 ms | 287 ms | 439 ms | 1.2 s | 2.9 s |
+| **2·10⁵** | 40 ms | 76 ms | 185 ms | 314 ms | 511 ms | 1.8 s | 3.9 s |
+| **5·10⁵** | 49 ms | 86 ms | 290 ms | 484 ms | 843 ms | 2.5 s | 4.4 s `~` |
+| **10⁶** | 112 ms | 95 ms | 201 ms | 390 ms | 854 ms | 2.5 s | 5.0 s `~` |
+| **2·10⁶** | 144 ms | 116 ms | 246 ms | 502 ms | 939 ms | 3.0 s | 6.2 s `~` |
+| **5·10⁶** | 150 ms | 216 ms | 361 ms | 675 ms | 1.5 s | 4.0 s `~` | 8.0 s `!` |
+| **10⁷** | 379 ms | 481 ms | 728 ms | 1.3 s | 2.0 s | 4.8 s `~` | 10.5 s `!` |
 
-A $n = 10^7$: **$q = 3\cdot10^6$** en 4.2 s y 797 MiB.
+### Pico de memoria en MiB
 
-Cuesta **2.6x** el `SegmentTree` a $n = q = 10^6$ (631 ms contra 247), que es el precio del `push`. Lo que hay que mirar es la **memoria a $n = 10^7$: 797 MiB**, a un pelo del límite típico de 1024 — y eso con un `Node` de 16 B. Si el tuyo es más gordo, a $n = 10^7$ no entrás. El build a $n = 10^7$ son 300 ms, 2.5x el del no lazy.
+`PeakWorkingSetSize` del proceso entero, así que **incluye el vector de entrada**, que es lo que de verdad vas a tener en memoria.
+
+| n \ q | 10⁵ | 2·10⁵ | 5·10⁵ | 10⁶ | 2·10⁶ | 5·10⁶ | 10⁷ |
+|---|---|---|---|---|---|---|---|
+| **10⁵** | 11 | 11 | 11 | 11 | 11 | 11 | 11 |
+| **2·10⁵** | 18 | 18 | 18 | 18 | 18 | 18 | 18 |
+| **5·10⁵** | 32 | 32 | 32 | 32 | 32 | 32 | 32 |
+| **10⁶** | 60 | 60 | 60 | 60 | 60 | 60 | 60 |
+| **2·10⁶** | 115 | 115 | 115 | 115 | 115 | 115 | 115 |
+| **5·10⁶** | 401 | 401 | 401 | 401 | 401 | 401 | 401 |
+| **10⁷** | 797 | 797 | 797 | 797 | 797 | 797 | 797 |
+
+Cuesta entre **2x y 3x** el `SegmentTree` con la misma carga (a $n = q = 10^6$, 390 ms contra 158), que es el precio del `push`. Se cae de los 5 s solo en la columna $q = 10^7$: a $n = 10^6$ roza (5.0 s) y desde $n = 2\cdot10^6$ se pasa claro.
+
+Como en el no lazy, **la memoria no depende de `q`**. Y ahí está el límite real: a $n = 10^7$ son **797 MiB** con un `Node` de 16 B. Si el tuyo pesa más, a $n = 10^7$ no entrás en 1024 MiB — y la matriz de tiempo no te va a avisar, porque el tiempo sí entra.

@@ -252,25 +252,56 @@ cout << r - p + 1 << "\n";
 ## Hasta dónde llega
 
 Intel Core Ultra 7 155U, g++ 13.2.0 `-O2 -DNDEBUG`, proceso fijado a un core con prioridad alta,
-**un proceso por corrida** y el mínimo de 3. Cada celda es **tiempo total (build + consultas) ·
-pico de memoria**. El pico es `PeakWorkingSetSize` del proceso entero, así que incluye el vector
-de entrada, que es lo que de verdad vas a tener en memoria.
+**un proceso por corrida**. Las celdas que entran en 8 s son el mínimo de 3 corridas; las que se
+pasan son una sola, porque afinar un número que ya no sirve es tiempo tirado.
 
-Referencia: **5 s** y **1024 MiB**. `!` marca lo que se pasa de 5 s; `~` lo que queda **en el
-borde**, entre 4 y 6.5 s — ahí la medición varía hasta un 15% entre corridas según el estado
-térmico de la máquina, así que no te fíes de un pass/fail: medí tu caso.
+> **Las celdas pesadas son órdenes de magnitud, no valores precisos.** La grilla entera tardó
+> ~1.5 h y la máquina deriva térmicamente: una celda del treap que la grilla midió en 5.7 s dio
+> 9.3–12.3 s al re-medirla después. Lo que **sí** es robusto es el veredicto (entra / no entra) y
+> la forma de la matriz; el número exacto de una celda de más de 5 s no lo es.
 
-`Node` de 8 B, `LazyUpdate` de 8 B. Carga: 25% `apply` de rango, 50% `prod`, 25% `max_right`. No hay build.
+Marcas, con las referencias **5 s** y **1024 MiB**:
 
-| n \ q | 10⁴ | 10⁵ | 5·10⁵ | 10⁶ |
-|---|---|---|---|---|
-| **10⁶** | 8 ms · 6 MiB | 108 ms · 13 MiB | 724 ms · 26 MiB | 1.6 s · 34 MiB |
-| **10¹⁸** | 21 ms · 15 MiB | 278 ms · 104 MiB | 1.7 s · 474 MiB | 3.9 s · 921 MiB |
+| | en tiempo | en memoria |
+|---|---|---|
+| sin marca | entra | entra |
+| `~` | 4–6.5 s: en el borde, medí tu caso | más de 820 MiB, o sea 80% del límite |
+| `!` | se pasa de 5 s | se pasa de 1024 MiB |
+| `≫` | no se corrió: con una `q` menor ya se había ido muy lejos, y el tiempo crece con `q` | — |
+| `✕` | no terminó o no pudo reservar el pool | — |
 
-El **techo medido** (la `q` más grande que entró en 5 s, buscada a mano y no extrapolada):
+`Node` de 8 B, `LazyUpdate` de 8 B. Carga: 25% `apply` de rango, 50% `prod`, 25% `max_right`. No hay build. La última fila es el caso que justifica el template.
 
-A $n = 10^{18}$: **$q = 10^6$** en 3.5 s, pero con **921 MiB** — el tiempo entra y la memoria casi no. A $n = 10^6$: $q = 10^6$ en 1.6 s y 34 MiB.
+### Tiempo total (build + consultas)
 
-**Acá la memoria es el cuello, no el tiempo.** A $n = 10^{18}$ con $q = 10^6$ el tiempo entra en 5 s con holgura (3.5 s) pero el pico es de 921 MiB: con un límite de 1024 MiB estás al 90%, y con uno de 256 MiB el techo baja a $q \approx 2.5\cdot10^5$. El factor 4 del pool por el `apply` de rango se multiplica por los 60 niveles de $10^{18}$.
+| n \ q | 10⁵ | 2·10⁵ | 5·10⁵ | 10⁶ | 2·10⁶ | 5·10⁶ | 10⁷ |
+|---|---|---|---|---|---|---|---|
+| **10⁵** | 60 ms | 146 ms | 298 ms | 571 ms | 1.2 s | 3.8 s | 9.1 s `!` |
+| **2·10⁵** | 47 ms | 116 ms | 376 ms | 806 ms | 1.9 s | 5.4 s `~` | 13.4 s `!` |
+| **5·10⁵** | 54 ms | 137 ms | 472 ms | 1.2 s | 2.2 s | 7.2 s `!` | 16.6 s `!` |
+| **10⁶** | 41 ms | 101 ms | 353 ms | 777 ms | 1.8 s | 6.9 s `!` | 18.2 s `!` |
+| **2·10⁶** | 46 ms | 126 ms | 412 ms | 1.1 s | 2.1 s | 7.3 s `!` | 22.1 s `!` |
+| **5·10⁶** | 46 ms | 124 ms | 423 ms | 880 ms | 2.0 s | 7.5 s `!` | 19.6 s `!` |
+| **10⁷** | 72 ms | 187 ms | 653 ms | 990 ms | 2.2 s | 7.4 s `!` | 19.8 s `!` |
+| **10¹⁸** | 110 ms | 248 ms | 728 ms | 1.6 s | 4.9 s `~` | 21.9 s `!` | `✕` |
 
-Y el `n` pesa muchísimo: con el mismo $q = 10^6$, bajar de $10^{18}$ a $10^6$ te deja **2.5x más rápido y 27x más liviano**. Si tus coordenadas caben en $10^6$ después de comprimir, comprimí.
+### Pico de memoria en MiB
+
+`PeakWorkingSetSize` del proceso entero, así que **incluye el vector de entrada**, que es lo que de verdad vas a tener en memoria.
+
+| n \ q | 10⁵ | 2·10⁵ | 5·10⁵ | 10⁶ | 2·10⁶ | 5·10⁶ | 10⁷ |
+|---|---|---|---|---|---|---|---|
+| **10⁵** | 8 | 8 | 9 | 9 | 9 | 9 | 9 |
+| **2·10⁵** | 9 | 11 | 13 | 14 | 14 | 14 | 14 |
+| **5·10⁵** | 11 | 14 | 19 | 23 | 26 | 27 | 28 |
+| **10⁶** | 13 | 18 | 26 | 34 | 42 | 49 | 50 |
+| **2·10⁶** | 15 | 22 | 35 | 48 | 63 | 83 | 93 |
+| **5·10⁶** | 18 | 27 | 48 | 71 | 103 | 154 | 192 |
+| **10⁷** | 20 | 32 | 58 | 90 | 138 | 224 | 303 |
+| **10¹⁸** | 104 | 199 | 474 | 921 `~` | 1791 `!` | 4319 `!` | — |
+
+**La única celda de las 357 que no pudo ni arrancar**: $n = 10^{18}$ con $q = 10^7$ falla al reservar el pool, porque $4(\lceil\log_2 n\rceil + 1)\,q$ son $2.4\cdot10^9$ nodos. No es que tarde: no entra en el espacio de direcciones.
+
+Para $n \le 10^7$ la estructura es sorprendentemente manejable — a $n = q = 10^7$ son 19.8 s pero solo 303 MiB, y con $q \le 2\cdot10^6$ entra en tiempo en todas las filas de $n \le 10^7$. **El problema aparece con `n` enorme**: a $10^{18}$ el pico es de 921 MiB con $q = 10^6$ y 4.3 GiB con $q = 5\cdot10^6$, porque el factor 4 del `apply` de rango se multiplica por los 60 niveles.
+
+Conclusión práctica: si tus coordenadas caben en $10^7$ después de comprimir, comprimí — con $q = 10^6$ eso te deja en 990 ms y 50 MiB en lugar de 1.7 s y 921 MiB.

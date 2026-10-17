@@ -232,25 +232,54 @@ El predicado es monótono porque `mnpref` no crece al extender el prefijo.
 ## Hasta dónde llega
 
 Intel Core Ultra 7 155U, g++ 13.2.0 `-O2 -DNDEBUG`, proceso fijado a un core con prioridad alta,
-**un proceso por corrida** y el mínimo de 3. Cada celda es **tiempo total (build + consultas) ·
-pico de memoria**. El pico es `PeakWorkingSetSize` del proceso entero, así que incluye el vector
-de entrada, que es lo que de verdad vas a tener en memoria.
+**un proceso por corrida**. Las celdas que entran en 8 s son el mínimo de 3 corridas; las que se
+pasan son una sola, porque afinar un número que ya no sirve es tiempo tirado.
 
-Referencia: **5 s** y **1024 MiB**. `!` marca lo que se pasa de 5 s; `~` lo que queda **en el
-borde**, entre 4 y 6.5 s — ahí la medición varía hasta un 15% entre corridas según el estado
-térmico de la máquina, así que no te fíes de un pass/fail: medí tu caso.
+> **Las celdas pesadas son órdenes de magnitud, no valores precisos.** La grilla entera tardó
+> ~1.5 h y la máquina deriva térmicamente: una celda del treap que la grilla midió en 5.7 s dio
+> 9.3–12.3 s al re-medirla después. Lo que **sí** es robusto es el veredicto (entra / no entra) y
+> la forma de la matriz; el número exacto de una celda de más de 5 s no lo es.
+
+Marcas, con las referencias **5 s** y **1024 MiB**:
+
+| | en tiempo | en memoria |
+|---|---|---|
+| sin marca | entra | entra |
+| `~` | 4–6.5 s: en el borde, medí tu caso | más de 820 MiB, o sea 80% del límite |
+| `!` | se pasa de 5 s | se pasa de 1024 MiB |
+| `≫` | no se corrió: con una `q` menor ya se había ido muy lejos, y el tiempo crece con `q` | — |
+| `✕` | no terminó o no pudo reservar el pool | — |
 
 `Node` de 8 B (solo `sum`). Carga: 25% `set`, 50% `prod`, 25% `max_right`, rangos al azar.
 
-| n \ q | 10⁴ | 10⁵ | 10⁶ | 5·10⁶ |
-|---|---|---|---|---|
-| **10⁴** | 1 ms · 5 MiB | 15 ms · 5 MiB | 146 ms · 5 MiB | 679 ms · 5 MiB |
-| **10⁵** | 2 ms · 7 MiB | 17 ms · 7 MiB | 178 ms · 7 MiB | 781 ms · 7 MiB |
-| **10⁶** | 9 ms · 28 MiB | 31 ms · 28 MiB | 246 ms · 28 MiB | 1.2 s · 28 MiB |
-| **10⁷** | 131 ms · 337 MiB | 149 ms · 337 MiB | 429 ms · 337 MiB | 1.6 s · 337 MiB |
+### Tiempo total (build + consultas)
 
-El **techo medido** (la `q` más grande que entró en 5 s, buscada a mano y no extrapolada):
+| n \ q | 10⁵ | 2·10⁵ | 5·10⁵ | 10⁶ | 2·10⁶ | 5·10⁶ | 10⁷ |
+|---|---|---|---|---|---|---|---|
+| **10⁵** | 13 ms | 22 ms | 62 ms | 130 ms | 220 ms | 519 ms | 933 ms |
+| **2·10⁵** | 10 ms | 20 ms | 49 ms | 100 ms | 217 ms | 476 ms | 1.1 s |
+| **5·10⁵** | 24 ms | 59 ms | 68 ms | 141 ms | 306 ms | 772 ms | 1.3 s |
+| **10⁶** | 38 ms | 82 ms | 90 ms | 158 ms | 304 ms | 788 ms | 2.2 s |
+| **2·10⁶** | 27 ms | 44 ms | 95 ms | 189 ms | 401 ms | 1.0 s | 2.6 s |
+| **5·10⁶** | 68 ms | 97 ms | 159 ms | 266 ms | 508 ms | 1.3 s | 3.0 s |
+| **10⁷** | 210 ms | 175 ms | 232 ms | 396 ms | 902 ms | 1.8 s | 2.7 s |
 
-A $n = 10^7$: **$q = 10^7$** en 3.3 s y 337 MiB. A $n = 10^6$ ni $q = 5\cdot10^6$ la hace sudar: 1.2 s.
+### Pico de memoria en MiB
 
-**La más rápida de la familia y la que más aguanta.** El tiempo de consulta casi no depende de `n` (2 ms a $n = 10^6$ contra 3.5 ms a $n = 10^7$, con $q = 10^4$): lo que crece es el **build**, que a $n = 10^7$ son 118 ms y domina todo salvo las cargas con $q \ge 10^6$. La memoria es $2 \cdot SZ$ nodos y nada más, así que ni a $n = 10^7$ pasa de 337 MiB.
+`PeakWorkingSetSize` del proceso entero, así que **incluye el vector de entrada**, que es lo que de verdad vas a tener en memoria.
+
+| n \ q | 10⁵ | 2·10⁵ | 5·10⁵ | 10⁶ | 2·10⁶ | 5·10⁶ | 10⁷ |
+|---|---|---|---|---|---|---|---|
+| **10⁵** | 7 | 7 | 7 | 7 | 7 | 7 | 7 |
+| **2·10⁵** | 10 | 10 | 10 | 10 | 10 | 10 | 10 |
+| **5·10⁵** | 16 | 16 | 16 | 16 | 16 | 16 | 16 |
+| **10⁶** | 28 | 28 | 28 | 28 | 28 | 28 | 28 |
+| **2·10⁶** | 52 | 52 | 52 | 52 | 52 | 52 | 52 |
+| **5·10⁶** | 171 | 171 | 171 | 171 | 171 | 171 | 171 |
+| **10⁷** | 337 | 337 | 337 | 337 | 337 | 337 | 337 |
+
+**Las 49 combinaciones entran en 5 s**, y la peor es 3.0 s. Es la única de la familia que aguanta la grilla completa.
+
+La memoria **no depende de `q`** en absoluto: son $2 \cdot SZ$ nodos reservados en el constructor, así que cada fila es una constante. Eso la vuelve la opción obvia cuando `q` es grande y `n` moderado: a $n = 10^5$ con $q = 10^7$ son 933 ms y 7 MiB.
+
+El tiempo crece casi lineal en `q` y muy poco en `n`: con $q = 10^6$ fijo, pasar de $n = 10^5$ a $n = 10^7$ va de 130 a 396 ms — un factor 3 para `n` cien veces mayor, que es el $\log n$ más la localidad.

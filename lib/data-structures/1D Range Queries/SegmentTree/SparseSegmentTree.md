@@ -229,25 +229,56 @@ template: es que el problema necesita otra estructura.
 ## Hasta dónde llega
 
 Intel Core Ultra 7 155U, g++ 13.2.0 `-O2 -DNDEBUG`, proceso fijado a un core con prioridad alta,
-**un proceso por corrida** y el mínimo de 3. Cada celda es **tiempo total (build + consultas) ·
-pico de memoria**. El pico es `PeakWorkingSetSize` del proceso entero, así que incluye el vector
-de entrada, que es lo que de verdad vas a tener en memoria.
+**un proceso por corrida**. Las celdas que entran en 8 s son el mínimo de 3 corridas; las que se
+pasan son una sola, porque afinar un número que ya no sirve es tiempo tirado.
 
-Referencia: **5 s** y **1024 MiB**. `!` marca lo que se pasa de 5 s; `~` lo que queda **en el
-borde**, entre 4 y 6.5 s — ahí la medición varía hasta un 15% entre corridas según el estado
-térmico de la máquina, así que no te fíes de un pass/fail: medí tu caso.
+> **Las celdas pesadas son órdenes de magnitud, no valores precisos.** La grilla entera tardó
+> ~1.5 h y la máquina deriva térmicamente: una celda del treap que la grilla midió en 5.7 s dio
+> 9.3–12.3 s al re-medirla después. Lo que **sí** es robusto es el veredicto (entra / no entra) y
+> la forma de la matriz; el número exacto de una celda de más de 5 s no lo es.
 
-`T` de 8 B, `InternalNode` de 16 B. Carga: 25% `set` en posición al azar, 50% `prod`, 25% `max_right`. No hay build.
+Marcas, con las referencias **5 s** y **1024 MiB**:
 
-| n \ q | 10⁴ | 10⁵ | 10⁶ | 2·10⁶ |
-|---|---|---|---|---|
-| **10⁶** | 4 ms · 5 MiB | 50 ms · 7 MiB | 970 ms · 17 MiB | 2.4 s · 22 MiB |
-| **10¹⁸** | 10 ms · 6 MiB | 129 ms · 22 MiB | 2.1 s · 169 MiB | 5.6 s · 325 MiB `~` |
+| | en tiempo | en memoria |
+|---|---|---|
+| sin marca | entra | entra |
+| `~` | 4–6.5 s: en el borde, medí tu caso | más de 820 MiB, o sea 80% del límite |
+| `!` | se pasa de 5 s | se pasa de 1024 MiB |
+| `≫` | no se corrió: con una `q` menor ya se había ido muy lejos, y el tiempo crece con `q` | — |
+| `✕` | no terminó o no pudo reservar el pool | — |
 
-El **techo medido** (la `q` más grande que entró en 5 s, buscada a mano y no extrapolada):
+`T` de 8 B, `InternalNode` de 16 B. Carga: 25% `set` en posición al azar, 50% `prod`, 25% `max_right`. No hay build. La última fila es el caso que justifica el template.
 
-A $n = 10^{18}$: **$q = 10^6$** en 2.2 s y 169 MiB. A $n = 10^6$ entra $q = 2\cdot10^6$ en 2.4 s.
+### Tiempo total (build + consultas)
 
-**El `n` sí influye, y bastante.** Con el mismo $q = 10^6$, pasar de $n = 10^6$ a $n = 10^{18}$ cuesta **2.2x el tiempo y 10x la memoria** (970 ms y 17 MiB contra 2.1 s y 169 MiB), porque cada `set` materializa $\lceil\log_2 n\rceil + 1$ nodos: 20 contra 60. El build sigue siendo gratis a cualquier `n` — un árbol de $10^{18}$ recién instanciado tiene un nodo.
+| n \ q | 10⁵ | 2·10⁵ | 5·10⁵ | 10⁶ | 2·10⁶ | 5·10⁶ | 10⁷ |
+|---|---|---|---|---|---|---|---|
+| **10⁵** | 42 ms | 91 ms | 281 ms | 573 ms | 1.1 s | 3.5 s | 7.1 s `!` |
+| **2·10⁵** | 44 ms | 116 ms | 384 ms | 681 ms | 1.3 s | 3.8 s | 11.0 s `!` |
+| **5·10⁵** | 44 ms | 117 ms | 326 ms | 786 ms | 1.7 s | 5.2 s `~` | 14.7 s `!` |
+| **10⁶** | 44 ms | 95 ms | 296 ms | 738 ms | 2.0 s | 7.2 s `!` | 18.9 s `!` |
+| **2·10⁶** | 42 ms | 120 ms | 384 ms | 879 ms | 2.1 s | 8.6 s `!` | 21.6 s `!` |
+| **5·10⁶** | 52 ms | 140 ms | 458 ms | 960 ms | 2.3 s | 9.7 s `!` | 22.6 s `!` |
+| **10⁷** | 44 ms | 118 ms | 412 ms | 996 ms | 2.1 s | 9.3 s `!` | 22.7 s `!` |
+| **10¹⁸** | 75 ms | 182 ms | 612 ms | 1.5 s | 4.5 s `~` | 19.6 s `!` | 45.1 s `!` |
 
-Si podés comprimir coordenadas y usar el `SegmentTree` denso, hacelo: a $q = 10^6$ es **8.6x** más rápido (247 ms contra 2.1 s) y usa 6x menos memoria.
+### Pico de memoria en MiB
+
+`PeakWorkingSetSize` del proceso entero, así que **incluye el vector de entrada**, que es lo que de verdad vas a tener en memoria.
+
+| n \ q | 10⁵ | 2·10⁵ | 5·10⁵ | 10⁶ | 2·10⁶ | 5·10⁶ | 10⁷ |
+|---|---|---|---|---|---|---|---|
+| **10⁵** | 6 | 6 | 7 | 8 | 8 | 8 | 8 |
+| **2·10⁵** | 6 | 7 | 9 | 10 | 11 | 11 | 11 |
+| **5·10⁵** | 7 | 8 | 11 | 14 | 17 | 19 | 20 |
+| **10⁶** | 7 | 9 | 13 | 17 | 23 | 30 | 34 |
+| **2·10⁶** | 8 | 10 | 15 | 21 | 29 | 44 | 56 |
+| **5·10⁶** | 8 | 11 | 17 | 26 | 39 | 67 | 95 |
+| **10⁷** | 8 | 11 | 19 | 30 | 47 | 85 | 129 |
+| **10¹⁸** | 22 | 39 | 89 | 169 | 325 | 781 | 1519 `!` |
+
+**Con `q` chico las siete filas de $n \le 10^7$ son casi iguales**, porque entre $10^5$ y $10^7$ el $\lceil\log_2 n\rceil$ solo va de 17 a 24: con $q = 10^6$ el tiempo va de 573 a 996 ms. Con `q` grande el $\log n$ sí se nota: a $q = 10^7$ va de 7.1 a 22.7 s, un factor 3.2.
+
+Y la fila de $10^{18}$ cambia la película: con el mismo $q = 10^6$ cuesta **1.5x el tiempo y 5x la memoria** que a $n = 10^7$ (1.5 s y 169 MiB contra 996 ms y 34), y a $q = 10^7$ son 1519 MiB — se pasa. El build sigue siendo gratis a cualquier `n`: un árbol de $10^{18}$ recién instanciado tiene **un** nodo.
+
+La comparación que de verdad decide: si podés comprimir coordenadas y usar el `SegmentTree` denso, a $n = 10^6$ con $q = 10^6$ son **158 ms contra 738** — 4.7x. Comprimir paga.

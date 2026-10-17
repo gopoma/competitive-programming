@@ -280,24 +280,54 @@ cout << p + 1 << "\n";
 ## Hasta dónde llega
 
 Intel Core Ultra 7 155U, g++ 13.2.0 `-O2 -DNDEBUG`, proceso fijado a un core con prioridad alta,
-**un proceso por corrida** y el mínimo de 3. Cada celda es **tiempo total (build + consultas) ·
-pico de memoria**. El pico es `PeakWorkingSetSize` del proceso entero, así que incluye el vector
-de entrada, que es lo que de verdad vas a tener en memoria.
+**un proceso por corrida**. Las celdas que entran en 8 s son el mínimo de 3 corridas; las que se
+pasan son una sola, porque afinar un número que ya no sirve es tiempo tirado.
 
-Referencia: **5 s** y **1024 MiB**. `!` marca lo que se pasa de 5 s; `~` lo que queda **en el
-borde**, entre 4 y 6.5 s — ahí la medición varía hasta un 15% entre corridas según el estado
-térmico de la máquina, así que no te fíes de un pass/fail: medí tu caso.
+> **Las celdas pesadas son órdenes de magnitud, no valores precisos.** La grilla entera tardó
+> ~1.5 h y la máquina deriva térmicamente: una celda del treap que la grilla midió en 5.7 s dio
+> 9.3–12.3 s al re-medirla después. Lo que **sí** es robusto es el veredicto (entra / no entra) y
+> la forma de la matriz; el número exacto de una celda de más de 5 s no lo es.
+
+Marcas, con las referencias **5 s** y **1024 MiB**:
+
+| | en tiempo | en memoria |
+|---|---|---|
+| sin marca | entra | entra |
+| `~` | 4–6.5 s: en el borde, medí tu caso | más de 820 MiB, o sea 80% del límite |
+| `!` | se pasa de 5 s | se pasa de 1024 MiB |
+| `≫` | no se corrió: con una `q` menor ya se había ido muy lejos, y el tiempo crece con `q` | — |
+| `✕` | no terminó o no pudo reservar el pool | — |
 
 `T` de 8 B, `InternalNode` de 16 B. Carga: 25% `set` creando versión, 50% `prod` sobre una versión al azar, 25% `max_right`. Las raíces en un `vector<int>`.
 
-| n \ q | 10⁴ | 10⁵ | 10⁶ | 2·10⁶ |
-|---|---|---|---|---|
-| **10⁴** | 4 ms · 6 MiB | 62 ms · 11 MiB | 1.7 s · 61 MiB | 3.9 s · 116 MiB |
-| **10⁵** | 7 ms · 9 MiB | 92 ms · 15 MiB | 2.3 s · 77 MiB | 5.8 s · 145 MiB `~` |
-| **10⁶** | 35 ms · 44 MiB | 217 ms · 51 MiB | 2.9 s · 124 MiB | 7.2 s · 204 MiB `!` |
+### Tiempo total (build + consultas)
 
-El **techo medido** (la `q` más grande que entró en 5 s, buscada a mano y no extrapolada):
+| n \ q | 10⁵ | 2·10⁵ | 5·10⁵ | 10⁶ | 2·10⁶ | 5·10⁶ | 10⁷ |
+|---|---|---|---|---|---|---|---|
+| **10⁵** | 63 ms | 208 ms | 744 ms | 2.4 s | 5.2 s `~` | 14.5 s `!` | 33.1 s `!` |
+| **2·10⁵** | 73 ms | 209 ms | 903 ms | 2.4 s | 5.0 s `~` | 16.0 s `!` | 35.3 s `!` |
+| **5·10⁵** | 259 ms | 317 ms | 1.1 s | 2.6 s | 6.2 s `~` | 16.9 s `!` | 35.3 s `!` |
+| **10⁶** | 149 ms | 352 ms | 1.1 s | 2.6 s | 6.3 s `~` | 17.3 s `!` | 38.3 s `!` |
+| **2·10⁶** | 168 ms | 356 ms | 1.3 s | 2.9 s | 6.8 s `!` | 17.5 s `!` | 37.7 s `!` |
+| **5·10⁶** | 255 ms | 468 ms | 1.3 s | 3.4 s | 6.5 s `~` | 20.4 s `!` | 43.8 s `!` |
+| **10⁷** | 352 ms | 623 ms | 2.0 s | 4.1 s `~` | 8.5 s `!` | 21.5 s `!` | 46.8 s `!` |
 
-A $n = 10^6$: **$q = 10^6$** en 2.9 s y 124 MiB.
+### Pico de memoria en MiB
 
-**El techo es el tiempo, no la memoria**: a $q = 2\cdot10^6$ se pasa de 5 s en las tres `n`, pero el pico nunca llega a 205 MiB. El pool lo domina $q \log n$, no `n`: a $n = 10^4$ con $q = 10^6$ son 60 MiB y a $n$ cien veces más grande, 124. **Ojo con la diferencia entre reserva y uso**: a $n = q = 10^6$ el constructor reserva 23 M de nodos pero solo se tocan 7.2 M, porque únicamente el 25% de las operaciones crea versión. La reserva es virtual; el pico refleja lo que se usa.
+`PeakWorkingSetSize` del proceso entero, así que **incluye el vector de entrada**, que es lo que de verdad vas a tener en memoria.
+
+| n \ q | 10⁵ | 2·10⁵ | 5·10⁵ | 10⁶ | 2·10⁶ | 5·10⁶ | 10⁷ |
+|---|---|---|---|---|---|---|---|
+| **10⁵** | 15 | 22 | 43 | 77 | 145 | 351 | 693 |
+| **2·10⁵** | 20 | 27 | 48 | 85 | 157 | 374 | 735 |
+| **5·10⁵** | 31 | 39 | 62 | 101 | 178 | 409 | 794 |
+| **10⁶** | 51 | 59 | 83 | 124 | 205 | 447 | 852 `~` |
+| **2·10⁶** | 89 | 98 | 123 | 166 | 250 | 504 | 928 `~` |
+| **5·10⁶** | 204 | 213 | 240 | 285 | 375 | 645 | 1095 `!` |
+| **10⁷** | 396 | 405 | 433 | 480 | 574 | 855 `~` | 1324 `!` |
+
+**El techo es $q \approx 10^6$**, y es parejo para toda `n`: con $q = 10^6$ va de 2.4 a 4.1 s según `n`, y con $q = 2\cdot10^6$ ya se pasa en las siete filas. Eso es lo contrario de las dos densas: acá manda `q`, no `n`.
+
+La razón está en la matriz de memoria, que **crece con las dos**: cada `set` crea $\lceil\log_2 n\rceil + 1$ nodos nuevos, así que el pool es $O(q \log n)$. A $n = q = 10^7$ son **1324 MiB** y se pasa también de memoria.
+
+**Reserva y uso no son lo mismo**: a $n = q = 10^6$ el constructor reserva 23 M de nodos pero solo se tocan 7.2 M, porque únicamente el 25% de las operaciones crea versión. La reserva es virtual; el pico refleja lo que se escribe.

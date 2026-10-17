@@ -517,26 +517,54 @@ Un `multiset` hace el insert y el erase, pero **no** te da la suma de los $k$ me
 ## Hasta dónde llega
 
 Intel Core Ultra 7 155U, g++ 13.2.0 `-O2 -DNDEBUG`, proceso fijado a un core con prioridad alta,
-**un proceso por corrida** y el mínimo de 3. Cada celda es **tiempo total (build + consultas) ·
-pico de memoria**. El pico es `PeakWorkingSetSize` del proceso entero, así que incluye el vector
-de entrada, que es lo que de verdad vas a tener en memoria.
+**un proceso por corrida**. Las celdas que entran en 8 s son el mínimo de 3 corridas; las que se
+pasan son una sola, porque afinar un número que ya no sirve es tiempo tirado.
 
-Referencia: **5 s** y **1024 MiB**. `!` marca lo que se pasa de 5 s; `~` lo que queda **en el
-borde**, entre 4 y 6.5 s — ahí la medición varía hasta un 15% entre corridas según el estado
-térmico de la máquina, así que no te fíes de un pass/fail: medí tu caso.
+> **Las celdas pesadas son órdenes de magnitud, no valores precisos.** La grilla entera tardó
+> ~1.5 h y la máquina deriva térmicamente: una celda del treap que la grilla midió en 5.7 s dio
+> 9.3–12.3 s al re-medirla después. Lo que **sí** es robusto es el veredicto (entra / no entra) y
+> la forma de la matriz; el número exacto de una celda de más de 5 s no lo es.
+
+Marcas, con las referencias **5 s** y **1024 MiB**:
+
+| | en tiempo | en memoria |
+|---|---|---|
+| sin marca | entra | entra |
+| `~` | 4–6.5 s: en el borde, medí tu caso | más de 820 MiB, o sea 80% del límite |
+| `!` | se pasa de 5 s | se pasa de 1024 MiB |
+| `≫` | no se corrió: con una `q` menor ya se había ido muy lejos, y el tiempo crece con `q` | — |
+| `✕` | no terminó o no pudo reservar el pool | — |
 
 `Node` de 8 B con `reverse()` vacío, `LazyUpdate` de 8 B. Carga: las seis operaciones rotando — `insert`, `erase`, `apply` de rango, `reverse`, `prod`, `max_right`.
 
-| n \ q | 10⁴ | 10⁵ | 10⁶ | 2·10⁶ |
-|---|---|---|---|---|
-| **10⁴** | 10 ms · 5 MiB | 108 ms · 6 MiB | 1.2 s · 13 MiB | 2.6 s · 20 MiB |
-| **10⁵** | 22 ms · 9 MiB | 228 ms · 10 MiB | 2.4 s · 17 MiB | 4.8 s · 24 MiB `~` |
-| **10⁶** | 60 ms · 50 MiB | 446 ms · 51 MiB | 4.6 s · 58 MiB `~` | 13.5 s · 67 MiB `!` |
+### Tiempo total (build + consultas)
 
-El **techo medido** (la `q` más grande que entró en 5 s, buscada a mano y no extrapolada):
+| n \ q | 10⁵ | 2·10⁵ | 5·10⁵ | 10⁶ | 2·10⁶ | 5·10⁶ | 10⁷ |
+|---|---|---|---|---|---|---|---|
+| **10⁵** | 82 ms | 160 ms | 417 ms | 894 ms | 2.0 s | 5.7 s `~` | 14.5 s `!` |
+| **2·10⁵** | 100 ms | 211 ms | 564 ms | 1.2 s | 2.8 s | 11.4 s `!` | 33.7 s `!` |
+| **5·10⁵** | 250 ms | 499 ms | 1.2 s | 2.6 s | 7.5 s `!` | 24.1 s `!` | 41.9 s `!` |
+| **10⁶** | 238 ms | 472 ms | 1.3 s | 2.7 s | 8.2 s `!` | 22.7 s `!` | 47.5 s `!` |
+| **2·10⁶** | 309 ms | 593 ms | 1.5 s | 3.3 s | 9.2 s `!` | 31.8 s `!` | `≫` |
+| **5·10⁶** | 461 ms | 827 ms | 2.0 s | 4.6 s `~` | 11.0 s `!` | 34.0 s `!` | `≫` |
+| **10⁷** | 597 ms | 1.2 s | 2.7 s | 6.3 s `~` | 15.5 s `!` | 43.1 s `!` | `≫` |
 
-A $n = 10^6$: **$q = 5\cdot10^5$** en 2.3 s y 56 MiB. El $q = 10^6$ de la tabla quedó justo en el borde: seis corridas nuevas dieron 5.3–6.2 s contra los 4.6 s de la grilla, así que ahí no hay respuesta estable.
+### Pico de memoria en MiB
 
-**La memoria nunca es el problema**: el pool es $n + q$ y a $n = 10^6$ con $q = 2\cdot10^6$ son 67 MiB. Todo el costo es tiempo, porque cada `insert`/`erase` reestructura con `split` y `merge`.
+`PeakWorkingSetSize` del proceso entero, así que **incluye el vector de entrada**, que es lo que de verdad vas a tener en memoria.
 
-Y fijate en la columna $q = 10^6$: **1.2 s a $n = 10^4$ contra 4.6 s a $n = 10^6$**. El treap sí paga el $\log n$, y con constante alta — es pointer chasing por el pool, no aritmética de índices. Si no necesitás `insert`/`erase`/`reverse`, el `LazySegmentTree` hace lo mismo **7x** más rápido (631 ms contra 4.6 s a $n = q = 10^6$).
+| n \ q | 10⁵ | 2·10⁵ | 5·10⁵ | 10⁶ | 2·10⁶ | 5·10⁶ | 10⁷ |
+|---|---|---|---|---|---|---|---|
+| **10⁵** | 10 | 11 | 13 | 17 | 25 | 47 | 86 |
+| **2·10⁵** | 15 | 15 | 18 | 21 | 29 | 52 | 90 |
+| **5·10⁵** | 28 | 29 | 31 | 35 | 43 | 66 | 104 |
+| **10⁶** | 51 | 52 | 54 | 58 | 66 | 89 | 127 |
+| **2·10⁶** | 97 | 98 | 100 | 104 | 112 | 134 | — |
+| **5·10⁶** | 234 | 235 | 237 | 241 | 249 | 272 | — |
+| **10⁷** | 463 | 464 | 466 | 470 | 478 | 501 | — |
+
+**El techo es $q \approx 10^6$** hasta $n = 10^6$ (2.7 s), y en las filas de $n \le 2\cdot10^5$ aguanta $q = 2\cdot10^6$ (2.0–2.8 s). La memoria casi nunca estorba: el pool es $n + q$ y el peor caso medido es 501 MiB a $n = 10^7$ con $q = 5\cdot10^6$.
+
+Todo el costo es tiempo, porque cada `insert`/`erase` reestructura con `split` y `merge`, y se paga el $\log n$ con constante alta — es pointer chasing por el pool, no aritmética de índices. Contra el `LazySegmentTree` a $n = q = 10^6$: **2.7 s contra 390 ms**, 6.9x.
+
+O sea: usalo **solo** si necesitás `insert`, `erase`, `reverse`, `rotate` o `move`. Si tu problema es consulta y update de rango sobre un arreglo de tamaño fijo, el `LazySegmentTree` hace lo mismo y te deja siete veces más margen.

@@ -222,24 +222,54 @@ cout << p - l + 1 << "\n";                      // el largo, sin if
 ## Hasta dónde llega
 
 Intel Core Ultra 7 155U, g++ 13.2.0 `-O2 -DNDEBUG`, proceso fijado a un core con prioridad alta,
-**un proceso por corrida** y el mínimo de 3. Cada celda es **tiempo total (build + consultas) ·
-pico de memoria**. El pico es `PeakWorkingSetSize` del proceso entero, así que incluye el vector
-de entrada, que es lo que de verdad vas a tener en memoria.
+**un proceso por corrida**. Las celdas que entran en 8 s son el mínimo de 3 corridas; las que se
+pasan son una sola, porque afinar un número que ya no sirve es tiempo tirado.
 
-Referencia: **5 s** y **1024 MiB**. `!` marca lo que se pasa de 5 s; `~` lo que queda **en el
-borde**, entre 4 y 6.5 s — ahí la medición varía hasta un 15% entre corridas según el estado
-térmico de la máquina, así que no te fíes de un pass/fail: medí tu caso.
+> **Las celdas pesadas son órdenes de magnitud, no valores precisos.** La grilla entera tardó
+> ~1.5 h y la máquina deriva térmicamente: una celda del treap que la grilla midió en 5.7 s dio
+> 9.3–12.3 s al re-medirla después. Lo que **sí** es robusto es el veredicto (entra / no entra) y
+> la forma de la matriz; el número exacto de una celda de más de 5 s no lo es.
+
+Marcas, con las referencias **5 s** y **1024 MiB**:
+
+| | en tiempo | en memoria |
+|---|---|---|
+| sin marca | entra | entra |
+| `~` | 4–6.5 s: en el borde, medí tu caso | más de 820 MiB, o sea 80% del límite |
+| `!` | se pasa de 5 s | se pasa de 1024 MiB |
+| `≫` | no se corrió: con una `q` menor ya se había ido muy lejos, y el tiempo crece con `q` | — |
+| `✕` | no terminó o no pudo reservar el pool | — |
 
 `Node` de 16 B, `LazyUpdate` de 8 B, `InternalNode` de 32 B. Carga: 25% `apply` de rango creando versión, 50% `prod` sobre una versión al azar, 25% `max_right`.
 
-| n \ q | 10⁴ | 10⁵ | 5·10⁵ | 10⁶ |
-|---|---|---|---|---|
-| **10⁴** | 7 ms · 9 MiB | 188 ms · 41 MiB | 1.1 s · 183 MiB | 2.6 s · 361 MiB |
-| **10⁵** | 16 ms · 17 MiB | 269 ms · 58 MiB | 1.6 s · 241 MiB | 3.9 s · 469 MiB |
-| **10⁶** | 55 ms · 86 MiB | 409 ms · 136 MiB | 2.2 s · 359 MiB | 5.4 s · 637 MiB `~` |
+### Tiempo total (build + consultas)
 
-El **techo medido** (la `q` más grande que entró en 5 s, buscada a mano y no extrapolada):
+| n \ q | 10⁵ | 2·10⁵ | 5·10⁵ | 10⁶ | 2·10⁶ | 5·10⁶ | 10⁷ |
+|---|---|---|---|---|---|---|---|
+| **10⁵** | 180 ms | 459 ms | 1.6 s | 3.2 s | 9.4 s `!` | 26.3 s `!` | 56.5 s `!` |
+| **2·10⁵** | 280 ms | 540 ms | 1.5 s | 4.2 s `~` | 11.8 s `!` | 31.8 s `!` | `≫` |
+| **5·10⁵** | 279 ms | 586 ms | 2.1 s | 4.7 s `~` | 12.1 s `!` | 36.2 s `!` | `≫` |
+| **10⁶** | 312 ms | 715 ms | 2.2 s | 5.3 s `~` | 13.2 s `!` | 37.3 s `!` | `≫` |
+| **2·10⁶** | 469 ms | 1.0 s | 2.2 s | 5.1 s `~` | 11.6 s `!` | 36.3 s `!` | `≫` |
+| **5·10⁶** | 437 ms | 879 ms | 2.7 s | 5.8 s `~` | 14.3 s `!` | 36.3 s `!` | `≫` |
+| **10⁷** | 666 ms | 1.1 s | 2.6 s | 6.1 s `~` | 15.8 s `!` | 42.3 s `!` | `≫` |
 
-A $n = 10^6$: **$q = 5\cdot10^5$** en 2.3 s y 359 MiB.
+### Pico de memoria en MiB
 
-**La más cara de las siete, por lejos.** El factor 4 del pool se paga en todo: a $n = q = 10^6$ son 637 MiB y 5.4 s, contra 631 ms y 60 MiB del `LazySegmentTree` no persistente — **8.6x el tiempo y 10x la memoria**. Acá la memoria y el tiempo se agotan casi juntos, que es lo que la vuelve incómoda: no podés comprar tiempo con memoria ni al revés. Si necesitás $q = 10^6$ con updates de rango **y** persistencia, mirá si el problema sale offline.
+`PeakWorkingSetSize` del proceso entero, así que **incluye el vector de entrada**, que es lo que de verdad vas a tener en memoria.
+
+| n \ q | 10⁵ | 2·10⁵ | 5·10⁵ | 10⁶ | 2·10⁶ | 5·10⁶ | 10⁷ |
+|---|---|---|---|---|---|---|---|
+| **10⁵** | 58 | 104 | 241 | 469 | 926 `~` | 2297 `!` | 4580 `!` |
+| **2·10⁵** | 69 | 117 | 264 | 507 | 995 `~` | 2457 `!` | — |
+| **5·10⁵** | 95 | 148 | 306 | 569 | 1095 `!` | 2672 `!` | — |
+| **10⁶** | 137 | 192 | 359 | 637 | 1194 `!` | 2863 `!` | — |
+| **2·10⁶** | 216 | 275 | 451 | 744 | 1331 `!` | 3092 `!` | — |
+| **5·10⁶** | 449 | 512 | 701 | 1015 `~` | 1644 `!` | 3530 `!` | — |
+| **10⁷** | 834 `~` | 900 `~` | 1097 `!` | 1427 `!` | 2086 `!` | 4063 `!` | — |
+
+**La más cara de las siete, por lejos, y la única donde la memoria se agota antes que el tiempo.** El techo de tiempo es $q = 5\cdot10^5$ (1.5–2.7 s), pero mirá la fila $n = 10^7$: con ese mismo $q = 5\cdot10^5$ ya son **1097 MiB**, o sea que se pasa de memoria en una celda que entra cómoda en tiempo. A $q = 5\cdot10^6$ el pico va de 2.2 a 4.0 GiB, y la columna $q = 10^7$ no se corrió más allá de la primera fila porque con `q` menor ya se había ido a 36 s.
+
+Contra el `LazySegmentTree` no persistente, a $n = q = 10^6$: **5.3 s contra 390 ms y 637 MiB contra 60**, o sea 14x el tiempo y 11x la memoria. El factor 4 del pool (un `apply` de rango toca hasta cuatro caminos) se multiplica por el `InternalNode` de 32 B.
+
+Si necesitás $q \ge 10^6$ con updates de rango **y** persistencia, mirá si el problema sale offline antes de pelear con esto.
