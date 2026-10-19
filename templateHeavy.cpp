@@ -12,6 +12,17 @@
 
 
 
+// fast setup for C++17/20/23
+//? #pragma GCC optimize ("Ofast")
+//? //! #pragma GCC optimize ("trapv")
+//?
+//? #include <bits/stdc++.h> //? if you don't want IntelliSense
+//? using namespace std;
+//?
+//? #undef _GLIBCXX_DEBUG //? for Stress Testing
+//? #pragma GCC target ("avx,avx2")
+
+
 //* sometimes pragmas don't work, if so, just comment it!
 //? #pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
