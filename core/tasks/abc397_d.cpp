@@ -13,32 +13,16 @@
 
 
 //* sometimes pragmas don't work, if so, just comment it!
-//? #pragma GCC optimize ("Ofast")
+#pragma GCC optimize ("Ofast")
 //? #pragma GCC target ("avx,avx2")
 //! #pragma GCC optimize ("trapv")
 
-//! #undef _GLIBCXX_DEBUG //? for Stress Testing
 
 
-#include <algorithm>
-#include <array>
-#include <bitset>
-#include <cassert>
-#include <chrono>
-#include <climits>
-#include <cmath>
-#include <complex>
-#include <cstring>
-#include <functional>
-#include <iomanip>
-#include <iostream>
-#include <map>
-#include <numeric>
-#include <queue>
-#include <random>
-#include <set>
-#include <vector>
+#include <bits/stdc++.h> //? if you don't want IntelliSense
 using namespace std;
+
+#undef _GLIBCXX_DEBUG //? for Stress Testing
 
 
 
@@ -99,7 +83,7 @@ template<class T> using pqg = priority_queue<T, vector<T>, greater<T>>;
 using ull  = unsigned long long;
 //? using i64  = long long;
 //? using u64  = uint64_t;
-//? using i128 = __int128;
+using i128 = __int128;
 //? using u128 = __uint128_t;
 //? using f128 = __float128;
 
@@ -256,9 +240,18 @@ using vvi = V<vi>;
 using vvl = V<vl>;
 using vvb = V<vb>;
 
-ll custom_abs(ll x) {
-    if(x < 0) return -x;
+template <typename T>
+T custom_abs(T x) {
+    if(x < T(0)) return -x;
     return +x;
+}
+
+template <typename T>
+T custom_sqrt(T x) {
+    T r = sqrtl(x);
+    while((r + T(1)) * (r + T(1)) < x) r++;
+    while(r * r > x) r--;
+    return r;
 }
 //? /Custom Helpers
 
@@ -293,15 +286,182 @@ vpi treeRand(int N, int back) {
 
 
 //* Template
+const int MAX = int(1e6) + 12; // TODO: SQRT3
+
+long long n;
+vector<int> primes;
+bool composite[MAX];
+vector<long long> divisors;
+vector<pair<long long, int>> factors;
+
+void init(){
+	for(int i = 2; i < MAX; i++){
+		if(not composite[i]) primes.emplace_back(i);
+		for(int p : primes){
+			if(i * p >= MAX) break;
+			composite[i * p] = true;
+			if(i % p == 0) break;
+		}
+	}
+}
+
+void backtracking(int pos, long long val){
+	if(pos == factors.size()){
+		divisors.emplace_back(val);
+		return;
+	}
+	long long p = 1;
+	for(int i = 0; i <= factors[pos].second; i++){
+		backtracking(pos + 1, val * p);
+		p *= factors[pos].first;
+	}
+}
+
+bool has_square_root(long long n){
+	int r = round(sqrt(n));
+	return 1ll * r * r == n;
+}
+
+typedef long long ll;
+typedef unsigned long long ull;
+typedef long double ld;
+
+ull mod_mul(ull a, ull b, ull M) {
+	ll ret = a * b - M * ull(ld(a) * ld(b) / ld(M));
+	return ret + M * (ret < 0) - M * (ret >= (ll)M);
+}
+ull mod_pow(ull b, ull e, ull mod) {
+	ull ans = 1;
+	for (; e; b = mod_mul(b, b, mod), e /= 2)
+		if (e & 1) ans = mod_mul(ans, b, mod);
+	return ans;
+}
+
+bool miller_rabin(ull n){
+	if (n < 2 || n % 6 % 4 != 1) return (n | 1) == 3;
+	ull A[] = {2, 325, 9375, 28178, 450775, 9780504, 1795265022},
+	    s = __builtin_ctzll(n-1), d = n >> s;
+	for(auto a : A) {   // ^ count trailing zeroes
+		ull p = mod_pow(a%n, d, n), i = s;
+		while (p != 1 && p != n - 1 && a % n && i--)
+			p = mod_mul(p, p, n);
+		if (p != n-1 && i != s) return 0;
+	}
+	return 1;
+}
+
+ull pollard_rho(ull n) {
+	auto f = [n](ull x) { return mod_mul(x, x, n) + 1; };
+	ull x = 0, y = 0, t = 0, prd = 2, i = 1, q;
+	while (t++ % 40 || __gcd(prd, n) == 1) {
+		if (x == y) x = ++i, y = f(x);
+		if ((q = mod_mul(prd, max(x,y) - min(x,y), n))) prd = q;
+		x = f(x), y = f(f(y));
+	}
+	return __gcd(prd, n);
+}
+
+void factorize(){
+	for(int p : primes){
+		if(p * p * p > n) break;
+		int e = 0;
+		while(n % p == 0){
+			n /= p;
+			e++;
+		}
+		if(e) factors.emplace_back(make_pair(p, e));
+	}
+	if(miller_rabin(n)){
+		factors.emplace_back(make_pair(n, 1));
+	}
+	else if(has_square_root(n)){
+		factors.emplace_back(make_pair((long long)round(sqrt(n)), 2));
+	}
+	else{
+		long long d = pollard_rho(n);
+		factors.emplace_back(make_pair(d, 1));
+		factors.emplace_back(make_pair(n / d, 1));
+	}
+	backtracking(0, 1);
+}
+//* /here goes the template!
+
+const char n_l = '\n';
+
+// TODO: modularize >:v
+vector<long long> factorize(long long x) {
+    divisors.clear();
+    factors.clear();
+
+    n = x;
+
+    factorize();
+    remDup(divisors);
+
+    return divisors;
+}
 //* /Template
 
 void solve() {
     // run A < A3.in
     // xd A < A4.in
+
+    ll n;
+    cin >> n;
+
+    ll rx, ry;
+    auto check = [&](ll x, ll y) -> bool {
+        chk(x * y == n);
+
+        i128 a = i128(3);
+        i128 b = i128(3) * x;
+        i128 c = x * x - y;
+
+        i128 det = b * b - i128(4) * a * c;
+        if(det < 0) {
+            return false;
+        }
+
+        i128 r = custom_sqrt<i128>(det);
+
+        if(r * r != det) {
+            return false;
+        }
+
+
+        i128 up = (-b + r);
+        if(up >= 0 && (up % i128(6) == i128(0))) {
+            ll B = up / 6LL;
+            ll A = B + x;
+
+            if(A >= 1 && B >= 1 && (A * A * A - B * B * B) == n) {
+                rx = A;
+                ry = B;
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    dbg(n);
+    vl divs = factorize(n);
+    for(auto& d: divs) {
+        ll x = d;
+        ll y = n / d;
+        if(x <= y && check(x, y)) {
+            cout << rx << " " << ry << "\n";
+            return;
+        }
+    }
+
+    cout << "-1\n";
 }
 
 int main() {
     cin.tie(0)->sync_with_stdio(0);
+
+    init(); // TODO: do not forget the init >:v
 
     if(isDebugging) {
         dbg("debug");

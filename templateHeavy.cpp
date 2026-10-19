@@ -256,9 +256,18 @@ using vvi = V<vi>;
 using vvl = V<vl>;
 using vvb = V<vb>;
 
-ll custom_abs(ll x) {
-    if(x < 0) return -x;
+template <typename T>
+T custom_abs(T x) {
+    if(x < T(0)) return -x;
     return +x;
+}
+
+template <typename T>
+T custom_sqrt(T x) {
+    T r = sqrtl(x);
+    while((r + T(1)) * (r + T(1)) < x) r++;
+    while(r * r > x) r--;
+    return r;
 }
 //? /Custom Helpers
 
