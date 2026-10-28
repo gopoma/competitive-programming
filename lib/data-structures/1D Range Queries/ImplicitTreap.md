@@ -193,8 +193,22 @@ ancestros quedaría desactualizado, en silencio.
 Para escribir va `set(pos, val)`, que sí hace el `pull`. La asimetría es deliberada: leer es
 barato y puro, escribir cuesta.
 
-> Para recorrer **todo**, `dump()` es $O(n)$ contra los $O(n \log n)$ de `t[i]` en un bucle.
-> Medido en una carga real, leer con índices repetidos costó **1.5x** lo que `dump()`.
+> **Para recorrer todo, usá `dump()`, no un bucle de `t[i]`.** `dump()` es un solo recorrido en
+> orden simétrico, $O(n)$; cada `t[i]` es un descenso completo desde la raíz, así que el bucle es
+> $O(n \log n)$. Medido aislado, el bucle cuesta **11–15x** lo que `dump()`:
+>
+> | n | `dump()` | n veces `t[i]` | ratio |
+> |---|---|---|---|
+> | $10^4$ | 0.06 ms | 0.69 ms | 11.5x |
+> | $10^5$ | 0.54 ms | 8.01 ms | 14.8x |
+> | $10^6$ | 8.50 ms | 100.71 ms | 11.8x |
+> | $5\cdot10^6$ | 50.14 ms | 566.98 ms | 11.3x |
+>
+> En visitas a nodos la diferencia es todavía mayor y **crece con $\log n$**: a $n = 10^6$ son
+> 2 000 001 contra 37 951 464, o sea **19x**. (`dump()` hace exactamente $2n+1$: las $n$ reales
+> más las $n+1$ llamadas que entran en una hoja nula y vuelven.) El tiempo se queda en 11–15x y
+> no en 19x porque los `t[i]` repasan la raíz y los primeros niveles sin parar, y esos quedan
+> calientes en caché, mientras `dump()` barre el pool entero una sola vez.
 
 ## prod
 
