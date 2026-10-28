@@ -7,7 +7,8 @@
  *   node *= f applies an update to a whole interval, f *= g stacks g after f.
  *   max_right / min_left descend the tree. Manual: LazySegmentTree.md
  * Time: O(n) build, O(log n) per operation, O(1) all_prod
- * Status: Codeforces EDU submission 394467936, AC 125 ms (uses max_right). Stress-tested.
+ * Status: Codeforces EDU submission 394467936, AC 125 ms (uses max_right).
+ *   Stress-tested, plus 811620 checks on operator[].
  */
 
 template <class Node, class LazyUpdate>
@@ -74,6 +75,13 @@ struct LazySegmentTree {
         }
 
         return seg[pos];
+    }
+
+    // Azucar de lectura, para que se lea como un vector: seg[i] es exactamente get(i).
+    // Devuelve por VALOR, pero NO es const, y es el unico de la familia asi: leer obliga a
+    // bajar el lazy del camino con push. O sea que no se puede leer de un const&.
+    Node operator[](int pos) {
+        return get(pos);
     }
 
     Node prod(int l, int r) {

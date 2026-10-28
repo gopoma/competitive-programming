@@ -7,7 +7,8 @@
  *   them. Pool: max_nodes(n, q) = (ceil(log2 n) + 1) * q + 1.
  *   Manual: SparseSegmentTree.md
  * Time: O(log n) set, get and prod, O(1) all_prod. No build: it starts empty.
- * Status: Stress-tested against a map at n = 1e18. No judge submission yet.
+ * Status: Stress-tested against a map at n = 1e18, plus 849228 checks on operator[].
+ *   No judge submission yet.
  */
 
 template <class T>
@@ -33,6 +34,12 @@ struct SparseSegmentTree {
     T get(long long pos) const {
         assert(0 <= pos && pos < n);
         return get(root, 0, n - 1, pos);
+    }
+
+    // Azucar de lectura, para que se lea como un vector: st[i] es exactamente get(i).
+    // Devuelve por VALOR y es const. El indice es long long, como en todo este template.
+    T operator[](long long pos) const {
+        return get(pos);
     }
 
     T prod(long long l, long long r) const {

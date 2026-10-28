@@ -43,15 +43,26 @@ void seg.set(int pos, T val)
 
 **Restricciones**: $0 \le pos < n$. · **Complejidad**: $O(\log n)$.
 
-## get
+## get / operator[]
 
 ```cpp
 T seg.get(int pos) const
+T seg.operator[](int pos) const
 ```
 
 Devuelve `a[pos]`.
 
-**Restricciones**: $0 \le pos < n$. · **Complejidad**: $O(1)$.
+`seg[pos]` es exactamente `get(pos)`, para que la estructura se lea como un `vector`:
+
+```cpp
+for (int i = 0; i < n; i++) cout << seg[i].sum << " ";
+```
+
+**Es de solo lectura**: devuelve por valor y es `const`. Una versión que devolviera una
+referencia dejaría escribir sin subir el camino con `pull`, y el agregado de los ancestros
+quedaría desactualizado en silencio. Para escribir va `set(pos, val)`.
+
+**Restricciones**: $0 \le pos < n$. · **Complejidad**: $O(1)$ los dos.
 
 ## prod
 

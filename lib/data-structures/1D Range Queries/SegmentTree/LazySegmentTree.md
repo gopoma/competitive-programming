@@ -53,15 +53,31 @@ void seg.set(int pos, Node val)
 
 **Restricciones**: $0 \le pos < n$. · **Complejidad**: $O(\log n)$.
 
-## get
+## get / operator[]
 
 ```cpp
 Node seg.get(int pos)
+Node seg.operator[](int pos)
 ```
 
-Devuelve `a[pos]`.
+Devuelve `a[pos]`. `seg[pos]` es exactamente `get(pos)`, para que la estructura se lea como un
+`vector`:
 
-**Restricciones**: $0 \le pos < n$. · **Complejidad**: $O(\log n)$.
+```cpp
+for (int i = 0; i < n; i++) cout << seg[i].sum << " ";
+```
+
+> **Este es el único `operator[]` de la familia que NO es `const`**, y no se puede arreglar:
+> leer una posición obliga a bajar el lazy del camino con `push`, o sea que la lectura escribe.
+> Por eso **no se puede leer de un `const LazySegmentTree&`**. El contraste está en
+> `SparseLazySegmentTree` y `ImplicitTreap`: ahí lo pendiente viaja como parámetro en el
+> descenso en lugar de bajarse con `push`, y la lectura sí es pura y `const`. Acá el `push` es
+> el precio del árbol denso.
+
+Sigue siendo de **solo lectura** en el sentido que importa: devuelve por valor, así que no podés
+escribir por ahí. Para eso va `set(pos, val)`.
+
+**Restricciones**: $0 \le pos < n$. · **Complejidad**: $O(\log n)$ los dos.
 
 ## prod
 

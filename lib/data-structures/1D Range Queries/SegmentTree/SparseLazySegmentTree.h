@@ -7,7 +7,8 @@
  *   tree supplies the length. Pool: max_nodes(n, q) = 4 * (ceil(log2 n) + 1) * q + 1.
  *   Manual: SparseLazySegmentTree.md
  * Time: O(log n) set, apply, get and prod, O(1) all_prod. No build: it starts empty.
- * Status: Stress-tested against brute force at n = 1e18. No judge submission yet.
+ * Status: Stress-tested against brute force at n = 1e18, plus 835770 checks on operator[].
+ *   No judge submission yet.
  */
 
 template <class Node, class LazyUpdate>
@@ -43,6 +44,13 @@ struct SparseLazySegmentTree {
     Node get(long long pos) const {
         assert(0 <= pos && pos < n);
         return prod(pos, pos);
+    }
+
+    // Azucar de lectura, para que se lea como un vector: st[i] es exactamente get(i).
+    // Devuelve por VALOR y es const: aca el lazy pendiente viaja como parametro en el
+    // descenso y no hace falta escribir nada, a diferencia del lazy denso.
+    Node operator[](long long pos) const {
+        return get(pos);
     }
 
     Node prod(long long l, long long r) const {

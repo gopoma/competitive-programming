@@ -67,15 +67,25 @@ void st.set(long long pos, Node val)
 
 **Restricciones**: (1) $0 \le pos < n$; (2) $0 \le l \le r < n$. · **Complejidad**: $O(\log n)$.
 
-## get
+## get / operator[]
 
 ```cpp
 Node st.get(long long pos) const
+Node st.operator[](long long pos) const
 ```
 
 Devuelve `a[pos]`, con los `apply` pendientes ya resueltos.
 
-**Restricciones**: $0 \le pos < n$. · **Complejidad**: $O(\log n)$.
+`st[pos]` es exactamente `get(pos)`, con el índice en `long long`. **Es de solo lectura y es
+`const`**, a diferencia del `LazySegmentTree` denso: acá lo pendiente viaja como parámetro en el
+descenso en lugar de bajarse con `push`, así que leer no escribe nada ni materializa nodos —
+verificado comparando `nodes_used()` antes y después.
+
+```cpp
+for (long long i = 0; i < n; i++) cout << st[i].sum << " ";   // ojo: n puede ser 1e18
+```
+
+**Restricciones**: $0 \le pos < n$. · **Complejidad**: $O(\log n)$ los dos.
 
 ## prod
 

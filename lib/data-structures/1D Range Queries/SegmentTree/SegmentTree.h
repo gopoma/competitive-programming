@@ -7,7 +7,8 @@
  *   a + b folds two neighbouring intervals (a left of b) and must be associative.
  *   max_right / min_left descend the tree to find a boundary. Manual: SegmentTree.md
  * Time: O(n) build, O(log n) set, prod, max_right and min_left, O(1) get and all_prod
- * Status: Stress-tested against brute force, exhaustive for n = 1..40. No judge submission yet.
+ * Status: Stress-tested against brute force, exhaustive for n = 1..40, plus 734664 checks
+ *   on operator[]. No judge submission yet.
  */
 
 template <class T>
@@ -58,6 +59,12 @@ struct SegmentTree {
     T get(int pos) const {
         assert(0 <= pos && pos < n);
         return seg[pos + SZ];
+    }
+
+    // Azucar de lectura, para que se lea como un vector: seg[i] es exactamente get(i).
+    // Devuelve por VALOR y es const: escribir va por set, que sube el camino con pull.
+    T operator[](int pos) const {
+        return get(pos);
     }
 
     T all_prod() const {

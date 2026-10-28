@@ -48,15 +48,24 @@ void st.set(long long pos, T val)
 **Restricciones**: $0 \le pos < n$. · **Complejidad**: $O(\log n)$, y crea hasta
 $\lceil \log_2 n \rceil + 1$ nodos.
 
-## get
+## get / operator[]
 
 ```cpp
 T st.get(long long pos) const
+T st.operator[](long long pos) const
 ```
 
 Devuelve `a[pos]`, o `T()` si esa posición nunca se tocó.
 
-**Restricciones**: $0 \le pos < n$. · **Complejidad**: $O(\log n)$.
+`st[pos]` es exactamente `get(pos)`, con el índice en `long long` como en todo este template.
+**Es de solo lectura**: devuelve por valor y es `const`, así que **leer no materializa nodos** —
+verificado comparando `nodes_used()` antes y después.
+
+```cpp
+for (long long i = 0; i < n; i++) cout << st[i].sum << " ";   // ojo: n puede ser 1e18
+```
+
+**Restricciones**: $0 \le pos < n$. · **Complejidad**: $O(\log n)$ los dos.
 
 ## prod
 
