@@ -164,18 +164,37 @@ void t.set(int pos, Node val)
 
 **Restricciones**: $0 \le pos < size()$. · **Complejidad**: $O(\log n)$.
 
-## get / front / back
+## get / operator[] / front / back
 
 ```cpp
 Node t.get(int pos) const
+Node t.operator[](int pos) const
 Node t.front() const
 Node t.back() const
 ```
 
-El `Node` en `pos`, el primero y el último.
+El `Node` en `pos`, el primero y el último. **`t[pos]` es exactamente `get(pos)`**, para que el
+treap se lea como un `vector`:
 
-**Restricciones**: `get` pide $0 \le pos < size()$; `front` y `back` piden $size() > 0$. ·
-**Complejidad**: $O(\log n)$.
+```cpp
+for (int i = 0; i < t.size(); i++) cout << t[i].sum << " ";
+```
+
+**Restricciones**: `get` y `t[pos]` piden $0 \le pos < size()$; `front` y `back` piden
+$size() > 0$. · **Complejidad**: $O(\log n)$.
+
+### Por qué `operator[]` devuelve por valor y es `const`
+
+**Es de solo lectura a propósito.** Una versión que devolviera `Node&` tendría que aislar el nodo
+con dos `split` y dos `merge`, o sea **reestructurar el árbol para leer**. Y peor: escribir por esa
+referencia cambiaría el `val` del nodo **sin re-ejecutar el `pull`**, así que el `agg` de todos sus
+ancestros quedaría desactualizado, en silencio.
+
+Para escribir va `set(pos, val)`, que sí hace el `pull`. La asimetría es deliberada: leer es
+barato y puro, escribir cuesta.
+
+> Para recorrer **todo**, `dump()` es $O(n)$ contra los $O(n \log n)$ de `t[i]` en un bucle.
+> Medido en una carga real, leer con índices repetidos costó **1.5x** lo que `dump()`.
 
 ## prod
 

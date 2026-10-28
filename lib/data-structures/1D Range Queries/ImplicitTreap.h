@@ -3,11 +3,12 @@
  * Date: 2026-10-05
  * Source: https://github.com/gopoma/competitive-programming/blob/main/lib/data-structures/1D%20Range%20Queries/ImplicitTreap.h
  * Description: Implicit treap. A vector with O(log n) insert, erase, reverse, rotate, move, range
- *   query and range update. max_right / min_left descend to find a boundary.
+ *   query and range update. max_right / min_left descend to find a boundary,
+ *   and t[i] reads like a vector.
  *   Manual, Node contract and examples: ImplicitTreap.md
  * Time: O(n) build, O(log n) expected rest. Memory: n + q nodes, q = expected inserts
  * Status: judge.yosupo.jp/submission/407984, AC 303 ms (Range Reverse Range Sum).
- *   Stress-tested: 56M checks, 21 negative controls on the descent.
+ *   Stress-tested: 56M checks on the descent with 21 negative controls, plus 2.9M on t[i].
  */
 
 struct NoLazy {};                               // marcador: el treap no lleva updates de rango
@@ -143,6 +144,14 @@ struct ImplicitTreap {
     Node get(int pos) const {
         assert(0 <= pos && pos < size());
         return prod(pos, pos);
+    }
+
+    // Azucar de lectura, para que se lea como un vector: t[i] es exactamente get(i).
+    // Devuelve por VALOR y es const a proposito. Una version que devolviera Node& tendria que
+    // aislar el nodo con split y merge, o sea reestructurar el arbol para leer; y escribir por
+    // esa referencia dejaria el agg de los ancestros sin actualizar. Para escribir va set.
+    Node operator[](int pos) const {
+        return get(pos);
     }
 
     Node front() const {
