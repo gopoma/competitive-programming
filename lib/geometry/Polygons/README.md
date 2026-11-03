@@ -28,6 +28,12 @@ Convex hull, área, centroide, punto en polígono, diámetro, tangentes y suma d
   - [`tangents`](#tangents)
 - [`MinkowskiSum.h`](#minkowskisumh)
   - [`minkowski_sum`](#minkowski_sum)
+- [`LineHull.h`](#linehullh)
+  - [`extrVertex`](#extrvertex)
+  - [`lineHull`](#linehull)
+- [`HalfPlaneIsect.h`](#halfplaneisecth)
+  - [`Ray` (el tipo de entrada)](#ray-el-tipo-de-entrada)
+  - [`halfPlaneIsect`](#halfplaneisect)
 - [Casos de uso recurrentes, de punta a punta](#casos-de-uso-recurrentes-de-punta-a-punta)
   - [Área de un polígono (entero y exacto)](#área-de-un-polígono-entero-y-exacto)
   - [¿Está en CCW o en CW?](#está-en-ccw-o-en-cw)
@@ -35,6 +41,8 @@ Convex hull, área, centroide, punto en polígono, diámetro, tangentes y suma d
   - [Punto en polígono convexo en O(log n)](#punto-en-polígono-convexo-en-olog-n)
   - [¿Chocan estos dos convexos?](#chocan-estos-dos-convexos)
   - [Máxima área de un triángulo con vértices del conjunto](#máxima-área-de-un-triángulo-con-vértices-del-conjunto)
+  - [¿La recta corta al convexo? (en O(log n))](#la-recta-corta-al-convexo-en-olog-n)
+  - [El núcleo de un polígono (desde dónde se ve todo el interior)](#el-núcleo-de-un-polígono-desde-dónde-se-ve-todo-el-interior)
   - [Cuántos puntos caen sobre el borde del hull](#cuántos-puntos-caen-sobre-el-borde-del-hull)
 - [Verificación](#verificación)
 - [Lo que no está](#lo-que-no-está)
@@ -52,6 +60,8 @@ Copiás `templateHeavy.cpp` en `E.cpp` y pegás el **código** de los headers qu
 | `InPolygon.h` | `Point.h` |
 | `HullTangents.h` | `Point.h` |
 | `MinkowskiSum.h` | `Point.h` |
+| `LineHull.h` | `Point.h` |
+| `HalfPlaneIsect.h` | `Point.h`, **`AngleCmp.h`** |
 | `HullDiameter.h` | `Point.h`, **un hull** (usa `hull()`) |
 
 `HullDiameter.h` es el único que depende de otro header de esta carpeta: llama a `hull()`, así que antes tiene que estar pegado `ConvexHull.h` o `ConvexHullGraham.h` (cualquiera de los dos sirve, verificado).
@@ -345,6 +355,98 @@ La **suma de Minkowski** de dos polígonos convexos: el conjunto $\{p + q : p \i
 
 ---
 
+## `LineHull.h`
+
+**Requiere:** `Point.h` · $O(\log n)$
+
+Consultas de recta contra polígono convexo en tiempo logarítmico, sobre un hull que no cambia.
+
+### `extrVertex`
+
+```cpp
+int extrVertex(const vP& poly, P nrm);
+```
+
+El **índice del vértice de máxima proyección** sobre la dirección `nrm`: el punto del convexo que queda más lejos en ese sentido.
+
+- Complejidad: $O(\log n)$, por búsqueda binaria sobre la forma del convexo.
+- **Precondición: `poly` es convexo y viene en CCW.**
+- Casos de uso: el punto extremo en una dirección (lo que pide un *rotating calipers* puntual); la recta de soporte del convexo en una dirección dada; maximizar $\mathbf{nrm} \cdot p$ sobre el convexo, que es un programa lineal de dos variables resuelto en $O(\log n)$.
+
+> El parámetro se llama `nrm` y no `dir` como en el original: `dir` es una **función** de `Point.h`, y usarla como nombre de variable la tapa dentro del cuerpo.
+
+### `lineHull`
+
+```cpp
+pair<int,vi> lineHull(Line line, const vP& poly);
+```
+
+Dice cómo corta la **recta infinita** `line` al convexo `poly`. El primer componente dice el caso, el segundo los índices relevantes:
+
+| `.f` | significado | `.s` |
+|---|---|---|
+| `1` | **todos** los vértices están de un lado (arriba) | los vértices **más cercanos** a la recta (1 o 2) |
+| `-1` | todos del otro lado (abajo) | idem |
+| `0` | la recta **atraviesa** el convexo | el rango de vértices que quedan sobre o debajo |
+
+- Complejidad: $O(\log n)$.
+- **Precondiciones:** `poly` convexo en CCW, al menos 2 vértices (un `assert` lo verifica), y `line.f != line.s`.
+- Casos de uso:
+  - **¿La recta corta al polígono?** El signo lo contesta solo, sin recorrer los vértices.
+  - Las **dos aristas** por donde entra y sale la recta, para después calcular los puntos exactos con `lineIsect`.
+  - La **distancia** de una recta a un convexo: cuando `.f` es $\pm 1$, los vértices devueltos son los más cercanos.
+  - Recortar un convexo por una recta en $O(\log n)$ en lugar de $O(n)$.
+
+> Usa el `Line = pair<P,P>` de tu `Point.h`. El original de Benq define `Line` como `array<P,2>`, que choca de frente (17 errores); al adaptarlo se compone directo con `lineIsect`, `segDist` y `onSeg`.
+
+**Verificación:** 25.972 casos contra fuerza bruta, chequeando las cuatro cosas: que `extrVertex` alcance el máximo real de la proyección, que el signo coincida con contar de qué lado cae cada vértice, que los índices del caso `0` marquen aristas que de verdad cruzan la recta, y que los del caso $\pm 1$ sean los de distancia mínima. Las tres ramas quedaron cubiertas (11.455 cruces, 1.530 de un lado). 0 fallas.
+
+---
+
+## `HalfPlaneIsect.h`
+
+**Requiere:** `Point.h`, `AngleCmp.h` · $O(n \log n)$
+
+### `Ray` (el tipo de entrada)
+
+```cpp
+struct Ray { P p, dp; };   // origen, direccion
+```
+
+Un semiplano se describe como el **área a la izquierda** del rayo que sale de `p` en dirección `dp`. Trae dos métodos:
+
+- `isect(const Ray& L)` — el punto donde se cortan las dos rectas de soporte. $O(1)$. Divide por `cross(L.dp, dp)`, así que **no sirve con rayos paralelos**.
+- `operator<` — ordena por ángulo de `dp`, delegando en `angleCmp`. Es lo que permite el $O(n \log n)$.
+
+### `halfPlaneIsect`
+
+```cpp
+vP halfPlaneIsect(V<Ray> rays, bool add_bounds = false);
+```
+
+Los **vértices de la intersección** de todos los semiplanos, en orden CCW. Si la intersección es vacía devuelve un vector vacío.
+
+- Complejidad: $O(n \log n)$ — lo domina el ordenamiento por ángulo.
+- **Precondición: la intersección tiene que ser acotada y de área no nula.** Si no lo es, salta el `assert(sz(poly) >= 3)`.
+- `add_bounds = true` agrega los cuatro semiplanos del rectángulo $[0,10^9]^2$, que es la forma rápida de acotar una intersección que de por sí sería infinita. Ojo: eso fuerza el resultado al primer cuadrante.
+- **Precisión:** el área sale confiable con **enteros de magnitud $\le 10^5$**, según documenta Benq. Internamente compara `cross` contra `EPS` directamente en lugar de pasar por `sgn`, y de ahí sale ese techo.
+- Casos de uso:
+  - **El área visible** desde un punto dentro de un recinto poligonal.
+  - El **núcleo** de un polígono (el conjunto de puntos que ven todo el interior): es la intersección de los semiplanos de sus lados.
+  - **Programación lineal en 2D**: la región factible de un sistema de desigualdades $a x + b y \le c$.
+  - Intersección de varios convexos, que es un caso particular.
+  - Problemas de "¿dónde puedo pararme?" con varias restricciones lineales.
+
+Cómo construir el semiplano a partir de una desigualdad: $ax + by \le c$ es el lado izquierdo del rayo con origen en cualquier punto de la recta y dirección `perp(P(a,b))` negada — en la práctica es más simple pensar en los lados de un polígono CCW, donde cada lado `(v[i], v[i+1])` da el rayo `{v[i], v[i+1]-v[i]}`.
+
+> Agregué una guarda `if (sz(poly) < 3) return {};` antes del bucle final. Sin ella, con menos de 3 rayos el `poly[1]` del bucle lee fuera de rango; con la guarda devuelve vacío, que es la misma respuesta que ya daba para entradas degeneradas. No cambia nada para entrada válida.
+>
+> El `#define reduce(...)` del original **no tenía `#undef`** y se filtraba al resto del archivo. `reduce` es además el nombre de `std::reduce`, así que un macro con ese nombre es peligroso; ahora se cierra justo después del último uso.
+
+**Verificación:** 9.500 casos contra **Sutherland-Hodgman** (recorte sucesivo por un semiglano a la vez), comparando áreas. Primero reproduciendo exactamente un convexo a partir de los semiplanos de sus lados (3.000 casos, ningún degenerado), y después con hasta 5 semiplanos extra que lo cortan, con $C$ de 20 a 1000. 0 diferencias.
+
+---
+
 ## Casos de uso recurrentes, de punta a punta
 
 ### Área de un polígono (entero y exacto)
@@ -392,6 +494,26 @@ vP h = hull(ps);     // los tres vertices optimos estan en el hull
 // despues, rotating calipers o O(n^2) sobre h
 ```
 
+### ¿La recta corta al convexo? (en O(log n))
+
+```cpp
+vP h = hull(ps);                             // una vez
+if (sgn(cenArea(h).s) < 0) reverse(all(h));  // lineHull pide CCW
+// por consulta:
+auto r = lineHull(Line{a, b}, h);
+bool corta = (r.f == 0);
+// y si corta, los puntos exactos salen de las dos aristas que devuelve
+```
+
+### El núcleo de un polígono (desde dónde se ve todo el interior)
+
+```cpp
+V<Ray> rays; int n = sz(poly);               // poly simple, en CCW
+F0R(i, n) rays.pb({poly[i], poly[(i+1)%n] - poly[i]});
+vP nucleo = halfPlaneIsect(rays);
+bool hay = sz(nucleo) >= 3;                  // vacio si no existe tal punto
+```
+
 ### Cuántos puntos caen sobre el borde del hull
 
 ```cpp
@@ -412,11 +534,14 @@ Hace falta porque el hull es **estricto** y no devuelve los colineales.
 | `cenArea`, `diameter2`, `minkowski_sum` | 44.000 | *shoelace*, $O(n^2)$ y hull de todas las sumas |
 | `hull`, `hullInd`, `ulHull` | 14.800 + 12 bordes | cadena monótona exacta en `ll`, $C$ de 2 a $10^9$ |
 | `hull` (Graham) | 8.000 | misma referencia |
+| `extrVertex`, `lineHull` | 25.972 | fuerza bruta: máximo real, signo, aristas cruzadas y cercanía |
+| `halfPlaneIsect` | 9.500 | Sutherland-Hodgman, recorte sucesivo |
 
-Los siete headers compilan juntos (menos Graham, que es alternativa de `ConvexHull.h`) con las flags del `Makefile` sin warnings.
+Los nueve headers compilan juntos (menos Graham, que es alternativa de `ConvexHull.h`) con las flags del `Makefile` sin warnings.
 
 ## Lo que no está
 
 - **Punto en polígono convexo en $O(\log n)$** como rutina propia. `inPoly` es $O(n)$; se saca de `tangents` o con búsqueda binaria angular en ~10 líneas. Benq tampoco la tiene.
-- **Intersección de semiplanos** (`HalfPlaneIsect.h` en cp-notebook). Quedó afuera: es rara, y la precisión del área que documenta Benq solo alcanza con enteros de magnitud $\le 10^5$.
-- **Recta contra convexo en $O(\log n)$** (`LineHull.h`). Quedó afuera porque redefine `Line` como `array<P,2>` y choca con el `pair<P,P>` de `Point.h` (17 errores).
+- **`HalfPlaneSet.h`** de cp-notebook (intersección de semiplanos *online*, con inserciones). Quedó afuera: redefine `T` como `int`, más `INF` y `Line` (32 errores contra esta librería), es de otro autor y su `Maximize` está marcado UNTESTED por Benq. Para el caso offline está `HalfPlaneIsect.h`.
+
+Con eso, de los 36 headers de geometría de cp-notebook quedan afuera solo: `3D` (5), `Delaunay` (3), `KD-tree` (2), `HalfPlaneSet`, `_old_HalfPlaneIsect`, y los tres reemplazos de `Point.h` (`Complex`, `ComplexComp`, `PointShort`).
