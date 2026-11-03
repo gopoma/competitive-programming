@@ -2,25 +2,41 @@
 
 Tres algoritmos sueltos que no entran en las otras categorías: par más cercano, MST con distancia Manhattan, y máxima cantidad de puntos colineales.
 
-## Cómo se pega
+## Índice
 
-```cpp
-#include "Point.h"          // SOLO si usas ClosestPair.h
-#include "ClosestPair.h"
+- [Cómo se arma la submission](#cómo-se-arma-la-submission)
+- [Tres choques de nombres, todos verificados](#tres-choques-de-nombres-todos-verificados)
+- [`ClosestPair.h`](#closestpairh)
+  - [`solve`](#solve)
+- [`ManhattanMST.h`](#manhattanmsth)
+  - [`manhattanMst`](#manhattanmst)
+- [`MaxCollinear.h`](#maxcollinearh)
+  - [`getline`](#getline)
+  - [`solve`](#solve-1)
+- [Casos de uso recurrentes, de punta a punta](#casos-de-uso-recurrentes-de-punta-a-punta)
+  - [Distancia mínima entre dos puntos del conjunto](#distancia-mínima-entre-dos-puntos-del-conjunto)
+  - [¿Hay puntos repetidos?](#hay-puntos-repetidos)
+  - [MST con distancia Manhattan](#mst-con-distancia-manhattan)
+  - [MST con distancia Chebyshov (L infinito)](#mst-con-distancia-chebyshov-l-infinito)
+  - [¿Están todos los puntos alineados?](#están-todos-los-puntos-alineados)
+  - [Cuántas rectas distintas determinan los puntos](#cuántas-rectas-distintas-determinan-los-puntos)
+- [Verificación](#verificación)
 
-#include "ManhattanMST.h"   // no necesita Point.h
-#include "MaxCollinear.h"   // no necesita Point.h
-```
+## Cómo se arma la submission
+
+Copiás `templateHeavy.cpp` en `E.cpp` y pegás el **código** de los headers que necesites en la sección de template.
+
+> **Los `#include` no van en la solución.** Ningún header de esta librería tiene `#include`. El campo `Requiere:` del encabezado es solo un **indicador** de qué otros templates hay que pegar también, y en qué orden.
 
 **Los tipos de entrada son inconsistentes** entre los tres, y conviene saberlo antes de pelearse con el compilador:
 
-| header | entrada | requiere `Point.h` |
+| header | entrada | pegá antes |
 |---|---|---|
-| `ClosestPair.h` | `vP` = `vector<pair<T,T>>` | **sí** |
-| `ManhattanMST.h` | `vpi` = `vector<pair<int,int>>` | no |
-| `MaxCollinear.h` | `vpi` = `vector<pair<int,int>>` | no |
+| `ClosestPair.h` | `vP` = `vector<pair<T,T>>` | **`Point.h`** |
+| `ManhattanMST.h` | `vpi` = `vector<pair<int,int>>` | — nada |
+| `MaxCollinear.h` | `vpi` = `vector<pair<int,int>>` | — nada |
 
-Los dos últimos trabajan con coordenadas **`int`** y son independientes del resto de la librería.
+Los dos últimos trabajan con coordenadas **`int`** y son completamente independientes del resto de la librería: se pegan solos, sin `Point.h`.
 
 ## Tres choques de nombres, todos verificados
 
@@ -176,7 +192,7 @@ each(e, ed) if (D.unite(e.s.f, e.s.s)) { total += e.f; ++usadas; }
 // usadas == sz(v)-1 si el grafo quedo conexo
 ```
 
-### MST con distancia Chebyshov ($L_\infty$)
+### MST con distancia Chebyshov (L infinito)
 
 ```cpp
 vpi w; each(p, v) w.pb({p.f + p.s, p.f - p.s});   // rota 45 grados

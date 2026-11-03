@@ -2,19 +2,59 @@
 
 Convex hull, área, centroide, punto en polígono, diámetro, tangentes y suma de Minkowski. Es la sección que más aparece en contest.
 
-## Cómo se pega
+## Índice
 
-Los headers **no tienen `#include`**; la dependencia está en el campo `Requiere:`. El orden:
+- [Cómo se arma la submission](#cómo-se-arma-la-submission)
+  - [Qué hull elegir](#qué-hull-elegir)
+- [Dos convenciones que hay que tener claras](#dos-convenciones-que-hay-que-tener-claras)
+  - [1. El hull es ESTRICTO](#1-el-hull-es-estricto)
+  - [2. `hull` es exacto, `inPoly` usa `EPS`](#2-hull-es-exacto-inpoly-usa-eps)
+- [`ConvexHull.h`](#convexhullh)
+  - [`ulHull`](#ulhull)
+  - [`hullInd`](#hullind)
+  - [`hull`](#hull)
+- [`ConvexHullGraham.h`](#convexhullgrahamh)
+  - [`hullInd` y `hull`](#hullind-y-hull)
+- [`PolygonCenArea.h`](#polygoncenareah)
+  - [`cenArea`](#cenarea)
+- [`InPolygon.h`](#inpolygonh)
+  - [`inPoly`](#inpoly)
+- [`HullDiameter.h`](#hulldiameterh)
+  - [`diameter2`](#diameter2)
+- [`HullTangents.h`](#hulltangentsh)
+  - [`lower` (variable global)](#lower-variable-global)
+  - [`better`](#better)
+  - [`tangent`](#tangent)
+  - [`tangents`](#tangents)
+- [`MinkowskiSum.h`](#minkowskisumh)
+  - [`minkowski_sum`](#minkowski_sum)
+- [Casos de uso recurrentes, de punta a punta](#casos-de-uso-recurrentes-de-punta-a-punta)
+  - [Área de un polígono (entero y exacto)](#área-de-un-polígono-entero-y-exacto)
+  - [¿Está en CCW o en CW?](#está-en-ccw-o-en-cw)
+  - [Máxima distancia entre puntos](#máxima-distancia-entre-puntos)
+  - [Punto en polígono convexo en O(log n)](#punto-en-polígono-convexo-en-olog-n)
+  - [¿Chocan estos dos convexos?](#chocan-estos-dos-convexos)
+  - [Máxima área de un triángulo con vértices del conjunto](#máxima-área-de-un-triángulo-con-vértices-del-conjunto)
+  - [Cuántos puntos caen sobre el borde del hull](#cuántos-puntos-caen-sobre-el-borde-del-hull)
+- [Verificación](#verificación)
+- [Lo que no está](#lo-que-no-está)
 
-```cpp
-#include "Point.h"            // 1. siempre primero
-#include "ConvexHull.h"       // 2. define hull(), lo necesitan HullDiameter y MinkowskiSum
-#include "PolygonCenArea.h"
-#include "InPolygon.h"
-#include "HullDiameter.h"
-#include "HullTangents.h"
-#include "MinkowskiSum.h"
-```
+## Cómo se arma la submission
+
+Copiás `templateHeavy.cpp` en `E.cpp` y pegás el **código** de los headers que necesites en la sección de template.
+
+> **Los `#include` no van en la solución.** Ningún header de esta librería tiene `#include`. El campo `Requiere:` del encabezado es solo un **indicador** de qué otros templates hay que pegar también, y en qué orden.
+
+| si pegás | pegá antes |
+|---|---|
+| `ConvexHull.h` *(o `ConvexHullGraham.h`)* | `Point.h` |
+| `PolygonCenArea.h` | `Point.h` |
+| `InPolygon.h` | `Point.h` |
+| `HullTangents.h` | `Point.h` |
+| `MinkowskiSum.h` | `Point.h` |
+| `HullDiameter.h` | `Point.h`, **un hull** (usa `hull()`) |
+
+`HullDiameter.h` es el único que depende de otro header de esta carpeta: llama a `hull()`, así que antes tiene que estar pegado `ConvexHull.h` o `ConvexHullGraham.h` (cualquiera de los dos sirve, verificado).
 
 > **`ConvexHull.h` y `ConvexHullGraham.h` son alternativas, no complementos.** Los dos definen `hullInd` y `hull`; pegar los dos da `redefinition of 'vi hullInd(const vP&)'`. Elegí uno. Los dos sirven de base para `HullDiameter` y `MinkowskiSum`.
 
@@ -328,7 +368,7 @@ T d2 = diameter2(ps);        // al cuadrado, exacto con enteros
 db d  = sqrt((db)d2);
 ```
 
-### Punto en polígono convexo en $O(\log n)$
+### Punto en polígono convexo en O(log n)
 
 ```cpp
 vP h = hull(ps);                       // una vez

@@ -2,20 +2,54 @@
 
 Círculos: contención, intersección, tangentes, circuncentro y círculo mínimo envolvente.
 
-## Cómo se pega
+## Índice
 
-Los headers **no tienen `#include`**; la dependencia está en el campo `Requiere:`. El orden importa:
+- [Cómo se arma la submission](#cómo-se-arma-la-submission)
+- [El contrato de tipos](#el-contrato-de-tipos)
+- [`Circle.h`](#circleh)
+  - [`in`](#in)
+  - [`arcLength`](#arclength)
+- [`CircleIsect.h`](#circleisecth)
+  - [`isect(Circ, Circ)`](#isectcirc-circ)
+  - [`isect(Circ, Line)`](#isectcirc-line)
+  - [`isect_area`](#isect_area)
+- [`CircleTangents.h`](#circletangentsh)
+  - [`tangent`](#tangent)
+  - [`external`](#external)
+  - [`internal`](#internal)
+- [`Circumcenter.h`](#circumcenterh)
+  - [`ccCenter`](#cccenter)
+- [`MinEnclosingCirc.h`](#minenclosingcirch)
+  - [`mec`](#mec)
+- [Casos de uso recurrentes, de punta a punta](#casos-de-uso-recurrentes-de-punta-a-punta)
+  - [¿Se cortan estos dos círculos?](#se-cortan-estos-dos-círculos)
+  - [Tangente, y de qué tipo](#tangente-y-de-qué-tipo)
+  - [Área de la unión de dos círculos](#área-de-la-unión-de-dos-círculos)
+  - [Recortar un segmento contra un círculo](#recortar-un-segmento-contra-un-círculo)
+  - [El círculo que pasa por tres puntos](#el-círculo-que-pasa-por-tres-puntos)
+  - [¿Un disco de radio r puede cubrir todos los puntos?](#un-disco-de-radio-r-puede-cubrir-todos-los-puntos)
+  - [Camino más corto entre dos puntos rodeando un obstáculo circular](#camino-más-corto-entre-dos-puntos-rodeando-un-obstáculo-circular)
+- [Verificación](#verificación)
 
-```cpp
-#include "Point.h"            // 1. siempre primero
-#include "Circle.h"           // 2. define Circ, lo necesitan todos los de abajo
-#include "Circumcenter.h"     // 3. necesita Circle.h
-#include "MinEnclosingCirc.h" // 4. necesita Circumcenter.h
-#include "CircleIsect.h"      // (necesita Circle.h)
-#include "CircleTangents.h"   // (necesita Circle.h)
-```
+## Cómo se arma la submission
 
-Cada archivo va **una sola vez** por submission.
+Copiás `templateHeavy.cpp` en `E.cpp` y pegás el **código** de los headers que necesites en la sección de template.
+
+> **Los `#include` no van en la solución.** Ningún header de esta librería tiene `#include`. El campo `Requiere:` del encabezado es solo un **indicador** de qué otros templates hay que pegar también, y en qué orden.
+
+Acá el orden importa más que en el resto, porque hay una cadena de dependencias:
+
+| si pegás | pegá antes |
+|---|---|
+| `Circle.h` | `Point.h` |
+| `CircleIsect.h` | `Point.h`, `Circle.h` |
+| `CircleTangents.h` | `Point.h`, `Circle.h` |
+| `Circumcenter.h` | `Point.h`, `Circle.h` |
+| `MinEnclosingCirc.h` | `Point.h`, `Circle.h`, `Circumcenter.h` |
+
+O sea: `Point.h` → `Circle.h` → lo que necesites. Y si vas a usar `mec`, la cadena completa es `Point.h` → `Circle.h` → `Circumcenter.h` → `MinEnclosingCirc.h`.
+
+Cada uno va **una sola vez** por submission.
 
 ## El contrato de tipos
 

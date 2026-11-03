@@ -2,6 +2,30 @@
 
 Seis templates que comparten las mismas convenciones y los mismos contratos. Este archivo tiene lo común; cada uno tiene su manual con lo propio.
 
+## Índice
+
+- [Cuál usar](#cuál-usar)
+- [Las cinco reglas](#las-cinco-reglas)
+- [Contrato del `Node`](#contrato-del-node)
+  - [`Node()` y `a + b`](#node-y-a--b)
+  - [`node *= f` (los dos lazy densos)](#node--f-los-dos-lazy-densos)
+  - [`apply(f, len)` (solo el sparse lazy)](#applyf-len-solo-el-sparse-lazy)
+- [Contrato del `LazyUpdate`](#contrato-del-lazyupdate)
+- [Cómo se llaman los `Node`](#cómo-se-llaman-los-node)
+- [Nodos listos para copiar](#nodos-listos-para-copiar)
+  - [Las tres formas del contrato, y cuál pide cada template](#las-tres-formas-del-contrato-y-cuál-pide-cada-template)
+- [Los dos monoides de ejemplo](#los-dos-monoides-de-ejemplo)
+  - [A) Máxima suma de un subarreglo, con el vacío permitido](#a-máxima-suma-de-un-subarreglo-con-el-vacío-permitido)
+  - [B) Suma, máximo y mínimo, con assign y add de rango](#b-suma-máximo-y-mínimo-con-assign-y-add-de-rango)
+- [Los dos descensos](#los-dos-descensos)
+  - [Los dos no usan la misma estrategia, y es a propósito](#los-dos-no-usan-la-misma-estrategia-y-es-a-propósito)
+  - [El predicado tiene que ser monótono](#el-predicado-tiene-que-ser-monótono)
+  - [Si no te alcanza, hay una red de seguridad](#si-no-te-alcanza-hay-una-red-de-seguridad)
+- [El pool y el `reserve`](#el-pool-y-el-reserve)
+- [Convivencia con `templateHeavy`](#convivencia-con-templateheavy)
+- [Errores frecuentes](#errores-frecuentes)
+- [Verificación](#verificación)
+
 ## Cuál usar
 
 | necesitás | template |

@@ -2,18 +2,79 @@
 
 La base de toda la librería de geometría. Todo lo demás (`Circles`, `Polygons`, `Misc`) se apoya en `Point.h`.
 
-## Cómo se pega
+## Índice
 
-Los headers **no tienen `#include`**, igual que el resto de la librería. La dependencia está en el campo `Requiere:` de cada uno. En el orden de pegado, `Point.h` va **siempre primero**:
+- [Cómo se arma la submission](#cómo-se-arma-la-submission)
+- [El contrato de tipos (`Point.h`)](#el-contrato-de-tipos-pointh)
+  - [Elegir `T`: `db` o `ll`](#elegir-t-db-o-ll)
+  - [Cuánto aguanta `db`](#cuánto-aguanta-db)
+- [`Point.h`](#pointh)
+  - [Operadores](#operadores)
+  - [`sgn`](#sgn)
+  - [`sq`](#sq)
+  - [`abs2` y `abs`](#abs2-y-abs)
+  - [`arg`](#arg)
+  - [`conj`](#conj)
+  - [`perp`](#perp)
+  - [`dir`](#dir)
+  - [`unit`](#unit)
+  - [`dot` (dos formas)](#dot-dos-formas)
+  - [`cross` (dos formas), la función más importante](#cross-dos-formas-la-función-más-importante)
+  - [`reflect`](#reflect)
+  - [`foot`](#foot)
+  - [`onSeg`](#onseg)
+- [`AngleCmp.h`](#anglecmph)
+  - [`half`](#half)
+  - [`angleCmp`](#anglecmp)
+- [`SegDist.h`](#segdisth)
+  - [`lineDist`](#linedist)
+  - [`segDist`](#segdist)
+- [`SegIsect.h`](#segisecth)
+  - [`lineIsect`](#lineisect)
+  - [`strictIsect`](#strictisect)
+  - [`segIsect`](#segisect)
+- [Casos de uso recurrentes, de punta a punta](#casos-de-uso-recurrentes-de-punta-a-punta)
+  - [¿De qué lado de la recta cae el punto?](#de-qué-lado-de-la-recta-cae-el-punto)
+  - [Área de un triángulo](#área-de-un-triángulo)
+  - [¿Están alineados?](#están-alineados)
+  - [Ángulo orientado en un vértice](#ángulo-orientado-en-un-vértice)
+  - [Rotar un punto alrededor de otro](#rotar-un-punto-alrededor-de-otro)
+  - [Ordenar puntos alrededor de un centro](#ordenar-puntos-alrededor-de-un-centro)
+  - [El punto más cercano de un segmento](#el-punto-más-cercano-de-un-segmento)
+  - [Distancia entre dos segmentos](#distancia-entre-dos-segmentos)
+- [Verificación](#verificación)
+
+## Cómo se arma la submission
+
+El flujo es: copiás `templateHeavy.cpp` en `E.cpp` y pegás el **código** de los headers que necesites dentro de la sección de template.
+
+> **Los `#include` no van en la solución.** Ningún header de esta librería tiene `#include`, y vos tampoco escribís ninguno. El campo `Requiere:` del encabezado es solo un **indicador**: te dice qué otros templates hay que pegar también, y en qué orden.
+
+| si pegás | pegá antes |
+|---|---|
+| `Point.h` | — es la base |
+| `AngleCmp.h` | `Point.h` |
+| `SegDist.h` | `Point.h` |
+| `SegIsect.h` | `Point.h` |
+
+En la sección de template queda el código, uno abajo del otro:
 
 ```cpp
-// seccion de template
-#include "Point.h"      // <- primero, siempre
-#include "SegIsect.h"   // <- despues, en cualquier orden
-#include "AngleCmp.h"
+//* Template
+// ---------- Point.h ----------        <- primero, siempre
+using T = db;
+const T EPS = 1e-9;
+using P = pair<T,T>; using vP = V<P>; using Line = pair<P,P>;
+int sgn(T a) { return (a>EPS)-(a<-EPS); }
+// ... el resto de Point.h
+
+// ---------- SegIsect.h ----------     <- despues, en cualquier orden
+vP lineIsect(const Line& a, const Line& b) { /* ... */ }
+// ... el resto de SegIsect.h
+//* /Template
 ```
 
-Pegar `Point.h` dos veces da errores de redefinición. Pegalo una sola vez por submission.
+`Point.h` va **una sola vez**: pegarlo dos veces da errores de redefinición.
 
 ---
 
@@ -29,7 +90,7 @@ using Line = pair<P,P>;         // dos puntos: una recta, o un segmento
 
 `P` es a la vez **punto** y **vector**: no hay distinción de tipos. `Line` es a la vez **recta infinita** y **segmento** — cuál de las dos depende de la función que lo recibe, y está dicho en cada caso.
 
-### `T = db` o `T = ll`: la decisión que importa
+### Elegir `T`: `db` o `ll`
 
 Un solo `T` cubre dos necesidades que quieren tipos distintos:
 
@@ -204,7 +265,7 @@ Producto escalar. La forma de tres argumentos lo mide **en el vértice `p`**.
   - Decidir si un punto cae "antes" o "después" de un extremo de segmento — es exactamente lo que hace `segDist`.
   - Detectar perpendicularidad: `sgn(dot(a,b)) == 0`.
 
-### `cross` (dos formas) — la función más importante
+### `cross` (dos formas), la función más importante
 
 ```cpp
 T cross(const P& a, const P& b);                 // a x b
