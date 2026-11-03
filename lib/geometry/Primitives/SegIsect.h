@@ -1,17 +1,17 @@
 /**
- * Description: computes the intersection point(s) of line (segments) $a$ and $b$
+ * Description: Punto(s) de interseccion de las rectas (o segmentos) a y b.
+ * Requiere: Point.h
  * Source: KACTL
  * Verification: https://open.kattis.com/problems/segmentintersection
  */
 
-#include "Point.h"
-
-// {unique intersection point} if it exists
-// {b.f,b.s} if input lines are the same
-// empty if lines do not intersect
+// {punto unico de interseccion} si existe
+// {b.f,b.s} si las rectas son la misma
+// vacio si las rectas no se cortan (paralelas)
 vP lineIsect(const Line& a, const Line& b) {
 	T a0 = cross(a.f,a.s,b.f), a1 = cross(a.f,a.s,b.s);
-	if (a0 == a1) return a0 == 0 ? vP{b.f,b.s} : vP{};
+	// con sgn y no con ==: si T es db, a0 y a1 nunca son exactamente iguales
+	if (sgn(a0-a1) == 0) return sgn(a0) == 0 ? vP{b.f,b.s} : vP{};
 	return {(b.s*a0-b.f*a1)/(a0-a1)};
 }
 

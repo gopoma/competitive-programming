@@ -1,14 +1,13 @@
  /**
- * Description: internal and external tangents between two circles
+ * Description: Tangentes internas y externas entre dos circulos.
+ * Requiere: Point.h, Circle.h
  * Source: Own
  * Verification: USACO Laser Cows
  */
 
-#include "Circle.h"
-
 P tangent(P x, Circ y, int t = 0) {
-	y.s = abs(y.s); // abs needed because internal calls y.s < 0
-	if (y.s == 0) return y.f;
+	y.s = abs(y.s); // el abs hace falta porque internal() llama con y.s < 0
+	if (sgn(y.s) == 0) return y.f;
 	T d = abs(x-y.f);
 	P a = pow(y.s/d,2)*(x-y.f)+y.f;
 	P b = sqrt(d*d-y.s*y.s)/d*y.s*unit(x-y.f)*dir(PI/2);
@@ -16,7 +15,10 @@ P tangent(P x, Circ y, int t = 0) {
 }
 V<pair<P,P>> external(Circ x, Circ y) {
 	V<pair<P,P>> v;
-	if (x.s == y.s) {
+	// con radios iguales las tangentes son paralelas; si no, se usa el centro de
+	// homotecia. El sgn no es cosmetico: con radios casi iguales y.s-x.s es
+	// diminuto y ese centro se va al infinito.
+	if (sgn(x.s-y.s) == 0) {
 		P tmp = unit(x.f-y.f)*x.s*dir(PI/2);
 		v.eb(x.f+tmp,y.f+tmp);
 		v.eb(x.f-tmp,y.f-tmp);

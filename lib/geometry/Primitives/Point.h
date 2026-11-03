@@ -1,5 +1,5 @@
 /**
- * Description: Use in place of \texttt{complex<T>}.
+ * Description: Punto 2D sobre pair<T,T>, en lugar de complex<T>.
  * Source: http://codeforces.com/blog/entry/22175
  	* https://github.com/kth-competitive-programming/kactl/blob/master/content/geometry/Point.h
  * Verification: various
@@ -21,10 +21,15 @@ P dir(T ang) { return P(cos(ang),sin(ang)); }
 P operator+(P l, P r) { return P(l.f+r.f,l.s+r.s); }
 P operator-(P l, P r) { return P(l.f-r.f,l.s-r.s); }
 P operator*(P l, T r) { return P(l.f*r,l.s*r); }
+P operator*(T l, P r) { return P(l*r.f,l*r.s); } // escalar a la izquierda
 P operator/(P l, T r) { return P(l.f/r,l.s/r); }
-P operator*(P l, P r) { // complex # multiplication
+P operator*(P l, P r) { // multiplicacion de complejos
 	return P(l.f*r.f-l.s*r.s,l.s*r.f+l.f*r.s); }
 P operator/(P l, P r) { return l*conj(r)/abs2(r); }
+P& operator+=(P& l, const P& r) { return l = l+r; }
+P& operator-=(P& l, const P& r) { return l = l-r; }
+P& operator*=(P& l, const T& r) { return l = l*r; }
+P& operator/=(P& l, const T& r) { return l = l/r; }
 
 P unit(const P& p) { return p/abs(p); }
 T dot(const P& a, const P& b) { return a.f*b.f+a.s*b.s; }

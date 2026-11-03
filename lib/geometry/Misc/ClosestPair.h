@@ -1,11 +1,10 @@
 /**
- * Description: Line sweep to find two closest points .
- * Time: O(N\log N)
+ * Description: Barrido de linea para hallar los dos puntos mas cercanos.
+ * Requiere: Point.h
+ * Time: O(N log N)
  * Source: Own
  * Verification: https://open.kattis.com/problems/closestpair2
  */
-
-#include "../Primitives/Point.h"
 
 pair<P,P> solve(vP v) {
 	pair<db,pair<P,P>> bes; bes.f = INF;

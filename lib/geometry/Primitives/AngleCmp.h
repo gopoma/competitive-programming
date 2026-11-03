@@ -1,20 +1,18 @@
 /**
- * Description: Sorts points in ccw order about origin in the same way as
- 	* \texttt{atan2}, which returns real in $(-\pi,\pi]$ so points on
- 	* negative $x$-axis come last.
+ * Description: Ordena puntos en sentido antihorario alrededor del origen, igual
+   * que atan2: el rango es (-pi,pi], asi que el eje x negativo queda al final.
+ * Requiere: Point.h
  * Verification: https://codeforces.com/contest/1284/submission/68175790
- 	* https://codeforces.com/contest/1284/submission/68207607
- 	* (don't use atan2, weird stuff happens!)
+   * https://codeforces.com/contest/1284/submission/68207607
+   * (no uses atan2, pasan cosas raras!)
  * Usage: vP v; sort(all(v),angleCmp);
  */
 
-#include "Point.h"
-
-// WARNING: you will get unexpected results if you mistype this as bool instead of int
-// -1 if lower half, 0 if origin, 1 if upper half
-int half(P x) { return x.s != 0 ? sgn(x.s) : -sgn(x.f); }
+// WARNING: si lo escribes como bool en vez de int, los resultados son incorrectos
+// -1 semiplano inferior y eje x positivo, 0 origen, 1 semiplano superior y eje x negativo
+int half(P x) { return sgn(x.s) != 0 ? sgn(x.s) : -sgn(x.f); }
 bool angleCmp(P a, P b) { int A = half(a), B = half(b);
-	return A == B ? cross(a,b) > 0 : A < B; }
+	return A == B ? sgn(cross(a,b)) > 0 : A < B; }
 
-// equivalent to: sort(all(v),[](P a, P b) {
+// equivale a: sort(all(v),[](P a, P b) {
 //    return atan2(a.s,a.f) < atan2(b.s,b.f); });

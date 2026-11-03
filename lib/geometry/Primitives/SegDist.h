@@ -1,10 +1,9 @@
 /**
- * Description: computes distance between $P$ and line (segment) $AB$
+ * Description: Distancia de un punto P a la recta (o al segmento) AB.
+ * Requiere: Point.h
  * Source: own
  * Verification: https://open.kattis.com/problems/segmentdistance
  */
-
-#include "Point.h"
 
 T lineDist(const P& p, const Line& l) {
 	return abs(cross(p,l.f,l.s))/abs(l.f-l.s); }
