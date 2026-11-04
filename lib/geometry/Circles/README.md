@@ -1,12 +1,13 @@
 # Circles
 
-Círculos: contención, intersección, tangentes, circuncentro y círculo mínimo envolvente.
+Intersección, tangentes, circuncentro y círculo mínimo.
+
+Manual de consulta: **qué hace cada método, qué le podés pasar y hasta dónde aguanta.** Los problemas donde practicar están en [PROBLEMS.md](../PROBLEMS.md).
 
 ## Índice
 
-- [Recursos](#recursos)
 - [Cómo se arma la submission](#cómo-se-arma-la-submission)
-- [El contrato de tipos](#el-contrato-de-tipos)
+- [Contrato de tipos](#contrato-de-tipos)
 - [`Circle.h`](#circleh)
   - [`in`](#in)
   - [`arcLength`](#arclength)
@@ -22,35 +23,15 @@ Círculos: contención, intersección, tangentes, circuncentro y círculo mínim
   - [`ccCenter`](#cccenter)
 - [`MinEnclosingCirc.h`](#minenclosingcirch)
   - [`mec`](#mec)
-- [Casos de uso recurrentes, de punta a punta](#casos-de-uso-recurrentes-de-punta-a-punta)
-  - [¿Se cortan estos dos círculos?](#se-cortan-estos-dos-círculos)
-  - [Tangente, y de qué tipo](#tangente-y-de-qué-tipo)
-  - [Área de la unión de dos círculos](#área-de-la-unión-de-dos-círculos)
-  - [Recortar un segmento contra un círculo](#recortar-un-segmento-contra-un-círculo)
-  - [El círculo que pasa por tres puntos](#el-círculo-que-pasa-por-tres-puntos)
-  - [¿Un disco de radio r puede cubrir todos los puntos?](#un-disco-de-radio-r-puede-cubrir-todos-los-puntos)
-  - [Camino más corto entre dos puntos rodeando un obstáculo circular](#camino-más-corto-entre-dos-puntos-rodeando-un-obstáculo-circular)
-- [Problemas](#problemas)
+- [Casos degenerados](#casos-degenerados)
+- [Ejemplo completo](#ejemplo-completo)
 - [Verificación](#verificación)
-
-## Recursos
-
-| | |
-|---|---|
-| [cp-algorithms — Circle-circle intersection](https://cp-algorithms.com/geometry/circle-circle-intersection.html) | la derivación de `isect(Circ,Circ)` |
-| [cp-algorithms — Circle-line intersection](https://cp-algorithms.com/geometry/circle-line-intersection.html) | la de `isect(Circ,Line)` |
-| [cp-algorithms — Tangents to two circles](https://cp-algorithms.com/geometry/tangents-to-two-circles.html) | el truco del radio negativo para las internas |
-| [cp-algorithms — Minimum enclosing circle](https://cp-algorithms.com/geometry/enclosing-circle.html) | Welzl, y por qué el $O(n)$ esperado es real |
-
-> **USACO Guide no tiene módulo de círculos.** Su sección de geometría son primitivas, convex hull, sweep line y CHT; los círculos no aparecen. Por eso esta tabla manda a cp-algorithms y la lista de problemas de abajo es corta.
 
 ## Cómo se arma la submission
 
-Copiás `templateHeavy.cpp` en `E.cpp` y pegás el **código** de los headers que necesites en la sección de template.
+Copiás `templateHeavy.cpp` en `E.cpp` y pegás el **código** del header en la sección de template.
 
-> **Los `#include` no van en la solución.** Ningún header de esta librería tiene `#include`. El campo `Requiere:` del encabezado es solo un **indicador** de qué otros templates hay que pegar también, y en qué orden.
-
-Acá el orden importa más que en el resto, porque hay una cadena de dependencias:
+> **Los `#include` no van en la solución.** El campo `Requiere:` es solo un indicador de qué más pegar, y en qué orden.
 
 | si pegás | pegá antes |
 |---|---|
@@ -58,27 +39,21 @@ Acá el orden importa más que en el resto, porque hay una cadena de dependencia
 | `CircleIsect.h` | `Point.h`, `Circle.h` |
 | `CircleTangents.h` | `Point.h`, `Circle.h` |
 | `Circumcenter.h` | `Point.h`, `Circle.h` |
-| `MinEnclosingCirc.h` | `Point.h`, `Circle.h`, `Circumcenter.h` |
+| `MinEnclosingCirc.h` | `Point.h`, `Circle.h`, **`Circumcenter.h`** |
 
-O sea: `Point.h` → `Circle.h` → lo que necesites. Y si vas a usar `mec`, la cadena completa es `Point.h` → `Circle.h` → `Circumcenter.h` → `MinEnclosingCirc.h`.
-
-Cada uno va **una sola vez** por submission.
-
-## El contrato de tipos
+## Contrato de tipos
 
 ```cpp
-using Circ = pair<P,T>;    // {centro, radio}
+using Circ = pair<P,T>;   // {centro, radio}
 ```
 
-`x.f` es el centro (un `P`), `x.s` el radio (un `T`). Casi todas las funciones asumen **radio $\ge 0$**; la única excepción es `internal`, que usa un radio negativo como truco interno.
-
-> Esta sección necesita raíces, `acos` y `atan2`, así que **dejá `T = db`**. Con `T = ll` los radios y las longitudes de arco truncan y los resultados no sirven.
+> **Toda esta carpeta exige `T = db`.** Usa `sqrt`, `acos`, `unit` y `dir`; con `T = ll` todo eso trunca a cero y los resultados salen mal **en silencio**, sin warning ni assert.
 
 ---
 
 ## `Circle.h`
 
-> **Problema ancla:** no hay uno canónico para el tipo en sí. `in` y `arcLength` aparecen como piezas dentro de problemas más grandes.
+**Requiere:** `Point.h`
 
 ### `in`
 
@@ -86,17 +61,15 @@ using Circ = pair<P,T>;    // {centro, radio}
 int in(const Circ& x, const P& y);
 ```
 
-Dice dónde cae el punto `y` respecto del círculo `x`.
+Dónde cae `y` respecto de `x`: **`-1` adentro, `0` en el borde, `1` afuera**.
 
-| valor | significado |
-|---|---|
-| `-1` | **adentro** |
-| `0` | sobre el **borde** |
-| `1` | **afuera** |
+**Restricciones**: ninguna; radio 0 es válido · **Tipo**: `db` · **Complejidad**: $O(1)$.
 
-- Complejidad: $O(1)$.
-- Usa `sgn`, o sea tolera `EPS`: un punto a $10^{-12}$ del borde cuenta como "sobre el borde".
-- Casos de uso: verificar que una solución candidata cubre todos los puntos (es lo que valida `mec`); contar puntos dentro de un radio dado; filtrar antes de un cálculo más caro.
+```cpp
+in({{0,0},2}, {1,0})  ->  -1     // adentro
+in({{0,0},2}, {2,0})  ->   0     // borde (con EPS)
+in({{0,0},0}, {0,0})  ->   0     // radio 0: su centro esta "en el borde"
+```
 
 ### `arcLength`
 
@@ -104,15 +77,21 @@ Dice dónde cae el punto `y` respecto del círculo `x`.
 T arcLength(const Circ& x, P a, P b);
 ```
 
-La longitud del **arco menor** entre `a` y `b` sobre el círculo `x`.
+Longitud del arco **más corto** entre `a` y `b` sobre `x`.
 
-- Complejidad: $O(1)$.
-- **Precondición: `a` y `b` están sobre `x`.** La función no lo verifica.
-- Devuelve siempre el arco **menor** (el ángulo sale de `acos`, que vive en $[0,\pi]$). Para el mayor: $2\pi r - \text{arcLength}$.
-- Tiene un *clamp* a $[-1,1]$ antes del `acos`, para que el redondeo no produzca `NaN` cuando el coseno queda apenas por encima de 1.
-- Casos de uso: perímetro de una figura con bordes curvos; distancia recorrida sobre una pista circular; sumar arcos al calcular el perímetro de una unión de círculos.
+> **No es el arco orientado.** El resultado siempre está en $[0, \pi r]$ y **no depende del orden** de `a` y `b`. Si necesitás el arco antihorario (que puede pasar de $\pi r$), tenés que calcularlo aparte.
 
-Implementación: `(a-c)/(b-c)` es la división de complejos, cuyo argumento es el ángulo $acb$. Como los dos puntos están en el círculo, el módulo de esa razón es 1 y su parte real **es** el coseno del ángulo central.
+**Restricciones**: `a` y `b` **deben estar sobre el círculo** — no se verifica · **Tipo**: `db` · **Complejidad**: $O(1)$.
+
+```cpp
+// circulo unidad en el origen
+arcLength(c, {1,0},  {0,1})  ->  1.5708   // pi/2
+arcLength(c, {0,1},  {1,0})  ->  1.5708   // el MISMO: no mira el sentido
+arcLength(c, {1,0},  {1,0})  ->  0.0000
+arcLength(c, {1,0}, {-1,0})  ->  3.1416   // pi, el maximo posible
+```
+
+El `acos` está *clampeado* a $[-1, 1]$: sin eso, un redondeo que deje el argumento en 1.0000000001 daría `nan`.
 
 ---
 
@@ -120,30 +99,28 @@ Implementación: `(a-c)/(b-c)` es la división de complejos, cuyo argumento es e
 
 **Requiere:** `Point.h`, `Circle.h`
 
-> **Problema ancla:** [Kattis — Birthday Cake](https://open.kattis.com/problems/birthdaycake) *(Hard)*: cortar un círculo con una recta dejando la misma cantidad de puntos de cada lado.
-
 ### `isect(Circ, Circ)`
 
 ```cpp
 vP isect(const Circ& x, const Circ& y);
 ```
 
-Los puntos donde se cortan dos círculos.
+Los puntos de corte de dos círculos. **Una tangencia devuelve el mismo punto dos veces**, no uno.
 
 ![los cuatro casos de intersección de círculos](../img/circ-isect.svg)
 
-| resultado | significado |
-|---|---|
-| vacío | no se cortan (disjuntos, o uno contenido en el otro) |
-| 2 puntos | se cortan en dos puntos |
-| 2 puntos **iguales** | son **tangentes**: el punto de tangencia viene repetido |
+**Restricciones**: **`x != y`** — con dos círculos idénticos hay infinitos puntos y salta un `assert` · **Tipo**: `db` · **Complejidad**: $O(1)$.
 
-- Complejidad: $O(1)$.
-- **Precondición: `x != y`.** Con círculos concéntricos y mismo radio hay infinitas soluciones, y un `assert` lo corta.
-- Caso especial manejado: si `x` tiene **radio 0** devuelve ese punto repetido si cae sobre `y`, o vacío si no. Sin esa rama se dividía por el radio y salían `(nan, nan)` disfrazados de dos puntos válidos.
-- Casos de uso: trilateración (ubicar un punto a partir de distancias a dos referencias); construir el tercer vértice de un triángulo dados dos lados; intersección de regiones circulares.
+```cpp
+isect({{0,0},2}, {{2,0},2})  ->  {(1,1.7321), (1,-1.7321)}   // secantes: 2 puntos
+isect({{0,0},1}, {{2,0},1})  ->  {(1,0), (1,0)}              // tangentes: repetido
+isect({{0,0},1}, {{9,0},1})  ->  {}                          // disjuntos
+isect({{0,0},1}, {{0,0},2})  ->  {}                          // concentricos
+isect({{1,0},0}, {{0,0},1})  ->  {(1,0), (1,0)}              // radio 0 sobre el borde
+isect({{9,0},0}, {{0,0},1})  ->  {}                          // radio 0 afuera
+```
 
-> La tangencia viene **duplicada** a propósito, para que el tamaño del vector sea siempre 0 o 2 y no haya que ramificar. Si necesitás distinguirla: `sgn(abs(r[0]-r[1])) == 0`.
+> El caso de **radio 0** tiene una rama propia. Sin ella se dividía por el radio y salían `nan` en silencio.
 
 ### `isect(Circ, Line)`
 
@@ -151,19 +128,19 @@ Los puntos donde se cortan dos círculos.
 vP isect(const Circ& x, const Line& y);
 ```
 
-Los puntos donde la **recta infinita** `y` corta al círculo `x`.
+Corte de un círculo con una **recta infinita** (no un segmento). Tangente → el mismo punto dos veces.
 
-| resultado | significado |
-|---|---|
-| vacío | la recta no toca el círculo |
-| 2 puntos | la corta en dos puntos |
-| 2 puntos iguales | **tangente** |
+![los tres casos de círculo contra recta](../img/circ-line.svg)
 
-- Complejidad: $O(1)$.
-- **Precondición: `y.f != y.s`** (usa `unit(y.s-y.f)`).
-- Es una **recta**, no un segmento. Si necesitás los cortes con el segmento, filtrá después con `onSeg`.
-- Implementación: proyecta el centro sobre la recta con `foot`, y a partir de ahí se mueve $\pm\sqrt{r^2 - d^2}$ en la dirección de la recta.
-- Casos de uso: ¿la trayectoria recta pasa por la zona de alcance?; recortar un segmento contra un círculo; calcular la cuerda que una recta determina.
+**Restricciones**: `y.f != y.s` · **Tipo**: `db` · **Complejidad**: $O(1)$.
+
+```cpp
+isect({{0,0},1}, {{-5,0},{5,0}})  ->  {(1,0), (-1,0)}   // secante
+isect({{0,0},1}, {{-5,1},{5,1}})  ->  {(0,1), (0,1)}    // tangente: repetido
+isect({{0,0},1}, {{-5,9},{5,9}})  ->  {}                // no toca
+```
+
+Para recortar un **segmento** hay que filtrar después con `onSeg`.
 
 ### `isect_area`
 
@@ -171,14 +148,19 @@ Los puntos donde la **recta infinita** `y` corta al círculo `x`.
 T isect_area(Circ x, Circ y);
 ```
 
-El **área** de la intersección (la lente) de dos círculos.
+**Área** de la intersección de dos discos.
 
-- Complejidad: $O(1)$.
-- Casos manejados por separado, en este orden: disjuntos o tangentes por fuera ($d \ge a+b$) devuelve 0; uno contenido en el otro ($d \le a-b$) devuelve el área del chico — eso cubre también el caso radio 0.
-- Los `acos` tienen *clamp* y el radicando de Herón tiene piso en 0, así que no produce `NaN`.
-- Casos de uso: área cubierta por dos sensores circulares; probabilidad geométrica; integrar el área de una unión por inclusión-exclusión cuando hay pocos círculos.
+**Restricciones**: ninguna; cubre contención, tangencia y radio 0 · **Tipo**: `db` · **Complejidad**: $O(1)$.
 
-> El header original decía *"not thoroughly tested"*. Lo verifiqué: tangente externa, tangente interna, círculos idénticos y $d$ casi igual a $a+b$ dan todos el valor exacto. La nota ya no está.
+```cpp
+isect_area({{0,0},1}, {{0,0},1})  ->  3.1416   // identicos: pi
+isect_area({{0,0},3}, {{0,0},1})  ->  3.1416   // uno dentro: area del chico
+isect_area({{0,0},1}, {{2,0},1})  ->  0.0000   // tangentes
+isect_area({{0,0},1}, {{9,0},1})  ->  0.0000   // disjuntos
+isect_area({{0,0},1}, {{1,0},1})  ->  1.2284   // secantes
+```
+
+A diferencia de `isect(Circ,Circ)`, **este sí admite círculos idénticos**.
 
 ---
 
@@ -192,14 +174,16 @@ El **área** de la intersección (la lente) de dos círculos.
 P tangent(P x, Circ y, int t = 0);
 ```
 
-El punto de tangencia sobre el círculo `y` de una de las dos rectas tangentes trazadas desde el punto `x`. `t` elige cuál (`0` o `1`).
+El punto donde la tangente desde `x` toca a `y`. `t = 0` y `t = 1` son los dos puntos posibles.
 
-- Complejidad: $O(1)$.
-- **Precondición: `x` está afuera o sobre `y`.** Desde adentro no hay tangentes.
-- Si el radio es 0 devuelve el centro.
-- Casos de uso: el ángulo visual con que se ve un círculo desde un punto; el camino más corto que rodea un obstáculo circular (recta + arco + recta); problemas de visibilidad.
+**Restricciones**: **`x` tiene que estar fuera del círculo o sobre el borde.** Con `x` adentro devuelve `(nan, nan)` **sin avisar** · **Tipo**: `db` · **Complejidad**: $O(1)$.
 
-> Toma `abs(y.s)` porque `internal` lo llama con radio negativo.
+```cpp
+tangent({3,0}, {{0,0},1}, 0)  ->  (0.3333,  0.9428)
+tangent({3,0}, {{0,0},1}, 1)  ->  (0.3333, -0.9428)
+tangent({0.5,0}, {{0,0},1})   ->  (nan, nan)     // punto ADENTRO
+tangent({3,0}, {{0,0},0})     ->  (0, 0)         // radio 0: el centro
+```
 
 ### `external`
 
@@ -207,16 +191,18 @@ El punto de tangencia sobre el círculo `y` de una de las dos rectas tangentes t
 V<pair<P,P>> external(Circ x, Circ y);
 ```
 
-Las **dos tangentes externas** a los círculos `x` e `y`: las que dejan los dos círculos del mismo lado. Devuelve dos pares `{punto sobre x, punto sobre y}`.
+Las **dos tangentes externas**: cada par es `{punto sobre x, punto sobre y}`.
 
 ![tangentes externas e internas](../img/circ-tangentes.svg)
 
-- Complejidad: $O(1)$.
-- **Precondición: ninguno de los dos contiene estrictamente al otro** ($d > |r_x - r_y|$).
-- Dos ramas: con radios **iguales** las tangentes son paralelas y se construyen con una normal; con radios distintos pasan por el **centro de homotecia externa**.
-- Casos de uso: la correa que envuelve dos poleas; el casco convexo de un conjunto de círculos; el camino más corto entre dos círculos que los rodea.
+**Restricciones**: **ningún círculo puede contener al otro.** Si uno contiene al otro devuelve **dos pares de `(nan, nan)`** — no devuelve vacío, y nada avisa · **Tipo**: `db` · **Complejidad**: $O(1)$.
 
-> La separación de ramas usa `sgn(x.s - y.s)` y no `==`, y eso **no es cosmético**: con radios casi iguales el denominador del centro de homotecia es diminuto y ese centro se va al infinito.
+```cpp
+external({{0,0},1}, {{4,0},1})  ->  {(0,-1)->(4,-1), (0,1)->(4,1)}
+external({{0,0},3}, {{0,0},1})  ->  {(nan,nan)->(nan,nan), (nan,nan)->(nan,nan)}
+```
+
+Con **radios iguales** usa una rama aparte (las tangentes son paralelas); si no, usa el centro de homotecia. El `sgn` de esa decisión no es cosmético: con radios casi iguales el centro se va al infinito.
 
 ### `internal`
 
@@ -224,14 +210,14 @@ Las **dos tangentes externas** a los círculos `x` e `y`: las que dejan los dos 
 V<pair<P,P>> internal(Circ x, Circ y);
 ```
 
-Las **dos tangentes internas**: las que pasan entre los dos círculos, cruzándose.
+Las **dos tangentes internas**, las que cruzan entre los dos círculos. Es `external` con el radio de `x` negado.
 
-- Complejidad: $O(1)$.
-- **Precondición: los círculos no se cortan** ($d > r_x + r_y$). Si se cortan, no existen.
-- Implementación: una línea — `external({x.f, -x.s}, y)`. Negar el radio invierte el lado de tangencia, y las externas de ese círculo "reflejado" son las internas del original.
-- Casos de uso: la correa cruzada entre dos poleas (que giran en sentidos opuestos); separar dos regiones circulares con una recta.
+**Restricciones**: los círculos **no pueden solaparse**; si se solapan, `(nan, nan)` · **Tipo**: `db` · **Complejidad**: $O(1)$.
 
-**Verificación:** 230.000 casos comprobando que los dos puntos de contacto caen sobre su círculo y que la recta que los une es tangente a los dos (`lineDist(centro, recta) == radio`). 0 fallas, con coordenadas hasta $10^5$.
+```cpp
+internal({{0,0},1}, {{4,0},1})  ->  {(0.5,0.866)->(3.5,-0.866), (0.5,-0.866)->(3.5,0.866)}
+internal({{0,0},1}, {{2,0},1})  ->  {(1,0)->(1,0), (1,0)->(1,0)}   // tangentes internos
+```
 
 ---
 
@@ -245,17 +231,18 @@ Las **dos tangentes internas**: las que pasan entre los dos círculos, cruzándo
 Circ ccCenter(P a, P b, P c);
 ```
 
-El **circuncentro** y el **circunradio** del triángulo `abc`: el único círculo que pasa por los tres puntos.
+`{circuncentro, circunradio}` del triángulo `abc`: el único círculo que pasa por los tres.
 
-- Complejidad: $O(1)$.
-- **Precondición: los tres puntos no son colineales y no hay dos iguales.** Un `assert` lo verifica.
-- El circuncentro es la intersección de las tres mediatrices; equidista de los tres vértices.
-- Casos de uso: lo usa `mec` para el caso de tres puntos en el borde; el centro del círculo que pasa por tres puntos dados; Delaunay y diagramas de Voronoi.
+**Restricciones**: **los tres puntos no pueden ser colineales ni repetirse.** Un `assert` lo corta; sin él el resultado sería `nan` en silencio · **Tipo**: `db` · **Complejidad**: $O(1)$.
 
-> Antes devolvía `(nan, nan)` en silencio con entrada degenerada, porque el denominador se anula. Ahora revienta con un `assert` que dice dónde. **Consecuencia del cambio:** si enumerás ternas arbitrarias (por ejemplo en una fuerza bruta), filtrá las colineales antes:
->
+```cpp
+ccCenter({0,0}, {4,0}, {0,4})  ->  centro (2, 2),      radio 2.8284
+ccCenter({0,0}, {4,0}, {2,3})  ->  centro (2, 0.8333), radio 2.1667
+```
+
+> Si tu entrada puede traer ternas degeneradas, filtralas antes:
 > ```cpp
-> if (sgn(cross(a,b,c)) == 0) continue;   // antes de llamar a ccCenter
+> if (sgn(cross(a,b,c)) == 0) continue;
 > ```
 
 ---
@@ -264,146 +251,98 @@ El **circuncentro** y el **circunradio** del triángulo `abc`: el único círcul
 
 **Requiere:** `Point.h`, `Circle.h`, `Circumcenter.h`
 
-> **Problema ancla:** [LeetCode — Maximum Number of Darts Inside of a Circular Dartboard](https://leetcode.com/problems/maximum-number-of-darts-inside-of-a-circular-dartboard/description/) *(Hard)*. No es un MEC directo, pero usa la misma idea: el círculo óptimo queda fijado por 2 o 3 puntos.
-
 ### `mec`
 
 ```cpp
 Circ mec(vP ps);
 ```
 
-El **círculo mínimo que contiene a todos los puntos** (*minimum enclosing circle*, o círculo de Welzl).
+El **círculo mínimo que contiene todos los puntos** (Welzl).
 
 ![el MEC queda determinado por 2 o 3 puntos](../img/circ-mec.svg)
 
-La clave que hace funcionar el algoritmo: el círculo óptimo siempre queda **determinado por 2 o por 3 puntos** del conjunto. Por eso los tres bucles anidados alcanzan — van fijando esos puntos del borde, y la mezcla al azar es lo que hace que casi nunca haya que rehacerlos.
+**Restricciones**: $n \ge 1$; admite duplicados, todos iguales y todos colineales · **Tipo**: `db` · **Complejidad**: **$O(n)$ esperado — es un algoritmo aleatorizado.** El peor caso es $O(n^3)$, pero requiere un orden adversario; `mec` mezcla la entrada para evitarlo.
 
-- Complejidad: $O(n)$ **esperado**. El algoritmo mezcla la entrada al azar y los tres bucles anidados se ejecutan, en promedio, un número constante de veces cada uno.
-- Toma `ps` por copia, porque la mezcla.
-- Funciona con entrada degenerada: un solo punto (devuelve radio 0), todos iguales, todos colineales. Verificado.
-- Casos de uso: la antena de radio mínimo que cubre todas las casas; el problema clásico *Enclose All* (AtCoder ABC 151 F); cota inferior para "cubrir con un disco".
+Toma `ps` **por copia**: la mezcla.
 
-> **Ojo con el `rng` de semilla fija.** `templateHeavy.cpp` define `mt19937 rng(0)`, así que la mezcla es **determinista**. La complejidad esperada vale para una permutación al azar; con semilla fija, en teoría un test adversario podría forzar el peor caso. Si te preocupa, descomentá la línea de `rng` con semilla por tiempo:
->
+```cpp
+mec({{3,3}})                      ->  centro (3,3),     radio 0
+mec({{1,1},{1,1},{1,1}})          ->  radio 0
+mec({{0,0},{1,1},{2,2},{3,3}})    ->  centro (1.5,1.5), radio 2.1213   // colineales
+```
+
+**Qué tan esperado es el $O(n)$.** Con 200 puntos al azar, contando cuántas veces entra cada bucle:
+
+```
+bucle i (reinicia el circulo) :  10 veces
+bucle j (fija el 2do punto)   :  43 veces
+bucle k (fija el 3ro)         :  30 veces
+```
+
+De 200 puntos, el bucle externo entró **10 veces**, no 200. Esa es la razón de que tres bucles anidados no sean cúbicos.
+
+> **Ojo con el `rng` de semilla fija.** `templateHeavy.cpp` define `mt19937 rng(0)`, así que la mezcla es **determinista** y en teoría un test adversario podría forzar el peor caso. Si te preocupa:
 > ```cpp
 > mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
 > ```
 
-> El `holgura = 1+1e-8` es una tolerancia **multiplicativa**, distinta del `EPS` aditivo global. Antes se llamaba `EPS` y tapaba al global (`-Wshadow` lo marcaba).
-
-<details>
-<summary><b>Ejemplo trazado: los tres bucles anidados sobre 5 puntos</b></summary>
-
-Entrada, **sin mezclar** para que la traza sea reproducible: `(0,0) (4,0) (2,3) (1,1) (3,1)`.
-
-El estado es un círculo `{centro, radio}` que arranca en `{(0,0), r=0}`. Cada bucle solo entra cuando un punto cae **afuera** del círculo actual:
-
-```
-i=0  (0,0)   adentro  ->  nada
-
-i=1  (4,0)   AFUERA   ->  reinicia: {(4,0), r=0}
-       j=0  (0,0) afuera -> diametro (4,0)-(0,0)
-                            centro (2.00, 0.00)   r = 2.000
-
-i=2  (2,3)   AFUERA   ->  reinicia: {(2,3), r=0}
-       j=0  (0,0) afuera -> diametro (2,3)-(0,0)
-                            centro (1.00, 1.50)   r = 1.803
-       j=1  (4,0) afuera -> diametro (2,3)-(4,0)
-                            centro (3.00, 1.50)   r = 1.803
-            k=0  (0,0) SIGUE afuera -> circuncirculo (2,3)(4,0)(0,0)
-                            centro (2.00, 0.83)   r = 2.167
-
-i=3  (1,1)   adentro  ->  nada
-i=4  (3,1)   adentro  ->  nada
-```
-
-**Resultado: centro `(2, 5/6)`, radio 2.167.**
-
-Tres cosas que se ven acá y no en la descripción:
-
-1. **El círculo se reinicia desde cero** cada vez que un punto cae afuera, no se "agranda". Parece un desperdicio, pero es justo lo que hace que el análisis amortizado dé `O(n)` esperado.
-2. **El nivel k se ejecutó una sola vez** en toda la corrida. Ese es el caso típico: el tercer bucle casi nunca entra, y por eso tres bucles anidados no son `O(n^3)`.
-3. **`(1,1)` y `(3,1)` nunca hicieron nada.** Los puntos interiores salen gratis — y en una entrada real son la enorme mayoría.
-
-El resultado queda fijado por `(0,0) (4,0) (2,3)`: **tres** puntos. Si sacaras `(2,3)`, quedaría fijado por `(0,0)` y `(4,0)` como diámetro: **dos**. Nunca hacen falta más de tres.
-
-</details>
-
-**Verificación:** 5.900 casos contra fuerza bruta que prueba **todo par y toda terna** como círculo candidato, en grillas muy degeneradas ($C=2$, $C=3$) y dispersas ($C=10^6$). 0 diferencias. Además 14.000 casos confirmando que el `assert` nuevo de `ccCenter` nunca se dispara desde `mec`.
-
 ---
 
-## Casos de uso recurrentes, de punta a punta
+## Casos degenerados
 
-### ¿Se cortan estos dos círculos?
+Todas las salidas son de correr el código.
 
-```cpp
-T d = abs(x.f - y.f);
-int rel = sgn(d - (x.s + y.s));          // >0 disjuntos, 0 tangentes por fuera
-int con = sgn(d - abs(x.s - y.s));       // <0 uno contiene al otro
-```
+| situación | qué pasa |
+|---|---|
+| `isect` de dos círculos **idénticos** | **`assert`** |
+| `isect` de **concéntricos** distinto radio | `{}` |
+| `isect` **tangente** | el mismo punto **dos veces** |
+| `isect` con **radio 0** | rama propia: el punto, o `{}` |
+| `isect_area` de idénticos | área del círculo (no hay assert acá) |
+| `tangent` con el punto **adentro** | **`(nan, nan)` en silencio** |
+| `external` / `internal` con uno **dentro** del otro | **dos pares de `(nan, nan)` en silencio** |
+| `ccCenter` con 3 **colineales** o repetidos | **`assert`** |
+| `mec` de 1 punto | radio 0 |
+| `mec` de todos iguales | radio 0 |
+| `arcLength` con `a == b` | 0 |
 
-### Tangente, y de qué tipo
+> **El patrón a recordar:** `isect` y `ccCenter` **avisan** con un `assert`; las tangentes **no** — devuelven `nan` y siguen. Si tu entrada puede violar la precondición de `tangent`, `external` o `internal`, chequealo vos con `in()`.
 
-```cpp
-auto r = isect(x, y);
-if (sz(r) && sgn(abs(r[0]-r[1])) == 0) { /* tangentes */ }
-```
+## Ejemplo completo
 
-### Área de la unión de dos círculos
-
-```cpp
-T total = PI*sq(x.s) + PI*sq(y.s) - isect_area(x, y);
-```
-
-### Recortar un segmento contra un círculo
-
-```cpp
-auto r = isect(c, l);                     // corta con la RECTA
-vP dentro;
-each(p, r) if (onSeg(p, l)) dentro.pb(p); // y despues filtra al segmento
-```
-
-### El círculo que pasa por tres puntos
+Dos círculos, de la relación entre ellos al área común, con las salidas intermedias:
 
 ```cpp
-if (sgn(cross(a,b,c)) != 0) {
-    auto cc = ccCenter(a, b, c);
-    // cc.f es el centro, cc.s el radio
-}
+Circ a = {{0,0}, 2}, b = {{3,0}, 2};
+
+T d = abs(a.f - b.f);
+cout << d << "\n";                       // 3        distancia entre centros
+cout << sgn(d - (a.s + b.s)) << "\n";    // -1       d < r1+r2  => se cortan
+cout << sgn(d - abs(a.s - b.s)) << "\n"; //  1       d > |r1-r2| => ninguno contiene al otro
+
+auto p = isect(a, b);
+cout << sz(p) << "\n";                   // 2
+cout << p[0].f << "," << p[0].s << "\n"; // 1.5, 1.3229
+cout << p[1].f << "," << p[1].s << "\n"; // 1.5, -1.3229
+
+cout << isect_area(a, b) << "\n";        // 1.8132   area de la lente
+
+// las tangentes externas son seguras porque ninguno contiene al otro
+auto t = external(a, b);
+cout << sz(t) << "\n";                   // 2 pares
+// par 0: (0,-2) -> (3,-2)              radios iguales => tangentes paralelas
+
+// PERO si uno contuviera al otro:
+auto mal = external({{0,0},5}, {{0,0},1});
+cout << mal[0].f.f << "\n";              // nan   <- sin aviso
 ```
 
-### ¿Un disco de radio r puede cubrir todos los puntos?
+Chequeo defensivo antes de llamar a las tangentes:
 
 ```cpp
-bool alcanza = sgn(mec(ps).s - r) <= 0;
+bool seguro = sgn(abs(x.f - y.f) - abs(x.s - y.s)) > 0;   // ninguno contiene al otro
+if (seguro) { auto t = external(x, y); /* ... */ }
 ```
-
-### Camino más corto entre dos puntos rodeando un obstáculo circular
-
-```cpp
-// si el segmento ab no toca el circulo, es la recta
-if (sgn(segDist(c.f, Line{a,b}) - c.s) >= 0) ans = abs(b - a);
-else {
-    P ta = tangent(a, c, 0), tb = tangent(b, c, 1);
-    ans = abs(ta - a) + arcLength(c, ta, tb) + abs(b - tb);
-}
-```
-
----
-
-## Problemas
-
-Los círculos casi no aparecen como tema propio en los jueces habituales; estos son los que encontré donde son el núcleo:
-
-| fuente | problema | dificultad | con qué |
-|---|---|---|---|
-| LeetCode | [Maximum Darts Inside a Circular Dartboard](https://leetcode.com/problems/maximum-number-of-darts-inside-of-a-circular-dartboard/description/) | Hard | círculo por 2 o 3 puntos |
-| Kattis | [Birthday Cake](https://open.kattis.com/problems/birthdaycake) | Hard | recta que parte un círculo |
-
-> Si estás preparando CF o AtCoder, los círculos rinden menos que polígonos por hora invertida. `mec` y `isect` son los dos que vale la pena tener a mano; el resto está acá por completitud.
-
----
 
 ## Verificación
 
@@ -415,6 +354,6 @@ Los círculos casi no aparecen como tema propio en los jueces habituales; estos 
 | `isect(Circ,Circ)` con radio 0 | — | caso puntual: antes `(nan,nan)`, ahora el punto real |
 | `isect_area` | — | tangente externa, interna, idénticos, $d \approx a+b$ |
 
-`CircleTangents.h`, `Circumcenter.h` y `MinEnclosingCirc.h` **no compilaban** antes del commit `57c7c7f`: a `Point.h` le faltaban `operator*(T,P)` y los compuestos `+=` / `-=`. Quedaron verificados por primera vez.
+`CircleTangents.h`, `Circumcenter.h` y `MinEnclosingCirc.h` **no compilaban** antes del commit `57c7c7f`: a `Point.h` le faltaban `operator*(T,P)` y los compuestos `+=` / `-=`.
 
-Los cinco headers compilan con las flags del `Makefile` sin warnings.
+Los cinco compilan con las flags del `Makefile` sin warnings.

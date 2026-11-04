@@ -1,28 +1,24 @@
 # Primitives
 
-La base de toda la librería de geometría. Todo lo demás (`Circles`, `Polygons`, `Misc`) se apoya en `Point.h`.
+El tipo punto y todo lo que se construye sobre él. `Circles`, `Polygons` y `Misc` se apoyan en `Point.h`.
+
+Manual de consulta: **qué hace cada método, qué le podés pasar y hasta dónde aguanta.** Los problemas donde practicar están en [PROBLEMS.md](../PROBLEMS.md).
 
 ## Índice
 
-- [Recursos](#recursos)
 - [Cómo se arma la submission](#cómo-se-arma-la-submission)
-- [El contrato de tipos (`Point.h`)](#el-contrato-de-tipos-pointh)
+- [Contrato de tipos](#contrato-de-tipos)
   - [Elegir `T`: `db` o `ll`](#elegir-t-db-o-ll)
-  - [Cuánto aguanta `db`](#cuánto-aguanta-db)
+  - [Hasta dónde aguanta `db`](#hasta-dónde-aguanta-db)
 - [`Point.h`](#pointh)
   - [Operadores](#operadores)
-  - [`sgn`](#sgn)
-  - [`sq`](#sq)
-  - [`abs2` y `abs`](#abs2-y-abs)
-  - [`arg`](#arg)
-  - [`conj`](#conj)
-  - [`perp`](#perp)
-  - [`dir`](#dir)
-  - [`unit`](#unit)
-  - [`dot` (dos formas)](#dot-dos-formas)
-  - [`cross` (dos formas), la función más importante](#cross-dos-formas-la-función-más-importante)
-  - [`reflect`](#reflect)
-  - [`foot`](#foot)
+  - [`sgn`, `sq`](#sgn-sq)
+  - [`abs2`, `abs`](#abs2-abs)
+  - [`arg`, `dir`](#arg-dir)
+  - [`conj`, `perp`, `unit`](#conj-perp-unit)
+  - [`dot`](#dot)
+  - [`cross`](#cross)
+  - [`reflect`, `foot`](#reflect-foot)
   - [`onSeg`](#onseg)
 - [`AngleCmp.h`](#anglecmph)
   - [`half`](#half)
@@ -34,323 +30,199 @@ La base de toda la librería de geometría. Todo lo demás (`Circles`, `Polygons
   - [`lineIsect`](#lineisect)
   - [`strictIsect`](#strictisect)
   - [`segIsect`](#segisect)
-- [Casos de uso recurrentes, de punta a punta](#casos-de-uso-recurrentes-de-punta-a-punta)
-  - [¿De qué lado de la recta cae el punto?](#de-qué-lado-de-la-recta-cae-el-punto)
-  - [Área de un triángulo](#área-de-un-triángulo)
-  - [¿Están alineados?](#están-alineados)
-  - [Ángulo orientado en un vértice](#ángulo-orientado-en-un-vértice)
-  - [Rotar un punto alrededor de otro](#rotar-un-punto-alrededor-de-otro)
-  - [Ordenar puntos alrededor de un centro](#ordenar-puntos-alrededor-de-un-centro)
-  - [El punto más cercano de un segmento](#el-punto-más-cercano-de-un-segmento)
-  - [Distancia entre dos segmentos](#distancia-entre-dos-segmentos)
-- [Problemas](#problemas)
+- [Casos degenerados](#casos-degenerados)
+- [Ejemplo completo](#ejemplo-completo)
 - [Verificación](#verificación)
-
-## Recursos
-
-| | |
-|---|---|
-| [CPH, cap. 29 — Geometry](https://cses.fi/book/book.pdf) | la introducción más corta: complejos, puntos y rectas, polígonos, distancias |
-| [cp-algorithms — Basic geometry](https://cp-algorithms.com/geometry/basic-geometry.html) | las operaciones elementales, con las demostraciones |
-| [cp-algorithms — Oriented area of a triangle](https://cp-algorithms.com/geometry/oriented-triangle-area.html) | el `cross` como área con signo |
-| [CF — Point Struct](https://codeforces.com/blog/entry/48122) | de dónde sale el diseño de `Point.h` |
-| [CF — vlecomte, Geometry Handbook](https://codeforces.com/blog/entry/59129) | el tratamiento serio de precisión y casos degenerados |
-| [USACO Guide — Geometry Primitives](https://usaco.guide/plat/geo-pri) | los mismos temas, con problemas de CSES |
 
 ## Cómo se arma la submission
 
-El flujo es: copiás `templateHeavy.cpp` en `E.cpp` y pegás el **código** de los headers que necesites dentro de la sección de template.
+Copiás `templateHeavy.cpp` en `E.cpp` y pegás el **código** del header en la sección de template.
 
-> **Los `#include` no van en la solución.** Ningún header de esta librería tiene `#include`, y vos tampoco escribís ninguno. El campo `Requiere:` del encabezado es solo un **indicador**: te dice qué otros templates hay que pegar también, y en qué orden.
+> **Los `#include` no van en la solución.** El campo `Requiere:` es solo un indicador de qué más pegar, y en qué orden.
 
 | si pegás | pegá antes |
 |---|---|
-| `Point.h` | — es la base |
-| `AngleCmp.h` | `Point.h` |
-| `SegDist.h` | `Point.h` |
-| `SegIsect.h` | `Point.h` |
+| `AngleCmp.h`, `SegDist.h`, `SegIsect.h` | `Point.h` |
 
-En la sección de template queda el código, uno abajo del otro:
+## Contrato de tipos
 
 ```cpp
-//* Template
-// ---------- Point.h ----------        <- primero, siempre
-using T = db;
-const T EPS = 1e-9;
-using P = pair<T,T>; using vP = V<P>; using Line = pair<P,P>;
-int sgn(T a) { return (a>EPS)-(a<-EPS); }
-// ... el resto de Point.h
-
-// ---------- SegIsect.h ----------     <- despues, en cualquier orden
-vP lineIsect(const Line& a, const Line& b) { /* ... */ }
-// ... el resto de SegIsect.h
-//* /Template
-```
-
-`Point.h` va **una sola vez**: pegarlo dos veces da errores de redefinición.
-
----
-
-## El contrato de tipos (`Point.h`)
-
-```cpp
-using T = db;                   // el escalar. db = long double, o ll
+using T = db;                   // el escalar: db = long double, o ll
 const T EPS = 1e-9;
 using P = pair<T,T>;            // un punto, o un vector
 using vP = V<P>;
 using Line = pair<P,P>;         // dos puntos: una recta, o un segmento
 ```
 
-`P` es a la vez **punto** y **vector**: no hay distinción de tipos. `Line` es a la vez **recta infinita** y **segmento** — cuál de las dos depende de la función que lo recibe, y está dicho en cada caso.
+`P` es a la vez **punto** y **vector**. `Line` es a la vez **recta infinita** y **segmento** — cuál de las dos lo decide la función que lo recibe, y está dicho en cada una.
 
 ### Elegir `T`: `db` o `ll`
 
-Un solo `T` cubre dos necesidades que quieren tipos distintos:
-
 | | `T = db` (default) | `T = ll` |
 |---|---|---|
-| predicados (`sgn`, `cross`) | aproximados, con `EPS` | **exactos** |
-| métrica (`abs`, `arg`, `unit`, `foot`) | correctos | **truncan en silencio** |
+| predicados (`sgn`, `cross`, `dot`) | con `EPS` | **exactos** |
+| métrica (`abs`, `arg`, `unit`, `foot`, `reflect`) | correctos | **truncan en silencio** |
 
-Con `T = ll`, `EPS = 1e-9` trunca a `0`, así que `sgn` se vuelve exacto — eso es deseable. Pero `abs({1,1})` devuelve `1` en lugar de $\sqrt{2}$, y `arg` devuelve `0` casi siempre.
+Con `T = ll`, `EPS = 1e-9` trunca a `0` y `sgn` se vuelve exacto — eso es deseable. Pero `abs({1,1})` devuelve `1` en vez de $\sqrt 2$, y `arg` devuelve `0` casi siempre.
 
-**Regla práctica:** si el problema trae coordenadas enteras y solo necesitás orientación, área o comparar distancias, usá `T = ll` y evitá `abs`/`arg`/`unit`. Si necesitás distancias o ángulos reales, dejá `T = db`.
+**Regla:** coordenadas enteras y solo orientación, área o comparar distancias → `T = ll`, sin usar `abs`/`arg`/`unit`. Distancias o ángulos reales → `T = db`.
 
-### Cuánto aguanta `db`
+### Hasta dónde aguanta `db`
 
-Medido con cross reales de magnitud $\le 4$ (el caso casi degenerado, que es el peor):
+Medido sobre el **peor caso real**: dos vectores casi paralelos cuyo `cross` verdadero vale entre 1 y 4, con coordenadas de magnitud $C$. Ahí es donde la cancelación se come el signo. 20.000 casos por celda, signo comparado contra `__int128`:
 
-| `db` | $C = 10^6$ | $C = 10^8$ | $C = 10^9$ | $C = 10^{12}$ |
-|---|---|---|---|---|
-| `long double` (64 bits de mantisa) | exacto | exacto | **exacto** | 62% mal |
-| `double` (53 bits) | exacto | 25% mal | **62% mal** | 62% mal |
+| $C$ | `long double` (64 bits de mantisa) | `double` (53 bits) |
+|---|---|---|
+| $10^7$ | 0% mal | 0% mal |
+| $10^8$ | **0% mal** | 2,6% mal |
+| $10^9$ | **0% mal** | 95,5% mal |
+| $10^{10}$ | 50,2% mal | 100% mal |
 
-`long double` tiene mantisa de 64 bits, así que un cross de enteros de hasta $\approx 9.2 \cdot 10^{18}$ es **exacto**. Con coordenadas de $10^9$ el producto llega a $4 \cdot 10^{18}$: entra.
+Buscando el umbral exacto por búsqueda binaria:
 
-> **No cambies `db` a `double`** si usás geometría. Tu `templateHeavy.cpp` dice *"or double if tight TL"*; con `double` los predicados se rompen desde coordenadas de $10^8$.
+| | mayor $C$ con el signo siempre correcto |
+|---|---|
+| `long double` | $\approx 4{,}3 \cdot 10^9$ |
+| `double` | $\approx 9{,}5 \cdot 10^7$ |
 
-Los fallos son siempre del tipo "cross real colapsa a 0" (un caso degenerado se lee como colineal), nunca signo invertido.
+> **No cambies `db` a `double` si usás geometría.** `templateHeavy.cpp` dice *"or double if tight TL"*; con `double` los predicados empiezan a fallar desde coordenadas de $10^8$, que es un rango de problema completamente normal.
+
+Los fallos son siempre del tipo "cross real colapsa a 0" — un caso casi degenerado se lee como colineal. Nunca signo invertido.
 
 ---
 
 ## `Point.h`
 
-> **Problema ancla:** [CSES — Point Location Test](https://cses.fi/problemset/task/2189) *(Easy)*. Es `cross` y nada más; si te sale, tenés la primitiva entendida.
-
 ### Operadores
 
 ```cpp
-P operator+(P, P);   P operator-(P, P);
-P operator*(P, T);   P operator*(T, P);   P operator/(P, T);
-P operator*(P, P);   P operator/(P, P);
-P& operator+=(P&, const P&);   P& operator-=(P&, const P&);
-P& operator*=(P&, const T&);   P& operator/=(P&, const T&);
-ostream& operator<<(ostream&, P);
+P  operator+(P l, P r);      P  operator-(P l, P r);
+P  operator*(P l, T r);      P  operator*(T l, P r);     P operator/(P l, T r);
+P  operator*(P l, P r);      P  operator/(P l, P r);      // complejos
+P& operator+=(P&, const P&); P& operator-=(P&, const P&);
+P& operator*=(P&, const T&); P& operator/=(P&, const T&);
 ```
 
-Suma, resta y escalado son los de vectores. Los dos interesantes son los de `P` con `P`:
+Suma y resta de vectores; escalado por un escalar (el escalar puede ir de cualquier lado).
 
-- **`a * b` es multiplicación de complejos**, no producto componente a componente. Si $a = (x_1,y_1)$ y $b = (x_2,y_2)$, entonces `a*b` $= (x_1x_2 - y_1y_2,\ x_1y_2 + x_2y_1)$. En módulo y argumento: $|ab| = |a||b|$ y $\arg(ab) = \arg a + \arg b$. O sea: **multiplicar rota y escala**.
-- **`a / b` es división de complejos**: $\arg(a/b) = \arg a - \arg b$.
+**`P * P` y `P / P` son multiplicación y división de complejos**, no producto componente a componente:
 
-Casos de uso recurrentes:
+- `a * b` **rota** `a` por el ángulo de `b` y **escala** por `|b|`.
+- `a / b` da el cociente: su ángulo es el **ángulo orientado** de `b` a `a`.
+
+**Restricciones**: `operator/(P,T)` con `r = 0` y `operator/(P,P)` con `r = (0,0)` dan `nan` · **Complejidad**: $O(1)$.
+
+### `sgn`, `sq`
 
 ```cpp
-P q = p * dir(ang);              // rotar p un angulo ang alrededor del origen
-P q = c + (p-c) * dir(ang);      // rotar p alrededor de c
-P q = p * perp(P(1,0));          // rotar 90 grados (equivale a perp(p))
-T ang = arg((a-c)/(b-c));        // el angulo orientado a-c-b, con signo
+int sgn(T a);    // -1, 0, 1 con tolerancia EPS
+T   sq(T a);     // a*a
 ```
 
-Ese último es el truco que hace que `reflect` y `foot` sean de una línea.
+`sgn` es **el único lugar donde entra `EPS`**. Todo lo que compare contra cero debería pasar por acá en vez de usar `== 0`.
 
-`operator<<` imprime `(x,y)`; sirve para depurar con `cout << p`.
+**Complejidad**: $O(1)$.
 
-### `sgn`
+### `abs2`, `abs`
 
 ```cpp
-int sgn(T a);
+T abs2(P p);   // x^2 + y^2
+T abs(P p);    // sqrt(abs2(p))
 ```
 
-Devuelve `-1`, `0` o `1` según el signo de `a`, tratando como cero todo lo que esté a menos de `EPS`. **Es el único lugar donde `EPS` entra en la librería.**
+**Para comparar distancias usá `abs2`**: evita la raíz y, con `T = ll`, es exacto.
 
-- Complejidad: $O(1)$.
-- Caso de uso: envolver todo cross o dot antes de comparar con cero. `sgn(cross(p,a,b)) > 0` en vez de `cross(p,a,b) > 0`.
+**Restricciones**: `abs` con `T = ll` trunca · **Aguanta**: `abs2` con coordenadas de $C$ llega a $2C^2$ · **Complejidad**: $O(1)$.
 
-> Con `T = ll` el `EPS` trunca a `0` y `sgn` queda exacto, que es lo que querés con enteros.
-
-### `sq`
+### `arg`, `dir`
 
 ```cpp
-T sq(T a);
+T arg(P p);     // atan2(p.s, p.f), rango (-pi, pi]
+P dir(T ang);   // (cos ang, sin ang), el unitario de ese angulo
 ```
 
-$a^2$. Existe para no repetir `a*a`.
+**Restricciones**: `arg({0,0})` devuelve `0` (no `nan`), pero el origen no tiene ángulo: tratalo aparte · **Tipo**: `db` · **Complejidad**: $O(1)$.
 
-- Complejidad: $O(1)$.
+> **Para ordenar por ángulo no uses `arg`**: usá [`angleCmp`](#anglecmp). Es más rápido y exacto.
 
-### `abs2` y `abs`
+### `conj`, `perp`, `unit`
 
 ```cpp
-T abs2(P p);    // |p|^2
-T abs(P p);     // |p|
+P conj(P p);   // (x, -y)        refleja sobre el eje x
+P perp(P p);   // (-y, x)        rota 90 grados antihorario
+P unit(P p);   // p / abs(p)     mismo angulo, largo 1
 ```
 
-`abs2` da el módulo **al cuadrado**; `abs` el módulo, con una raíz.
+**Restricciones**: **`unit({0,0})` devuelve `(nan, nan)`** — divide por cero sin avisar · **Tipo**: `unit` pide `db` · **Complejidad**: $O(1)$.
 
-- Complejidad: $O(1)$ las dos.
-- **Preferí `abs2` siempre que puedas.** Comparar $|a|^2 < |b|^2$ equivale a $|a| < |b|$, evita la raíz, y con enteros es **exacto**. Por eso `HullDiameter` devuelve el diámetro al cuadrado.
-- Caso de uso: ordenar por distancia, buscar el punto más cercano o más lejano, comparar radios.
-
-> Con `T = ll`, `abs` trunca: `abs({1,1})` da `1`.
-
-### `arg`
+### `dot`
 
 ```cpp
-T arg(P p);
+T dot(P a, P b);           // producto escalar
+T dot(P p, P a, P b);      // dot(a-p, b-p): el angulo EN p
 ```
 
-El ángulo de `p` respecto del eje $x$ positivo, vía `atan2`, en el rango $(-\pi, \pi]$.
+Responde *"¿hacia adelante o hacia atrás?"*:
 
-- Complejidad: $O(1)$.
-- Casos de uso: barridos angulares donde hace falta el ángulo en sí (no solo comparar), y medir ángulos con `arg((a-c)/(b-c))`.
+![el signo del dot](../img/dot-signo.svg)
 
-> **Para ordenar por ángulo no uses `arg`: usá `angleCmp`.** Es más rápido y no pierde precisión. El header de `AngleCmp.h` lo avisa explícitamente.
->
-> Con `T = ll` devuelve `0` casi siempre.
-
-### `conj`
-
-```cpp
-P conj(P p);     // (x, -y)
-```
-
-El conjugado complejo: espeja respecto del eje $x$.
-
-- Complejidad: $O(1)$.
-- Caso de uso: casi siempre es interno (`operator/`, `reflect`, `ccCenter`). Suelto sirve para espejar sobre el eje $x$.
-
-### `perp`
-
-```cpp
-P perp(P p);     // (-y, x)
-```
-
-Rota `p` 90° en sentido antihorario.
-
-- Complejidad: $O(1)$.
-- Casos de uso: obtener la **normal** de una recta o segmento; construir la dirección de un semiplano; `perp(l.f - l.s)` es el vector normal a la recta `l`.
-
-### `dir`
-
-```cpp
-P dir(T ang);    // (cos ang, sin ang)
-```
-
-El vector unitario que apunta en la dirección `ang`.
-
-- Complejidad: $O(1)$.
-- Caso de uso: rotar. `p * dir(ang)` rota `p` un ángulo `ang`. También `dir(PI/2)` es la rotación de 90°, equivalente a `perp`.
-
-### `unit`
-
-```cpp
-P unit(const P& p);
-```
-
-Normaliza: devuelve `p` con módulo 1 y la misma dirección.
-
-- Complejidad: $O(1)$.
-- **Precondición: `p` no es el origen** (si no, divide por cero).
-- Caso de uso: moverse una distancia dada en una dirección: `a + unit(b-a)*d`.
-
-### `dot` (dos formas)
-
-```cpp
-T dot(const P& a, const P& b);                   // a . b
-T dot(const P& p, const P& a, const P& b);       // (a-p) . (b-p)
-```
-
-Producto escalar. La forma de tres argumentos lo mide **en el vértice `p`**.
-
-![signo del dot según el ángulo](../img/dot-signo.svg)
-
-- Complejidad: $O(1)$.
-- El signo dice el ángulo: $>0$ agudo, $0$ perpendicular, $<0$ obtuso.
-
-Mientras el `cross` contesta *"¿de qué lado?"*, el `dot` contesta *"¿hacia adelante o hacia atrás?"*. Son complementarios: con los dos juntos ubicás un punto respecto de una dirección sin usar ni una raíz ni un ángulo.
-- Casos de uso:
-  - Proyectar: la proyección de `a` sobre `b` tiene longitud `dot(a,b)/abs(b)`.
-  - Decidir si un punto cae "antes" o "después" de un extremo de segmento — es exactamente lo que hace `segDist`.
-  - Detectar perpendicularidad: `sgn(dot(a,b)) == 0`.
-
-### `cross` (dos formas), la función más importante
-
-```cpp
-T cross(const P& a, const P& b);                 // a x b
-T cross(const P& p, const P& a, const P& b);     // (a-p) x (b-p)
-```
-
-El producto vectorial en 2D: la componente $z$ del producto en 3D. Es un escalar.
-
-- Complejidad: $O(1)$.
-- **La forma de tres argumentos es el predicado de orientación**, y es la base de casi toda la geometría computacional:
-
-![orientación según el signo del cross](../img/cross-orientacion.svg)
-
-| `sgn(cross(p,a,b))` | significado |
+| `sgn(dot(p,a,b))` | el ángulo en `p` |
 |---|---|
-| `> 0` | `p → a → b` gira a la **izquierda** (antihorario) |
-| `== 0` | los tres son **colineales** |
-| `< 0` | gira a la **derecha** (horario) |
+| `> 0` | agudo |
+| `0` | recto |
+| `< 0` | obtuso |
 
-La intuición: el cross mide el **área con signo** del paralelogramo que forman los dos vectores. Si `b` está a la izquierda de la dirección `p → a`, el área sale positiva; si está a la derecha, negativa; si está justo encima de la recta, cero. Ese único número contesta las tres preguntas de una vez, y por eso aparece en todos lados.
+**Aguanta**: igual que `cross`, $\approx 4{,}3 \cdot 10^9$ con `long double` · **Complejidad**: $O(1)$.
 
-- $|cross(p,a,b)|$ es el **área del paralelogramo** `p,a,b`; la mitad es el área del triángulo.
-- Casos de uso: convex hull, punto en polígono, intersección de segmentos, área, ordenar por ángulo, decidir de qué lado de una recta cae un punto. Prácticamente todo.
-
-> La forma de tres argumentos **resta primero** y después multiplica. Eso es lo que la hace numéricamente robusta: los productos se calculan sobre las diferencias, que son chicas, no sobre las coordenadas absolutas.
-
-### `reflect`
+### `cross`
 
 ```cpp
-P reflect(const P& p, const Line& l);
+T cross(P a, P b);         // a.x*b.y - a.y*b.x
+T cross(P p, P a, P b);    // cross(a-p, b-p): giro p -> a -> b
 ```
 
-Espeja `p` respecto de la **recta infinita** que pasa por `l.f` y `l.s`.
+**La función más importante de la librería.** Es el **área con signo** del paralelogramo, y responde *"¿de qué lado?"*:
 
-- Complejidad: $O(1)$.
-- **Precondición: `l.f != l.s`.**
-- Casos de uso: problemas de espejos y rebotes (la trayectoria de una pelota que rebota en una pared se endereza reflejando); minimizar $|PA| + |PB|$ con $P$ sobre una recta (se refleja uno de los dos puntos y se une en línea recta).
+![el signo del cross da la orientación](../img/cross-orientacion.svg)
 
-### `foot`
+| `sgn(cross(p,a,b))` | significa |
+|---|---|
+| `> 0` | giro **antihorario**: `b` a la izquierda de `p→a` |
+| `0` | **colineales** |
+| `< 0` | giro **horario**: `b` a la derecha |
+
+También: $|\mathrm{cross}(p,a,b)|$ es **el doble del área** del triángulo `pab`.
+
+**Aguanta**: con `long double`, exacto hasta $C \approx 4{,}3 \cdot 10^9$; con `double`, hasta $9{,}5 \cdot 10^7$ (ver [arriba](#hasta-dónde-aguanta-db)) · **Complejidad**: $O(1)$.
+
+### `reflect`, `foot`
 
 ```cpp
-P foot(const P& p, const Line& l);
+P reflect(P p, Line l);   // espejo de p respecto de la RECTA l
+P foot(P p, Line l);      // pie de la perpendicular: el punto de l mas cercano a p
 ```
 
-El pie de la perpendicular: la **proyección** de `p` sobre la recta infinita `l`. Es el punto de `l` más cercano a `p`.
+`foot` es el **punto medio** entre `p` y `reflect(p, l)` — por eso el código es literalmente `(p + reflect(p,l)) / 2`.
 
-![foot y reflect sobre una recta](../img/foot-reflect.svg)
+![foot y reflect](../img/foot-reflect.svg)
 
-Los dos salen de la misma cuenta: `reflect` espeja `p` del otro lado de la recta, y `foot` es el **punto medio** entre `p` y su reflejo. De ahí que el código de `foot` sea literalmente `(p + reflect(p,l)) / 2`.
-
-- Complejidad: $O(1)$.
-- **Precondición: `l.f != l.s`.**
-- Casos de uso: distancia punto-recta (aunque para eso está `lineDist`); intersección círculo-recta (`isect(Circ,Line)` lo usa); proyectar puntos sobre una dirección.
+**Restricciones**: `l` es una **recta infinita**, no un segmento — `foot` puede caer fuera de `[l.f, l.s]`. **`l.f != l.s`**: con una recta nula da `(nan, nan)` sin avisar · **Tipo**: `db` · **Complejidad**: $O(1)$.
 
 ### `onSeg`
 
 ```cpp
-bool onSeg(const P& p, const Line& l);
+bool onSeg(P p, Line l);
 ```
 
-Dice si `p` está sobre el **segmento** `l`, extremos incluidos.
+¿`p` está sobre el **segmento** `l`? Usa `sgn`, así que es tolerante a `EPS`.
 
-- Complejidad: $O(1)$.
-- Usa `sgn`, o sea **tolera `EPS`**: un punto a $10^{-12}$ del segmento cuenta como "sobre el segmento".
-- Funciona también con `l` degenerado (los dos extremos iguales): ahí pregunta si `p` coincide con ese punto.
-- Casos de uso: `segIsect` e `inPoly` lo usan para detectar el borde. Suelto sirve para "¿este punto está sobre alguna de estas paredes?".
+**Restricciones**: admite segmento degenerado (`l.f == l.s`), y ahí da `true` solo si `p` es ese punto · **Complejidad**: $O(1)$.
+
+```cpp
+onSeg({1,1}, {{0,0},{2,2}})  ->  true
+onSeg({0,0}, {{0,0},{0,0}})  ->  true      // segmento degenerado, p es el punto
+onSeg({1,1}, {{0,0},{0,0}})  ->  false
+```
 
 ---
 
@@ -358,80 +230,56 @@ Dice si `p` está sobre el **segmento** `l`, extremos incluidos.
 
 **Requiere:** `Point.h`
 
-> **Problema ancla:** [Library Checker — Sort Points by Argument](https://judge.yosupo.jp/problem/sort_points_by_argument) *(Easy)*. Es literalmente este comparador.
-
 ### `half`
 
 ```cpp
 int half(P x);
 ```
 
-Clasifica `x` en tres grupos, que es el paso que hace posible ordenar por ángulo sin `atan2`:
+Parte el plano en dos mitades de exactamente $\pi$ cada una, que es lo que hace posible ordenar por ángulo sin `atan2`.
 
-![los dos semiplanos de half y el orden que producen](../img/anglecmp-half.svg)
+![los dos semiplanos de half](../img/anglecmp-half.svg)
 
-| valor | qué cae ahí | rango de ángulo |
-|---|---|---|
-| `-1` | semiplano inferior y eje $x$ **positivo** | $(-\pi, 0]$ |
-| `0` | el origen | — |
-| `1` | semiplano superior y eje $x$ **negativo** | $(0, \pi]$ |
+| valor | qué cae ahí |
+|---|---|
+| `-1` | semiplano inferior **y el eje $x$ positivo** |
+| `0` | el origen |
+| `1` | semiplano superior **y el eje $x$ negativo** |
 
-- Complejidad: $O(1)$.
-- Cada grupo abarca un rango de exactamente $\pi$, y **dentro de un rango de $\pi$ el `cross` ordena correctamente por ángulo**. De ahí sale `angleCmp`.
+**Complejidad**: $O(1)$.
 
-> **No lo declares `bool` por error.** El header lo avisa: devuelve tres valores, y con `bool` el orden sale mal en silencio.
+```cpp
+half({5,0})   ->  -1      // eje x positivo va ABAJO
+half({-5,0})  ->   1      // eje x negativo va ARRIBA
+half({0,0})   ->   0
+```
+
+> **No lo declares `bool`.** Devuelve tres valores; con `bool` el orden sale mal en silencio. El header lo avisa.
 
 ### `angleCmp`
 
 ```cpp
 bool angleCmp(P a, P b);
-```
-
-Comparador que ordena puntos por ángulo en sentido antihorario alrededor del origen, con el **mismo orden que `atan2`**: el rango es $(-\pi, \pi]$, así que los puntos del eje $x$ negativo quedan **al final**.
-
-```cpp
 vP v; sort(all(v), angleCmp);
 ```
 
-- Complejidad: $O(1)$ por comparación, $O(n \log n)$ el sort.
-- Equivale a `sort(all(v), [](P a, P b){ return atan2(a.s,a.f) < atan2(b.s,b.f); })`, pero sin `atan2`.
-- **Por qué no usar `atan2` directo:** es más lento y pierde precisión; el header dice *"no uses atan2, pasan cosas raras!"* con dos submissions de Codeforces como evidencia.
-- Casos de uso: barrido angular (contar pares visibles, rotar una recta alrededor de un punto), ordenar vecinos alrededor de un vértice, intersección de semiplanos.
+Ordena por ángulo antihorario alrededor del **origen**, con el mismo orden que `atan2`: rango $(-\pi, \pi]$, así que el eje $x$ negativo queda **al final**.
 
-> El origen (`half == 0`) queda en un grupo aparte. Si tu entrada puede traer el punto $(0,0)$, saltealo antes de ordenar: no tiene ángulo definido.
+**Restricciones**: **sacá el origen antes de ordenar** — `half({0,0})` da `0`, que lo mete en un grupo propio entre los otros dos y el resultado no tiene sentido · **Tipo**: `ll` o `db`, los dos; solo usa `sgn` y `cross` · **Complejidad**: $O(1)$ por comparación, $O(n \log n)$ el sort.
 
-<details>
-<summary><b>Ejemplo trazado: ordenar las 8 direcciones del compás</b></summary>
+```cpp
+// 8 direcciones, desordenadas
+{(-1,-1) (0,1) (1,-1) (-1,0) (1,0) (0,-1) (-1,1) (1,1)}
+  sort(angleCmp) ->
+{(-1,-1) (0,-1) (1,-1) (1,0) (1,1) (0,1) (-1,1) (-1,0)}
+   -135    -90    -45     0    45    90    135    180      <- atan2, creciente
 
-Entrada, deliberadamente desordenada: `(-1,-1) (0,1) (1,-1) (-1,0) (1,0) (0,-1) (-1,1) (1,1)`.
-
-**Paso 1 — `half` de cada uno.** Esto es lo único que decide el grupo grande:
-
-| punto | `half` | por qué |
-|---|---:|---|
-| `(-1,-1)` | −1 | y < 0 |
-| `(1,-1)` | −1 | y < 0 |
-| `(0,-1)` | −1 | y < 0 |
-| `(1,0)` | **−1** | y = 0, así que mira x: -sgn(1) = -1 |
-| `(0,1)` | 1 | y > 0 |
-| `(-1,1)` | 1 | y > 0 |
-| `(1,1)` | 1 | y > 0 |
-| `(-1,0)` | **1** | y = 0, así que mira x: -sgn(-1) = 1 |
-
-Fijate en los dos casos del eje x: **`(1,0)` cae en el grupo de abajo y `(-1,0)` en el de arriba.** Eso no es un detalle estético, es lo que hace que el rango sea (-pi, pi] como `atan2` y no [0, 2pi).
-
-**Paso 2 — dentro de cada grupo decide el `cross`.** Los de `half = -1` primero, los de `half = 1` después, y adentro por giro antihorario.
-
-**Resultado:**
-
-```
-(-1,-1)  (0,-1)  (1,-1)  (1,0)  (1,1)  (0,1)  (-1,1)  (-1,0)
-  -135°    -90°    -45°     0°    45°    90°    135°    180°
+// con el origen adentro, el resultado NO sirve:
+{(1,0) (0,0) (-1,0) (0,-1)}  sort(angleCmp) ->  {(0,-1) (1,0) (0,0) (-1,0)}
+                                                            ^^^^^ en el medio
 ```
 
-Los ángulos quedan **estrictamente crecientes**, y `(-1,0)` queda último con **+180°**, nunca −180°. Ese es exactamente el orden de `atan2`, obtenido sin una sola llamada a `atan2`.
-
-</details>
+> **No uses `atan2` directo.** Es más lento y pierde precisión; el header trae dos submissions de Codeforces como evidencia.
 
 ---
 
@@ -439,39 +287,37 @@ Los ángulos quedan **estrictamente crecientes**, y `(-1,0)` queda último con *
 
 **Requiere:** `Point.h`
 
-> **Problema ancla:** [Kattis — Segment Distance](https://open.kattis.com/problems/segmentdistance) *(Easy)*.
-
 ### `lineDist`
 
 ```cpp
-T lineDist(const P& p, const Line& l);
+T lineDist(P p, Line l);
 ```
 
-Distancia de `p` a la **recta infinita** que pasa por `l.f` y `l.s`.
+Distancia de `p` a la **recta infinita** por `l.f` y `l.s`.
 
-- Complejidad: $O(1)$.
-- **Precondición: `l.f != l.s`** (divide por `abs(l.f-l.s)`).
-- Implementación: $|cross| / |AB|$, o sea el área del paralelogramo dividida por la base.
-- Casos de uso: ancho de una franja; distancia de un punto a una recta de soporte; verificar tangencia (`sgn(lineDist(c, l) - r) == 0`).
+**Restricciones**: **`l.f != l.s`** — con recta nula devuelve `nan` sin avisar · **Tipo**: `db` · **Complejidad**: $O(1)$.
 
 ### `segDist`
 
 ```cpp
-T segDist(const P& p, const Line& l);
+T segDist(P p, Line l);
 ```
 
-Distancia de `p` al **segmento** `l`, que no es lo mismo: si la proyección cae fuera del segmento, la distancia es al extremo más cercano.
+Distancia de `p` al **segmento** `l`. Considera tres casos: la proyección cae antes del extremo, después, o adentro.
 
 ![los tres casos de segDist](../img/segdist-casos.svg)
 
-- Complejidad: $O(1)$.
-- Resuelve los tres casos con el signo de `dot`: proyección antes de `l.f`, después de `l.s`, o adentro.
+**Restricciones**: **admite segmento degenerado** — ahí devuelve la distancia al punto, no `nan` · **Tipo**: `db` · **Complejidad**: $O(1)$.
 
-Es el error clásico de principiante: usar `lineDist` cuando el problema habla de un **segmento**. En los dos casos de los extremos la recta infinita da una distancia **menor** que la real, y el resultado sale mal sin que nada avise.
-- Funciona con `l` degenerado: devuelve la distancia al punto.
-- Casos de uso: distancia entre un punto y una pared finita; distancia entre dos segmentos (es el mínimo de cuatro `segDist`, si no se cruzan); el radio mínimo de un círculo centrado en `p` que toca el segmento.
-
-**Verificación:** 60.000 casos contra una fórmula independiente, con coordenadas hasta $10^9$. Peor error relativo: $4.3 \cdot 10^{-16}$.
+> **El error clásico: usar `lineDist` donde va `segDist`.** Da un valor **menor** y nada avisa.
+>
+> ```cpp
+> lineDist({5,0}, {{0,0},{1,0}})  ->  0     // la recta y=0 pasa por (5,0)
+> segDist ({5,0}, {{0,0},{1,0}})  ->  4     // el segmento termina en (1,0)
+>
+> lineDist({0,1}, {{0,0},{0,0}})  ->  nan   // recta nula
+> segDist ({0,1}, {{0,0},{0,0}})  ->  1     // segmento nulo: distancia al punto
+> ```
 
 ---
 
@@ -479,144 +325,133 @@ Es el error clásico de principiante: usar `lineDist` cuando el problema habla d
 
 **Requiere:** `Point.h`
 
-> **Problema ancla:** [CSES — Line Segment Intersection](https://cses.fi/problemset/task/2190) *(Medium)*, o [Kattis — Segment Intersection](https://open.kattis.com/problems/segmentintersection) *(Easy)* si querés además el punto de corte.
-
-Tres funciones, de la más permisiva a la más completa. La que casi siempre querés es **`segIsect`**.
+![los casos de intersección de segmentos](../img/segisect-casos.svg)
 
 ### `lineIsect`
 
 ```cpp
-vP lineIsect(const Line& a, const Line& b);
+vP lineIsect(Line a, Line b);
 ```
 
-Intersección de dos **rectas infinitas**. Devuelve:
+Corte de dos **rectas infinitas**.
 
-| resultado | significado |
+| devuelve | cuándo |
 |---|---|
-| 1 punto | se cortan ahí |
-| 2 puntos (`{b.f, b.s}`) | son la **misma recta** |
-| vacío | son **paralelas** y distintas |
+| `{punto}` | se cortan en uno solo |
+| `{b.f, b.s}` | son **la misma recta** (infinitos puntos) |
+| `{}` | paralelas distintas |
 
-- Complejidad: $O(1)$.
-- Casos de uso: circuncentro a mano (intersección de dos mediatrices); centro de una homotecia; cerrar un polígono recortado por semiplanos.
+**Restricciones**: `a.f != a.s` y `b.f != b.s` · **Tipo**: `db` (divide) · **Complejidad**: $O(1)$.
 
-> Usa `sgn` para decidir paralelismo, no `==`. Con rectas **casi** paralelas devuelve vacío, que es lo correcto; antes devolvía un punto basura en $-1.02 \cdot 10^{18}$.
+```cpp
+lineIsect({{0,0},{2,2}}, {{0,2},{2,0}})  ->  {(1,1)}
+lineIsect({{0,0},{1,0}}, {{0,1},{1,1}})  ->  {}                 // paralelas
+lineIsect({{0,0},{1,0}}, {{2,0},{3,0}})  ->  {(2,0), (3,0)}     // misma recta
+```
+
+> La comparación interna va con `sgn`, no con `==`: con `T = db` dos cross nunca son exactamente iguales.
 
 ### `strictIsect`
 
 ```cpp
-vP strictIsect(const Line& a, const Line& b);
+vP strictIsect(Line a, Line b);
 ```
 
-Devuelve el punto de corte solo si está en el **interior de los dos segmentos** — un cruce propio. Si se tocan en un extremo, o si son colineales, devuelve vacío.
+El punto donde los dos **segmentos se cruzan de verdad**, en el **interior** de ambos. Tocarse en una punta **no** cuenta.
 
-- Complejidad: $O(1)$.
-- Casos de uso: contar cruces propios en un conjunto de segmentos; detectar si un polígono es simple (ninguna pareja de lados no adyacentes se cruza propiamente).
+**Restricciones**: igual que `lineIsect` · **Complejidad**: $O(1)$.
+
+```cpp
+strictIsect({{0,0},{2,2}}, {{0,2},{2,0}})  ->  {(1,1)}
+strictIsect({{0,0},{1,0}}, {{1,0},{2,0}})  ->  {}       // punta con punta: NO cuenta
+```
 
 ### `segIsect`
 
 ```cpp
-vP segIsect(const Line& a, const Line& b);
+vP segIsect(Line a, Line b);
 ```
 
-La intersección completa de dos **segmentos**, con extremos y solapamientos incluidos. Los segmentos pueden ser degenerados (un punto).
+Intersección de dos **segmentos**, incluyendo puntas y solapamientos. **Admite segmentos degenerados.**
 
-![los cuatro casos de segIsect](../img/segisect-casos.svg)
-
-| resultado | significado |
+| devuelve | cuándo |
 |---|---|
-| vacío | no se tocan |
-| 1 punto | se cortan, o se tocan en un extremo |
-| 2 puntos | son colineales y **se solapan** en un tramo; devuelve los dos extremos del tramo |
+| `{}` | no se tocan |
+| `{punto}` | se cruzan, o se tocan en una punta |
+| `{p, q}` | se **solapan** en un tramo (sus dos extremos) |
 
-- Complejidad: $O(1)$ a efectos prácticos (usa un `set` de hasta 4 puntos).
-- Casos de uso: lo que casi siempre pide un problema de "¿se cortan estos dos segmentos?"; unir tramos solapados; detectar si un camino poligonal se auto-intersecta.
-
-**Verificación:** 140.000 casos contra una referencia de `cross` exacto en `ll`, con coordenadas de $2$ a $10^9$, incluyendo degeneración fuerte ($C=2$, $C=3$) y segmentos-punto. 0 diferencias.
-
----
-
-## Casos de uso recurrentes, de punta a punta
-
-### ¿De qué lado de la recta cae el punto?
+**Restricciones**: ninguna; `a` y `b` pueden ser degenerados · **Tipo**: `db` · **Complejidad**: $O(1)$.
 
 ```cpp
-int lado = sgn(cross(a, b, p));   // >0 izquierda, 0 sobre la recta, <0 derecha
-```
-
-### Área de un triángulo
-
-```cpp
-T area2 = abs(cross(a, b, c));    // el DOBLE del area; con enteros queda exacta
-```
-
-Trabajar con el doble del área evita dividir y mantiene todo entero.
-
-### ¿Están alineados?
-
-```cpp
-bool alineados = sgn(cross(a, b, c)) == 0;
-```
-
-### Ángulo orientado en un vértice
-
-```cpp
-T ang = arg((a - c) / (b - c));   // angulo a-c-b, con signo, en (-pi, pi]
-```
-
-### Rotar un punto alrededor de otro
-
-```cpp
-P rotado = c + (p - c) * dir(ang);
-```
-
-### Ordenar puntos alrededor de un centro
-
-```cpp
-each(p, v) p -= centro;
-sort(all(v), angleCmp);
-each(p, v) p += centro;
-```
-
-### El punto más cercano de un segmento
-
-```cpp
-P q = foot(p, l);
-if (!onSeg(q, l)) q = (abs2(p - l.f) < abs2(p - l.s)) ? l.f : l.s;
-```
-
-### Distancia entre dos segmentos
-
-```cpp
-T d = sz(segIsect(a, b)) ? 0 : min({segDist(a.f, b), segDist(a.s, b),
-                                    segDist(b.f, a), segDist(b.s, a)});
+segIsect({{0,0},{1,0}}, {{2,0},{3,0}})  ->  {}                 // disjuntos
+segIsect({{0,0},{1,0}}, {{1,0},{2,0}})  ->  {(1,0)}            // punta con punta
+segIsect({{0,0},{3,0}}, {{1,0},{2,0}})  ->  {(1,0), (2,0)}     // solapados
 ```
 
 ---
 
-## Problemas
+## Casos degenerados
 
-| fuente | problema | dificultad | con qué |
-|---|---|---|---|
-| CSES | [Point Location Test](https://cses.fi/problemset/task/2189) | Easy | `cross` |
-| Library Checker | [Sort Points by Argument](https://judge.yosupo.jp/problem/sort_points_by_argument) | Easy | `angleCmp` |
-| Kattis | [Segment Distance](https://open.kattis.com/problems/segmentdistance) | Easy | `segDist` |
-| Kattis | [Segment Intersection](https://open.kattis.com/problems/segmentintersection) | Easy | `segIsect` |
-| CSES | [Line Segment Intersection](https://cses.fi/problemset/task/2190) | Medium | `cross`, sin el punto de corte |
-| LeetCode | [Maximum Number of Visible Points](https://leetcode.com/problems/maximum-number-of-visible-points/description/) | Medium | `angleCmp` + ventana deslizante |
-| CF | [Cut Length](https://codeforces.com/contest/598/problem/F) | Hard | `lineIsect` sobre cada arista |
+Todas las salidas son de correr el código.
 
-Lista tomada de [USACO Guide — Geometry Primitives](https://usaco.guide/plat/geo-pri).
+| llamada | resultado | |
+|---|---|---|
+| `abs({0,0})` | `0` | ok |
+| `arg({0,0})` | `0` | ok, pero el origen no tiene ángulo |
+| `unit({0,0})` | **`(nan, nan)`** | silencioso |
+| `foot(p, {q,q})` | **`(nan, nan)`** | silencioso |
+| `lineDist(p, {q,q})` | **`nan`** | silencioso |
+| `segDist(p, {q,q})` | la distancia a `q` | **no** es nan |
+| `onSeg(q, {q,q})` | `true` | ok |
+| `onSeg(p, {q,q})` con `p != q` | `false` | ok |
+| `sort(angleCmp)` con el origen adentro | **orden sin sentido** | silencioso |
+| `lineIsect` de la misma recta | `{b.f, b.s}` | 2 puntos, no 1 |
+| `segIsect` de solapados | `{p, q}` | 2 puntos, no 1 |
 
----
+> **Ningún método de esta carpeta tiene `assert`.** Todo lo que sale mal sale como `nan` o como un valor plausible pero incorrecto. Si tu entrada puede traer puntos repetidos, chequealo vos.
+
+## Ejemplo completo
+
+Clasificar un punto contra un segmento, con las salidas intermedias:
+
+```cpp
+P a = {0,0}, b = {4,0}, p = {6,3};
+
+cout << sgn(cross(a,b,p)) << "\n";   //  1      p esta a la IZQUIERDA de a->b
+cout << cross(a,b,p) << "\n";        //  12     = 2 * area del triangulo abp
+cout << dot(b,a,p) << "\n";          // -8      el angulo EN b
+cout << sgn(dot(b,a,p)) << "\n";     // -1      OBTUSO en b
+                                     //         => la proyeccion cae PASADO b
+
+cout << lineDist(p, {a,b}) << "\n";  //  3      la recta y = 0
+cout << segDist (p, {a,b}) << "\n";  //  3.6056 = |p - b|, porque cae pasado b
+
+P f = foot(p, {a,b});
+cout << f << "\n";                   //  (6,0)  <- FUERA del segmento [a,b]
+cout << onSeg(f, {a,b}) << "\n";     //  0      por eso segDist != lineDist
+
+P r = reflect(p, {a,b});
+cout << r << "\n";                   //  (6,-3)
+cout << (p + r) / 2 << "\n";         //  (6,0)  el punto medio ES foot
+```
+
+Los mismos degenerados, en la misma rutina:
+
+```cpp
+Line nulo = {{2,2},{2,2}};
+cout << lineDist(p, nulo) << "\n";   //  nan       <- sin aviso
+cout << segDist (p, nulo) << "\n";   //  4.1231    = |p - (2,2)|, correcto
+cout << foot(p, nulo) << "\n";       //  (nan,nan) <- sin aviso
+```
 
 ## Verificación
 
 | rutina | casos | contra |
 |---|---|---|
 | `segIsect`, `strictIsect`, `onSeg` | 140.000 | `cross` exacto en `ll`, $C$ de 2 a $10^9$ |
-| `segDist`, `lineDist` | 60.000 | fórmula independiente, error $\le 4.3 \cdot 10^{-16}$ |
+| `segDist`, `lineDist` | 60.000 | fórmula independiente, error $\le 4{,}3 \cdot 10^{-16}$ |
 | `sgn(cross(...))` | 38.000 | `__int128`, casos casi degenerados |
 | `angleCmp` | — | orden monótono por `atan2` verificado |
+| umbral de `long double` y `double` | 20.000 por celda + búsqueda binaria | signo contra `__int128` |
 
-Todos los headers compilan con las flags del `Makefile` (`-Wall -Wextra -Wconversion -Wshadow -Wfloat-equal -D_GLIBCXX_DEBUG`) sin warnings.
+Todos compilan con las flags del `Makefile` (`-Wall -Wextra -Wconversion -Wshadow -Wfloat-equal -D_GLIBCXX_DEBUG`) sin warnings.

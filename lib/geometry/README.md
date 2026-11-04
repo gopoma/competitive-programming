@@ -2,7 +2,9 @@
 
 21 headers, 4 manuales, [19 figuras](img). Compilan juntos sin warnings; ~910.000 casos verificados.
 
-[Headers](#headers) · [Dependencias](#dependencias) · [`T`: `db` o `ll`](#t-db-o-ll) · [Cómo se pega](#cómo-se-pega)
+Los manuales documentan **solo los métodos**: qué hace cada uno, sus restricciones, hasta dónde aguanta y su complejidad. Dónde practicar está en **[PROBLEMS.md](PROBLEMS.md)**.
+
+[Headers](#headers) · [Dependencias](#dependencias) · [`T`: `db` o `ll`](#t-db-o-ll) · [Cómo se pega](#cómo-se-pega) · [Problemas](PROBLEMS.md)
 
 | directorio | qué cubre | headers |
 |---|---|---:|
@@ -77,7 +79,7 @@ Todos piden `Point.h` y nada más, salvo:
 
 Coordenadas enteras y solo orientación, área o comparar distancias → `ll`. Distancias o ángulos reales → `db`.
 
-> **Nunca `double`.** `long double` hace exacto el `cross` hasta $10^9$; `double` falla desde $10^8$. — [detalle](Primitives/README.md#cuánto-aguanta-db)
+> **Nunca `double`.** `long double` hace exacto el `cross` hasta $10^9$; `double` falla desde $10^8$. — [detalle](Primitives/README.md#hasta-dónde-aguanta-db)
 
 ## Cómo se pega
 
@@ -87,4 +89,4 @@ Coordenadas enteras y solo orientación, área o comparar distancias → `ll`. D
 
 ---
 
-Choques de nombres → [Misc](Misc/README.md#tres-choques-de-nombres-todos-verificados) · Verificación por rutina → final de cada manual · Lo que quedó afuera de cp-notebook → [Polygons](Polygons/README.md#lo-que-no-está)
+Choques de nombres → [Misc](Misc/README.md#choques-de-nombres) · Verificación por rutina → final de cada manual · Lo que quedó afuera de cp-notebook → [Polygons](Polygons/README.md#lo-que-no-está)

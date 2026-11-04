@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 190" width="560" height="190" font-family="ui-sans-serif,system-ui,-apple-system,sans-serif">
+<style>
+  .tx{fill:#334155;font-size:13px;font-weight:600}
+  .mn{fill:#64748b;font-size:11px}
+  .ci{fill:none;stroke:#2563eb;stroke-width:2}
+  .ln{stroke:#dc2626;stroke-width:2}
+  @media (prefers-color-scheme:dark){
+    .tx{fill:#c9d1d9}.mn{fill:#8b949e}.ci{stroke:#58a6ff}.ln{stroke:#f85149}
+  }
+</style>
+
+<!-- caso 1: secante, dos puntos distintos -->
+<circle class="ci" cx="90" cy="80" r="42"/>
+<line class="ln" x1="20" y1="68" x2="160" y2="68"/>
+<circle cx="50" cy="68" r="4.5" fill="#059669"/>
+<circle cx="130" cy="68" r="4.5" fill="#059669"/>
+<text class="tx" x="90" y="152" text-anchor="middle">secante</text>
+<text class="mn" x="90" y="170" text-anchor="middle">2 puntos distintos</text>
+
+<!-- caso 2: tangente, el mismo punto dos veces -->
+<circle class="ci" cx="280" cy="80" r="42"/>
+<line class="ln" x1="210" y1="38" x2="350" y2="38"/>
+<circle cx="280" cy="38" r="4.5" fill="#d97706"/>
+<circle cx="280" cy="38" r="8.5" fill="none" stroke="#d97706" stroke-width="1.5"/>
+<text class="tx" x="280" y="152" text-anchor="middle">tangente</text>
+<text class="mn" x="280" y="170" text-anchor="middle">el MISMO punto, repetido</text>
+
+<!-- caso 3: no toca -->
+<circle class="ci" cx="470" cy="80" r="42"/>
+<line class="ln" x1="400" y1="20" x2="540" y2="20"/>
+<text class="tx" x="470" y="152" text-anchor="middle">no toca</text>
+<text class="mn" x="470" y="170" text-anchor="middle">devuelve vacio</text>
+</svg>
