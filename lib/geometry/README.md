@@ -1,6 +1,6 @@
 # Geometría
 
-21 headers, 4 manuales, [19 figuras](img). Compilan juntos sin warnings; ~910.000 casos verificados.
+21 headers, 4 manuales, [23 figuras](img). Compilan juntos sin warnings; ~1.280.000 casos verificados.
 
 Los manuales documentan **solo los métodos**: qué hace cada uno, sus restricciones, hasta dónde aguanta y su complejidad. Dónde practicar está en **[PROBLEMS.md](PROBLEMS.md)**.
 
