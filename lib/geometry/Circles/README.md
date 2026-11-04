@@ -176,13 +176,14 @@ P tangent(P x, Circ y, int t = 0);
 
 El punto donde la tangente desde `x` toca a `y`. `t = 0` y `t = 1` son los dos puntos posibles.
 
-**Restricciones**: **`x` tiene que estar fuera del círculo.** Con `x` adentro devuelve `(nan, nan)` **sin avisar** · **Tipo**: `db` · **Aguanta**: **sobre el borde solo con entrada exacta.** Con `x` *calculado* sobre el borde, el redondeo lo deja apenas adentro y `sqrt(d²−r²)` da `nan`: **medido 17–24% de `nan`, a cualquier escala** — al header le falta un `max(…, 0)` · **Complejidad**: $O(1)$.
+**Restricciones**: **`x` fuera del círculo o sobre el borde.** Con `x` adentro devuelve `(nan, nan)` **sin avisar** · **Tipo**: `db` · **Aguanta**: el borde tiene una tolerancia **relativa**: un `x` adentro por menos de $\approx 5 \cdot 10^{-10}$ del radio cuenta como borde y devuelve el propio `x`; más adentro, `nan`. Por eso funciona con `x` **calculado** sobre el borde, a cualquier escala · **Complejidad**: $O(1)$.
 
 ```cpp
 tangent({3,0}, {{0,0},1}, 0)  ->  (0.3333,  0.9428)
 tangent({3,0}, {{0,0},1}, 1)  ->  (0.3333, -0.9428)
 tangent({0.5,0}, {{0,0},1})   ->  (nan, nan)     // punto ADENTRO
 tangent({3,0}, {{0,0},0})     ->  (0, 0)         // radio 0: el centro
+tangent(c.f + dir(th)*r, c)   ->  el mismo x     // x calculado SOBRE el borde
 ```
 
 ### `external`
@@ -195,7 +196,7 @@ Las **dos tangentes externas**: cada par es `{punto sobre x, punto sobre y}`.
 
 ![tangentes externas e internas](../img/circ-tangentes.svg)
 
-**Restricciones**: **ningún círculo puede contener al otro.** Si uno contiene al otro devuelve **dos pares de `(nan, nan)`** — no devuelve vacío, y nada avisa · **Tipo**: `db` · **Aguanta**: radios casi iguales están cubiertos por la rama de `sgn`; pero llama a `tangent`, así que hereda su `nan` si el centro de homotecia cae sobre un borde (círculos tangentes calculados) · **Complejidad**: $O(1)$.
+**Restricciones**: **ningún círculo puede contener al otro.** Si uno contiene al otro devuelve **dos pares de `(nan, nan)`** — no devuelve vacío, y nada avisa · **Tipo**: `db` · **Aguanta**: radios casi iguales están cubiertos por la rama de `sgn`; círculos tangentes con centros calculados también (el centro de homotecia cae sobre un borde, y `tangent` lo tolera) · **Complejidad**: $O(1)$.
 
 ```cpp
 external({{0,0},1}, {{4,0},1})  ->  {(0,-1)->(4,-1), (0,1)->(4,1)}
@@ -292,7 +293,7 @@ De 200 puntos, el bucle externo entró **10 veces**, no 200. Esa es la razón de
 
 ![casos degenerados de Circles](../img/circ-degenerados.svg)
 
-Rojo = falla **en silencio**; naranja = `assert`; azul = resultado válido que rompe una suposición común.
+Rojo = falla **en silencio**; naranja = `assert`; verde = el caso que parece peligroso pero está cubierto.
 
 Todas las salidas son de correr el código.
 
@@ -304,7 +305,7 @@ Todas las salidas son de correr el código.
 | `isect` con **radio 0** | rama propia: el punto, o `{}` |
 | `isect_area` de idénticos | área del círculo (no hay assert acá) |
 | `tangent` con el punto **adentro** | **`(nan, nan)` en silencio** |
-| `tangent` con el punto **calculado sobre el borde** | **`nan` en el 17–24% de los casos**, a cualquier escala |
+| `tangent` con el punto **calculado sobre el borde** | el propio punto: tolerancia relativa, sin `nan` |
 | `arcLength` de un arco menor a $10^{-9} r$ | 1% de error; con $10^{-10} r$ devuelve **0** |
 | `external` / `internal` con uno **dentro** del otro | **dos pares de `(nan, nan)` en silencio** |
 | `ccCenter` con 3 **colineales** o repetidos | **`assert`** |
@@ -359,6 +360,11 @@ if (seguro) { auto t = external(x, y); /* ... */ }
 | `ccCenter` (el `assert` no molesta a `mec`) | 14.000 | grillas degeneradas, $C$ de 1 a 10 |
 | `isect(Circ,Circ)` con radio 0 | — | caso puntual: antes `(nan,nan)`, ahora el punto real |
 | `isect_area` | — | tangente externa, interna, idénticos, $d \approx a+b$ |
+| `tangent` con `x` calculado sobre el borde | 80.000 | antes 17–24% de `nan`; ahora 0, y toca exactamente en `x` |
+| `tangent` con `x` adentro | 60.000 | sigue dando `nan` desde $10^{-6}$ del radio |
+| `tangent` con `x` afuera, viejo vs. nuevo | 99.742 | **idénticas bit a bit** |
+| `external`, `internal` | 111.404 | invariantes de tangencia: 0 fallas, 0 `nan` |
+| `internal` de tangentes con centros calculados | 20.000 | antes 19% de `nan`; ahora 0 |
 
 `CircleTangents.h`, `Circumcenter.h` y `MinEnclosingCirc.h` **no compilaban** antes del commit `57c7c7f`: a `Point.h` le faltaban `operator*(T,P)` y los compuestos `+=` / `-=`.
 

@@ -10,7 +10,10 @@ P tangent(P x, Circ y, int t = 0) {
 	if (sgn(y.s) == 0) return y.f;
 	T d = abs(x-y.f);
 	P a = pow(y.s/d,2)*(x-y.f)+y.f;
-	P b = sqrt(d*d-y.s*y.s)/d*y.s*unit(x-y.f)*dir(PI/2);
+	// con x calculado sobre el borde, el redondeo lo deja apenas adentro y la
+	// raiz daria nan. Tolerancia RELATIVA: un x realmente adentro sigue en nan
+	T h2 = d*d-y.s*y.s; if (h2 < 0 && h2 > -1e-9*d*d) h2 = 0;
+	P b = sqrt(h2)/d*y.s*unit(x-y.f)*dir(PI/2);
 	return t == 0 ? a+b : a-b;
 }
 V<pair<P,P>> external(Circ x, Circ y) {
