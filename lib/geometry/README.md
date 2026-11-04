@@ -79,7 +79,7 @@ Todos piden `Point.h` y nada más, salvo:
 
 Coordenadas enteras y solo orientación, área o comparar distancias → `ll`. Distancias o ángulos reales → `db`.
 
-> **Nunca `double`.** `long double` hace exacto el `cross` hasta $10^9$; `double` falla desde $10^8$. — [detalle](Primitives/README.md#hasta-dónde-aguanta-db)
+> **Nunca `double`.** `long double` hace exacto el `cross` de 3 puntos hasta $|c| \approx 2{,}1 \cdot 10^9$; `double` falla desde $5 \cdot 10^7$. — [detalle](Primitives/README.md#hasta-dónde-aguanta-db)
 
 ## Cómo se pega
 

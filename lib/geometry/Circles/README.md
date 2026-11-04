@@ -63,7 +63,7 @@ int in(const Circ& x, const P& y);
 
 Dónde cae `y` respecto de `x`: **`-1` adentro, `0` en el borde, `1` afuera**.
 
-**Restricciones**: ninguna; radio 0 es válido · **Tipo**: `db` · **Complejidad**: $O(1)$.
+**Restricciones**: ninguna; radio 0 es válido · **Tipo**: `db` · **Aguanta**: robusto también con puntos **calculados**: medido 0% de error hasta $C = 10^7$ con puntos salidos de `isect` (compara distancias, que escalan con $C$, no con $C^2$) · **Complejidad**: $O(1)$.
 
 ```cpp
 in({{0,0},2}, {1,0})  ->  -1     // adentro
@@ -81,7 +81,7 @@ Longitud del arco **más corto** entre `a` y `b` sobre `x`.
 
 > **No es el arco orientado.** El resultado siempre está en $[0, \pi r]$ y **no depende del orden** de `a` y `b`. Si necesitás el arco antihorario (que puede pasar de $\pi r$), tenés que calcularlo aparte.
 
-**Restricciones**: `a` y `b` **deben estar sobre el círculo** — no se verifica · **Tipo**: `db` · **Complejidad**: $O(1)$.
+**Restricciones**: `a` y `b` **deben estar sobre el círculo** — no se verifica · **Tipo**: `db` · **Aguanta**: **los arcos chicos pierden precisión** — el `acos` está mal condicionado cerca de 1: error relativo $2 \cdot 10^{-9}$ a $10^{-6}$ rad, 1,2% a $10^{-9}$, y **devuelve 0** a $10^{-10}$ · **Complejidad**: $O(1)$.
 
 ```cpp
 // circulo unidad en el origen
@@ -109,7 +109,7 @@ Los puntos de corte de dos círculos. **Una tangencia devuelve el mismo punto do
 
 ![los cuatro casos de intersección de círculos](../img/circ-isect.svg)
 
-**Restricciones**: **`x != y`** — con dos círculos idénticos hay infinitos puntos y salta un `assert` · **Tipo**: `db` · **Complejidad**: $O(1)$.
+**Restricciones**: **`x != y`** — con dos círculos idénticos hay infinitos puntos y salta un `assert` · **Tipo**: `db` · **Aguanta**: los puntos devueltos son **calculados**: `in()` los reconoce bien hasta $10^7$; `onSeg` no · **Complejidad**: $O(1)$.
 
 ```cpp
 isect({{0,0},2}, {{2,0},2})  ->  {(1,1.7321), (1,-1.7321)}   // secantes: 2 puntos
@@ -132,7 +132,7 @@ Corte de un círculo con una **recta infinita** (no un segmento). Tangente → e
 
 ![los tres casos de círculo contra recta](../img/circ-line.svg)
 
-**Restricciones**: `y.f != y.s` · **Tipo**: `db` · **Complejidad**: $O(1)$.
+**Restricciones**: `y.f != y.s` · **Tipo**: `db` · **Aguanta**: igual que `isect(Circ, Circ)` · **Complejidad**: $O(1)$.
 
 ```cpp
 isect({{0,0},1}, {{-5,0},{5,0}})  ->  {(1,0), (-1,0)}   // secante
@@ -140,7 +140,7 @@ isect({{0,0},1}, {{-5,1},{5,1}})  ->  {(0,1), (0,1)}    // tangente: repetido
 isect({{0,0},1}, {{-5,9},{5,9}})  ->  {}                // no toca
 ```
 
-Para recortar un **segmento** hay que filtrar después con `onSeg`.
+Para recortar un **segmento**, quedate con los puntos cuyo parámetro sobre el segmento esté en $[0, 1]$. **No uses `onSeg`** sobre estos puntos: son calculados, y con $C \ge 10^5$ `onSeg` da falsos negativos ([por qué](../Primitives/README.md#puntos-calculados-el-límite-del-eps)).
 
 ### `isect_area`
 
@@ -150,7 +150,7 @@ T isect_area(Circ x, Circ y);
 
 **Área** de la intersección de dos discos.
 
-**Restricciones**: ninguna; cubre contención, tangencia y radio 0 · **Tipo**: `db` · **Complejidad**: $O(1)$.
+**Restricciones**: ninguna; cubre contención, tangencia y radio 0 · **Tipo**: `db` · **Aguanta**: sin `nan`: los `acos` están acotados a $[-1, 1]$ y la raíz de Herón a $\ge 0$ · **Complejidad**: $O(1)$.
 
 ```cpp
 isect_area({{0,0},1}, {{0,0},1})  ->  3.1416   // identicos: pi
@@ -176,7 +176,7 @@ P tangent(P x, Circ y, int t = 0);
 
 El punto donde la tangente desde `x` toca a `y`. `t = 0` y `t = 1` son los dos puntos posibles.
 
-**Restricciones**: **`x` tiene que estar fuera del círculo o sobre el borde.** Con `x` adentro devuelve `(nan, nan)` **sin avisar** · **Tipo**: `db` · **Complejidad**: $O(1)$.
+**Restricciones**: **`x` tiene que estar fuera del círculo.** Con `x` adentro devuelve `(nan, nan)` **sin avisar** · **Tipo**: `db` · **Aguanta**: **sobre el borde solo con entrada exacta.** Con `x` *calculado* sobre el borde, el redondeo lo deja apenas adentro y `sqrt(d²−r²)` da `nan`: **medido 17–24% de `nan`, a cualquier escala** — al header le falta un `max(…, 0)` · **Complejidad**: $O(1)$.
 
 ```cpp
 tangent({3,0}, {{0,0},1}, 0)  ->  (0.3333,  0.9428)
@@ -195,7 +195,7 @@ Las **dos tangentes externas**: cada par es `{punto sobre x, punto sobre y}`.
 
 ![tangentes externas e internas](../img/circ-tangentes.svg)
 
-**Restricciones**: **ningún círculo puede contener al otro.** Si uno contiene al otro devuelve **dos pares de `(nan, nan)`** — no devuelve vacío, y nada avisa · **Tipo**: `db` · **Complejidad**: $O(1)$.
+**Restricciones**: **ningún círculo puede contener al otro.** Si uno contiene al otro devuelve **dos pares de `(nan, nan)`** — no devuelve vacío, y nada avisa · **Tipo**: `db` · **Aguanta**: radios casi iguales están cubiertos por la rama de `sgn`; pero llama a `tangent`, así que hereda su `nan` si el centro de homotecia cae sobre un borde (círculos tangentes calculados) · **Complejidad**: $O(1)$.
 
 ```cpp
 external({{0,0},1}, {{4,0},1})  ->  {(0,-1)->(4,-1), (0,1)->(4,1)}
@@ -212,7 +212,7 @@ V<pair<P,P>> internal(Circ x, Circ y);
 
 Las **dos tangentes internas**, las que cruzan entre los dos círculos. Es `external` con el radio de `x` negado.
 
-**Restricciones**: los círculos **no pueden solaparse**; si se solapan, `(nan, nan)` · **Tipo**: `db` · **Complejidad**: $O(1)$.
+**Restricciones**: los círculos **no pueden solaparse**; si se solapan, `(nan, nan)` · **Tipo**: `db` · **Aguanta**: igual que `external` · **Complejidad**: $O(1)$.
 
 ```cpp
 internal({{0,0},1}, {{4,0},1})  ->  {(0.5,0.866)->(3.5,-0.866), (0.5,-0.866)->(3.5,0.866)}
@@ -233,7 +233,7 @@ Circ ccCenter(P a, P b, P c);
 
 `{circuncentro, circunradio}` del triángulo `abc`: el único círculo que pasa por los tres.
 
-**Restricciones**: **los tres puntos no pueden ser colineales ni repetirse.** Un `assert` lo corta; sin él el resultado sería `nan` en silencio · **Tipo**: `db` · **Complejidad**: $O(1)$.
+**Restricciones**: **los tres puntos no pueden ser colineales ni repetirse.** Un `assert` lo corta; sin él el resultado sería `nan` en silencio · **Tipo**: `db` · **Aguanta**: con entrada entera el `assert` salta **solo** con colineales exactos; con puntos casi colineales el radio sale enorme, sin `nan` · **Complejidad**: $O(1)$.
 
 ```cpp
 ccCenter({0,0}, {4,0}, {0,4})  ->  centro (2, 2),      radio 2.8284
@@ -261,7 +261,7 @@ El **círculo mínimo que contiene todos los puntos** (Welzl).
 
 ![el MEC queda determinado por 2 o 3 puntos](../img/circ-mec.svg)
 
-**Restricciones**: $n \ge 1$; admite duplicados, todos iguales y todos colineales · **Tipo**: `db` · **Complejidad**: **$O(n)$ esperado — es un algoritmo aleatorizado.** El peor caso es $O(n^3)$, pero requiere un orden adversario; `mec` mezcla la entrada para evitarlo.
+**Restricciones**: $n \ge 1$; admite duplicados, todos iguales y todos colineales · **Tipo**: `db` · **Aguanta**: tolerancia **relativa** $10^{-8}$ (`holgura`): un punto afuera por menos de $r \cdot 10^{-8}$ cuenta como adentro, así que el radio puede salir hasta $10^{-8}$ relativo más chico. No depende de $C$ · **Complejidad**: **$O(n)$ esperado — es un algoritmo aleatorizado.** El peor caso es $O(n^3)$, pero requiere un orden adversario; `mec` mezcla la entrada para evitarlo.
 
 Toma `ps` **por copia**: la mezcla.
 
@@ -290,6 +290,10 @@ De 200 puntos, el bucle externo entró **10 veces**, no 200. Esa es la razón de
 
 ## Casos degenerados
 
+![casos degenerados de Circles](../img/circ-degenerados.svg)
+
+Rojo = falla **en silencio**; naranja = `assert`; azul = resultado válido que rompe una suposición común.
+
 Todas las salidas son de correr el código.
 
 | situación | qué pasa |
@@ -300,6 +304,8 @@ Todas las salidas son de correr el código.
 | `isect` con **radio 0** | rama propia: el punto, o `{}` |
 | `isect_area` de idénticos | área del círculo (no hay assert acá) |
 | `tangent` con el punto **adentro** | **`(nan, nan)` en silencio** |
+| `tangent` con el punto **calculado sobre el borde** | **`nan` en el 17–24% de los casos**, a cualquier escala |
+| `arcLength` de un arco menor a $10^{-9} r$ | 1% de error; con $10^{-10} r$ devuelve **0** |
 | `external` / `internal` con uno **dentro** del otro | **dos pares de `(nan, nan)` en silencio** |
 | `ccCenter` con 3 **colineales** o repetidos | **`assert`** |
 | `mec` de 1 punto | radio 0 |

@@ -10,6 +10,7 @@ Manual de consulta: **qué hace cada método, qué le podés pasar y hasta dónd
 - [Contrato de tipos](#contrato-de-tipos)
   - [Elegir `T`: `db` o `ll`](#elegir-t-db-o-ll)
   - [Hasta dónde aguanta `db`](#hasta-dónde-aguanta-db)
+  - [Puntos calculados: el límite del `EPS`](#puntos-calculados-el-límite-del-eps)
 - [`Point.h`](#pointh)
   - [Operadores](#operadores)
   - [`sgn`, `sq`](#sgn-sq)
@@ -69,25 +70,53 @@ Con `T = ll`, `EPS = 1e-9` trunca a `0` y `sgn` se vuelve exacto — eso es dese
 
 ### Hasta dónde aguanta `db`
 
-Medido sobre el **peor caso real**: dos vectores casi paralelos cuyo `cross` verdadero vale entre 1 y 4, con coordenadas de magnitud $C$. Ahí es donde la cancelación se come el signo. 20.000 casos por celda, signo comparado contra `__int128`:
+En todo el manual, **$C$ = la mayor coordenada en valor absoluto** de los puntos de entrada: $|c| \le C$.
+
+**Cuánto valen los productos.** Verificado por fuerza bruta sobre todas las ternas de la grilla $[-C, C]^2$:
+
+| expresión | máximo | con `ll` entra hasta |
+|---|---|---|
+| `cross(p,a,b)` | $4C^2$ | $C \approx 1{,}5 \cdot 10^9$ |
+| `dot(p,a,b)` | $8C^2$ | $C \approx 1{,}07 \cdot 10^9$ |
+| `abs2(a-b)` | $8C^2$ | $C \approx 1{,}07 \cdot 10^9$ |
+| `cross(a,b)` de vectores con componentes $\le C$ | $2C^2$ | $C \approx 2{,}1 \cdot 10^9$ |
+
+Con `ll` los predicados son **exactos** hasta esos límites. El típico $C = 10^9$ entra en todos.
+
+**Con flotantes el problema no es el desborde sino la cancelación.** Peor caso real: `a` y `b` casi colineales con `p`, `cross` verdadero entre 1 y 4, coordenadas de magnitud $C$. 20.000 casos por celda, signo contra `__int128`:
 
 | $C$ | `long double` (64 bits de mantisa) | `double` (53 bits) |
 |---|---|---|
-| $10^7$ | 0% mal | 0% mal |
-| $10^8$ | **0% mal** | 2,6% mal |
-| $10^9$ | **0% mal** | 95,5% mal |
-| $10^{10}$ | 50,2% mal | 100% mal |
+| $2 \cdot 10^7$ | 0% mal | 0% mal |
+| $5 \cdot 10^7$ | 0% mal | **2,6% mal** |
+| $10^8$ | 0% mal | **41,3% mal** |
+| $10^9$ | **0% mal** | inservible |
+| $3 \cdot 10^9$ | 14,3% mal | inservible |
+| $5 \cdot 10^9$ | 50,6% mal | inservible |
 
-Buscando el umbral exacto por búsqueda binaria:
+Umbral por búsqueda binaria: **`long double` exacto hasta $C \approx 2{,}1 \cdot 10^9$.**
 
-| | mayor $C$ con el signo siempre correcto |
+> **No cambies `db` a `double` si usás geometría.** `templateHeavy.cpp` dice *"or double if tight TL"*; con `double` los predicados fallan desde $5 \cdot 10^7$, que es un rango de problema completamente normal.
+
+Qué tipo de error es: en esta familia de peor caso, **todos** los errores medidos fueron "el `cross` colapsa a 0" (un caso casi degenerado se lee como colineal). **Ninguno** invirtió el signo, en 240.000 casos entre las dos precisiones.
+
+### Puntos calculados: el límite del `EPS`
+
+Todo lo anterior vale para puntos **de entrada**. Un punto **calculado** — la salida de `lineIsect`, `foot`, `reflect`, `isect` — trae error de redondeo, y ahí aparece otro límite: **`EPS = 1e-9` es absoluto**, mientras que el `cross` crece como $C^2$.
+
+Medido: `x = strictIsect(a, b)` está, en teoría, sobre los dos segmentos. ¿Cuántas veces `onSeg(x, a) && onSeg(x, b)` dice que **no**?
+
+| $C$ | `onSeg` dice `false` |
 |---|---|
-| `long double` | $\approx 4{,}3 \cdot 10^9$ |
-| `double` | $\approx 9{,}5 \cdot 10^7$ |
+| $10^3$ | 0% |
+| $10^4$ | 0% |
+| $10^5$ | **0,5%** |
+| $10^6$ | **79,9%** |
+| $10^9$ | **87,7%** |
 
-> **No cambies `db` a `double` si usás geometría.** `templateHeavy.cpp` dice *"or double if tight TL"*; con `double` los predicados empiezan a fallar desde coordenadas de $10^8$, que es un rango de problema completamente normal.
+**Regla: `sgn` y `onSeg` sobre puntos calculados, solo hasta $C \approx 10^4$.** Por encima, decidí con la entrada original (por ejemplo, con el parámetro sobre el segmento) en vez de preguntarle a `onSeg`.
 
-Los fallos son siempre del tipo "cross real colapsa a 0" — un caso casi degenerado se lee como colineal. Nunca signo invertido.
+`in()` de `Circle.h` **no** tiene este problema — compara distancias, que escalan con $C$ y no con $C^2$: medido 0% de error hasta $C = 10^7$ con puntos calculados.
 
 ---
 
@@ -110,7 +139,7 @@ Suma y resta de vectores; escalado por un escalar (el escalar puede ir de cualqu
 - `a * b` **rota** `a` por el ángulo de `b` y **escala** por `|b|`.
 - `a / b` da el cociente: su ángulo es el **ángulo orientado** de `b` a `a`.
 
-**Restricciones**: `operator/(P,T)` con `r = 0` y `operator/(P,P)` con `r = (0,0)` dan `nan` · **Complejidad**: $O(1)$.
+**Restricciones**: `operator/(P,T)` con `r = 0` y `operator/(P,P)` con `r = (0,0)` dan `nan` · **Tipo**: cualquiera; `P*P` y `P/P` piden `db` · **Aguanta**: `+` y `-` llegan a $2C$; `P*P` multiplica coordenadas, con `ll` llega a $2C^2$ · **Complejidad**: $O(1)$.
 
 ### `sgn`, `sq`
 
@@ -121,7 +150,7 @@ T   sq(T a);     // a*a
 
 `sgn` es **el único lugar donde entra `EPS`**. Todo lo que compare contra cero debería pasar por acá en vez de usar `== 0`.
 
-**Complejidad**: $O(1)$.
+**Restricciones**: ninguna · **Tipo**: cualquiera · **Aguanta**: **`EPS` es absoluto**: con puntos de entrada enteros no molesta, pero sobre puntos **calculados** solo tolera hasta $C \approx 10^4$ ([ver tabla](#puntos-calculados-el-límite-del-eps)); `sq` con `ll` desborda para $|a| > 3 \cdot 10^9$ · **Complejidad**: $O(1)$.
 
 ### `abs2`, `abs`
 
@@ -132,7 +161,7 @@ T abs(P p);    // sqrt(abs2(p))
 
 **Para comparar distancias usá `abs2`**: evita la raíz y, con `T = ll`, es exacto.
 
-**Restricciones**: `abs` con `T = ll` trunca · **Aguanta**: `abs2` con coordenadas de $C$ llega a $2C^2$ · **Complejidad**: $O(1)$.
+**Restricciones**: ninguna · **Tipo**: `abs2` cualquiera (con `ll` es exacto); `abs` pide `db` — con `ll` trunca · **Aguanta**: `abs2(a-b)` llega a $8C^2$: con `ll` entra hasta $C \approx 1{,}07 \cdot 10^9$ · **Complejidad**: $O(1)$.
 
 ### `arg`, `dir`
 
@@ -141,7 +170,7 @@ T arg(P p);     // atan2(p.s, p.f), rango (-pi, pi]
 P dir(T ang);   // (cos ang, sin ang), el unitario de ese angulo
 ```
 
-**Restricciones**: `arg({0,0})` devuelve `0` (no `nan`), pero el origen no tiene ángulo: tratalo aparte · **Tipo**: `db` · **Complejidad**: $O(1)$.
+**Restricciones**: `arg({0,0})` devuelve `0` (no `nan`), pero el origen no tiene ángulo: tratalo aparte · **Tipo**: `db` · **Aguanta**: error relativo $\sim 10^{-18}$, no depende de $C$ · **Complejidad**: $O(1)$.
 
 > **Para ordenar por ángulo no uses `arg`**: usá [`angleCmp`](#anglecmp). Es más rápido y exacto.
 
@@ -153,7 +182,7 @@ P perp(P p);   // (-y, x)        rota 90 grados antihorario
 P unit(P p);   // p / abs(p)     mismo angulo, largo 1
 ```
 
-**Restricciones**: **`unit({0,0})` devuelve `(nan, nan)`** — divide por cero sin avisar · **Tipo**: `unit` pide `db` · **Complejidad**: $O(1)$.
+**Restricciones**: **`unit({0,0})` devuelve `(nan, nan)`** — divide por cero sin avisar · **Tipo**: `conj` y `perp` cualquiera; `unit` pide `db` · **Aguanta**: `conj` y `perp` no multiplican: nunca desbordan · **Complejidad**: $O(1)$.
 
 ### `dot`
 
@@ -172,7 +201,7 @@ Responde *"¿hacia adelante o hacia atrás?"*:
 | `0` | recto |
 | `< 0` | obtuso |
 
-**Aguanta**: igual que `cross`, $\approx 4{,}3 \cdot 10^9$ con `long double` · **Complejidad**: $O(1)$.
+**Restricciones**: ninguna · **Tipo**: cualquiera; con `ll` es exacto · **Aguanta**: `dot(p,a,b)` llega a $8C^2$: con `ll` entra hasta $C \approx 1{,}07 \cdot 10^9$; con `long double` el signo es exacto hasta $C \approx 2{,}1 \cdot 10^9$ · **Complejidad**: $O(1)$.
 
 ### `cross`
 
@@ -193,7 +222,7 @@ T cross(P p, P a, P b);    // cross(a-p, b-p): giro p -> a -> b
 
 También: $|\mathrm{cross}(p,a,b)|$ es **el doble del área** del triángulo `pab`.
 
-**Aguanta**: con `long double`, exacto hasta $C \approx 4{,}3 \cdot 10^9$; con `double`, hasta $9{,}5 \cdot 10^7$ (ver [arriba](#hasta-dónde-aguanta-db)) · **Complejidad**: $O(1)$.
+**Restricciones**: ninguna · **Tipo**: cualquiera; con `ll` es exacto · **Aguanta**: `cross(p,a,b)` llega a $4C^2$: con `ll` entra hasta $C \approx 1{,}5 \cdot 10^9$; con `long double` el signo es exacto hasta $C \approx 2{,}1 \cdot 10^9$; con `double`, solo hasta $\approx 2 \cdot 10^7$ ([tabla](#hasta-dónde-aguanta-db)) · **Complejidad**: $O(1)$.
 
 ### `reflect`, `foot`
 
@@ -206,7 +235,7 @@ P foot(P p, Line l);      // pie de la perpendicular: el punto de l mas cercano 
 
 ![foot y reflect](../img/foot-reflect.svg)
 
-**Restricciones**: `l` es una **recta infinita**, no un segmento — `foot` puede caer fuera de `[l.f, l.s]`. **`l.f != l.s`**: con una recta nula da `(nan, nan)` sin avisar · **Tipo**: `db` · **Complejidad**: $O(1)$.
+**Restricciones**: `l` es una **recta infinita**, no un segmento — `foot` puede caer fuera de `[l.f, l.s]`. **`l.f != l.s`**: con una recta nula da `(nan, nan)` sin avisar · **Tipo**: `db` · **Aguanta**: el resultado es un punto **calculado**: no lo pases a `onSeg` ni a `sgn` con $C \ge 10^5$ ([por qué](#puntos-calculados-el-límite-del-eps)) · **Complejidad**: $O(1)$.
 
 ### `onSeg`
 
@@ -216,7 +245,7 @@ bool onSeg(P p, Line l);
 
 ¿`p` está sobre el **segmento** `l`? Usa `sgn`, así que es tolerante a `EPS`.
 
-**Restricciones**: admite segmento degenerado (`l.f == l.s`), y ahí da `true` solo si `p` es ese punto · **Complejidad**: $O(1)$.
+**Restricciones**: admite segmento degenerado (`l.f == l.s`), y ahí da `true` solo si `p` es ese punto · **Tipo**: cualquiera · **Aguanta**: con `p` **de entrada**, igual que `cross`; con `p` **calculado** (salida de `lineIsect`, `foot`, `isect`…) **falla desde $C \approx 10^5$ y es inservible desde $10^6$** — 80% de falsos negativos ([tabla](#puntos-calculados-el-límite-del-eps)) · **Complejidad**: $O(1)$.
 
 ```cpp
 onSeg({1,1}, {{0,0},{2,2}})  ->  true
@@ -246,7 +275,7 @@ Parte el plano en dos mitades de exactamente $\pi$ cada una, que es lo que hace 
 | `0` | el origen |
 | `1` | semiplano superior **y el eje $x$ negativo** |
 
-**Complejidad**: $O(1)$.
+**Restricciones**: ninguna · **Tipo**: cualquiera · **Aguanta**: no multiplica: nunca desborda · **Complejidad**: $O(1)$.
 
 ```cpp
 half({5,0})   ->  -1      // eje x positivo va ABAJO
@@ -265,7 +294,7 @@ vP v; sort(all(v), angleCmp);
 
 Ordena por ángulo antihorario alrededor del **origen**, con el mismo orden que `atan2`: rango $(-\pi, \pi]$, así que el eje $x$ negativo queda **al final**.
 
-**Restricciones**: **sacá el origen antes de ordenar** — `half({0,0})` da `0`, que lo mete en un grupo propio entre los otros dos y el resultado no tiene sentido · **Tipo**: `ll` o `db`, los dos; solo usa `sgn` y `cross` · **Complejidad**: $O(1)$ por comparación, $O(n \log n)$ el sort.
+**Restricciones**: **sacá el origen antes de ordenar** — `half({0,0})` da `0`, que lo mete en un grupo propio entre los otros dos y el resultado no tiene sentido · **Tipo**: `ll` o `db`, los dos; solo usa `sgn` y `cross` · **Aguanta**: usa `cross(a,b)` de dos vectores; si son diferencias de puntos con $|c| \le C$, igual que `cross(p,a,b)` · **Complejidad**: $O(1)$ por comparación, $O(n \log n)$ el sort.
 
 ```cpp
 // 8 direcciones, desordenadas
@@ -295,7 +324,7 @@ T lineDist(P p, Line l);
 
 Distancia de `p` a la **recta infinita** por `l.f` y `l.s`.
 
-**Restricciones**: **`l.f != l.s`** — con recta nula devuelve `nan` sin avisar · **Tipo**: `db` · **Complejidad**: $O(1)$.
+**Restricciones**: **`l.f != l.s`** — con recta nula devuelve `nan` sin avisar · **Tipo**: `db` · **Aguanta**: error relativo $\sim 10^{-18}$ · **Complejidad**: $O(1)$.
 
 ### `segDist`
 
@@ -307,7 +336,7 @@ Distancia de `p` al **segmento** `l`. Considera tres casos: la proyección cae a
 
 ![los tres casos de segDist](../img/segdist-casos.svg)
 
-**Restricciones**: **admite segmento degenerado** — ahí devuelve la distancia al punto, no `nan` · **Tipo**: `db` · **Complejidad**: $O(1)$.
+**Restricciones**: **admite segmento degenerado** — ahí devuelve la distancia al punto, no `nan` · **Tipo**: `db` · **Aguanta**: error relativo $\sim 10^{-18}$ · **Complejidad**: $O(1)$.
 
 > **El error clásico: usar `lineDist` donde va `segDist`.** Da un valor **menor** y nada avisa.
 >
@@ -341,7 +370,7 @@ Corte de dos **rectas infinitas**.
 | `{b.f, b.s}` | son **la misma recta** (infinitos puntos) |
 | `{}` | paralelas distintas |
 
-**Restricciones**: `a.f != a.s` y `b.f != b.s` · **Tipo**: `db` (divide) · **Complejidad**: $O(1)$.
+**Restricciones**: `a.f != a.s` y `b.f != b.s` · **Tipo**: `db` (divide) · **Aguanta**: la decisión (se cortan / paralelas / misma recta) es exacta con entrada entera hasta el umbral de `cross`; el punto devuelto es **calculado** — no lo pases a `onSeg` con $C \ge 10^5$ · **Complejidad**: $O(1)$.
 
 ```cpp
 lineIsect({{0,0},{2,2}}, {{0,2},{2,0}})  ->  {(1,1)}
@@ -359,7 +388,7 @@ vP strictIsect(Line a, Line b);
 
 El punto donde los dos **segmentos se cruzan de verdad**, en el **interior** de ambos. Tocarse en una punta **no** cuenta.
 
-**Restricciones**: igual que `lineIsect` · **Complejidad**: $O(1)$.
+**Restricciones**: igual que `lineIsect` · **Tipo**: `db` (el punto sale de una división) · **Aguanta**: igual que `lineIsect` · **Complejidad**: $O(1)$.
 
 ```cpp
 strictIsect({{0,0},{2,2}}, {{0,2},{2,0}})  ->  {(1,1)}
@@ -380,7 +409,7 @@ Intersección de dos **segmentos**, incluyendo puntas y solapamientos. **Admite 
 | `{punto}` | se cruzan, o se tocan en una punta |
 | `{p, q}` | se **solapan** en un tramo (sus dos extremos) |
 
-**Restricciones**: ninguna; `a` y `b` pueden ser degenerados · **Tipo**: `db` · **Complejidad**: $O(1)$.
+**Restricciones**: ninguna; `a` y `b` pueden ser degenerados · **Tipo**: `db` · **Aguanta**: igual que `lineIsect`; sus `onSeg` internos son sobre extremos **de entrada**, así que no sufren el problema del `EPS` · **Complejidad**: $O(1)$.
 
 ```cpp
 segIsect({{0,0},{1,0}}, {{2,0},{3,0}})  ->  {}                 // disjuntos
@@ -391,6 +420,10 @@ segIsect({{0,0},{3,0}}, {{1,0},{2,0}})  ->  {(1,0), (2,0)}     // solapados
 ---
 
 ## Casos degenerados
+
+![casos degenerados de Primitives](../img/prim-degenerados.svg)
+
+Rojo = falla **en silencio**; naranja = `assert`; azul = resultado válido que rompe una suposición común.
 
 Todas las salidas son de correr el código.
 
@@ -407,6 +440,7 @@ Todas las salidas son de correr el código.
 | `sort(angleCmp)` con el origen adentro | **orden sin sentido** | silencioso |
 | `lineIsect` de la misma recta | `{b.f, b.s}` | 2 puntos, no 1 |
 | `segIsect` de solapados | `{p, q}` | 2 puntos, no 1 |
+| `onSeg(x, s)` con `x` **calculado** y $C \ge 10^5$ | **`false`** aunque esté encima | silencioso — 80% con $C = 10^6$ |
 
 > **Ningún método de esta carpeta tiene `assert`.** Todo lo que sale mal sale como `nan` o como un valor plausible pero incorrecto. Si tu entrada puede traer puntos repetidos, chequealo vos.
 

@@ -74,7 +74,7 @@ Las dos cadenas del hull como **índices**: `.f` la de **arriba**, `.s` la de **
 
 ![las dos cadenas del hull](../img/hull-chains.svg)
 
-**Restricciones**: ninguna; admite repetidos y colineales · **Tipo**: `ll` recomendado (el `cross` es exacto, sin `EPS`) · **Aguanta**: con `db` = `long double`, coordenadas hasta $\approx 4{,}3 \cdot 10^9$ · **Complejidad**: $O(n \log n)$, domina el sort.
+**Restricciones**: ninguna; admite repetidos y colineales · **Tipo**: `ll` recomendado (el `cross` es exacto, sin `EPS`) · **Aguanta**: igual que `cross(p,a,b)`: con `ll` hasta $C \approx 1{,}5 \cdot 10^9$, con `long double` hasta $\approx 2{,}1 \cdot 10^9$ · **Complejidad**: $O(n \log n)$, domina el sort.
 
 Sirve suelta para el **Convex Hull Trick** geométrico, o para recorrer solo "el techo" de una nube.
 
@@ -86,7 +86,7 @@ vi hullInd(const vP& v);
 
 Los **índices** de los vértices del hull, en orden **antihorario (CCW)**.
 
-**Restricciones**: ninguna · **Complejidad**: $O(n \log n)$.
+**Restricciones**: ninguna · **Tipo**: igual que `ulHull` · **Aguanta**: igual que `ulHull` · **Complejidad**: $O(n \log n)$.
 
 ```cpp
 hullInd({{0,0},{1,1},{2,2},{3,3}})  ->  {0,3}     // colineales: los 2 extremos
@@ -102,7 +102,7 @@ vP hull(const vP& v);
 
 Los **vértices** del hull en orden **antihorario (CCW)**.
 
-**Restricciones**: ninguna · **Complejidad**: $O(n \log n)$.
+**Restricciones**: ninguna · **Tipo**: igual que `ulHull` · **Aguanta**: igual que `ulHull` · **Complejidad**: $O(n \log n)$.
 
 ```cpp
 hull({{0,0}})                        ->  {(0,0)}                    // 1 punto
@@ -152,7 +152,7 @@ pair<P,T> cenArea(const vP& v);
 
 Para el área a secas: `abs(cenArea(v).s)`.
 
-**Restricciones**: **$n \ge 3$** (`assert`); el polígono tiene que ser **simple** — sin aristas que se crucen. Con uno no simple devuelve basura sin avisar · **Tipo**: con `T = ll` **las dos divisiones truncan**, la del centroide y la del área (el acumulador interno vale $2A$ y se devuelve `/2`): con enteros acumulá el doble del área a mano · **Aguanta**: el acumulador interno llega a $2nC^2$ · **Complejidad**: $O(n)$.
+**Restricciones**: **$n \ge 3$** (`assert`); el polígono tiene que ser **simple** — sin aristas que se crucen. Con uno no simple devuelve basura sin avisar · **Tipo**: con `T = ll` **las dos divisiones truncan**, la del centroide y la del área (el acumulador interno vale $2A$ y se devuelve `/2`): con enteros acumulá el doble del área a mano · **Aguanta**: con `ll`, el área es exacta hasta $C = 10^9$, pero **el centroide desborda en silencio desde $C \approx 1{,}4 \cdot 10^6$** (medido: bien a $1{,}4 \cdot 10^6$, basura a $2 \cdot 10^6$; su acumulador crece como $C^3$). Con `long double` no hay desborde · **Complejidad**: $O(n)$.
 
 ```cpp
 cenArea({{0,0},{4,0},{4,4},{0,4}})   ->  centro (2,2), area =  16   // CCW
@@ -180,7 +180,7 @@ Dónde cae `p`: **`-1` adentro, `0` sobre el borde, `1` afuera**. Por *ray casti
 
 ![ray casting](../img/inpoly-raycast.svg)
 
-**Restricciones**: el polígono tiene que ser **simple**, pero **no** hace falta que sea convexo ni que venga en un orden particular — **anda igual en CW y en CCW** · **Tipo**: `db` o `ll` · **Complejidad**: $O(n)$ por consulta.
+**Restricciones**: el polígono tiene que ser **simple**, pero **no** hace falta que sea convexo ni que venga en un orden particular — **anda igual en CW y en CCW** · **Tipo**: `db` o `ll` · **Aguanta**: con `p` de entrada, igual que `cross`; si `p` es un punto **calculado**, el borde (`0`) se pierde desde $C \approx 10^5$ · **Complejidad**: $O(n)$ por consulta.
 
 ```cpp
 // cuadrado (0,0)(4,0)(4,4)(0,4)
@@ -215,7 +215,7 @@ El **cuadrado** de la mayor distancia entre dos puntos del conjunto, por *rotati
 > **No le pases el hull: pasale los puntos crudos.** Lo calcula internamente.
 > **Devuelve el cuadrado**, no la distancia: `sqrt(diameter2(ps))`.
 
-**Restricciones**: $n \ge 1$ · **Tipo**: `ll` conviene — el cuadrado queda exacto · **Aguanta**: el resultado llega a $2C^2$; con $C = 10^9$ eso es $2 \cdot 10^{18}$, que entra justo en `ll` ($9{,}2 \cdot 10^{18}$) · **Complejidad**: $O(n \log n)$ en total, $O(n)$ dado el hull.
+**Restricciones**: $n \ge 1$ · **Tipo**: `ll` conviene — el cuadrado queda exacto · **Aguanta**: el resultado llega a $8C^2$; con `ll` entra hasta $C \approx 1{,}07 \cdot 10^9$ (con $C = 10^9$: $8 \cdot 10^{18} < 9{,}2 \cdot 10^{18}$) · **Complejidad**: $O(n \log n)$ en total, $O(n)$ dado el hull.
 
 ```cpp
 diameter2({{0,0}})              ->  0
@@ -251,7 +251,7 @@ El **índice** del vértice donde la tangente desde `b` toca al convexo `a`.
 
 ![tangentes y arco visible](../img/hull-tangentes.svg)
 
-**Restricciones**: `a` tiene que ser **convexo, en CCW y sin tres vértices colineales** — el hull estricto de `ConvexHull.h` cumple las tres. **`b` tiene que estar estrictamente afuera**: con `b` adentro devuelve un índice **plausible pero incorrecto**, sin avisar · **Tipo**: `db` o `ll` · **Complejidad**: $O(\log n)$.
+**Restricciones**: `a` tiene que ser **convexo, en CCW y sin tres vértices colineales** — el hull estricto de `ConvexHull.h` cumple las tres. **`b` tiene que estar estrictamente afuera**: con `b` adentro devuelve un índice **plausible pero incorrecto**, sin avisar · **Tipo**: `db` o `ll` · **Aguanta**: igual que `cross(p,a,b)` · **Complejidad**: $O(\log n)$.
 
 ```cpp
 // cuadrado CCW (0,0)(4,0)(4,4)(0,4), punto (10,2) afuera
@@ -303,7 +303,7 @@ El índice del vértice de **máxima proyección** sobre la dirección `nrm`.
 
 > El parámetro se llama `nrm` y no `dir` porque `dir()` ya es una función de `Point.h`.
 
-**Restricciones**: `poly` **convexo en CCW** · **Complejidad**: $O(\log n)$.
+**Restricciones**: `poly` **convexo en CCW** · **Tipo**: cualquiera · **Aguanta**: cada término es `nrm` por una diferencia de vértices: con `ll`, hasta $4C \cdot \max|nrm|$ · **Complejidad**: $O(\log n)$.
 
 ```cpp
 // cuadrado CCW (0,0)(4,0)(4,4)(0,4)
@@ -330,7 +330,7 @@ Cómo corta una **recta infinita** a un convexo.
 | `-1` | todo del **otro lado** | ídem |
 | `0` | la recta **lo atraviesa** | el rango de vértices que quedan de un lado |
 
-**Restricciones**: `poly` **convexo en CCW**, $n > 1$ (`assert`) · **Complejidad**: $O(\log n)$.
+**Restricciones**: `poly` **convexo en CCW**, $n > 1$ (`assert`) · **Tipo**: cualquiera · **Aguanta**: igual que `cross(p,a,b)`, si la recta también cumple $|c| \le C$ · **Complejidad**: $O(\log n)$.
 
 ```cpp
 // cuadrado CCW (0,0)(4,0)(4,4)(0,4)
@@ -366,7 +366,7 @@ vP halfPlaneIsect(V<Ray> rays, bool add_bounds = false);
 
 Los vértices de la intersección de los semiplanos, en CCW.
 
-**Restricciones**: la intersección tiene que ser **acotada y de área no nula**. Con menos de 3 rayos devuelve `{}`. **Si la región es no acotada el resultado trae `inf` y `nan`, sin avisar** — para eso está `add_bounds` · **Tipo**: `db` · **Aguanta**: el área sale precisa con coordenadas enteras hasta $\approx 10^5$ · **Complejidad**: $O(n \log n)$, domina el sort angular.
+**Restricciones**: la intersección tiene que ser **acotada y de área no nula**. Con menos de 3 rayos devuelve `{}`. **Si la región es no acotada el resultado trae `inf` y `nan`, sin avisar** — para eso está `add_bounds` · **Tipo**: `db` · **Aguanta**: medido contra Sutherland–Hodgman, el error **relativo** del área es $\le 5 \cdot 10^{-15}$ a cualquier escala hasta $10^9$; el error **absoluto** crece como área × $10^{-15}$, por eso el header dice \"precisa hasta $10^5$\" para áreas enteras. Rayos casi paralelos no están medidos · **Complejidad**: $O(n \log n)$, domina el sort angular.
 
 `add_bounds = true` agrega 4 rayos que acotan todo al rectángulo $[0, 10^9] \times [0, 10^9]$.
 
@@ -387,6 +387,10 @@ halfPlaneIsect({dos rayos}, true) ->
 
 ## Casos degenerados
 
+![casos degenerados de Polygons](../img/poly-degenerados.svg)
+
+Rojo = falla **en silencio**; naranja = `assert`; azul = resultado válido que rompe una suposición común.
+
 Todas las salidas son de correr el código.
 
 | situación | qué pasa | |
@@ -397,6 +401,7 @@ Todas las salidas son de correr el código.
 | `cenArea` con $n < 3$ | **`assert`** | avisa |
 | `cenArea` de un polígono **no simple** | área 0, centro `(nan, -inf)` | **silencioso** |
 | `cenArea` con `T = ll` | el centroide **trunca** | silencioso |
+| `cenArea` con `T = ll` y $C \ge 1{,}4 \cdot 10^6$ | el centroide **desborda**: basura | **silencioso** — el área sigue bien |
 | `inPoly` sobre vértice o arista | `0` | ok |
 | `inPoly` en CW | igual que en CCW | ok |
 | `diameter2` de 1 punto | `0` | ok |

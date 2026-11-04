@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 400" width="560" height="400" font-family="ui-sans-serif,system-ui,-apple-system,sans-serif">
+<style>
+  .tx{fill:#334155;font-size:13px;font-weight:600}
+  .mn{fill:#64748b;font-size:11px}
+  .pn{fill:none;stroke:#e2e8f0;stroke-width:1.2}
+  .gl{stroke:#94a3b8;stroke-width:1.2}
+  @media (prefers-color-scheme:dark){
+    .tx{fill:#c9d1d9}.mn{fill:#8b949e}.pn{stroke:#30363d}.gl{stroke:#6e7681}
+  }
+</style>
+
+<!-- ============ 1. segmento nulo ============ -->
+<rect class="pn" x="10" y="10" width="260" height="185" rx="8"/>
+<text class="tx" x="22" y="32">segmento nulo</text>
+<rect x="186" y="20" width="76" height="18" rx="9" fill="#dc2626"/>
+<text x="224" y="33" fill="#fff" font-size="10" font-weight="700" text-anchor="middle">SILENCIOSO</text>
+<line x1="70" y1="72" x2="70" y2="150" stroke="#059669" stroke-width="2" stroke-dasharray="5 3"/>
+<circle cx="70" cy="72" r="5" fill="#334155"/><text class="tx" x="58" y="76" text-anchor="end">p</text>
+<circle cx="70" cy="150" r="5" fill="#334155"/><text class="tx" x="58" y="154" text-anchor="end">q</text>
+<text x="80" y="138" fill="#059669" font-size="12" font-weight="600">segDist = |p − q|</text>
+<text x="150" y="70" fill="#dc2626" font-size="12" font-weight="700">lineDist → nan</text>
+<text class="mn" x="150" y="86">q − q = (0,0):</text>
+<text class="mn" x="150" y="100">no hay dirección,</text>
+<text class="mn" x="150" y="114">no hay recta</text>
+<text class="mn" x="22" y="182">foot y reflect tambien dan (nan, nan)</text>
+
+<!-- ============ 2. el origen en angleCmp ============ -->
+<rect class="pn" x="290" y="10" width="260" height="185" rx="8"/>
+<text class="tx" x="302" y="32">origen en angleCmp</text>
+<rect x="466" y="20" width="76" height="18" rx="9" fill="#dc2626"/>
+<text x="504" y="33" fill="#fff" font-size="10" font-weight="700" text-anchor="middle">SILENCIOSO</text>
+<line class="gl" x1="355" y1="105" x2="397" y2="105"/>
+<line class="gl" x1="355" y1="105" x2="313" y2="105"/>
+<line class="gl" x1="355" y1="105" x2="355" y2="147"/>
+<circle cx="397" cy="105" r="4" fill="#2563eb"/>
+<circle cx="313" cy="105" r="4" fill="#2563eb"/>
+<circle cx="355" cy="147" r="4" fill="#2563eb"/>
+<circle cx="355" cy="105" r="5.5" fill="#dc2626"/>
+<text x="341" y="95" fill="#dc2626" font-size="11" font-weight="600" text-anchor="end">(0,0)</text>
+<text class="mn" x="414" y="70">sort(angleCmp):</text>
+<text class="tx" x="414" y="90" font-size="12">(0,−1)  (1,0)</text>
+<text x="414" y="108" fill="#dc2626" font-size="12" font-weight="700">(0,0)</text>
+<text x="454" y="108" fill="#dc2626" font-size="11">← en el medio</text>
+<text class="tx" x="414" y="126" font-size="12">(−1,0)</text>
+<text class="mn" x="302" y="170">half(0,0) = 0: un grupo propio,</text>
+<text class="mn" x="302" y="184">entre los otros dos. Sacalo antes.</text>
+
+<!-- ============ 3. lineIsect, la misma recta ============ -->
+<rect class="pn" x="10" y="205" width="260" height="185" rx="8"/>
+<text class="tx" x="22" y="227">misma recta</text>
+<rect x="186" y="215" width="76" height="18" rx="9" fill="#2563eb"/>
+<text x="224" y="228" fill="#fff" font-size="10" font-weight="700" text-anchor="middle">2 PUNTOS</text>
+<line class="gl" x1="24" y1="290" x2="256" y2="290" stroke-dasharray="3 3"/>
+<line x1="40" y1="290" x2="100" y2="290" stroke="#2563eb" stroke-width="3"/>
+<line x1="150" y1="290" x2="230" y2="290" stroke="#7c3aed" stroke-width="3"/>
+<text x="70" y="280" fill="#2563eb" font-size="12" font-weight="600" text-anchor="middle">a</text>
+<text x="190" y="280" fill="#7c3aed" font-size="12" font-weight="600" text-anchor="middle">b</text>
+<circle cx="150" cy="290" r="5" fill="#059669"/>
+<circle cx="230" cy="290" r="5" fill="#059669"/>
+<text x="150" y="310" fill="#059669" font-size="11" text-anchor="middle">b.f</text>
+<text x="230" y="310" fill="#059669" font-size="11" text-anchor="middle">b.s</text>
+<text class="tx" x="22" y="342" font-size="12">devuelve {b.f, b.s}</text>
+<text class="mn" x="22" y="358">dos puntos que representan</text>
+<text class="mn" x="22" y="372">INFINITOS: chequeá sz == 2</text>
+
+<!-- ============ 4. punto calculado vs EPS ============ -->
+<rect class="pn" x="290" y="205" width="260" height="185" rx="8"/>
+<text class="tx" x="302" y="227">punto calculado</text>
+<rect x="466" y="215" width="76" height="18" rx="9" fill="#dc2626"/>
+<text x="504" y="228" fill="#fff" font-size="10" font-weight="700" text-anchor="middle">SILENCIOSO</text>
+<rect x="305" y="284" width="230" height="12" fill="#dc2626" opacity="0.12"/>
+<line x1="305" y1="290" x2="535" y2="290" stroke="#2563eb" stroke-width="2.5"/>
+<text class="mn" x="535" y="312" text-anchor="end">banda ± EPS</text>
+<circle cx="420" cy="272" r="5" fill="#dc2626"/>
+<line x1="420" y1="277" x2="420" y2="284" stroke="#dc2626" stroke-width="1.2"/>
+<text x="428" y="268" fill="#dc2626" font-size="11">x = strictIsect(…)</text>
+<text x="302" y="322" fill="#dc2626" font-size="12" font-weight="700">onSeg(x, s) = false</text>
+<text class="mn" x="302" y="340">desde C ≈ 1e5 el redondeo de x</text>
+<text class="mn" x="302" y="354">supera EPS = 1e-9, que es ABSOLUTO</text>
+<text class="mn" x="302" y="378">(escala exagerada)</text>
+</svg>
