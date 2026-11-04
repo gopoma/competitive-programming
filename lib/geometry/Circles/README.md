@@ -4,6 +4,7 @@ Círculos: contención, intersección, tangentes, circuncentro y círculo mínim
 
 ## Índice
 
+- [Recursos](#recursos)
 - [Cómo se arma la submission](#cómo-se-arma-la-submission)
 - [El contrato de tipos](#el-contrato-de-tipos)
 - [`Circle.h`](#circleh)
@@ -29,7 +30,19 @@ Círculos: contención, intersección, tangentes, circuncentro y círculo mínim
   - [El círculo que pasa por tres puntos](#el-círculo-que-pasa-por-tres-puntos)
   - [¿Un disco de radio r puede cubrir todos los puntos?](#un-disco-de-radio-r-puede-cubrir-todos-los-puntos)
   - [Camino más corto entre dos puntos rodeando un obstáculo circular](#camino-más-corto-entre-dos-puntos-rodeando-un-obstáculo-circular)
+- [Problemas](#problemas)
 - [Verificación](#verificación)
+
+## Recursos
+
+| | |
+|---|---|
+| [cp-algorithms — Circle-circle intersection](https://cp-algorithms.com/geometry/circle-circle-intersection.html) | la derivación de `isect(Circ,Circ)` |
+| [cp-algorithms — Circle-line intersection](https://cp-algorithms.com/geometry/circle-line-intersection.html) | la de `isect(Circ,Line)` |
+| [cp-algorithms — Tangents to two circles](https://cp-algorithms.com/geometry/tangents-to-two-circles.html) | el truco del radio negativo para las internas |
+| [cp-algorithms — Minimum enclosing circle](https://cp-algorithms.com/geometry/enclosing-circle.html) | Welzl, y por qué el $O(n)$ esperado es real |
+
+> **USACO Guide no tiene módulo de círculos.** Su sección de geometría son primitivas, convex hull, sweep line y CHT; los círculos no aparecen. Por eso esta tabla manda a cp-algorithms y la lista de problemas de abajo es corta.
 
 ## Cómo se arma la submission
 
@@ -64,6 +77,8 @@ using Circ = pair<P,T>;    // {centro, radio}
 ---
 
 ## `Circle.h`
+
+> **Problema ancla:** no hay uno canónico para el tipo en sí. `in` y `arcLength` aparecen como piezas dentro de problemas más grandes.
 
 ### `in`
 
@@ -104,6 +119,8 @@ Implementación: `(a-c)/(b-c)` es la división de complejos, cuyo argumento es e
 ## `CircleIsect.h`
 
 **Requiere:** `Point.h`, `Circle.h`
+
+> **Problema ancla:** [Kattis — Birthday Cake](https://open.kattis.com/problems/birthdaycake) *(Hard)*: cortar un círculo con una recta dejando la misma cantidad de puntos de cada lado.
 
 ### `isect(Circ, Circ)`
 
@@ -247,6 +264,8 @@ El **circuncentro** y el **circunradio** del triángulo `abc`: el único círcul
 
 **Requiere:** `Point.h`, `Circle.h`, `Circumcenter.h`
 
+> **Problema ancla:** [LeetCode — Maximum Number of Darts Inside of a Circular Dartboard](https://leetcode.com/problems/maximum-number-of-darts-inside-of-a-circular-dartboard/description/) *(Hard)*. No es un MEC directo, pero usa la misma idea: el círculo óptimo queda fijado por 2 o 3 puntos.
+
 ### `mec`
 
 ```cpp
@@ -271,6 +290,44 @@ La clave que hace funcionar el algoritmo: el círculo óptimo siempre queda **de
 > ```
 
 > El `holgura = 1+1e-8` es una tolerancia **multiplicativa**, distinta del `EPS` aditivo global. Antes se llamaba `EPS` y tapaba al global (`-Wshadow` lo marcaba).
+
+<details>
+<summary><b>Ejemplo trazado: los tres bucles anidados sobre 5 puntos</b></summary>
+
+Entrada, **sin mezclar** para que la traza sea reproducible: `(0,0) (4,0) (2,3) (1,1) (3,1)`.
+
+El estado es un círculo `{centro, radio}` que arranca en `{(0,0), r=0}`. Cada bucle solo entra cuando un punto cae **afuera** del círculo actual:
+
+```
+i=0  (0,0)   adentro  ->  nada
+
+i=1  (4,0)   AFUERA   ->  reinicia: {(4,0), r=0}
+       j=0  (0,0) afuera -> diametro (4,0)-(0,0)
+                            centro (2.00, 0.00)   r = 2.000
+
+i=2  (2,3)   AFUERA   ->  reinicia: {(2,3), r=0}
+       j=0  (0,0) afuera -> diametro (2,3)-(0,0)
+                            centro (1.00, 1.50)   r = 1.803
+       j=1  (4,0) afuera -> diametro (2,3)-(4,0)
+                            centro (3.00, 1.50)   r = 1.803
+            k=0  (0,0) SIGUE afuera -> circuncirculo (2,3)(4,0)(0,0)
+                            centro (2.00, 0.83)   r = 2.167
+
+i=3  (1,1)   adentro  ->  nada
+i=4  (3,1)   adentro  ->  nada
+```
+
+**Resultado: centro `(2, 5/6)`, radio 2.167.**
+
+Tres cosas que se ven acá y no en la descripción:
+
+1. **El círculo se reinicia desde cero** cada vez que un punto cae afuera, no se "agranda". Parece un desperdicio, pero es justo lo que hace que el análisis amortizado dé `O(n)` esperado.
+2. **El nivel k se ejecutó una sola vez** en toda la corrida. Ese es el caso típico: el tercer bucle casi nunca entra, y por eso tres bucles anidados no son `O(n^3)`.
+3. **`(1,1)` y `(3,1)` nunca hicieron nada.** Los puntos interiores salen gratis — y en una entrada real son la enorme mayoría.
+
+El resultado queda fijado por `(0,0) (4,0) (2,3)`: **tres** puntos. Si sacaras `(2,3)`, quedaría fijado por `(0,0)` y `(4,0)` como diámetro: **dos**. Nunca hacen falta más de tres.
+
+</details>
 
 **Verificación:** 5.900 casos contra fuerza bruta que prueba **todo par y toda terna** como círculo candidato, en grillas muy degeneradas ($C=2$, $C=3$) y dispersas ($C=10^6$). 0 diferencias. Además 14.000 casos confirmando que el `assert` nuevo de `ccCenter` nunca se dispara desde `mec`.
 
@@ -332,6 +389,19 @@ else {
     ans = abs(ta - a) + arcLength(c, ta, tb) + abs(b - tb);
 }
 ```
+
+---
+
+## Problemas
+
+Los círculos casi no aparecen como tema propio en los jueces habituales; estos son los que encontré donde son el núcleo:
+
+| fuente | problema | dificultad | con qué |
+|---|---|---|---|
+| LeetCode | [Maximum Darts Inside a Circular Dartboard](https://leetcode.com/problems/maximum-number-of-darts-inside-of-a-circular-dartboard/description/) | Hard | círculo por 2 o 3 puntos |
+| Kattis | [Birthday Cake](https://open.kattis.com/problems/birthdaycake) | Hard | recta que parte un círculo |
+
+> Si estás preparando CF o AtCoder, los círculos rinden menos que polígonos por hora invertida. `mec` y `isect` son los dos que vale la pena tener a mano; el resto está acá por completitud.
 
 ---
 

@@ -4,6 +4,7 @@ La base de toda la librería de geometría. Todo lo demás (`Circles`, `Polygons
 
 ## Índice
 
+- [Recursos](#recursos)
 - [Cómo se arma la submission](#cómo-se-arma-la-submission)
 - [El contrato de tipos (`Point.h`)](#el-contrato-de-tipos-pointh)
   - [Elegir `T`: `db` o `ll`](#elegir-t-db-o-ll)
@@ -42,7 +43,19 @@ La base de toda la librería de geometría. Todo lo demás (`Circles`, `Polygons
   - [Ordenar puntos alrededor de un centro](#ordenar-puntos-alrededor-de-un-centro)
   - [El punto más cercano de un segmento](#el-punto-más-cercano-de-un-segmento)
   - [Distancia entre dos segmentos](#distancia-entre-dos-segmentos)
+- [Problemas](#problemas)
 - [Verificación](#verificación)
+
+## Recursos
+
+| | |
+|---|---|
+| [CPH, cap. 29 — Geometry](https://cses.fi/book/book.pdf) | la introducción más corta: complejos, puntos y rectas, polígonos, distancias |
+| [cp-algorithms — Basic geometry](https://cp-algorithms.com/geometry/basic-geometry.html) | las operaciones elementales, con las demostraciones |
+| [cp-algorithms — Oriented area of a triangle](https://cp-algorithms.com/geometry/oriented-triangle-area.html) | el `cross` como área con signo |
+| [CF — Point Struct](https://codeforces.com/blog/entry/48122) | de dónde sale el diseño de `Point.h` |
+| [CF — vlecomte, Geometry Handbook](https://codeforces.com/blog/entry/59129) | el tratamiento serio de precisión y casos degenerados |
+| [USACO Guide — Geometry Primitives](https://usaco.guide/plat/geo-pri) | los mismos temas, con problemas de CSES |
 
 ## Cómo se arma la submission
 
@@ -121,6 +134,8 @@ Los fallos son siempre del tipo "cross real colapsa a 0" (un caso degenerado se 
 ---
 
 ## `Point.h`
+
+> **Problema ancla:** [CSES — Point Location Test](https://cses.fi/problemset/task/2189) *(Easy)*. Es `cross` y nada más; si te sale, tenés la primitiva entendida.
 
 ### Operadores
 
@@ -343,6 +358,8 @@ Dice si `p` está sobre el **segmento** `l`, extremos incluidos.
 
 **Requiere:** `Point.h`
 
+> **Problema ancla:** [Library Checker — Sort Points by Argument](https://judge.yosupo.jp/problem/sort_points_by_argument) *(Easy)*. Es literalmente este comparador.
+
 ### `half`
 
 ```cpp
@@ -383,11 +400,46 @@ vP v; sort(all(v), angleCmp);
 
 > El origen (`half == 0`) queda en un grupo aparte. Si tu entrada puede traer el punto $(0,0)$, saltealo antes de ordenar: no tiene ángulo definido.
 
+<details>
+<summary><b>Ejemplo trazado: ordenar las 8 direcciones del compás</b></summary>
+
+Entrada, deliberadamente desordenada: `(-1,-1) (0,1) (1,-1) (-1,0) (1,0) (0,-1) (-1,1) (1,1)`.
+
+**Paso 1 — `half` de cada uno.** Esto es lo único que decide el grupo grande:
+
+| punto | `half` | por qué |
+|---|---:|---|
+| `(-1,-1)` | −1 | y < 0 |
+| `(1,-1)` | −1 | y < 0 |
+| `(0,-1)` | −1 | y < 0 |
+| `(1,0)` | **−1** | y = 0, así que mira x: -sgn(1) = -1 |
+| `(0,1)` | 1 | y > 0 |
+| `(-1,1)` | 1 | y > 0 |
+| `(1,1)` | 1 | y > 0 |
+| `(-1,0)` | **1** | y = 0, así que mira x: -sgn(-1) = 1 |
+
+Fijate en los dos casos del eje x: **`(1,0)` cae en el grupo de abajo y `(-1,0)` en el de arriba.** Eso no es un detalle estético, es lo que hace que el rango sea (-pi, pi] como `atan2` y no [0, 2pi).
+
+**Paso 2 — dentro de cada grupo decide el `cross`.** Los de `half = -1` primero, los de `half = 1` después, y adentro por giro antihorario.
+
+**Resultado:**
+
+```
+(-1,-1)  (0,-1)  (1,-1)  (1,0)  (1,1)  (0,1)  (-1,1)  (-1,0)
+  -135°    -90°    -45°     0°    45°    90°    135°    180°
+```
+
+Los ángulos quedan **estrictamente crecientes**, y `(-1,0)` queda último con **+180°**, nunca −180°. Ese es exactamente el orden de `atan2`, obtenido sin una sola llamada a `atan2`.
+
+</details>
+
 ---
 
 ## `SegDist.h`
 
 **Requiere:** `Point.h`
+
+> **Problema ancla:** [Kattis — Segment Distance](https://open.kattis.com/problems/segmentdistance) *(Easy)*.
 
 ### `lineDist`
 
@@ -426,6 +478,8 @@ Es el error clásico de principiante: usar `lineDist` cuando el problema habla d
 ## `SegIsect.h`
 
 **Requiere:** `Point.h`
+
+> **Problema ancla:** [CSES — Line Segment Intersection](https://cses.fi/problemset/task/2190) *(Medium)*, o [Kattis — Segment Intersection](https://open.kattis.com/problems/segmentintersection) *(Easy)* si querés además el punto de corte.
 
 Tres funciones, de la más permisiva a la más completa. La que casi siempre querés es **`segIsect`**.
 
@@ -537,6 +591,22 @@ if (!onSeg(q, l)) q = (abs2(p - l.f) < abs2(p - l.s)) ? l.f : l.s;
 T d = sz(segIsect(a, b)) ? 0 : min({segDist(a.f, b), segDist(a.s, b),
                                     segDist(b.f, a), segDist(b.s, a)});
 ```
+
+---
+
+## Problemas
+
+| fuente | problema | dificultad | con qué |
+|---|---|---|---|
+| CSES | [Point Location Test](https://cses.fi/problemset/task/2189) | Easy | `cross` |
+| Library Checker | [Sort Points by Argument](https://judge.yosupo.jp/problem/sort_points_by_argument) | Easy | `angleCmp` |
+| Kattis | [Segment Distance](https://open.kattis.com/problems/segmentdistance) | Easy | `segDist` |
+| Kattis | [Segment Intersection](https://open.kattis.com/problems/segmentintersection) | Easy | `segIsect` |
+| CSES | [Line Segment Intersection](https://cses.fi/problemset/task/2190) | Medium | `cross`, sin el punto de corte |
+| LeetCode | [Maximum Number of Visible Points](https://leetcode.com/problems/maximum-number-of-visible-points/description/) | Medium | `angleCmp` + ventana deslizante |
+| CF | [Cut Length](https://codeforces.com/contest/598/problem/F) | Hard | `lineIsect` sobre cada arista |
+
+Lista tomada de [USACO Guide — Geometry Primitives](https://usaco.guide/plat/geo-pri).
 
 ---
 

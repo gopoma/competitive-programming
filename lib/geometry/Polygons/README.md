@@ -4,6 +4,7 @@ Convex hull, área, centroide, punto en polígono, diámetro, tangentes y suma d
 
 ## Índice
 
+- [Recursos](#recursos)
 - [Cómo se arma la submission](#cómo-se-arma-la-submission)
   - [Qué hull elegir](#qué-hull-elegir)
 - [Dos convenciones que hay que tener claras](#dos-convenciones-que-hay-que-tener-claras)
@@ -44,8 +45,20 @@ Convex hull, área, centroide, punto en polígono, diámetro, tangentes y suma d
   - [¿La recta corta al convexo? (en O(log n))](#la-recta-corta-al-convexo-en-olog-n)
   - [El núcleo de un polígono (desde dónde se ve todo el interior)](#el-núcleo-de-un-polígono-desde-dónde-se-ve-todo-el-interior)
   - [Cuántos puntos caen sobre el borde del hull](#cuántos-puntos-caen-sobre-el-borde-del-hull)
+- [Problemas](#problemas)
 - [Verificación](#verificación)
 - [Lo que no está](#lo-que-no-está)
+
+## Recursos
+
+| | |
+|---|---|
+| [cp-algorithms — Convex hull](https://cp-algorithms.com/geometry/convex-hull.html) | cadena monótona y Graham, lado a lado |
+| [cp-algorithms — Area of a simple polygon](https://cp-algorithms.com/geometry/area-of-simple-polygon.html) | la fórmula del cordón y por qué el signo importa |
+| [cp-algorithms — Point in convex polygon](https://cp-algorithms.com/geometry/point-in-convex-polygon.html) | la versión $O(\log n)$ que acá no está |
+| [cp-algorithms — Minkowski sum](https://cp-algorithms.com/geometry/minkowski.html) | la fuente de `MinkowskiSum.h` |
+| [cp-algorithms — Half-plane intersection](https://cp-algorithms.com/geometry/halfplane-intersection.html) | el algoritmo incremental de `HalfPlaneIsect.h` |
+| [USACO Guide — Convex Hull](https://usaco.guide/plat/convex-hull) | Graham, cadena monótona y calipers, con problemas |
 
 ## Cómo se arma la submission
 
@@ -116,6 +129,8 @@ hull con desvio de 1e-13  ->  lo trata como vertice real
 
 **Requiere:** `Point.h` · $O(n \log n)$
 
+> **Problema ancla:** [Kattis — Convex Hull](https://open.kattis.com/problems/convexhull) *(Easy)*. El de siempre; si te sale, el resto de la carpeta se apoya en él.
+
 ### `ulHull`
 
 ```cpp
@@ -132,6 +147,40 @@ Las dos cadenas del hull por separado, como **índices** sobre `v`: `.f` es la c
   - Recorrer "el techo" o "el piso" de una nube de puntos.
 
 > Es la función interna de `hullInd`, pero es pública porque suelta sirve.
+
+<details>
+<summary><b>Ejemplo trazado: las dos cadenas, punto por punto</b></summary>
+
+Uso **los mismos 6 puntos que USACO Guide** usa para trazar Graham scan, así se pueden comparar: `(1,2) (2,3) (5,3) (3,2) (2,0) (6,2)`.
+
+**Paso 0 — ordenar por (x, y).** Acá está la diferencia con Graham, que ordena por ángulo alrededor del punto más bajo:
+
+```
+(1,2)  (2,0)  (2,3)  (3,2)  (5,3)  (6,2)
+```
+
+**Paso 1 — una sola pasada, alimentando las dos cadenas a la vez.** Se saca de la cadena mientras el `cross` tenga el signo equivocado:
+
+| procesa | arriba | abajo |
+|---|---|---|
+| `(1,2)` | `[(1,2)]` | `[(1,2)]` |
+| `(2,0)` | `[(1,2) (2,0)]` | `[(1,2) (2,0)]` |
+| `(2,3)` | cross = **+3** → saca `(2,0)`<br>`[(1,2) (2,3)]` | `[(1,2) (2,0) (2,3)]` |
+| `(3,2)` | `[(1,2) (2,3) (3,2)]` | cross = **−3** → saca `(2,3)`<br>`[(1,2) (2,0) (3,2)]` |
+| `(5,3)` | cross = **+3** → saca `(3,2)`<br>`[(1,2) (2,3) (5,3)]` | cross = **−3** → saca `(3,2)`<br>`[(1,2) (2,0) (5,3)]` |
+| `(6,2)` | `[(1,2) (2,3) (5,3) (6,2)]` | cross = **−6** → saca `(5,3)`<br>`[(1,2) (2,0) (6,2)]` |
+
+Mirá `(3,2)`: entra a las dos cadenas y **las dos lo expulsan** un paso después. Es el único punto interior del conjunto, y así es como el algoritmo se da cuenta — sin ningún test de "¿está adentro?".
+
+**Paso 2 — pegar.** La cadena de abajo, más la de arriba invertida y sin sus dos extremos:
+
+```
+hull CCW = [(1,2) (2,0) (6,2) (5,3) (2,3)]
+```
+
+Cinco vértices en antihorario, con `(3,2)` descartado. **Es el mismo resultado que obtiene Graham scan en USACO Guide**: dos algoritmos distintos, misma respuesta.
+
+</details>
 
 ### `hullInd`
 
@@ -181,6 +230,8 @@ Misma interfaz y mismo resultado que los de `ConvexHull.h`, por Graham scan: tom
 
 **Requiere:** `Point.h` · $O(n)$
 
+> **Problema ancla:** [CSES — Polygon Area](https://cses.fi/problemset/task/2191) *(Medium)*, o [Kattis — Polygon Area](https://open.kattis.com/problems/polygonarea) *(Easy)*.
+
 ### `cenArea`
 
 ```cpp
@@ -223,6 +274,8 @@ T area = abs(cenArea(v).s);
 
 **Requiere:** `Point.h` · $O(n)$
 
+> **Problema ancla:** [CSES — Point in Polygon](https://cses.fi/problemset/task/2192) *(Medium)*, o [Kattis — Point in Polygon](https://open.kattis.com/problems/pointinpolygon) *(Easy)*.
+
 ### `inPoly`
 
 ```cpp
@@ -256,6 +309,8 @@ La razón de que funcione: cada vez que el rayo cruza el borde, pasa de adentro 
 ## `HullDiameter.h`
 
 **Requiere:** `Point.h`, `ConvexHull.h` · $O(n \log n)$
+
+> **Problema ancla:** [Kattis — Robert Hood](https://open.kattis.com/problems/roberthood) *(Easy)*. Es `diameter2` y listo.
 
 ### `diameter2`
 
@@ -345,6 +400,8 @@ Lo que define una tangente es que **todo el polígono queda de un solo lado** de
 
 **Requiere:** `Point.h` · $O(n + m)$
 
+> **Problema ancla:** [CF — Geometers Anonymous Club](https://codeforces.com/problemset/problem/1195/F) *(Medium)*: suma de Minkowski acumulada sobre rangos.
+
 ### `minkowski_sum`
 
 ```cpp
@@ -426,6 +483,8 @@ Dice cómo corta la **recta infinita** `line` al convexo `poly`. El primer compo
 ## `HalfPlaneIsect.h`
 
 **Requiere:** `Point.h`, `AngleCmp.h` · $O(n \log n)$
+
+> **Problema ancla:** [Kattis — Big Brother](https://open.kattis.com/problems/bigbrother) *(Hard)*. Es el que usa el header para verificarse.
 
 ### `Ray` (el tipo de entrada)
 
@@ -544,6 +603,29 @@ each(p, ps) F0R(i, m) if (onSeg(p, Line{h[i], h[(i+1)%m]})) { ++cnt; break; }
 ```
 
 Hace falta porque el hull es **estricto** y no devuelve los colineales.
+
+---
+
+## Problemas
+
+| fuente | problema | dificultad | con qué |
+|---|---|---|---|
+| Kattis | [Convex Hull](https://open.kattis.com/problems/convexhull) | Easy | `hull` |
+| Kattis | [Polygon Area](https://open.kattis.com/problems/polygonarea) | Easy | `cenArea` |
+| Kattis | [Point in Polygon](https://open.kattis.com/problems/pointinpolygon) | Easy | `inPoly` |
+| Kattis | [Robert Hood](https://open.kattis.com/problems/roberthood) | Easy | `diameter2` |
+| CSES | [Polygon Area](https://cses.fi/problemset/task/2191) | Medium | `cenArea` |
+| CSES | [Point in Polygon](https://cses.fi/problemset/task/2192) | Medium | `inPoly` |
+| CSES | [Polygon Lattice Points](https://cses.fi/problemset/task/2193) | Medium | área + Pick |
+| CF | [Water Balance](https://codeforces.com/problemset/problem/1299/C) | Easy | hull de la suma prefija |
+| CF | [Geometers Anonymous Club](https://codeforces.com/problemset/problem/1195/F) | Medium | `minkowski_sum` |
+| USACO Plat | [Balance Beam](http://www.usaco.org/index.php?page=viewproblem2&cpid=864) | Medium | hull inferior |
+| USACO Old Gold | [Cow Curling](http://www.usaco.org/index.php?page=viewproblem2&cpid=382) | Medium | punto en convexo |
+| Kattis | [Big Brother](https://open.kattis.com/problems/bigbrother) | Hard | `halfPlaneIsect` |
+| Kattis | [Fence Orthogonality](https://open.kattis.com/problems/fenceortho) | Hard | hull + calipers |
+| Balkan OI 2011 | [Timeismoney](http://oj.uz/problem/view/balkan11_timeismoney) | Hard | hull sobre el espacio de soluciones |
+
+Lista tomada de [USACO Guide — Convex Hull](https://usaco.guide/plat/convex-hull).
 
 ---
 

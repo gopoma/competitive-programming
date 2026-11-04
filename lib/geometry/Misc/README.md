@@ -4,6 +4,7 @@ Tres algoritmos sueltos que no entran en las otras categorías: par más cercano
 
 ## Índice
 
+- [Recursos](#recursos)
 - [Cómo se arma la submission](#cómo-se-arma-la-submission)
 - [Tres choques de nombres, todos verificados](#tres-choques-de-nombres-todos-verificados)
 - [`ClosestPair.h`](#closestpairh)
@@ -20,7 +21,16 @@ Tres algoritmos sueltos que no entran en las otras categorías: par más cercano
   - [MST con distancia Chebyshov (L infinito)](#mst-con-distancia-chebyshov-l-infinito)
   - [¿Están todos los puntos alineados?](#están-todos-los-puntos-alineados)
   - [Cuántas rectas distintas determinan los puntos](#cuántas-rectas-distintas-determinan-los-puntos)
+- [Problemas](#problemas)
 - [Verificación](#verificación)
+
+## Recursos
+
+| | |
+|---|---|
+| [cp-algorithms — Nearest points](https://cp-algorithms.com/geometry/nearest_points.html) | el barrido de `ClosestPair`, con la prueba de la cota de la franja |
+| [cp-algorithms — Manhattan distance](https://cp-algorithms.com/geometry/manhattan-distance.html) | $L_1$, la rotación a $L_\infty$ y el MST Manhattan |
+| [USACO Guide — Sweep Line](https://usaco.guide/plat/sweep-line) | los tres temas de esta carpeta, con problemas |
 
 ## Cómo se arma la submission
 
@@ -56,6 +66,8 @@ Los tres los compilé y corrí. Pero si pegás `ClosestPair.h` y dentro de tu `s
 
 **Requiere:** `Point.h` · $O(n \log n)$
 
+> **Problema ancla:** [Kattis — Closest Pair](https://open.kattis.com/problems/closestpair2) *(Medium)*. Si nunca lo resolviste, intentalo antes de seguir leyendo.
+
 ### `solve`
 
 ```cpp
@@ -88,6 +100,8 @@ Por qué la franja contiene pocos puntos: todos los que están adentro distan en
 ## `ManhattanMST.h`
 
 **Independiente** (no requiere `Point.h`) · $O(n \log n)$
+
+> **Problema ancla:** [Kattis — Grid MST](https://open.kattis.com/problems/gridmst) *(Medium)*. Si nunca lo resolviste, intentalo antes de seguir leyendo.
 
 ### `manhattanMst`
 
@@ -125,6 +139,50 @@ each(e, ed) if (D.unite(e.s.f, e.s.s)) total += e.f;
 
 El argumento es el mismo que justifica cualquier algoritmo de MST geométrico: si dentro de un octante tomaras un vecino que **no** es el más cercano, esa arista cerraría un ciclo en el que alguna otra es más corta, y la propiedad del ciclo la deja afuera del MST. Así que basta con generar, por punto y por octante, una sola candidata: $8n$ en total, que por simetría se calculan en $4$ pasadas.
 
+<details>
+<summary><b>Ejemplo trazado: 5 puntos, de las candidatas al MST</b></summary>
+
+Entrada: `0:(0,0)  1:(3,1)  2:(1,4)  3:(5,5)  4:(2,2)`.
+
+El grafo completo tiene C(5,2) = 10 aristas. `manhattanMst` devuelve **9 candidatas** — la cota 4n sería 20, así que ni se acerca:
+
+| peso | arista |
+|---:|---|
+| 2 | 1–4 |
+| 2 | 1–4 *(repetida)* |
+| 3 | 4–2 |
+| 4 | 1–0 |
+| 4 | 4–0 |
+| 5 | 3–2 |
+| 6 | 3–1 |
+| 6 | 3–4 |
+| 6 | 3–4 *(repetida)* |
+
+**Las repetidas son normales:** las 4 pasadas cubren octantes distintos, pero un mismo par puede ser "el vecino más cercano" en más de uno. Kruskal las descarta solo, no hace falta deduplicar.
+
+Lo interesante es **lo que falta**. De los 10 pares posibles solo aparecen 7: nunca se generan **0–2 (5)**, **0–3 (10)** ni **1–2 (5)**. Y los tres están descartados por la propiedad del ciclo — en cada caso la arista es el máximo **estricto** de un ciclo, así que ningún MST la puede usar:
+
+| arista ausente | ciclo que la mata | pesos |
+|---|---|---|
+| 0–2 (5) | 0–4–2–0 | 4, 3, **5** |
+| 0–3 (10) | 0–4–2–3–0 | 4, 3, 5, **10** |
+| 1–2 (5) | 1–4–2–1 | 2, 3, **5** |
+
+Eso es exactamente lo que garantiza el argumento de los octantes: las que no se generan son justamente las que nunca harían falta.
+
+Kruskal sobre las 9:
+
+| paso | arista | peso | por qué |
+|---|---|---:|---|
+| 1 | 1–4 | 2 | la más corta |
+| 2 | 4–2 | 3 | conecta 2 |
+| 3 | 1–0 | 4 | conecta 0 |
+| 4 | 3–2 | 5 | conecta 3 |
+
+**Peso del MST: 14.** Verificado contra el MST del grafo completo `O(n^2)`: mismo valor.
+
+</details>
+
 **Verificación:** 6.300 casos comparando el peso del MST sacado de las $\le 4n$ aristas contra el MST del grafo **completo** $O(n^2)$, con $C$ de 3 a $10^9$. 0 diferencias. Fue la primera vez que este header se verificó: antes **no compilaba** (incluía una ruta muerta, `"DSU (7.6).h"`).
 
 ---
@@ -132,6 +190,8 @@ El argumento es el mismo que justifica cualquier algoritmo de MST geométrico: s
 ## `MaxCollinear.h`
 
 **Independiente** (no requiere `Point.h`) · $O(n^2 \log n)$
+
+> **Problema ancla:** [Kattis — Max Collinear](https://open.kattis.com/problems/maxcolinear) *(Hard)*, o [LeetCode — Max Points on a Line](https://leetcode.com/problems/max-points-on-a-line/description/) *(Easy)* para la versión chica.
 
 ### `getline`
 
@@ -221,6 +281,21 @@ set<pair<pi,ll>> rectas;
 F0R(i, sz(p)) FOR(j, i+1, sz(p)) rectas.ins(getline(p[i], p[j]));
 int cuantas = sz(rectas);
 ```
+
+---
+
+## Problemas
+
+| fuente | problema | dificultad | con qué |
+|---|---|---|---|
+| Kattis | [Closest Pair](https://open.kattis.com/problems/closestpair2) | Medium | `ClosestPair.h` |
+| Kattis | [Grid MST](https://open.kattis.com/problems/gridmst) | Medium | `ManhattanMST.h` + Kruskal |
+| LeetCode | [Max Points on a Line](https://leetcode.com/problems/max-points-on-a-line/description/) | Easy | `MaxCollinear.h` |
+| Kattis | [Max Collinear](https://open.kattis.com/problems/maxcolinear) | Hard | `MaxCollinear.h` |
+| AtCoder | [Manhattan Multifocal Ellipse](https://atcoder.jp/contests/abc366/tasks/abc366_e) | Hard | $L_1$, sin MST |
+| CS Academy | [The Sprawl](https://csacademy.com/contest/archive/task/the-sprawl) | Hard | MST Manhattan |
+
+Lista tomada de [USACO Guide — Sweep Line](https://usaco.guide/plat/sweep-line) y [Geometry Primitives](https://usaco.guide/plat/geo-pri).
 
 ---
 
