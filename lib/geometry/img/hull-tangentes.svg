@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 215" width="540" height="215" font-family="ui-sans-serif,system-ui,-apple-system,sans-serif">
+<style>
+  .tx{fill:#334155;font-size:13px;font-weight:600}
+  .mn{fill:#64748b;font-size:11px}
+  .pg{fill:none;stroke:#64748b;stroke-width:2}
+  @media (prefers-color-scheme:dark){
+    .tx{fill:#c9d1d9}.mn{fill:#8b949e}.pg{stroke:#8b949e}
+  }
+</style>
+
+<!-- convexo -->
+<path class="pg" d="M120,170 L210,185 L265,120 L225,50 L135,45 L88,105 Z" fill="#64748b" fill-opacity="0.06"/>
+
+<!-- el arco VISIBLE desde b, entre las dos tangencias -->
+<path d="M120,170 L88,105 L135,45" fill="none" stroke="#2563eb" stroke-width="4" opacity="0.45"/>
+
+<!-- punto exterior -->
+<circle cx="30" cy="110" r="5" fill="#334155"/>
+<text class="tx" x="18" y="102">b</text>
+
+<!-- las dos tangentes -->
+<line x1="30" y1="110" x2="120" y2="170" stroke="#dc2626" stroke-width="2"/>
+<line x1="30" y1="110" x2="135" y2="45" stroke="#059669" stroke-width="2"/>
+<circle cx="120" cy="170" r="5.5" fill="#dc2626"/>
+<circle cx="135" cy="45" r="5.5" fill="#059669"/>
+<text class="tx" x="112" y="190" fill="#dc2626">tangents().f</text>
+<text class="tx" x="128" y="36" fill="#059669">tangents().s</text>
+
+<!-- vertices normales -->
+<circle cx="210" cy="185" r="3.5" fill="#64748b"/>
+<circle cx="265" cy="120" r="3.5" fill="#64748b"/>
+<circle cx="225" cy="50" r="3.5" fill="#64748b"/>
+<circle cx="88" cy="105" r="3.5" fill="#2563eb"/>
+
+<text class="mn" x="150" y="112" fill="#2563eb">arco visible</text>
+
+<text class="tx" x="310" y="48">tangents(a, b)</text>
+<text class="mn" x="310" y="70">Desde un punto b ESTRICTAMENTE</text>
+<text class="mn" x="310" y="86">afuera, devuelve los indices de los</text>
+<text class="mn" x="310" y="102">dos vertices de tangencia.</text>
+<text class="mn" x="310" y="126">Todo el convexo queda de un solo</text>
+<text class="mn" x="310" y="142">lado de cada tangente: eso es lo</text>
+<text class="mn" x="310" y="158">que las define.</text>
+<text class="mn" x="310" y="182">Entre las dos queda el arco que</text>
+<text class="mn" x="310" y="198">se VE desde b, en O(log n).</text>
+</svg>

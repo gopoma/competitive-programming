@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 215" width="540" height="215" font-family="ui-sans-serif,system-ui,-apple-system,sans-serif">
+<style>
+  .tx{fill:#334155;font-size:13px;font-weight:600}
+  .mn{fill:#64748b;font-size:11px}
+  .pt{fill:#94a3b8}
+  .ax{stroke:#cbd5e1;stroke-width:1}
+  @media (prefers-color-scheme:dark){
+    .tx{fill:#c9d1d9}.mn{fill:#8b949e}.pt{fill:#6e7681}.ax{stroke:#30363d}
+  }
+</style>
+
+<!-- franja activa -->
+<rect x="150" y="25" width="70" height="155" fill="#2563eb" opacity="0.08"/>
+<line class="ax" x1="150" y1="25" x2="150" y2="180" stroke-dasharray="4 3"/>
+<line class="ax" x1="220" y1="25" x2="220" y2="180" stroke-dasharray="4 3"/>
+
+<!-- ya descartados a la izquierda -->
+<g class="pt">
+  <circle cx="40" cy="60" r="3.5"/><circle cx="62" cy="140" r="3.5"/>
+  <circle cx="95" cy="95" r="3.5"/><circle cx="120" cy="155" r="3.5"/>
+  <circle cx="132" cy="48" r="3.5"/>
+</g>
+
+<!-- en la franja -->
+<circle cx="163" cy="70" r="4.5" fill="#2563eb"/>
+<circle cx="178" cy="120" r="4.5" fill="#2563eb"/>
+<circle cx="196" cy="160" r="4.5" fill="#2563eb"/>
+
+<!-- el punto actual -->
+<circle cx="220" cy="105" r="5.5" fill="#dc2626"/>
+<text class="tx" x="226" y="100" fill="#dc2626">v[i]</text>
+
+<!-- la ventana en y de +- d -->
+<rect x="150" y="75" width="70" height="60" fill="#dc2626" opacity="0.1"/>
+<line x1="144" y1="75" x2="226" y2="75" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="3 2"/>
+<line x1="144" y1="135" x2="226" y2="135" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="3 2"/>
+<text class="mn" x="120" y="72" fill="#dc2626">y + d</text>
+<text class="mn" x="120" y="146" fill="#dc2626">y - d</text>
+
+<!-- el unico candidato real -->
+<line x1="220" y1="105" x2="178" y2="120" stroke="#dc2626" stroke-width="1.8"/>
+
+<!-- por la izquierda: se van los que quedan lejos en x -->
+<text class="mn" x="24" y="200">se eliminan: x demasiado lejos</text>
+<text class="mn" x="150" y="18" fill="#2563eb">franja de ancho d</text>
+
+<text class="tx" x="300" y="46">El barrido</text>
+<text class="mn" x="300" y="68">Se recorre ordenado por x. En un</text>
+<text class="mn" x="300" y="84">set ordenado por y quedan solo los</text>
+<text class="mn" x="300" y="100">puntos a menos de d en el eje x.</text>
+<text class="mn" x="300" y="124">Para cada punto nuevo basta mirar</text>
+<text class="mn" x="300" y="140">la ventana de +-d en y: por geometria</text>
+<text class="mn" x="300" y="156">ahi entra un numero CONSTANTE de</text>
+<text class="mn" x="300" y="172">candidatos.</text>
+<text class="mn" x="300" y="196" font-weight="600">de ahi sale el O(n log n)</text>
+</svg>

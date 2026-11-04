@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 232" width="540" height="232" font-family="ui-sans-serif,system-ui,-apple-system,sans-serif">
+<style>
+  .tx{fill:#334155;font-size:13px;font-weight:600}
+  .mn{fill:#64748b;font-size:11px}
+  .pg{fill:none;stroke:#334155;stroke-width:2.2}
+  @media (prefers-color-scheme:dark){
+    .tx{fill:#c9d1d9}.mn{fill:#8b949e}.pg{stroke:#c9d1d9}
+  }
+</style>
+<defs>
+  <marker id="rA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
+</defs>
+
+<!-- un poligono NO convexo, para mostrar que sirve igual -->
+<path class="pg" d="M50,180 L90,60 L160,110 L215,45 L255,185 Z" fill="#64748b" fill-opacity="0.06"/>
+
+<!-- punto AFUERA: el rayo cruza 4 veces (par) -->
+<circle cx="30" cy="85" r="5" fill="#dc2626"/>
+<line x1="30" y1="85" x2="320" y2="85" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#rA)"/>
+<circle cx="81" cy="85" r="4.5" fill="none" stroke="#dc2626" stroke-width="2"/>
+<circle cx="125" cy="85" r="4.5" fill="none" stroke="#dc2626" stroke-width="2"/>
+<circle cx="182" cy="85" r="4.5" fill="none" stroke="#dc2626" stroke-width="2"/>
+<circle cx="226" cy="85" r="4.5" fill="none" stroke="#dc2626" stroke-width="2"/>
+<text class="tx" x="18" y="78" fill="#dc2626">q</text>
+<text class="mn" x="330" y="80" fill="#dc2626">4 cruces - PAR - afuera</text>
+
+<!-- punto ADENTRO: el rayo cruza 1 vez (impar) -->
+<circle cx="100" cy="140" r="5" fill="#059669"/>
+<line x1="100" y1="140" x2="320" y2="140" stroke="#059669" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#rA)"/>
+<circle cx="241" cy="140" r="4.5" fill="none" stroke="#059669" stroke-width="2"/>
+<text class="tx" x="86" y="134" fill="#059669">p</text>
+<text class="mn" x="330" y="135" fill="#059669">1 cruce - IMPAR - adentro</text>
+
+<!-- punto en el BORDE -->
+<circle cx="132" cy="90" r="5" fill="#2563eb"/>
+<text class="tx" x="136" y="106" fill="#2563eb">r</text>
+<text class="mn" x="330" y="170" fill="#2563eb">r cae sobre un lado: onSeg lo</text>
+<text class="mn" x="330" y="184" fill="#2563eb">detecta ANTES de contar, y da 0</text>
+
+<text class="tx" x="30" y="214">Numero de cruces</text>
+<text class="mn" x="30" y="228">sirve con el poligono en CW o en CCW, y no hace falta que sea convexo</text>
+</svg>

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 215" width="540" height="215" font-family="ui-sans-serif,system-ui,-apple-system,sans-serif">
+<style>
+  .tx{fill:#334155;font-size:13px;font-weight:600}
+  .mn{fill:#64748b;font-size:11px}
+  @media (prefers-color-scheme:dark){ .tx{fill:#c9d1d9}.mn{fill:#8b949e} }
+</style>
+<defs>
+  <marker id="cG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker>
+  <marker id="cR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/></marker>
+</defs>
+
+<!-- CCW: area positiva -->
+<g>
+  <path d="M40,160 L150,160 L120,50 L55,75 Z" fill="#059669" opacity="0.09"/>
+  <path d="M40,160 L150,160" stroke="#059669" stroke-width="2.2" marker-end="url(#cG)"/>
+  <path d="M150,160 L120,50" stroke="#059669" stroke-width="2.2" marker-end="url(#cG)"/>
+  <path d="M120,50 L55,75" stroke="#059669" stroke-width="2.2" marker-end="url(#cG)"/>
+  <path d="M55,75 L40,160" stroke="#059669" stroke-width="2.2" marker-end="url(#cG)"/>
+  <circle cx="91" cy="113" r="4.5" fill="#059669"/>
+  <text class="mn" x="98" y="117" fill="#059669">centroide</text>
+  <text class="tx" x="30" y="190" fill="#059669">CCW  -  area &gt; 0</text>
+  <text class="mn" x="30" y="206">recorrido ANTIHORARIO</text>
+</g>
+
+<!-- CW: area negativa -->
+<g>
+  <path d="M250,160 L360,160 L330,50 L265,75 Z" fill="#dc2626" opacity="0.09"/>
+  <path d="M250,160 L265,75" stroke="#dc2626" stroke-width="2.2" marker-end="url(#cR)"/>
+  <path d="M265,75 L330,50" stroke="#dc2626" stroke-width="2.2" marker-end="url(#cR)"/>
+  <path d="M330,50 L360,160" stroke="#dc2626" stroke-width="2.2" marker-end="url(#cR)"/>
+  <path d="M360,160 L250,160" stroke="#dc2626" stroke-width="2.2" marker-end="url(#cR)"/>
+  <circle cx="301" cy="113" r="4.5" fill="#dc2626"/>
+  <text class="tx" x="240" y="190" fill="#dc2626">CW  -  area &lt; 0</text>
+  <text class="mn" x="240" y="206">recorrido HORARIO</text>
+</g>
+
+<text class="tx" x="400" y="62">El signo es informacion</text>
+<text class="mn" x="400" y="84">Es la forma de saber la</text>
+<text class="mn" x="400" y="100">orientacion del poligono:</text>
+<text class="mn" x="400" y="124" font-weight="600">sgn(cenArea(v).s) &gt; 0</text>
+<text class="mn" x="400" y="140">equivale a &quot;viene en CCW&quot;.</text>
+<text class="mn" x="400" y="164">Para el area a secas:</text>
+<text class="mn" x="400" y="180" font-weight="600">abs(cenArea(v).s)</text>
+</svg>

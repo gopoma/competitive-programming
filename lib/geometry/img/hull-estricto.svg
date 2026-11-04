@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 230" width="540" height="230" font-family="ui-sans-serif,system-ui,-apple-system,sans-serif">
+<style>
+  .tx{fill:#334155;font-size:13px;font-weight:600}
+  .mn{fill:#64748b;font-size:11px}
+  .pt{fill:#64748b}
+  @media (prefers-color-scheme:dark){
+    .tx{fill:#c9d1d9}.mn{fill:#8b949e}.pt{fill:#8b949e}
+  }
+</style>
+
+<!-- IZQUIERDA: la entrada -->
+<g>
+  <text class="tx" x="30" y="24">la entrada: 8 puntos</text>
+  <path d="M50,160 L170,160 L170,45 L50,45 Z" fill="none" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <circle class="pt" cx="50" cy="160" r="4.5"/><circle class="pt" cx="170" cy="160" r="4.5"/>
+  <circle class="pt" cx="170" cy="45" r="4.5"/><circle class="pt" cx="50" cy="45" r="4.5"/>
+  <circle class="pt" cx="110" cy="160" r="4.5"/><circle class="pt" cx="170" cy="102" r="4.5"/>
+  <circle class="pt" cx="110" cy="45" r="4.5"/><circle class="pt" cx="50" cy="102" r="4.5"/>
+  <text class="mn" x="30" y="190">cuatro esquinas y los cuatro</text>
+  <text class="mn" x="30" y="206">puntos medios de los lados</text>
+</g>
+
+<text class="tx" x="206" y="108" fill="#64748b">hull(v)</text>
+<path d="M200,120 L252,120" stroke="#64748b" stroke-width="2" fill="none"/>
+<path d="M246,115 L254,120 L246,125 z" fill="#64748b"/>
+
+<!-- DERECHA: la salida -->
+<g>
+  <text class="tx" x="290" y="24">la salida: 4 vertices</text>
+  <path d="M310,160 L430,160 L430,45 L310,45 Z" fill="#059669" opacity="0.08"/>
+  <path d="M310,160 L430,160 L430,45 L310,45 Z" fill="none" stroke="#059669" stroke-width="2.2"/>
+  <circle cx="310" cy="160" r="5" fill="#059669"/><circle cx="430" cy="160" r="5" fill="#059669"/>
+  <circle cx="430" cy="45" r="5" fill="#059669"/><circle cx="310" cy="45" r="5" fill="#059669"/>
+  <!-- los medios, descartados -->
+  <g stroke="#dc2626" stroke-width="1.8">
+    <path d="M366,156 l8,8 M374,156 l-8,8"/>
+    <path d="M426,98 l8,8 M434,98 l-8,8"/>
+    <path d="M366,41 l8,8 M374,41 l-8,8"/>
+    <path d="M306,98 l8,8 M314,98 l-8,8"/>
+  </g>
+  <text class="mn" x="290" y="190" fill="#dc2626">los 4 puntos COLINEALES del</text>
+  <text class="mn" x="290" y="206" fill="#dc2626">borde se descartan</text>
+</g>
+
+<text class="tx" x="452" y="108">hull</text>
+<text class="tx" x="452" y="126">ESTRICTO</text>
+</svg>

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 272" width="540" height="272" font-family="ui-sans-serif,system-ui,-apple-system,sans-serif">
+<style>
+  .tx{fill:#334155;font-size:13px;font-weight:600}
+  .lb{fill:#334155;font-size:12px;font-weight:600}
+  .mn{fill:#64748b;font-size:11px}
+  .ax{stroke:#94a3b8;stroke-width:1.3}
+  @media (prefers-color-scheme:dark){
+    .tx,.lb{fill:#c9d1d9}.mn{fill:#8b949e}.ax{stroke:#6e7681}
+  }
+</style>
+<defs>
+  <marker id="hA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+</defs>
+
+<!-- leyendas, FUERA de las bandas para que nada se pise -->
+<text class="tx" x="45" y="22" fill="#2563eb">half = +1</text>
+<text class="mn" x="118" y="22">semiplano superior y el eje x NEGATIVO</text>
+
+<rect x="45" y="32" width="258" height="113" fill="#2563eb" opacity="0.07"/>
+<rect x="45" y="145" width="258" height="113" fill="#dc2626" opacity="0.07"/>
+
+<line class="ax" x1="45" y1="145" x2="300" y2="145" marker-end="url(#hA)"/>
+<line class="ax" x1="175" y1="256" x2="175" y2="36" marker-end="url(#hA)"/>
+<text class="mn" x="282" y="139">+x</text>
+
+<g>
+  <line x1="175" y1="145" x2="243" y2="145" stroke="#dc2626" stroke-width="2"/>
+  <circle cx="243" cy="145" r="4" fill="#dc2626"/><text class="lb" x="249" y="150" fill="#dc2626">4</text>
+  <line x1="175" y1="145" x2="219" y2="197" stroke="#dc2626" stroke-width="2"/>
+  <circle cx="219" cy="197" r="4" fill="#dc2626"/><text class="lb" x="225" y="209" fill="#dc2626">1</text>
+  <line x1="175" y1="145" x2="119" y2="184" stroke="#dc2626" stroke-width="2"/>
+  <circle cx="119" cy="184" r="4" fill="#dc2626"/><text class="lb" x="106" y="196" fill="#dc2626">2</text>
+  <line x1="175" y1="145" x2="223" y2="97" stroke="#2563eb" stroke-width="2"/>
+  <circle cx="223" cy="97" r="4" fill="#2563eb"/><text class="lb" x="229" y="92" fill="#2563eb">5</text>
+  <line x1="175" y1="145" x2="123" y2="101" stroke="#2563eb" stroke-width="2"/>
+  <circle cx="123" cy="101" r="4" fill="#2563eb"/><text class="lb" x="110" y="96" fill="#2563eb">6</text>
+  <line x1="175" y1="145" x2="107" y2="145" stroke="#2563eb" stroke-width="2"/>
+  <circle cx="107" cy="145" r="4" fill="#2563eb"/><text class="lb" x="94" y="140" fill="#2563eb">7</text>
+</g>
+<circle cx="175" cy="145" r="3" fill="#64748b"/>
+
+<text class="tx" x="45" y="270" fill="#dc2626">half = -1</text>
+<text class="mn" x="118" y="270">semiplano inferior y el eje x POSITIVO</text>
+
+<text class="tx" x="330" y="46">Por que alcanza el cross</text>
+<text class="mn" x="330" y="68">Cada grupo abarca un rango de</text>
+<text class="mn" x="330" y="84">exactamente pi, y dentro de pi el</text>
+<text class="mn" x="330" y="100">signo del cross ya ordena bien.</text>
+<text class="mn" x="330" y="124">Primero se compara el grupo; si</text>
+<text class="mn" x="330" y="140">empatan, decide cross(a,b).</text>
+<text class="tx" x="330" y="172">El orden que sale</text>
+<text class="mn" x="330" y="194" font-weight="600">2 - 1 - 4 - 5 - 6 - 7</text>
+<text class="mn" x="330" y="216">es el mismo que atan2, que vive</text>
+<text class="mn" x="330" y="232">en (-pi, pi]: por eso el eje x</text>
+<text class="mn" x="330" y="248">negativo (7) queda al final.</text>
+</svg>

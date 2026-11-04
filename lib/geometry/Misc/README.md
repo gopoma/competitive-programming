@@ -77,6 +77,10 @@ Los **dos puntos más cercanos** del conjunto.
 
 **Cómo funciona:** ordena por $x$ y barre de izquierda a derecha, manteniendo en un `set` ordenado por $y$ solo los puntos que están a menos de la mejor distancia actual en el eje $x$. Para cada punto nuevo, solo mira la franja de $\pm d$ en $y$ — que por geometría contiene un número constante de candidatos.
 
+![el barrido y la franja activa](../img/closestpair-franja.svg)
+
+Por qué la franja contiene pocos puntos: todos los que están adentro distan entre sí **al menos $d$** (si no, $d$ ya sería menor). En un rectángulo de $d \times 2d$ no entran más que un puñado de puntos separados por $d$, y esa cota constante es la que convierte el barrido en $O(n \log n)$.
+
 **Verificación:** 5.500 casos contra fuerza bruta $O(n^2)$, incluyendo configuraciones con muchos duplicados y colineales ($C=4$ con hasta 9 puntos), medias y dispersas ($C=10^5$ con hasta 120 puntos). 0 diferencias.
 
 ---
@@ -116,6 +120,10 @@ each(e, ed) if (D.unite(e.s.f, e.s.s)) total += e.f;
   - También sirve para **distancia Chebyshov** ($L_\infty$): rotando el plano 45° ($x' = x+y$, $y' = x-y$), $L_\infty$ se convierte en $L_1$.
 
 **Por qué $4n$ aristas alcanzan:** para cada punto, en cada uno de los 8 octantes, solo el **vecino más cercano** puede formar parte de un MST. Las cuatro vueltas del bucle cubren los 8 octantes por simetría, y cada vuelta aporta a lo sumo una arista por punto.
+
+![los 8 octantes y el vecino más cercano](../img/manhattan-octantes.svg)
+
+El argumento es el mismo que justifica cualquier algoritmo de MST geométrico: si dentro de un octante tomaras un vecino que **no** es el más cercano, esa arista cerraría un ciclo en el que alguna otra es más corta, y la propiedad del ciclo la deja afuera del MST. Así que basta con generar, por punto y por octante, una sola candidata: $8n$ en total, que por simetría se calculan en $4$ pasadas.
 
 **Verificación:** 6.300 casos comparando el peso del MST sacado de las $\le 4n$ aristas contra el MST del grafo **completo** $O(n^2)$, con $C$ de 3 a $10^9$. 0 diferencias. Fue la primera vez que este header se verificó: antes **no compilaba** (incluía una ruta muerta, `"DSU (7.6).h"`).
 

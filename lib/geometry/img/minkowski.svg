@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 205" width="540" height="205" font-family="ui-sans-serif,system-ui,-apple-system,sans-serif">
+<style>
+  .tx{fill:#334155;font-size:13px;font-weight:600}
+  .mn{fill:#64748b;font-size:11px}
+  .op{fill:#64748b;font-size:20px;font-weight:600}
+  @media (prefers-color-scheme:dark){
+    .tx{fill:#c9d1d9}.mn{fill:#8b949e}.op{fill:#8b949e}
+  }
+</style>
+
+<!-- A: un triangulo -->
+<g>
+  <path d="M30,120 L90,120 L60,66 Z" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="2"/>
+  <text class="tx" x="54" y="146" fill="#2563eb">A</text>
+</g>
+
+<text class="op" x="108" y="106">+</text>
+
+<!-- B: un cuadrado chico -->
+<g>
+  <path d="M140,120 L180,120 L180,80 L140,80 Z" fill="#dc2626" fill-opacity="0.12" stroke="#dc2626" stroke-width="2"/>
+  <text class="tx" x="156" y="146" fill="#dc2626">B</text>
+</g>
+
+<text class="op" x="198" y="106">=</text>
+
+<!-- A (+) B: el triangulo "engordado" por el cuadrado -->
+<g>
+  <path d="M240,140 L340,140 L340,100 L320,100 L280,46 L260,46 L240,100 Z"
+        fill="#059669" fill-opacity="0.12" stroke="#059669" stroke-width="2.2"/>
+  <!-- copia de B en cada vertice de A, punteada -->
+  <g stroke="#dc2626" stroke-width="1.1" fill="none" stroke-dasharray="3 3" opacity="0.8">
+    <rect x="240" y="100" width="40" height="40"/>
+    <rect x="300" y="100" width="40" height="40"/>
+    <rect x="260" y="46" width="40" height="40"/>
+  </g>
+  <text class="tx" x="272" y="166" fill="#059669">A + B</text>
+</g>
+
+<text class="tx" x="370" y="44">minkowski_sum</text>
+<text class="mn" x="370" y="66">El conjunto de TODAS las sumas</text>
+<text class="mn" x="370" y="82">p + q con p en A y q en B.</text>
+<text class="mn" x="370" y="104">Equivale a barrer B con su origen</text>
+<text class="mn" x="370" y="120">recorriendo todo A: por eso el</text>
+<text class="mn" x="370" y="136">resultado es A &quot;engordado&quot;.</text>
+<text class="mn" x="370" y="160">Dos convexos A y B se tocan si y</text>
+<text class="mn" x="370" y="176">solo si el ORIGEN cae dentro de</text>
+<text class="mn" x="370" y="192" font-weight="600">A + (-B)</text>
+</svg>

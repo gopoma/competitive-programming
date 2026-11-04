@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 215" width="540" height="215" font-family="ui-sans-serif,system-ui,-apple-system,sans-serif">
+<style>
+  .tx{fill:#334155;font-size:13px}
+  .lb{fill:#334155;font-size:12px;font-weight:600}
+  .mn{fill:#64748b;font-size:11px}
+  .ax{stroke:#cbd5e1;stroke-width:1}
+  .seg{stroke:#64748b;stroke-width:1.6;fill:none}
+  @media (prefers-color-scheme:dark){
+    .tx,.lb{fill:#c9d1d9}.mn{fill:#8b949e}
+    .ax{stroke:#30363d}.seg{stroke:#8b949e}
+  }
+</style>
+<defs>
+  <marker id="aG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker>
+  <marker id="aR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/></marker>
+  <marker id="aN" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
+</defs>
+
+<!-- ================= panel 1: giro a la izquierda, cross > 0 ================= -->
+<g>
+  <path class="ax" d="M20,160 H160 M20,160 V25"/>
+  <!-- p=(20,20) a=(120,40) c=(70,120)  ->  pantalla y = 20+140-my -->
+  <path d="M40,140 L140,120" stroke="#059669" stroke-width="2.2" fill="none" marker-end="url(#aG)"/>
+  <path d="M140,120 L90,40" stroke="#059669" stroke-width="2.2" fill="none" marker-end="url(#aG)"/>
+  <path class="seg" stroke-dasharray="3 3" d="M90,40 L40,140"/>
+  <circle cx="40" cy="140" r="3.5" fill="#059669"/>
+  <circle cx="140" cy="120" r="3.5" fill="#059669"/>
+  <circle cx="90" cy="40" r="3.5" fill="#059669"/>
+  <text class="lb" x="28" y="155">p</text>
+  <text class="lb" x="146" y="124">a</text>
+  <text class="lb" x="96" y="38">b</text>
+  <text class="tx" x="20" y="186" fill="#059669" font-weight="600">cross(p,a,b) &gt; 0</text>
+  <text class="mn" x="20" y="202">gira a la IZQUIERDA (CCW)</text>
+</g>
+
+<!-- ================= panel 2: colineales, cross == 0 ================= -->
+<g>
+  <path class="ax" d="M200,160 H340 M200,160 V25"/>
+  <!-- p=(20,30) a=(75,70) c=(130,110) -->
+  <path d="M220,130 L275,90" stroke="#64748b" stroke-width="2.2" fill="none" marker-end="url(#aN)"/>
+  <path d="M275,90 L330,50" stroke="#64748b" stroke-width="2.2" fill="none" marker-end="url(#aN)"/>
+  <circle cx="220" cy="130" r="3.5" fill="#64748b"/>
+  <circle cx="275" cy="90" r="3.5" fill="#64748b"/>
+  <circle cx="330" cy="50" r="3.5" fill="#64748b"/>
+  <text class="lb" x="208" y="144">p</text>
+  <text class="lb" x="278" y="104">a</text>
+  <text class="lb" x="336" y="48">b</text>
+  <text class="tx" x="200" y="186" font-weight="600">cross(p,a,b) == 0</text>
+  <text class="mn" x="200" y="202">los tres son COLINEALES</text>
+</g>
+
+<!-- ================= panel 3: giro a la derecha, cross < 0 ================= -->
+<g>
+  <path class="ax" d="M380,160 H520 M380,160 V25"/>
+  <!-- p=(20,120) a=(120,100) c=(70,20) -->
+  <path d="M400,40 L500,60" stroke="#dc2626" stroke-width="2.2" fill="none" marker-end="url(#aR)"/>
+  <path d="M500,60 L450,140" stroke="#dc2626" stroke-width="2.2" fill="none" marker-end="url(#aR)"/>
+  <path class="seg" stroke-dasharray="3 3" d="M450,140 L400,40"/>
+  <circle cx="400" cy="40" r="3.5" fill="#dc2626"/>
+  <circle cx="500" cy="60" r="3.5" fill="#dc2626"/>
+  <circle cx="450" cy="140" r="3.5" fill="#dc2626"/>
+  <text class="lb" x="388" y="38">p</text>
+  <text class="lb" x="506" y="64">a</text>
+  <text class="lb" x="456" y="152">b</text>
+  <text class="tx" x="380" y="186" fill="#dc2626" font-weight="600">cross(p,a,b) &lt; 0</text>
+  <text class="mn" x="380" y="202">gira a la DERECHA (CW)</text>
+</g>
+</svg>

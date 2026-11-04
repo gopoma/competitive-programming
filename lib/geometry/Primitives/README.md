@@ -258,8 +258,12 @@ T dot(const P& p, const P& a, const P& b);       // (a-p) . (b-p)
 
 Producto escalar. La forma de tres argumentos lo mide **en el vértice `p`**.
 
+![signo del dot según el ángulo](../img/dot-signo.svg)
+
 - Complejidad: $O(1)$.
 - El signo dice el ángulo: $>0$ agudo, $0$ perpendicular, $<0$ obtuso.
+
+Mientras el `cross` contesta *"¿de qué lado?"*, el `dot` contesta *"¿hacia adelante o hacia atrás?"*. Son complementarios: con los dos juntos ubicás un punto respecto de una dirección sin usar ni una raíz ni un ángulo.
 - Casos de uso:
   - Proyectar: la proyección de `a` sobre `b` tiene longitud `dot(a,b)/abs(b)`.
   - Decidir si un punto cae "antes" o "después" de un extremo de segmento — es exactamente lo que hace `segDist`.
@@ -277,11 +281,15 @@ El producto vectorial en 2D: la componente $z$ del producto en 3D. Es un escalar
 - Complejidad: $O(1)$.
 - **La forma de tres argumentos es el predicado de orientación**, y es la base de casi toda la geometría computacional:
 
+![orientación según el signo del cross](../img/cross-orientacion.svg)
+
 | `sgn(cross(p,a,b))` | significado |
 |---|---|
 | `> 0` | `p → a → b` gira a la **izquierda** (antihorario) |
 | `== 0` | los tres son **colineales** |
 | `< 0` | gira a la **derecha** (horario) |
+
+La intuición: el cross mide el **área con signo** del paralelogramo que forman los dos vectores. Si `b` está a la izquierda de la dirección `p → a`, el área sale positiva; si está a la derecha, negativa; si está justo encima de la recta, cero. Ese único número contesta las tres preguntas de una vez, y por eso aparece en todos lados.
 
 - $|cross(p,a,b)|$ es el **área del paralelogramo** `p,a,b`; la mitad es el área del triángulo.
 - Casos de uso: convex hull, punto en polígono, intersección de segmentos, área, ordenar por ángulo, decidir de qué lado de una recta cae un punto. Prácticamente todo.
@@ -307,6 +315,10 @@ P foot(const P& p, const Line& l);
 ```
 
 El pie de la perpendicular: la **proyección** de `p` sobre la recta infinita `l`. Es el punto de `l` más cercano a `p`.
+
+![foot y reflect sobre una recta](../img/foot-reflect.svg)
+
+Los dos salen de la misma cuenta: `reflect` espeja `p` del otro lado de la recta, y `foot` es el **punto medio** entre `p` y su reflejo. De ahí que el código de `foot` sea literalmente `(p + reflect(p,l)) / 2`.
 
 - Complejidad: $O(1)$.
 - **Precondición: `l.f != l.s`.**
@@ -338,6 +350,8 @@ int half(P x);
 ```
 
 Clasifica `x` en tres grupos, que es el paso que hace posible ordenar por ángulo sin `atan2`:
+
+![los dos semiplanos de half y el orden que producen](../img/anglecmp-half.svg)
 
 | valor | qué cae ahí | rango de ángulo |
 |---|---|---|
@@ -396,8 +410,12 @@ T segDist(const P& p, const Line& l);
 
 Distancia de `p` al **segmento** `l`, que no es lo mismo: si la proyección cae fuera del segmento, la distancia es al extremo más cercano.
 
+![los tres casos de segDist](../img/segdist-casos.svg)
+
 - Complejidad: $O(1)$.
 - Resuelve los tres casos con el signo de `dot`: proyección antes de `l.f`, después de `l.s`, o adentro.
+
+Es el error clásico de principiante: usar `lineDist` cuando el problema habla de un **segmento**. En los dos casos de los extremos la recta infinita da una distancia **menor** que la real, y el resultado sale mal sin que nada avise.
 - Funciona con `l` degenerado: devuelve la distancia al punto.
 - Casos de uso: distancia entre un punto y una pared finita; distancia entre dos segmentos (es el mínimo de cuatro `segDist`, si no se cruzan); el radio mínimo de un círculo centrado en `p` que toca el segmento.
 
@@ -448,6 +466,8 @@ vP segIsect(const Line& a, const Line& b);
 ```
 
 La intersección completa de dos **segmentos**, con extremos y solapamientos incluidos. Los segmentos pueden ser degenerados (un punto).
+
+![los cuatro casos de segIsect](../img/segisect-casos.svg)
 
 | resultado | significado |
 |---|---|

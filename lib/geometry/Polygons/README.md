@@ -85,6 +85,8 @@ En la práctica da igual: los dos son $O(n \log n)$ y los verifiqué contra la m
 
 Los dos descartan los puntos **colineales del borde**: solo devuelven las esquinas verdaderas. Con los puntos de un cuadrado más los medios de cada lado, devuelve 4 vértices, no 8.
 
+![el hull estricto descarta los colineales del borde](../img/hull-estricto.svg)
+
 Si un problema te pide *"cuántos puntos están en el borde del hull"*, el hull no te lo contesta directo: tenés que recorrer los lados y contar con `onSeg`.
 
 ### 2. `hull` es exacto, `inPoly` usa `EPS`
@@ -121,6 +123,8 @@ pair<vi,vi> ulHull(const vP& v);
 ```
 
 Las dos cadenas del hull por separado, como **índices** sobre `v`: `.f` es la cadena de **arriba** (*upper*), `.s` la de **abajo** (*lower*). Las dos van de izquierda a derecha, y comparten el punto más a la izquierda y el más a la derecha.
+
+![las dos cadenas del hull](../img/hull-chains.svg)
 
 - Complejidad: $O(n \log n)$ — domina el sort.
 - Casos de uso: cuando necesitás las mitades por separado. Los dos clásicos:
@@ -185,6 +189,8 @@ pair<P,T> cenArea(const vP& v);
 
 Devuelve `{centroide, área con signo}` de un polígono **simple** (no se auto-intersecta). No hace falta que sea convexo.
 
+![el signo del área dice la orientación](../img/cenarea-signo.svg)
+
 - Complejidad: $O(n)$.
 - **Precondición: al menos 3 vértices.** Un `assert` lo verifica.
 - **El área viene CON SIGNO:** positiva si `v` está en CCW, negativa si está en CW. Para el área a secas:
@@ -235,6 +241,10 @@ Dice dónde cae `p` respecto del polígono **simple** `poly`.
 - **Sirve con el polígono en CW o en CCW** — no hace falta normalizar la orientación. Verificado en los dos sentidos.
 - No hace falta que sea convexo: funciona con cualquier polígono simple.
 - Algoritmo: número de cruces (*ray casting*). Tira un rayo y cuenta cuántos lados atraviesa; impar es adentro. El borde se chequea aparte, con `onSeg`, **antes** de contar.
+
+![número de cruces: impar adentro, par afuera](../img/inpoly-raycast.svg)
+
+La razón de que funcione: cada vez que el rayo cruza el borde, pasa de adentro a afuera o al revés. Como arranca en el infinito —afuera seguro—, la **paridad** del número de cruces dice dónde terminó. Por eso no importa la orientación del polígono ni que sea convexo.
 - Casos de uso: ¿el punto está en la región?; contar cuántos puntos caen dentro de un recinto; validar una posición en un mapa poligonal.
 
 > Para un polígono **convexo** y muchas consultas, $O(n)$ por consulta es caro. Con el hull ordenado se puede responder en $O(\log n)$ con búsqueda binaria angular, o con `tangents`. Ni esta librería ni la de Benq traen esa rutina hecha.
@@ -314,6 +324,10 @@ pi tangents(const vP& a, P b);
 
 Los **dos** índices de tangencia de una vez: `{inferior, superior}`. Es la que querés usar.
 
+![las dos tangentes y el arco visible](../img/hull-tangentes.svg)
+
+Lo que define una tangente es que **todo el polígono queda de un solo lado** de ella. Entre las dos queda el arco que se ve desde el punto, y ese arco es exactamente lo que habría que reemplazar si agregaras el punto al hull.
+
 - Complejidad: $O(\log n)$.
 - Mismas precondiciones que `tangent`.
 - Casos de uso:
@@ -338,6 +352,10 @@ vP minkowski_sum(vP a, vP b);
 ```
 
 La **suma de Minkowski** de dos polígonos convexos: el conjunto $\{p + q : p \in A,\ q \in B\}$. El resultado es convexo y queda en CCW.
+
+![la suma de Minkowski engorda A con la forma de B](../img/minkowski.svg)
+
+La imagen mental: es barrer $B$ con su origen recorriendo todo $A$. El resultado es $A$ "engordado" con la forma de $B$, y sus lados son los lados de $A$ y los de $B$ **mezclados por ángulo** — de ahí que el algoritmo sea una fusión lineal de dos listas ya ordenadas.
 
 - Complejidad: $O(n + m)$ — lineal, gracias a que las dos entradas ya están ordenadas por ángulo.
 - **Precondición: `a` y `b` son convexos y vienen en CCW.** Pasales `hull(...)` si no estás seguro.
@@ -383,6 +401,8 @@ pair<int,vi> lineHull(Line line, const vP& poly);
 
 Dice cómo corta la **recta infinita** `line` al convexo `poly`. El primer componente dice el caso, el segundo los índices relevantes:
 
+![los tres casos de lineHull](../img/linehull-casos.svg)
+
 | `.f` | significado | `.s` |
 |---|---|---|
 | `1` | **todos** los vértices están de un lado (arriba) | los vértices **más cercanos** a la recta (1 o 2) |
@@ -414,6 +434,8 @@ struct Ray { P p, dp; };   // origen, direccion
 ```
 
 Un semiplano se describe como el **área a la izquierda** del rayo que sale de `p` en dirección `dp`. Trae dos métodos:
+
+![un semiplano y la intersección de varios](../img/halfplane.svg)
 
 - `isect(const Ray& L)` — el punto donde se cortan las dos rectas de soporte. $O(1)$. Divide por `cross(L.dp, dp)`, así que **no sirve con rayos paralelos**.
 - `operator<` — ordena por ángulo de `dp`, delegando en `angleCmp`. Es lo que permite el $O(n \log n)$.

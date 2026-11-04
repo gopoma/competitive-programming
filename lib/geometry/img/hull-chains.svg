@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 215" width="540" height="215" font-family="ui-sans-serif,system-ui,-apple-system,sans-serif">
+<style>
+  .tx{fill:#334155;font-size:13px;font-weight:600}
+  .mn{fill:#64748b;font-size:11px}
+  .pt{fill:#94a3b8}
+  @media (prefers-color-scheme:dark){
+    .tx{fill:#c9d1d9}.mn{fill:#8b949e}.pt{fill:#6e7681}
+  }
+</style>
+
+<!-- nube de puntos -->
+<g class="pt">
+  <circle cx="120" cy="105" r="3"/><circle cx="160" cy="125" r="3"/>
+  <circle cx="200" cy="90" r="3"/><circle cx="150" cy="75" r="3"/>
+  <circle cx="230" cy="115" r="3"/><circle cx="185" cy="135" r="3"/>
+</g>
+
+<!-- cadena de ARRIBA (upper) -->
+<path d="M60,120 L130,52 L215,45 L290,95" fill="none" stroke="#2563eb" stroke-width="2.4"/>
+<circle cx="130" cy="52" r="4.5" fill="#2563eb"/>
+<circle cx="215" cy="45" r="4.5" fill="#2563eb"/>
+
+<!-- cadena de ABAJO (lower) -->
+<path d="M60,120 L110,170 L205,175 L290,95" fill="none" stroke="#dc2626" stroke-width="2.4"/>
+<circle cx="110" cy="170" r="4.5" fill="#dc2626"/>
+<circle cx="205" cy="175" r="4.5" fill="#dc2626"/>
+
+<!-- extremos compartidos -->
+<circle cx="60" cy="120" r="5.5" fill="#059669"/>
+<circle cx="290" cy="95" r="5.5" fill="#059669"/>
+<text class="tx" x="26" y="118" fill="#059669">min x</text>
+<text class="tx" x="298" y="93" fill="#059669">max x</text>
+
+<text class="tx" x="128" y="32" fill="#2563eb">cadena de arriba (u)</text>
+<text class="tx" x="128" y="202" fill="#dc2626">cadena de abajo (l)</text>
+
+<text class="tx" x="360" y="56">ulHull</text>
+<text class="mn" x="360" y="78">devuelve las dos cadenas por</text>
+<text class="mn" x="360" y="94">separado, como indices.</text>
+<text class="mn" x="360" y="116">Las dos van de izquierda a</text>
+<text class="mn" x="360" y="132">derecha y comparten los dos</text>
+<text class="mn" x="360" y="148">extremos (en verde).</text>
+<text class="mn" x="360" y="172">hull() las pega en un solo</text>
+<text class="mn" x="360" y="188">recorrido CCW.</text>
+</svg>

@@ -113,6 +113,8 @@ vP isect(const Circ& x, const Circ& y);
 
 Los puntos donde se cortan dos círculos.
 
+![los cuatro casos de intersección de círculos](../img/circ-isect.svg)
+
 | resultado | significado |
 |---|---|
 | vacío | no se cortan (disjuntos, o uno contenido en el otro) |
@@ -190,6 +192,8 @@ V<pair<P,P>> external(Circ x, Circ y);
 
 Las **dos tangentes externas** a los círculos `x` e `y`: las que dejan los dos círculos del mismo lado. Devuelve dos pares `{punto sobre x, punto sobre y}`.
 
+![tangentes externas e internas](../img/circ-tangentes.svg)
+
 - Complejidad: $O(1)$.
 - **Precondición: ninguno de los dos contiene estrictamente al otro** ($d > |r_x - r_y|$).
 - Dos ramas: con radios **iguales** las tangentes son paralelas y se construyen con una normal; con radios distintos pasan por el **centro de homotecia externa**.
@@ -250,6 +254,10 @@ Circ mec(vP ps);
 ```
 
 El **círculo mínimo que contiene a todos los puntos** (*minimum enclosing circle*, o círculo de Welzl).
+
+![el MEC queda determinado por 2 o 3 puntos](../img/circ-mec.svg)
+
+La clave que hace funcionar el algoritmo: el círculo óptimo siempre queda **determinado por 2 o por 3 puntos** del conjunto. Por eso los tres bucles anidados alcanzan — van fijando esos puntos del borde, y la mezcla al azar es lo que hace que casi nunca haya que rehacerlos.
 
 - Complejidad: $O(n)$ **esperado**. El algoritmo mezcla la entrada al azar y los tres bucles anidados se ejecutan, en promedio, un número constante de veces cada uno.
 - Toma `ps` por copia, porque la mezcla.
